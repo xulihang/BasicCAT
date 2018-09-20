@@ -1,0 +1,142 @@
+﻿AppType=JavaFX
+Build1=Default,b4j.example
+File1=editor.bjl
+File2=leftProject.bjl
+File3=lowerRight.bjl
+File4=main.bjl
+File5=right.bjl
+File6=supportedFiles.txt
+File7=term.bjl
+File8=upperRight.bjl
+FileGroup1=Default Group
+FileGroup2=Default Group
+FileGroup3=Default Group
+FileGroup4=Default Group
+FileGroup5=Default Group
+FileGroup6=Default Group
+FileGroup7=Default Group
+FileGroup8=Default Group
+Group=Default Group
+Library1=jcore
+Library2=jfx
+Library3=javaobject
+Library4=cssutils
+Module1=FileChooserUtils
+Module2=segmentation
+NumberOfFiles=8
+NumberOfLibraries=4
+NumberOfModules=2
+Version=6.51
+@EndOfDesignText@
+#Region Project Attributes 
+	#MainFormWidth: 600
+	#MainFormHeight: 600 
+#End Region
+
+Sub Process_Globals
+	Private fx As JFX
+	Private MainForm As Form
+	Private mainSplitPane As SplitPane
+	Private upperRightSplitPane As SplitPane
+	Private rightSplitPane As SplitPane
+	Private ProjectTreeView As TreeView
+	Private editorLV As ListView
+End Sub
+
+Sub AppStart (Form1 As Form, Args() As String)
+	MainForm = Form1
+	MainForm.RootPane.LoadLayout("main") 'Load the layout file.
+	MainForm.Show
+	init
+	editorLV.Items.Add("ss")
+End Sub
+
+'Return true to allow the default exceptions handler to handle the uncaught exception.
+Sub Application_Error (Error As Exception, StackTrace As String) As Boolean
+	Return True
+End Sub
+
+Sub MainForm_Resize (Width As Double, Height As Double)
+	adjustDividerPositions
+End Sub
+
+Sub init
+	mainSplitPane.LoadLayout("leftProject")
+	mainSplitPane.LoadLayout("right")
+
+	rightSplitPane.LoadLayout("upperRight")
+	rightSplitPane.LoadLayout("lowerRight")
+	
+	upperRightSplitPane.LoadLayout("editor")
+	upperRightSplitPane.LoadLayout("term")
+	adjustDividerPositions
+	
+
+	For Each item As String In Array As String("Project Files","Translation Memory","Terminology")
+		Dim ti As TreeItem
+		ti.Initialize("ti",item)
+		ProjectTreeView.Root.Children.Add(ti)
+	Next
+
+
+End Sub
+
+Sub adjustDividerPositions
+	mainSplitPane.DividerPositions=Array As Double(0.2)
+	rightSplitPane.DividerPositions=Array As Double(0.8)
+	upperRightSplitPane.DividerPositions=Array As Double(0.8)
+End Sub
+
+Sub ProjectTreeView_SelectedItemChanged (SelectedItem As TreeItem)
+	Log(SelectedItem.Text)
+End Sub
+
+Sub MenuBar1_Action
+	Dim mi As MenuItem
+	mi=Sender
+	Log(mi.Text)
+	Select mi.Text
+		
+		Case "_New"
+			Dim fc As FileChooser
+			fc.Initialize
+			Dim supportedFiles As List
+			supportedFiles=File.ReadList(File.DirAssets,"supportedFiles.txt")
+			Dim descriptionList,filterList As List
+			descriptionList.Initialize
+			filterList.Initialize
+			For Each filetype As String In supportedFiles
+				descriptionList.Add(Regex.Split("	",filetype)(0))
+				filterList.add(Regex.Split("	",filetype)(1))
+			Next
+			FileChooserUtils.AddExtensionFilters4(fc,descriptionList,filterList,False,"",True)
+		    Dim path As String
+			path=fc.ShowOpen(MainForm)
+			If path="" Then
+				Return
+			End If
+			Log(path)
+			Dim filename As String
+			Try
+				filename=path.SubString2(path.LastIndexOf("\")+1,path.Length)
+			Catch
+				filename=path.SubString2(path.LastIndexOf("/")+1,path.Length)
+				Log(LastException)
+			End Try
+			Log(filename)
+
+			Dim ti As TreeItem
+			ti.Initialize("fileTi",filename)
+			Dim subTreeItem As TreeItem
+			subTreeItem=ProjectTreeView.Root.Children.Get(0)
+			subTreeItem.Children.Add(ti)
+			Dim seg As segmentation
+            seg.Initialize(path)
+		Case "_Save"
+			
+		Case "_Close"
+			ExitApplication
+		Case "_About"
+			fx.Msgbox(MainForm,"BasicCAT 1.0"&CRLF&"@xulihang 2018","BasicCAT")
+	End Select
+End Sub

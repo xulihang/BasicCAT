@@ -1,0 +1,2 @@
+Text Files	*.txt
+InDesign Markup Language	*.idml
