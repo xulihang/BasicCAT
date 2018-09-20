@@ -1,25 +1,37 @@
 ﻿B4J=true
 Group=Default Group
 ModulesStructureVersion=1
-Type=Class
+Type=StaticCode
 Version=6.51
 @EndOfDesignText@
-Sub Class_Globals
+'Static code module
+Sub Process_Globals
 	Private fx As JFX
-	Private segmentsList As List
-	private segmentMarks as List
 End Sub
 
-'Initializes the object. You can add parameters to this method if needed.
-Public Sub Initialize(path As String)
-	If path.EndsWith(".txt") Then
-		Dim source As String
-		source=File.ReadString(path,"")
-		
-	End If
-End Sub
-
-Sub addSegmentsToEditor
+Public Sub segmentedTxt(text As String,Trim As Boolean) As List
+	Dim segmentationRule As List
+	segmentationRule=File.ReadList(File.DirAssets,"segmentation_en.conf")
+	Dim segmentationExceptionRule As List
+	segmentationExceptionRule=File.ReadList(File.DirAssets,"segmentation_en_exception.conf")
 	
-End Sub
+	Dim seperatedByCRLF As String
+	seperatedByCRLF=text
+	For Each rule As String In segmentationRule
+		seperatedByCRLF=Regex.Replace(rule,seperatedByCRLF,"$0"&CRLF)
+	Next
 
+	For Each rule As String In segmentationExceptionRule
+		seperatedByCRLF=seperatedByCRLF.Replace(rule&CRLF,rule)
+	Next
+	Dim out As List
+	out.Initialize
+	For Each sentence As String In Regex.Split(CRLF,seperatedByCRLF)
+		If Trim Then
+			sentence=sentence.Trim
+		End If
+		out.Add(sentence)
+	Next
+	Log(out)
+	Return out
+End Sub

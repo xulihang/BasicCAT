@@ -1,14 +1,17 @@
 ﻿AppType=JavaFX
 Build1=Default,b4j.example
 File1=editor.bjl
+File10=upperRight.bjl
 File2=leftProject.bjl
 File3=lowerRight.bjl
 File4=main.bjl
 File5=right.bjl
-File6=supportedFiles.txt
-File7=term.bjl
-File8=upperRight.bjl
+File6=segmentation_en.conf
+File7=segmentation_en_exception.conf
+File8=supportedFiles.txt
+File9=term.bjl
 FileGroup1=Default Group
+FileGroup10=Default Group
 FileGroup2=Default Group
 FileGroup3=Default Group
 FileGroup4=Default Group
@@ -16,16 +19,20 @@ FileGroup5=Default Group
 FileGroup6=Default Group
 FileGroup7=Default Group
 FileGroup8=Default Group
+FileGroup9=Default Group
 Group=Default Group
 Library1=jcore
 Library2=jfx
 Library3=javaobject
 Library4=cssutils
+Library5=json
+Library6=apachestringutilsb4j
 Module1=FileChooserUtils
-Module2=segmentation
-NumberOfFiles=8
-NumberOfLibraries=4
-NumberOfModules=2
+Module2=Project
+Module3=segmentation
+NumberOfFiles=10
+NumberOfLibraries=6
+NumberOfModules=3
 Version=6.51
 @EndOfDesignText@
 #Region Project Attributes 
@@ -39,8 +46,9 @@ Sub Process_Globals
 	Private mainSplitPane As SplitPane
 	Private upperRightSplitPane As SplitPane
 	Private rightSplitPane As SplitPane
-	Private ProjectTreeView As TreeView
-	Private editorLV As ListView
+	Public editorLV As ListView
+	Public projectTreeTableView As TreeTableView
+	Private currentProject As Project
 End Sub
 
 Sub AppStart (Form1 As Form, Args() As String)
@@ -70,15 +78,6 @@ Sub init
 	upperRightSplitPane.LoadLayout("editor")
 	upperRightSplitPane.LoadLayout("term")
 	adjustDividerPositions
-	
-
-	For Each item As String In Array As String("Project Files","Translation Memory","Terminology")
-		Dim ti As TreeItem
-		ti.Initialize("ti",item)
-		ProjectTreeView.Root.Children.Add(ti)
-	Next
-
-
 End Sub
 
 Sub adjustDividerPositions
@@ -87,8 +86,24 @@ Sub adjustDividerPositions
 	upperRightSplitPane.DividerPositions=Array As Double(0.8)
 End Sub
 
-Sub ProjectTreeView_SelectedItemChanged (SelectedItem As TreeItem)
-	Log(SelectedItem.Text)
+Public Sub addProjectTreeTableItem
+	For Each item As String In Array As String("Project Files","Translation Memory","Terminology")
+		Dim lbl As Label
+		lbl.Initialize("lbl")
+		lbl.Text=item
+		If item="Project Files" Then
+			Dim cm As ContextMenu
+			cm.Initialize("cm")
+			Dim mi As MenuItem
+			mi.Initialize("Add File","addFileMi")
+			cm.MenuItems.Add(mi)
+			lbl.ContextMenu=cm
+		End If
+		Dim tti As TreeTableItem
+		tti.Initialize("tti",Array As Object(lbl))
+		
+		projectTreeTableView.Root.Children.Add(tti)
+	Next
 End Sub
 
 Sub MenuBar1_Action
@@ -96,47 +111,118 @@ Sub MenuBar1_Action
 	mi=Sender
 	Log(mi.Text)
 	Select mi.Text
-		
-		Case "_New"
+		Case "_Open"
+			If currentProject.IsInitialized Then
+				fx.Msgbox(MainForm,"Please close the current project first.","")
+				Return
+			End If
 			Dim fc As FileChooser
 			fc.Initialize
-			Dim supportedFiles As List
-			supportedFiles=File.ReadList(File.DirAssets,"supportedFiles.txt")
-			Dim descriptionList,filterList As List
-			descriptionList.Initialize
-			filterList.Initialize
-			For Each filetype As String In supportedFiles
-				descriptionList.Add(Regex.Split("	",filetype)(0))
-				filterList.add(Regex.Split("	",filetype)(1))
-			Next
-			FileChooserUtils.AddExtensionFilters4(fc,descriptionList,filterList,False,"",True)
-		    Dim path As String
+			fc.SetExtensionFilter("project files",Array As String("*.json"))
+			Dim path As String
 			path=fc.ShowOpen(MainForm)
 			If path="" Then
 				Return
 			End If
-			Log(path)
-			Dim filename As String
-			Try
-				filename=path.SubString2(path.LastIndexOf("\")+1,path.Length)
-			Catch
-				filename=path.SubString2(path.LastIndexOf("/")+1,path.Length)
-				Log(LastException)
-			End Try
-			Log(filename)
-
-			Dim ti As TreeItem
-			ti.Initialize("fileTi",filename)
-			Dim subTreeItem As TreeItem
-			subTreeItem=ProjectTreeView.Root.Children.Get(0)
-			subTreeItem.Children.Add(ti)
-			Dim seg As segmentation
-            seg.Initialize(path)
+			currentProject.Initialize
+			currentProject.open(path)
+		Case "EN to ZH Project"
+			If currentProject.IsInitialized Then
+				fx.Msgbox(MainForm,"Please close the current project first.","")
+			    Return
+			End If
+			currentProject.Initialize
+			currentProject.newProjectSetting("EN","ZH")
+			MainForm.Title="Untitled-1"
+			addProjectTreeTableItem
+		Case "ZH to EN Project"
+			If currentProject.IsInitialized Then
+				fx.Msgbox(MainForm,"Please close the current project first.","")
+				Return
+			End If
+			currentProject.Initialize
+			currentProject.newProjectSetting("ZH","EN")
+			MainForm.Title="Untitled-1"
+			addProjectTreeTableItem
 		Case "_Save"
-			
+			If currentProject.path="" Then
+				If currentProject.IsInitialized=False Then
+					Return
+				End If
+				Dim fc As FileChooser
+				fc.Initialize
+				fc.Title="Please enter the folder name to store the project."
+				Dim path As String
+				path=fc.ShowSave(MainForm)
+				If path="" Then
+					Return
+				End If
+				If File.Exists(path,"") Then
+					fx.Msgbox(MainForm,"There has already been a file.","")
+					Return
+				End If
+				currentProject.path=path
+				currentProject.save
+				MainForm.Title=getFilename(path)
+			Else
+				currentProject.save
+			End If
 		Case "_Close"
+			'Dim currentProject as Project
 			ExitApplication
 		Case "_About"
 			fx.Msgbox(MainForm,"BasicCAT 1.0"&CRLF&"@xulihang 2018","BasicCAT")
 	End Select
+End Sub
+
+Sub addFileMi_Action
+	Dim mi As MenuItem
+	mi=Sender
+	Log(mi.Text)
+	If currentProject.IsInitialized=False Then
+		fx.Msgbox(MainForm,"Please first open a project.","")
+		Return
+	End If
+	If currentProject.path="" Then
+		fx.Msgbox(MainForm,"Please first save the project.","")
+		Return
+	End If
+	Dim fc As FileChooser
+	fc.Initialize
+	Dim supportedFiles As List
+	supportedFiles=File.ReadList(File.DirAssets,"supportedFiles.txt")
+	Dim descriptionList,filterList As List
+	descriptionList.Initialize
+	filterList.Initialize
+	For Each filetype As String In supportedFiles
+		descriptionList.Add(Regex.Split("	",filetype)(0))
+		filterList.add(Regex.Split("	",filetype)(1))
+	Next
+	FileChooserUtils.AddExtensionFilters4(fc,descriptionList,filterList,False,"",True)
+	Dim path As String
+	path=fc.ShowOpen(MainForm)
+	If path="" Then
+		Return
+	End If
+	currentProject.addFile(path)
+	Log(path)
+End Sub
+
+Sub projectTreeTableView_SelectedItemChanged (SelectedItem As TreeTableItem)
+	Dim lbl As Label
+	lbl=SelectedItem.GetValue(0)
+	Log(lbl.Text)
+	
+End Sub
+
+
+Public Sub getFilename(path As String) As String
+	Dim filename As String
+	Try
+		filename=path.SubString2(path.LastIndexOf("\")+1,path.Length)
+	Catch
+		filename=path.SubString2(path.LastIndexOf("/")+1,path.Length)
+		Log(LastException)
+	End Try
+	Return filename
 End Sub
