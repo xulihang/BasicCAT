@@ -71,8 +71,10 @@ Sub creatTxtWorkFile(filename As String)
 	workfile.Initialize
 	workfile.Put("filename",filename)
 	
-	Dim sourceFiles As Map
+	Dim sourceFiles As List
 	sourceFiles.Initialize
+	Dim sourceFileMap As Map
+	sourceFileMap.Initialize
     Dim segmentsList As List
 	segmentsList.Initialize
 	For Each source As String In segmentation.segmentedTxt(File.ReadString(File.Combine(path,"source"),filename),False)
@@ -82,7 +84,9 @@ Sub creatTxtWorkFile(filename As String)
 		bitext.Add("")
 		segmentsList.Add(bitext)
 	Next
-	sourceFiles.Put(filename,segmentsList)
+	sourceFileMap.Put("filename",filename)
+	sourceFileMap.put("segmentsList",segmentsList)
+	sourceFiles.Add(sourceFileMap)
 	workfile.Put("files",sourceFiles)
 	
 	Dim json As JSONGenerator
@@ -91,6 +95,28 @@ Sub creatTxtWorkFile(filename As String)
 End Sub
 
 Sub readFile(filename As String)
+	Dim workfile As Map
+	Dim json As JSONParser
+	json.Initialize(File.ReadString(File.Combine(path,"work"),filename&".json"))
+	workfile=json.NextObject
+	Dim sourceFiles As List
+	sourceFiles=workfile.Get("files")
+	For Each sourceFileMap As Map In sourceFiles
+		Dim segmentsList As List
+		segmentsList=sourceFileMap.Get("segmentsList")
+		For Each bitext As List In segmentsList
+				Dim segmentPane As Pane
+				segmentPane.Initialize("segmentPane")
+				segmentPane.LoadLayout("segment")
+				Dim sourceTextArea As TextArea
+				sourceTextArea=segmentPane.GetNode(0)
+				sourceTextArea.Text=bitext.Get(0)
+				Dim targetTextArea As TextArea
+				targetTextArea=segmentPane.GetNode(1)
+				targetTextArea.Text=bitext.Get(1)
+				Main.editorLV.Items.Add(segmentPane)
+		Next
+	Next
 	
 End Sub
 
@@ -129,4 +155,15 @@ Sub lbl_MouseClicked (EventData As MouseEvent)
 	Log(lbl.Text)
 	Dim filename As String
 	filename=lbl.text
+	readFile(filename)
+End Sub
+
+Sub targetTextArea_TextChanged (Old As String, New As String)
+	Log(New)
+	CallSubDelayed3(Main, "ListViewParent_Resize", 0, 0)
+End Sub
+
+Sub sourceTextArea_TextChanged (Old As String, New As String)
+	Log(New)
+	CallSubDelayed3(Main, "ListViewParent_Resize", 0, 0)
 End Sub

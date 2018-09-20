@@ -1,17 +1,19 @@
 ﻿AppType=JavaFX
 Build1=Default,b4j.example
 File1=editor.bjl
-File10=upperRight.bjl
+File10=term.bjl
+File11=upperRight.bjl
 File2=leftProject.bjl
 File3=lowerRight.bjl
 File4=main.bjl
 File5=right.bjl
-File6=segmentation_en.conf
-File7=segmentation_en_exception.conf
-File8=supportedFiles.txt
-File9=term.bjl
+File6=segment.bjl
+File7=segmentation_en.conf
+File8=segmentation_en_exception.conf
+File9=supportedFiles.txt
 FileGroup1=Default Group
 FileGroup10=Default Group
+FileGroup11=Default Group
 FileGroup2=Default Group
 FileGroup3=Default Group
 FileGroup4=Default Group
@@ -30,7 +32,7 @@ Library6=apachestringutilsb4j
 Module1=FileChooserUtils
 Module2=Project
 Module3=segmentation
-NumberOfFiles=10
+NumberOfFiles=11
 NumberOfLibraries=6
 NumberOfModules=3
 Version=6.51
@@ -56,7 +58,6 @@ Sub AppStart (Form1 As Form, Args() As String)
 	MainForm.RootPane.LoadLayout("main") 'Load the layout file.
 	MainForm.Show
 	init
-	editorLV.Items.Add("ss")
 End Sub
 
 'Return true to allow the default exceptions handler to handle the uncaught exception.
@@ -66,6 +67,7 @@ End Sub
 
 Sub MainForm_Resize (Width As Double, Height As Double)
 	adjustDividerPositions
+	CallSubDelayed3(Me, "ListViewParent_Resize", 0, 0)
 End Sub
 
 Sub init
@@ -225,4 +227,34 @@ Public Sub getFilename(path As String) As String
 		Log(LastException)
 	End Try
 	Return filename
+End Sub
+
+Sub ListViewParent_Resize (Width As Double, Height As Double)
+	Dim itemWidth As Double = editorLV.Width-20dip
+	For Each p As Pane In editorLV.Items
+		Dim sourceTa As TextArea = p.GetNode(0)
+		Dim targetTa As TextArea = p.GetNode(1)
+		Dim sourcelbl,targetlbl As Label
+		sourcelbl.Initialize("")
+		sourcelbl.Font = fx.DefaultFont(15)
+		p.AddNode(sourcelbl, 0, 0, itemWidth/2, -1)
+		targetlbl.Initialize("")
+		targetlbl.Font = fx.DefaultFont(15)
+		p.AddNode(targetlbl, 0, 0, itemWidth/2, -1)
+
+		sourcelbl.Text = sourceTa.Text
+		sourcelbl.WrapText = True
+		targetlbl.Text = targetTa.Text
+		targetlbl.WrapText = True
+		Dim jo As JavaObject = p
+		'force the label to refresh its layout.
+		jo.RunMethod("applyCss", Null)
+		jo.RunMethod("layout", Null)
+		Dim h As Int = Max(Max(50, sourcelbl.Height + 20), targetlbl.Height + 20)
+		p.SetLayoutAnimated(0, 0, 0, itemWidth, h + 10)
+		sourceTa.SetLayoutAnimated(0, 0, 0, itemWidth/2, h)
+		targetTa.SetLayoutAnimated(0, itemWidth/2, 0, itemWidth/2, h)
+		sourcelbl.RemoveNodeFromParent
+		targetlbl.RemoveNodeFromParent
+	Next
 End Sub
