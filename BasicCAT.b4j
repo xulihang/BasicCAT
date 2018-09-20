@@ -128,6 +128,7 @@ Sub MenuBar1_Action
 			End If
 			currentProject.Initialize
 			currentProject.open(path)
+			MainForm.Title=getProjectname(path)
 		Case "EN to ZH Project"
 			If currentProject.IsInitialized Then
 				fx.Msgbox(MainForm,"Please close the current project first.","")
@@ -165,7 +166,7 @@ Sub MenuBar1_Action
 				End If
 				currentProject.path=path
 				currentProject.save
-				MainForm.Title=getFilename(path)
+				MainForm.Title=path
 			Else
 				currentProject.save
 			End If
@@ -229,8 +230,22 @@ Public Sub getFilename(path As String) As String
 	Return filename
 End Sub
 
+Public Sub getProjectname(path As String) As String
+	Dim Projectname As String
+	Try
+		Projectname=path.SubString2(path.LastIndexOf("\"),path.Length)
+		Projectname=path.Replace(Projectname,"")
+	Catch
+		Projectname=path.SubString2(path.LastIndexOf("/"),path.Length)
+		Projectname=path.Replace(Projectname,"")
+		Log(LastException)
+	End Try
+	Log(Projectname)
+	Return Projectname
+End Sub
+
 Sub ListViewParent_Resize (Width As Double, Height As Double)
-	Dim itemWidth As Double = editorLV.Width-20dip
+	Dim itemWidth As Double = editorLV.Width-10dip
 	For Each p As Pane In editorLV.Items
 		Dim sourceTa As TextArea = p.GetNode(0)
 		Dim targetTa As TextArea = p.GetNode(1)
@@ -252,8 +267,8 @@ Sub ListViewParent_Resize (Width As Double, Height As Double)
 		jo.RunMethod("layout", Null)
 		Dim h As Int = Max(Max(50, sourcelbl.Height + 20), targetlbl.Height + 20)
 		p.SetLayoutAnimated(0, 0, 0, itemWidth, h + 10)
-		sourceTa.SetLayoutAnimated(0, 0, 0, itemWidth/2, h)
-		targetTa.SetLayoutAnimated(0, itemWidth/2, 0, itemWidth/2, h)
+		sourceTa.SetLayoutAnimated(5dip, 0, 0, itemWidth/2, h)
+		targetTa.SetLayoutAnimated(5dip, itemWidth/2, 0, itemWidth/2, h)
 		sourcelbl.RemoveNodeFromParent
 		targetlbl.RemoveNodeFromParent
 	Next
