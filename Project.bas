@@ -11,6 +11,7 @@ Sub Class_Globals
 	Private projectFile As Map
 	Public status As String
 	Private currentFilename As String
+	private segments as list
 End Sub
 
 'Initializes the object. You can add parameters to this method if needed.
@@ -78,16 +79,20 @@ Sub creatTxtWorkFile(filename As String)
 	sourceFileMap.Initialize
     Dim segmentsList As List
 	segmentsList.Initialize
+	Dim inbetweenContent As String
 	For Each source As String In segmentation.segmentedTxt(File.ReadString(File.Combine(path,"source"),filename),False)
 		Dim bitext As List
 		bitext.Initialize
-		bitext.Add(source)
-		If source.Trim="" Then 'non-text
-			bitext.Add(source)
-		Else
+        Log(source.Contains(CRLF))
+		If source="" Then 'newline
+			inbetweenContent=inbetweenContent&CRLF
+			Continue
+		Else if source<>"" Then
+			bitext.add(source.Trim)
 			bitext.Add("")
+			bitext.Add(inbetweenContent&source) 'inbetweenContent contains crlf and spaces between sentences
+			inbetweenContent=""
 		End If
-		
 		segmentsList.Add(bitext)
 	Next
 	sourceFileMap.Put("filename",filename)
@@ -112,16 +117,17 @@ Sub readFile(filename As String)
 		segmentsList=sourceFileMap.Get("segmentsList")
         Dim hiddenContent As String
 		For Each bitext As List In segmentsList
+			Sleep(0)
 		    Dim source As String
 		    source=bitext.Get(0)
 			source=source.Trim
-			
+			'segments.Add()
 			Dim segmentPane As Pane
 			segmentPane.Initialize("segmentPane")
 			segmentPane.LoadLayout("segment")
+			segmentPane.SetSize(Main.editorLV.AsView.Width,50dip)
 			If source="" Then
 				hiddenContent=hiddenContent&bitext.Get(0)
-				Log(hiddenContent)
 				Continue
 			Else if source<>"" And hiddenContent<>"" Then
 				segmentPane.Tag=hiddenContent
@@ -129,6 +135,10 @@ Sub readFile(filename As String)
 			End If
 			segmentPane.Tag=segmentPane.Tag&bitext.Get(0)
 			'Log(segmentPane.Tag)
+			'Dim sourceLbl As Label
+			'sourceLbl.Initialize("sourcelbl")
+			'sourceLbl.Text=source
+			'segmentPane.AddNode(sourceLbl,0,0,Main.editorLV.AsView.Width/2,50)
 			Dim sourceTextArea As TextArea
 			sourceTextArea=segmentPane.GetNode(0)
 			sourceTextArea.Text=source
@@ -137,12 +147,21 @@ Sub readFile(filename As String)
 			targetTextArea=segmentPane.GetNode(1)
 			targetTextArea.Text=bitext.Get(1)
 			addKeyEvent(targetTextArea,"targetTextArea")
-			Main.editorLV.Items.Add(segmentPane)
+			'Dim targetLbl As Label
+			'targetLbl.Initialize("targetLbl")
+			'targetLbl.Text=bitext.Get(1)
+			'segmentPane.AddNode(targetLbl,Main.editorLV.AsView.Width/2,0,Main.editorLV.AsView.Width/2,50)
+			'sourceTextArea.RemoveNodeFromParent
+			'targetTextArea.RemoveNodeFromParent
+			Main.editorLV.Add(segmentPane,"")
+			
 		Next
 	Next
 	Dim result As String
-	For Each item As Pane In Main.editorLV.Items
-		result=result&item.Tag
+	For i=0 To Main.editorLV.size - 1
+		Dim p As Pane
+		p=Main.editorLV.GetPanel(i)
+		result=result&p.Tag
 	Next
 	File.WriteString(File.DirApp,"out",result)
 End Sub
@@ -189,11 +208,11 @@ Sub lbl_MouseClicked (EventData As MouseEvent)
 End Sub
 
 Sub targetTextArea_TextChanged (Old As String, New As String)
-	CallSubDelayed3(Main, "ListViewParent_Resize", 0, 0)
+	CallSubDelayed(Main, "ListViewParent_Resize")
 End Sub
 
 Sub sourceTextArea_TextChanged (Old As String, New As String)
-	CallSubDelayed3(Main, "ListViewParent_Resize", 0, 0)
+	CallSubDelayed(Main, "ListViewParent_Resize")
 End Sub
 
 
@@ -228,19 +247,19 @@ Sub sourceTextArea_KeyPressed_Event (MethodName As String, Args() As Object) As 
 		sourceTextArea.Text=sourceTextArea.Text.SubString2(0,sourceTextArea.SelectionEnd)
 		sourceTextArea.Text=sourceTextArea.Text.Replace(CRLF,"")
 		sourceTextArea.Tag=sourceTextArea.Text
-		Main.editorLV.Items.InsertAt(Main.editorLV.Items.IndexOf(sourceTextArea.Parent)+1,newSegmentPane)
+		Main.editorLV.InsertAt(Main.editorLV.GetItemFromView(sourceTextArea.Parent)+1,newSegmentPane,"")
 	Else if result="DELETE" Then
 		Dim pane,nextPane As Pane
 		Dim index As Int
-		index=Main.editorLV.Items.IndexOf(sourceTextArea.Parent)
-		pane=Main.editorLV.Items.Get(index)
-		nextPane=Main.editorLV.Items.Get(index+1)
+		index=Main.editorLV.GetItemFromView(sourceTextArea.Parent)
+		pane=Main.editorLV.GetPanel(index)
+		nextPane=Main.editorLV.GetPanel(index+1)
 		Dim targetTa,nextSourceTa,nextTargetTa As TextArea
 		nextSourceTa=nextPane.GetNode(0)
 		nextTargetTa=nextPane.GetNode(1)
 		
 		If projectFile.Get("source")="EN" Then
-			sourceTextArea.Text=sourceTextArea.Text&" "&nextSourceTa.Text
+			sourceTextArea.Text=sourceTextArea.Text.Trim&" "&nextSourceTa.Text.Trim
 		Else
 			sourceTextArea.Text=sourceTextArea.Text&nextSourceTa.Text
 		End If
@@ -255,7 +274,7 @@ Sub sourceTextArea_KeyPressed_Event (MethodName As String, Args() As Object) As 
 			targetTa.Text=targetTa.Text&nextTargetTa.Text
 		End If
 		
-		Main.editorLV.Items.RemoveAt(Main.editorLV.Items.IndexOf(sourceTextArea.Parent)+1)
+		Main.editorLV.RemoveAt(Main.editorLV.GetItemFromView(sourceTextArea.Parent)+1)
 	End If
 End Sub
 
@@ -268,11 +287,18 @@ Sub targetTextArea_KeyPressed_Event (MethodName As String, Args() As Object) As 
 		targetTextArea=Sender
 		targetTextArea.Text=targetTextArea.Text.Replace(CRLF,"")
 		Try
-			Main.editorLV.SelectedIndex=Main.editorLV.SelectedIndex+1
+
 			Dim pane As Pane
-			pane=Main.editorLV.SelectedItem
+			pane=targetTextArea.Parent
+			Dim index As Int
+			index=Main.editorLV.GetItemFromView(pane)
+			If index=Main.editorLV.Size-1 Then
+				index=-1
+			End If
+			Dim nextPane As Pane
+			nextPane=Main.editorLV.GetPanel(index+1)
 			Dim nextTA As TextArea
-			nextTA=pane.GetNode(1)
+			nextTA=nextPane.GetNode(1)
 			nextTA.RequestFocus
 		Catch
 			Log(LastException)
@@ -296,5 +322,4 @@ End Sub
 Sub targetTextArea_MouseClicked (EventData As MouseEvent)
 	Dim ta As TextArea
 	ta=Sender
-	Main.editorLV.SelectedIndex=Main.editorLV.Items.IndexOf(ta.parent)
 End Sub

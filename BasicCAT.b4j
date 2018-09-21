@@ -29,12 +29,14 @@ Library3=javaobject
 Library4=cssutils
 Library5=json
 Library6=apachestringutilsb4j
+Library7=jxui
 Module1=FileChooserUtils
 Module2=Project
 Module3=segmentation
+Module4=CustomListView
 NumberOfFiles=11
-NumberOfLibraries=6
-NumberOfModules=3
+NumberOfLibraries=7
+NumberOfModules=4
 Version=6.51
 @EndOfDesignText@
 #Region Project Attributes 
@@ -48,7 +50,7 @@ Sub Process_Globals
 	Private mainSplitPane As SplitPane
 	Private upperRightSplitPane As SplitPane
 	Private rightSplitPane As SplitPane
-	Public editorLV As ListView
+	Public editorLV As CustomListView
 	Public projectTreeTableView As TreeTableView
 	Private currentProject As Project
 End Sub
@@ -67,7 +69,7 @@ End Sub
 
 Sub MainForm_Resize (Width As Double, Height As Double)
 	adjustDividerPositions
-	CallSubDelayed3(Me, "ListViewParent_Resize", 0, 0)
+	CallSubDelayed(Me, "ListViewParent_Resize")
 End Sub
 
 Sub init
@@ -244,9 +246,14 @@ Public Sub getProjectname(path As String) As String
 	Return Projectname
 End Sub
 
-Sub ListViewParent_Resize (Width As Double, Height As Double)
-	Dim itemWidth As Double = editorLV.Width-10dip
-	For Each p As Pane In editorLV.Items
+Sub ListViewParent_Resize
+	Dim itemWidth As Double = editorLV.AsView.Width-10dip
+	If editorLV.Size=0 Then
+		Return
+	End If
+	For i=editorLV.FirstVisibleIndex To editorLV.LastVisibleIndex
+		Dim p As Pane
+		p=editorLV.GetPanel(i)
 		Dim sourceTa As TextArea = p.GetNode(0)
 		Dim targetTa As TextArea = p.GetNode(1)
 		Dim sourcelbl,targetlbl As Label
@@ -257,19 +264,24 @@ Sub ListViewParent_Resize (Width As Double, Height As Double)
 		targetlbl.Font = fx.DefaultFont(15)
 		p.AddNode(targetlbl, 0, 0, itemWidth/2, -1)
 
-		sourcelbl.Text = sourceTa.Text
+		sourcelbl.Text = sourceTa.Text&CRLF&"12345"
 		sourcelbl.WrapText = True
-		targetlbl.Text = targetTa.Text
+		targetlbl.Text = targetTa.Text&CRLF&"12345"
 		targetlbl.WrapText = True
 		Dim jo As JavaObject = p
 		'force the label to refresh its layout.
 		jo.RunMethod("applyCss", Null)
 		jo.RunMethod("layout", Null)
 		Dim h As Int = Max(Max(50, sourcelbl.Height + 20), targetlbl.Height + 20)
-		p.SetLayoutAnimated(0, 0, 0, itemWidth, h + 10)
-		sourceTa.SetLayoutAnimated(5dip, 0, 0, itemWidth/2, h)
-		targetTa.SetLayoutAnimated(5dip, itemWidth/2, 0, itemWidth/2, h)
+		p.SetLayoutAnimated(0, 0, 0, itemWidth, h + 10dip)
+		sourceTa.SetLayoutAnimated(5dip, 0, 0, itemWidth/2, h+5dip)
+		targetTa.SetLayoutAnimated(5dip, itemWidth/2, 0, itemWidth/2, h+5dip)
+		editorLV.ResizeItem(i,h+10dip)
 		sourcelbl.RemoveNodeFromParent
 		targetlbl.RemoveNodeFromParent
 	Next
+End Sub
+
+Sub editorLV_VisibleRangeChanged (FirstIndex As Int, LastIndex As Int)
+	ListViewParent_Resize
 End Sub
