@@ -8,7 +8,7 @@ Sub Class_Globals
 	Private fx As JFX
 	Public path As String
 	Private files As List
-	private projectFile As Map
+	Private projectFile As Map
 	Public status As String
 	Private currentFilename As String
 	Private segments As List
@@ -79,7 +79,7 @@ public Sub save
 	json.Initialize(projectFile)
 	File.WriteString(path,"project.json",json.ToPrettyString(4))
 	If currentFilename.EndsWith(".txt") Then
-		saveAlltheTranslation
+		saveAlltheTranslation(Main.editorLV.FirstVisibleIndex,Main.editorLV.LastVisibleIndex)
 		txtFilter.saveTxtWorkFile(currentFilename,segments,path)
 	End If
 	status="saved"
@@ -229,24 +229,28 @@ Sub sourceTextArea_KeyPressed_Event (MethodName As String, Args() As Object) As 
 		nextSourceTa=nextPane.GetNode(0)
 		nextTargetTa=nextPane.GetNode(1)
 		
+		Dim sourceWhitespace,targetWhitespace As String
+		sourceWhitespace=""
+		targetWhitespace=""
 		If projectFile.Get("source")="EN" Then
-			sourceTextArea.Text=sourceTextArea.Text.Trim&" "&nextSourceTa.Text.Trim
-		Else
-			sourceTextArea.Text=sourceTextArea.Text&nextSourceTa.Text
+			sourceWhitespace=" "
+		else if projectFile.Get("target")="EN" Then
+			targetWhitespace=" "
 		End If
 		
+		sourceTextArea.Text=sourceTextArea.Text.Trim&sourceWhitespace&nextSourceTa.Text.Trim
 		sourceTextArea.Tag=sourceTextArea.Text
+		
 		targetTa=pane.GetNode(1)
-        
-		If projectFile.Get("target")="EN" Then
-			targetTa.Text=targetTa.Text&" "&nextTargetTa.Text
-		Else
-			targetTa.Text=targetTa.Text&nextTargetTa.Text
-		End If
+		targetTa.Text=targetTa.Text&targetWhitespace&nextTargetTa.Text
+
 
 		bitext.Set(0,sourceTextArea.Text)
 		bitext.Set(1,targetTa.Text)
-		bitext.Set(2,bitext.Get(2)&nextBiText.Get(2))
+
+		bitext.Set(2,bitext.Get(2)&sourceWhitespace&nextBiText.Get(0)) 'ignore next segment newline and spaces
+
+		
 		segments.RemoveAt(index+1)
 		Main.editorLV.RemoveAt(Main.editorLV.GetItemFromView(sourceTextArea.Parent)+1)
 	End If
@@ -298,8 +302,8 @@ Sub targetTextArea_MouseClicked (EventData As MouseEvent)
 	ta=Sender
 End Sub
 
-Sub saveAlltheTranslation
-	For i=0 To Main.editorLV.Size-1
+Public Sub saveAlltheTranslation(FirstIndex As Int, LastIndex As Int)
+	For i=FirstIndex To LastIndex
 		Dim bitext As List
 		bitext=segments.Get(i)
 		Dim targetTextArea As TextArea

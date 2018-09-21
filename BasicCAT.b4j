@@ -53,7 +53,7 @@ Sub Process_Globals
 	Private rightSplitPane As SplitPane
 	Public editorLV As CustomListView
 	Public projectTreeTableView As TreeTableView
-	public currentProject As Project
+	Public currentProject As Project
 End Sub
 
 Sub AppStart (Form1 As Form, Args() As String)
@@ -308,4 +308,5 @@ Sub editorLV_VisibleRangeChanged (FirstIndex As Int, LastIndex As Int)
     Sleep(0)
 	currentProject.fillPane(FirstIndex,LastIndex)
 	ListViewParent_Resize
+	currentProject.saveAlltheTranslation(FirstIndex,LastIndex)
 End Sub
