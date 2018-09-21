@@ -84,7 +84,6 @@ Sub creatTxtWorkFile(filename As String)
 	For Each source As String In segmentation.segmentedTxt(File.ReadString(File.Combine(path,"source"),filename),False)
 		Dim bitext As List
 		bitext.Initialize
-        Log(source.Contains(CRLF))
 		If source.Trim="" Then 'newline
 			inbetweenContent=inbetweenContent&CRLF
 			Continue
@@ -92,6 +91,7 @@ Sub creatTxtWorkFile(filename As String)
 			bitext.add(source.Trim)
 			bitext.Add("")
 			bitext.Add(inbetweenContent&source) 'inbetweenContent contains crlf and spaces between sentences
+			bitext.Add(filename)
 			inbetweenContent=""
 		End If
 		segmentsList.Add(bitext)
@@ -146,7 +146,6 @@ Sub creatSegmentPane(bitext As List) As Pane
 	segmentPane.Initialize("segmentPane")
 	segmentPane.LoadLayout("segment")
 	segmentPane.SetSize(Main.editorLV.AsView.Width,50dip)
-	segmentPane.Tag=segmentPane.Tag&bitext.Get(0)
 	Dim sourceTextArea As TextArea
 	sourceTextArea=segmentPane.GetNode(0)
 	sourceTextArea.Text=source
@@ -235,11 +234,14 @@ End Sub
 Sub sourceTextArea_KeyPressed_Event (MethodName As String, Args() As Object) As Object
 	Dim sourceTextArea As TextArea
 	sourceTextArea=Sender
+	Dim index As Int
+    index=Main.editorLV.GetItemFromView(sourceTextArea.Parent)
 	Dim KEvt As JavaObject = Args(0)
 	Dim result As String
 	result=KEvt.RunMethod("getCode",Null)
 	Log(result)
 	If result="ENTER" Then
+		
 		Dim newSegmentPane As Pane
 		newSegmentPane.Initialize("segmentPane")
 		newSegmentPane.LoadLayout("segment")
@@ -256,8 +258,30 @@ Sub sourceTextArea_KeyPressed_Event (MethodName As String, Args() As Object) As 
 		sourceTextArea.Text=sourceTextArea.Text.SubString2(0,sourceTextArea.SelectionEnd)
 		sourceTextArea.Text=sourceTextArea.Text.Replace(CRLF,"")
 		sourceTextArea.Tag=sourceTextArea.Text
+		
+		Dim bitext,newBiText As List
+		bitext=segments.Get(index)
+		bitext.Set(0,sourceTextArea.Text)
+		newBiText.Initialize
+		newBiText.Add(newSourceTextArea.Text)
+		newBiText.Add("")
+		newBiText.Add("")
+		newBiText.Add(bitext.Get(3))
+		segments.set(index,bitext)
+		segments.InsertAt(index+1,newBiText)
+
+
 		Main.editorLV.InsertAt(Main.editorLV.GetItemFromView(sourceTextArea.Parent)+1,newSegmentPane,"")
 	Else if result="DELETE" Then
+		Dim bitext,nextBiText As List
+		bitext=segments.Get(index)
+		nextBiText=segments.Get(index+1)
+		
+		If bitext.Get(3)<>nextBiText.Get(3) Then
+			fx.Msgbox(Main.MainForm,"Cannot merge segments as these two belong to different files.","")
+			Return
+		End If
+		
 		Dim pane,nextPane As Pane
 		Dim index As Int
 		index=Main.editorLV.GetItemFromView(sourceTextArea.Parent)
@@ -275,14 +299,17 @@ Sub sourceTextArea_KeyPressed_Event (MethodName As String, Args() As Object) As 
 		
 		sourceTextArea.Tag=sourceTextArea.Text
 		targetTa=pane.GetNode(1)
-		pane.Tag=pane.Tag&nextPane.Tag
-		
+        
 		If projectFile.Get("target")="EN" Then
 			targetTa.Text=targetTa.Text&" "&nextTargetTa.Text
 		Else
 			targetTa.Text=targetTa.Text&nextTargetTa.Text
 		End If
-		
+
+		bitext.Set(0,sourceTextArea.Text)
+		bitext.Set(1,targetTa.Text)
+		bitext.Set(2,bitext.Get(2)&nextBiText.Get(2))
+		segments.RemoveAt(index+1)
 		Main.editorLV.RemoveAt(Main.editorLV.GetItemFromView(sourceTextArea.Parent)+1)
 	End If
 End Sub
@@ -351,7 +378,6 @@ Public Sub fillPane(FirstIndex As Int, LastIndex As Int)
 
 				segmentPane.LoadLayout("segment")
 				segmentPane.SetSize(Main.editorLV.AsView.Width,50dip)
-				segmentPane.Tag=segmentPane.Tag&bitext.Get(0)
 				Dim sourceTextArea As TextArea
 				sourceTextArea=segmentPane.GetNode(0)
 				sourceTextArea.Text=source

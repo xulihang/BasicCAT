@@ -46,7 +46,7 @@ Version=6.51
 
 Sub Process_Globals
 	Private fx As JFX
-	Private MainForm As Form
+	public MainForm As Form
 	Private mainSplitPane As SplitPane
 	Private upperRightSplitPane As SplitPane
 	Private rightSplitPane As SplitPane
