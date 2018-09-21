@@ -206,7 +206,12 @@ Sub addFileMi_Action
 	FileChooserUtils.AddExtensionFilters4(fc,descriptionList,filterList,False,"",True)
 	Dim path As String
 	path=fc.ShowOpen(MainForm)
+	Log(path)
+	Log(getFilename(path))
 	If path="" Then
+		Return
+	else if File.Exists(File.Combine(currentProject.path,"source"),getFilename(path)) Then
+		fx.Msgbox(MainForm,"A file with the same name already exists.","")
 		Return
 	End If
 	currentProject.addFile(path)
@@ -251,9 +256,15 @@ Sub ListViewParent_Resize
 	If editorLV.Size=0 Then
 		Return
 	End If
-	For i=editorLV.FirstVisibleIndex To editorLV.LastVisibleIndex
+	'Dim ExtraSize As Int
+	'ExtraSize=15
+	'For i = Max(0, editorLV.FirstVisibleIndex - ExtraSize) To Min(editorLV.LastVisibleIndex + ExtraSize,editorLV.Size - 1)
+	For i =  editorLV.FirstVisibleIndex To editorLV.LastVisibleIndex
 		Dim p As Pane
 		p=editorLV.GetPanel(i)
+		If p.NumberOfNodes=0 Then
+			Continue
+		End If
 		Dim sourceTa As TextArea = p.GetNode(0)
 		Dim targetTa As TextArea = p.GetNode(1)
 		Dim sourcelbl,targetlbl As Label
@@ -282,6 +293,10 @@ Sub ListViewParent_Resize
 	Next
 End Sub
 
+
+
 Sub editorLV_VisibleRangeChanged (FirstIndex As Int, LastIndex As Int)
+    Sleep(0)
+	currentProject.fillPane(FirstIndex,LastIndex)
 	ListViewParent_Resize
 End Sub

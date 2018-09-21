@@ -11,13 +11,14 @@ Sub Class_Globals
 	Private projectFile As Map
 	Public status As String
 	Private currentFilename As String
-	private segments as list
+	Private segments As List
 End Sub
 
 'Initializes the object. You can add parameters to this method if needed.
 Public Sub Initialize
 	files.Initialize
 	projectFile.Initialize
+	segments.Initialize
 End Sub
 
 Public Sub open(jsonPath As String)
@@ -84,10 +85,10 @@ Sub creatTxtWorkFile(filename As String)
 		Dim bitext As List
 		bitext.Initialize
         Log(source.Contains(CRLF))
-		If source="" Then 'newline
+		If source.Trim="" Then 'newline
 			inbetweenContent=inbetweenContent&CRLF
 			Continue
-		Else if source<>"" Then
+		Else if source.Trim<>"" Then
 			bitext.add(source.Trim)
 			bitext.Add("")
 			bitext.Add(inbetweenContent&source) 'inbetweenContent contains crlf and spaces between sentences
@@ -115,46 +116,18 @@ Sub readFile(filename As String)
 	For Each sourceFileMap As Map In sourceFiles
 		Dim segmentsList As List
 		segmentsList=sourceFileMap.Get("segmentsList")
-        Dim hiddenContent As String
+        segments.AddAll(segmentsList)
+		Dim index As Int=0
 		For Each bitext As List In segmentsList
 			Sleep(0)
-		    Dim source As String
-		    source=bitext.Get(0)
-			source=source.Trim
-			'segments.Add()
-			Dim segmentPane As Pane
-			segmentPane.Initialize("segmentPane")
-			segmentPane.LoadLayout("segment")
-			segmentPane.SetSize(Main.editorLV.AsView.Width,50dip)
-			If source="" Then
-				hiddenContent=hiddenContent&bitext.Get(0)
-				Continue
-			Else if source<>"" And hiddenContent<>"" Then
-				segmentPane.Tag=hiddenContent
-				hiddenContent=""
+
+			If index<=20 Then
+				Main.editorLV.Add(creatSegmentPane(bitext),"")
+				index=index+1
+			Else
+				Main.editorLV.Add(creatEmptyPane,"")
+				index=index+1
 			End If
-			segmentPane.Tag=segmentPane.Tag&bitext.Get(0)
-			'Log(segmentPane.Tag)
-			'Dim sourceLbl As Label
-			'sourceLbl.Initialize("sourcelbl")
-			'sourceLbl.Text=source
-			'segmentPane.AddNode(sourceLbl,0,0,Main.editorLV.AsView.Width/2,50)
-			Dim sourceTextArea As TextArea
-			sourceTextArea=segmentPane.GetNode(0)
-			sourceTextArea.Text=source
-			addKeyEvent(sourceTextArea,"sourceTextArea")
-			Dim targetTextArea As TextArea
-			targetTextArea=segmentPane.GetNode(1)
-			targetTextArea.Text=bitext.Get(1)
-			addKeyEvent(targetTextArea,"targetTextArea")
-			'Dim targetLbl As Label
-			'targetLbl.Initialize("targetLbl")
-			'targetLbl.Text=bitext.Get(1)
-			'segmentPane.AddNode(targetLbl,Main.editorLV.AsView.Width/2,0,Main.editorLV.AsView.Width/2,50)
-			'sourceTextArea.RemoveNodeFromParent
-			'targetTextArea.RemoveNodeFromParent
-			Main.editorLV.Add(segmentPane,"")
-			
 		Next
 	Next
 	Dim result As String
@@ -164,6 +137,42 @@ Sub readFile(filename As String)
 		result=result&p.Tag
 	Next
 	File.WriteString(File.DirApp,"out",result)
+End Sub
+
+Sub creatSegmentPane(bitext As List) As Pane
+	Dim source As String
+	source=bitext.Get(0)
+	Dim segmentPane As Pane
+	segmentPane.Initialize("segmentPane")
+	segmentPane.LoadLayout("segment")
+	segmentPane.SetSize(Main.editorLV.AsView.Width,50dip)
+	segmentPane.Tag=segmentPane.Tag&bitext.Get(0)
+	Dim sourceTextArea As TextArea
+	sourceTextArea=segmentPane.GetNode(0)
+	sourceTextArea.Text=source
+	addKeyEvent(sourceTextArea,"sourceTextArea")
+	'Dim sourceLbl As Label
+	'sourceLbl.Initialize("sourcelbl")
+	'sourceLbl.Text=source
+	'segmentPane.AddNode(sourceLbl,0,0,Main.editorLV.AsView.Width/2,50)
+	Dim targetTextArea As TextArea
+	targetTextArea=segmentPane.GetNode(1)
+	targetTextArea.Text=bitext.Get(1)
+	addKeyEvent(targetTextArea,"targetTextArea")
+	'Dim targetLbl As Label
+	'targetLbl.Initialize("targetLbl")
+	'targetLbl.Text=bitext.Get(1)
+	'segmentPane.AddNode(targetLbl,Main.editorLV.AsView.Width/2,0,Main.editorLV.AsView.Width/2,50)
+	'sourceTextArea.RemoveNodeFromParent
+	'targetTextArea.RemoveNodeFromParent
+	Return segmentPane
+End Sub
+
+Sub creatEmptyPane As Pane
+	Dim segmentPane As Pane
+	segmentPane.Initialize("segmentPane")
+	segmentPane.SetSize(Main.editorLV.AsView.Width,50dip)
+	Return segmentPane
 End Sub
 
 public Sub save
@@ -322,4 +331,44 @@ End Sub
 Sub targetTextArea_MouseClicked (EventData As MouseEvent)
 	Dim ta As TextArea
 	ta=Sender
+End Sub
+
+Public Sub fillPane(FirstIndex As Int, LastIndex As Int)
+	
+	Dim ExtraSize As Int
+	ExtraSize=15
+	For i = 0 To Main.editorLV.Size - 1
+		Dim segmentPane As Pane
+		segmentPane=Main.editorLV.GetPanel(i)
+		If i > FirstIndex - ExtraSize And i < LastIndex + ExtraSize Then
+			'visible+
+			If segmentPane.NumberOfNodes = 0 Then
+
+				Dim bitext As List
+				bitext=segments.Get(i)
+				Dim source As String
+				source=bitext.Get(0)
+
+				segmentPane.LoadLayout("segment")
+				segmentPane.SetSize(Main.editorLV.AsView.Width,50dip)
+				segmentPane.Tag=segmentPane.Tag&bitext.Get(0)
+				Dim sourceTextArea As TextArea
+				sourceTextArea=segmentPane.GetNode(0)
+				sourceTextArea.Text=source
+				addKeyEvent(sourceTextArea,"sourceTextArea")
+
+				Dim targetTextArea As TextArea
+				targetTextArea=segmentPane.GetNode(1)
+				targetTextArea.Text=bitext.Get(1)
+				addKeyEvent(targetTextArea,"targetTextArea")
+			End If
+		Else
+			'not visible
+			If segmentPane.NumberOfNodes > 0 Then
+				segmentPane.RemoveAllNodes '<--- remove the layout
+			End If
+		End If
+	Next
+	'For i = Max(0, FirstIndex - ExtraSize) To Min(LastIndex + ExtraSize,Main.editorLV.Size - 1)
+	'Next
 End Sub
