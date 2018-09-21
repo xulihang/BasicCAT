@@ -34,9 +34,10 @@ Module1=FileChooserUtils
 Module2=Project
 Module3=segmentation
 Module4=CustomListView
+Module5=txtFilter
 NumberOfFiles=11
 NumberOfLibraries=7
-NumberOfModules=4
+NumberOfModules=5
 Version=6.51
 @EndOfDesignText@
 #Region Project Attributes 
@@ -46,13 +47,13 @@ Version=6.51
 
 Sub Process_Globals
 	Private fx As JFX
-	public MainForm As Form
+	Public MainForm As Form
 	Private mainSplitPane As SplitPane
 	Private upperRightSplitPane As SplitPane
 	Private rightSplitPane As SplitPane
 	Public editorLV As CustomListView
 	Public projectTreeTableView As TreeTableView
-	Private currentProject As Project
+	public currentProject As Project
 End Sub
 
 Sub AppStart (Form1 As Form, Args() As String)
@@ -172,7 +173,14 @@ Sub MenuBar1_Action
 			Else
 				currentProject.save
 			End If
+		Case "_Generate target files"
+			currentProject.generateTargetFiles
 		Case "_Close"
+			editorLV.Clear
+			projectTreeTableView.Root.Children.Clear
+			MainForm.Title="BasicCAT"
+			Dim currentProject As Project
+		Case "_Exit"
 			'Dim currentProject as Project
 			ExitApplication
 		Case "_About"
@@ -219,10 +227,11 @@ Sub addFileMi_Action
 End Sub
 
 Sub projectTreeTableView_SelectedItemChanged (SelectedItem As TreeTableItem)
-	Dim lbl As Label
-	lbl=SelectedItem.GetValue(0)
-	Log(lbl.Text)
-	
+	If SelectedItem<>Null And SelectedItem.IsInitialized Then
+		Dim lbl As Label
+		lbl=SelectedItem.GetValue(0)
+		Log(lbl.Text)
+	End If
 End Sub
 
 
