@@ -12,6 +12,7 @@ Sub Class_Globals
 	Public status As String
 	Private currentFilename As String
 	Private segments As List
+	Private projectTM As TM
 End Sub
 
 'Initializes the object. You can add parameters to this method if needed.
@@ -21,9 +22,14 @@ Public Sub Initialize
 	segments.Initialize
 End Sub
 
+Sub initializeTM(projectPath As String)
+	projectTM.Initialize(projectPath)
+End Sub
+
 Public Sub open(jsonPath As String)
 	Main.addProjectTreeTableItem
 	path=getProjectPath(jsonPath)
+	initializeTM(path)
 	Log(path)
 	Dim json As JSONParser
 	json.Initialize(File.ReadString(jsonPath,""))
@@ -74,6 +80,9 @@ public Sub save
 	If File.Exists(path,"")=False Then
 		creatProjectFiles
 	End If
+	If projectTM.IsInitialized=False Then
+		initializeTM(path)
+	End If
 	projectFile.Put("files",files)
 	Dim json As JSONGenerator
 	json.Initialize(projectFile)
@@ -90,6 +99,7 @@ Sub creatProjectFiles
 	File.MakeDir(path,"source")
 	File.MakeDir(path,"work")
 	File.MakeDir(path,"target")
+	File.MakeDir(path,"TM")
 End Sub
 
 Public Sub generateTargetFiles
@@ -119,9 +129,15 @@ Sub lbl_MouseClicked (EventData As MouseEvent)
 	Dim filename As String
 	filename=lbl.text
 	If currentFilename<>filename Then
+		save
+
+		Main.editorLV.Clear
+		segments.Clear
+		
 		currentFilename=filename
 		If currentFilename.EndsWith(".txt") Then
 			txtFilter.readTxtFile(filename,segments,path)
+
 		End If
 		
 	End If
@@ -295,6 +311,13 @@ Sub sourceTextArea_FocusChanged (HasFocus As Boolean)
 		TextArea1.Text=TextArea1.Tag
 		TextArea1.Editable=False
 	End If
+End Sub
+
+Sub targetTextArea_FocusChanged (HasFocus As Boolean)
+	Log(HasFocus)
+	Dim TextArea1 As TextArea
+	TextArea1=Sender
+    Log(TextArea1.Text)
 End Sub
 
 Sub targetTextArea_MouseClicked (EventData As MouseEvent)

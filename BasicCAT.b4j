@@ -1,19 +1,27 @@
 ﻿AppType=JavaFX
 Build1=Default,b4j.example
 File1=editor.bjl
-File10=term.bjl
-File11=upperRight.bjl
+File10=segmentation_en_exception.conf
+File11=supportedFiles.txt
+File12=tableview.bjl
+File13=tabpane.bjl
+File14=term.bjl
+File15=upperRight.bjl
 File2=leftProject.bjl
-File3=lowerRight.bjl
-File4=main.bjl
-File5=right.bjl
-File6=segment.bjl
-File7=segmentation_en.conf
-File8=segmentation_en_exception.conf
-File9=supportedFiles.txt
+File3=Log.bjl
+File4=lowerRight.bjl
+File5=main.bjl
+File6=right.bjl
+File7=searchTableView.bjl
+File8=segment.bjl
+File9=segmentation_en.conf
 FileGroup1=Default Group
 FileGroup10=Default Group
 FileGroup11=Default Group
+FileGroup12=Default Group
+FileGroup13=Default Group
+FileGroup14=Default Group
+FileGroup15=Default Group
 FileGroup2=Default Group
 FileGroup3=Default Group
 FileGroup4=Default Group
@@ -24,26 +32,34 @@ FileGroup8=Default Group
 FileGroup9=Default Group
 Group=Default Group
 Library1=jcore
+Library10=jb4xencryption
 Library2=jfx
 Library3=javaobject
 Library4=cssutils
 Library5=json
 Library6=apachestringutilsb4j
 Library7=jxui
+Library8=jsql
+Library9=jrandomaccessfile
 Module1=FileChooserUtils
 Module2=Project
 Module3=segmentation
 Module4=CustomListView
 Module5=txtFilter
-NumberOfFiles=11
-NumberOfLibraries=7
-NumberOfModules=5
+Module6=TM
+Module7=KeyValueStore
+NumberOfFiles=15
+NumberOfLibraries=10
+NumberOfModules=7
 Version=6.51
 @EndOfDesignText@
 #Region Project Attributes 
 	#MainFormWidth: 600
 	#MainFormHeight: 600 
 #End Region
+
+#AdditionalJar: sqlite-jdbc-3.7.2
+#AdditionalJar: bcprov-jdk15on-154
 
 Sub Process_Globals
 	Private fx As JFX
@@ -54,6 +70,11 @@ Sub Process_Globals
 	Public editorLV As CustomListView
 	Public projectTreeTableView As TreeTableView
 	Public currentProject As Project
+	Private lowerRightSplitPane As SplitPane
+	Private TabPane1 As TabPane
+	Private LogWebView As WebView
+	Private tmTableView As TableView
+	Private searchTableView As TableView
 End Sub
 
 Sub AppStart (Form1 As Form, Args() As String)
@@ -82,6 +103,11 @@ Sub init
 	
 	upperRightSplitPane.LoadLayout("editor")
 	upperRightSplitPane.LoadLayout("term")
+	
+	lowerRightSplitPane.LoadLayout("Log")
+	lowerRightSplitPane.LoadLayout("tabpane")
+	TabPane1.LoadLayout("tableview", "TM Match")
+	TabPane1.LoadLayout("searchTableView", "Segment Search")
 	adjustDividerPositions
 End Sub
 
@@ -89,6 +115,7 @@ Sub adjustDividerPositions
 	mainSplitPane.DividerPositions=Array As Double(0.2)
 	rightSplitPane.DividerPositions=Array As Double(0.8)
 	upperRightSplitPane.DividerPositions=Array As Double(0.8)
+	lowerRightSplitPane.DividerPositions=Array As Double(0.2)
 End Sub
 
 Public Sub addProjectTreeTableItem
@@ -309,4 +336,9 @@ Sub editorLV_VisibleRangeChanged (FirstIndex As Int, LastIndex As Int)
 	currentProject.fillPane(FirstIndex,LastIndex)
 	ListViewParent_Resize
 	currentProject.saveAlltheTranslation(FirstIndex,LastIndex)
+End Sub
+
+
+Sub TabPane1_TabChanged (SelectedTab As TabPage)
+	
 End Sub

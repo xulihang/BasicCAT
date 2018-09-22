@@ -102,7 +102,7 @@ Sub readTxtFile(filename As String,segments As List,path As String)
 		segments.AddAll(segmentsList)
 		Dim index As Int=0
 		For Each bitext As List In segmentsList
-			Sleep(0)
+			'Sleep(0) should not use coroutine as when change file, it will be a problem.
 
 			If index<=20 Then
 				Main.editorLV.Add(Main.currentProject.creatSegmentPane(bitext),"")

@@ -100,6 +100,7 @@ Public Sub DesignerCreateView (Base As Object, Lbl As Label, Props As Map)
 	End If
 	DefaultTextColor = xui.PaintOrColorToColor(Lbl.TextColor)
 	DefaultTextBackgroundColor = mBase.Color
+
 	DesignerLabel = Lbl
 	Base_Resize(mBase.Width, mBase.Height)
 End Sub
