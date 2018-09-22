@@ -13,6 +13,8 @@ Sub Class_Globals
 	Private currentFilename As String
 	Private segments As List
 	Private projectTM As TM
+	Public lastEntry As Int
+	private lastFilename as String
 End Sub
 
 'Initializes the object. You can add parameters to this method if needed.
@@ -38,6 +40,16 @@ Public Sub open(jsonPath As String)
 	For Each filepath As String In files
 		addFilesToTreeTable(filepath)
 	Next
+	lastEntry=projectFile.Get("lastEntry")
+	lastFilename=projectFile.Get("lastFile")
+	jumpToLastEntry
+End Sub
+
+Sub jumpToLastEntry
+	If projectFile.Get("lastFile")="" Then
+		Return
+	End If
+	openFile(projectFile.Get("lastFile"),True)
 End Sub
 
 Public Sub newProjectSetting(source As String,target As String)
@@ -84,6 +96,8 @@ public Sub save
 		initializeTM(path)
 	End If
 	projectFile.Put("files",files)
+	projectFile.Put("lastFile",lastFilename)
+	projectFile.Put("lastEntry",lastEntry)
 	Dim json As JSONGenerator
 	json.Initialize(projectFile)
 	File.WriteString(path,"project.json",json.ToPrettyString(4))
@@ -125,20 +139,38 @@ End Sub
 Sub lbl_MouseClicked (EventData As MouseEvent)
 	Dim lbl As Label
 	lbl=Sender
-	Log(lbl.Text)
+	Log("file changed"&lbl.Text)
 	Dim filename As String
 	filename=lbl.text
 	If currentFilename<>filename Then
+		openFile(filename,False)
+	End If
+End Sub
+
+Sub openFile(filename As String,onOpeningProject As Boolean)
+	If onOpeningProject=False Then
 		save
+	End If
+	
+	Main.editorLV.Clear
+	segments.Clear
+	currentFilename=filename
 
-		Main.editorLV.Clear
-		segments.Clear
-		
-		currentFilename=filename
-		If currentFilename.EndsWith(".txt") Then
-			txtFilter.readTxtFile(filename,segments,path)
+	If currentFilename.EndsWith(".txt") Then
+		txtFilter.readTxtFile(filename,segments,path)
+	End If
 
-		End If
+	Log("currentFilename:"&currentFilename)
+	If lastFilename=currentFilename Then
+		Log("ddd"&True)
+		Log(lastEntry)
+		Sleep(0)
+		Main.editorLV.JumpToItem(lastEntry)
+		Dim pane As Pane
+		pane=Main.editorLV.GetPanel(lastEntry)
+		Dim ta As TextArea
+		ta=pane.GetNode(1)
+		ta.RequestFocus
 		
 	End If
 End Sub
@@ -294,6 +326,9 @@ Sub targetTextArea_KeyPressed_Event (MethodName As String, Args() As Object) As 
 			Dim nextTA As TextArea
 			nextTA=nextPane.GetNode(1)
 			nextTA.RequestFocus
+			showTM(nextTA)
+			lastEntry=Main.editorLV.GetItemFromView(nextPane)
+			lastFilename=currentFilename
 		Catch
 			Log(LastException)
 		End Try
@@ -314,19 +349,41 @@ Sub sourceTextArea_FocusChanged (HasFocus As Boolean)
 End Sub
 
 Sub targetTextArea_FocusChanged (HasFocus As Boolean)
-	Log(HasFocus)
 	Dim TextArea1 As TextArea
 	TextArea1=Sender
-    Log(TextArea1.Text)
+	If TextArea1.IsInitialized=False Then
+		Log("Null,Textarea")
+		Return
+	End If
+	If TextArea1.Parent.IsInitialized=False Then
+		Log("Null,Textarea Parent")
+		Return
+	End If
+	If HasFocus Then
+
+		showTM(TextArea1)
+	Else
+		lastEntry=Main.editorLV.GetItemFromView(TextArea1.Parent)
+		lastFilename=currentFilename
+	End If
 End Sub
 
-Sub targetTextArea_MouseClicked (EventData As MouseEvent)
-	Dim ta As TextArea
-	ta=Sender
+Sub showTM(targetTextArea As TextArea)
+	Main.tmTableView.Items.Clear
+	Dim pane As Pane
+	pane=targetTextArea.Parent
+	Dim sourceTA As TextArea
+	sourceTA=pane.GetNode(0)
+	Log(sourceTA.Text)
+	For Each matchList As List In projectTM.getMatchList(sourceTA.Text)
+		Dim row()  As Object = Array As String(matchList.Get(0),matchList.Get(1),matchList.Get(2),matchList.Get(3))
+		Main.tmTableView.Items.Add(row)
+	Next
 End Sub
+
 
 Public Sub saveAlltheTranslation(FirstIndex As Int, LastIndex As Int)
-	For i=FirstIndex To LastIndex
+	For i=Max(0,FirstIndex) To Min(LastIndex,Main.editorLV.Size-1)
 		Dim bitext As List
 		bitext=segments.Get(i)
 		Dim targetTextArea As TextArea
@@ -334,6 +391,7 @@ Public Sub saveAlltheTranslation(FirstIndex As Int, LastIndex As Int)
 		p=Main.editorLV.GetPanel(i)
 		targetTextArea=p.GetNode(1)
 		bitext.Set(1,targetTextArea.Text)
+		projectTM.addPair(bitext.Get(0),bitext.Get(1))
 	Next
 End Sub
 
@@ -343,6 +401,7 @@ Sub saveTranslation(targetTextArea As TextArea)
 	Dim bitext As List
 	bitext=segments.Get(index)
 	bitext.Set(1,targetTextArea.Text)
+	projectTM.addPair(bitext.Get(0),bitext.Get(1))
 End Sub
 
 Public Sub fillPane(FirstIndex As Int, LastIndex As Int)

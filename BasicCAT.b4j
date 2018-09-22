@@ -73,7 +73,7 @@ Sub Process_Globals
 	Private lowerRightSplitPane As SplitPane
 	Private TabPane1 As TabPane
 	Private LogWebView As WebView
-	Private tmTableView As TableView
+	Public tmTableView As TableView
 	Private searchTableView As TableView
 End Sub
 
@@ -204,6 +204,7 @@ Sub MenuBar1_Action
 			currentProject.generateTargetFiles
 		Case "_Close"
 			editorLV.Clear
+			projectTreeTableView.ClearSelection
 			projectTreeTableView.Root.Children.Clear
 			MainForm.Title="BasicCAT"
 			Dim currentProject As Project
@@ -332,7 +333,6 @@ End Sub
 
 
 Sub editorLV_VisibleRangeChanged (FirstIndex As Int, LastIndex As Int)
-    Sleep(0)
 	currentProject.fillPane(FirstIndex,LastIndex)
 	ListViewParent_Resize
 	currentProject.saveAlltheTranslation(FirstIndex,LastIndex)
@@ -341,4 +341,15 @@ End Sub
 
 Sub TabPane1_TabChanged (SelectedTab As TabPage)
 	
+End Sub
+
+
+Sub tmTableView_MouseClicked (EventData As MouseEvent)
+	If tmTableView.SelectedRowValues<>Null Then
+		Dim pane As Pane
+		pane=editorLV.GetPanel(currentProject.lastEntry)
+		Dim targetTextArea As TextArea
+		targetTextArea=pane.GetNode(1)
+		targetTextArea.Text=tmTableView.SelectedRowValues(2)
+	End If
 End Sub
