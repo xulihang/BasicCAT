@@ -9,9 +9,12 @@ File14=supportedFiles.txt
 File15=tableview.bjl
 File16=tabpane.bjl
 File17=term.bjl
-File18=tmSetting.bjl
-File19=upperRight.bjl
+File18=tmList.bjl
+File19=TMManager.bjl
 File2=leftProject.bjl
+File20=TMsegment.bjl
+File21=tmSetting.bjl
+File22=upperRight.bjl
 File3=Log.bjl
 File4=lowerRight.bjl
 File5=main.bjl
@@ -31,6 +34,9 @@ FileGroup17=Default Group
 FileGroup18=Default Group
 FileGroup19=Default Group
 FileGroup2=Default Group
+FileGroup20=Default Group
+FileGroup21=Default Group
+FileGroup22=Default Group
 FileGroup3=Default Group
 FileGroup4=Default Group
 FileGroup5=Default Group
@@ -53,6 +59,7 @@ Library8=jsql
 Library9=jrandomaccessfile
 Module1=FileChooserUtils
 Module10=preTrasnlateProgressDialog
+Module11=TMManager
 Module2=Project
 Module3=segmentation
 Module4=CustomListView
@@ -61,9 +68,9 @@ Module6=TM
 Module7=KeyValueStore
 Module8=ProjectSettings
 Module9=preTranslateDialog
-NumberOfFiles=19
+NumberOfFiles=22
 NumberOfLibraries=12
-NumberOfModules=10
+NumberOfModules=11
 Version=6.51
 @EndOfDesignText@
 #Region Project Attributes 
@@ -105,7 +112,7 @@ End Sub
 
 Sub MainForm_Resize (Width As Double, Height As Double)
 	adjustDividerPositions
-	CallSubDelayed(Me, "ListViewParent_Resize")
+	CallSubDelayed(Me,"ListViewParent_Resize")
 End Sub
 
 Sub MainForm_CloseRequest (EventData As Event)
@@ -136,8 +143,9 @@ End Sub
 Sub adjustDividerPositions
 	mainSplitPane.DividerPositions=Array As Double(0.2)
 	rightSplitPane.DividerPositions=Array As Double(0.8)
-	upperRightSplitPane.DividerPositions=Array As Double(0.8)
+	
 	lowerRightSplitPane.DividerPositions=Array As Double(0.2)
+	upperRightSplitPane.DividerPositions=Array As Double(0.8)
 End Sub
 
 Public Sub addProjectTreeTableItem
@@ -314,9 +322,20 @@ Sub projectTreeTableView_SelectedItemChanged (SelectedItem As TreeTableItem)
 		Dim lbl As Label
 		lbl=SelectedItem.GetValue(0)
 		Log(lbl.Text)
+		Select lbl.Text
+			
+			Case "Project Files"
+
+			Case "Translation Memory"
+                projectTreeTableView.ClearSelection
+				Dim tmm As TMManager
+				tmm.Initialize
+				tmm.ShowAndWait
+		    Case "Terminology"
+
+		End Select
 	End If
 End Sub
-
 
 Public Sub getFilename(path As String) As String
 	Dim filename As String
@@ -344,16 +363,18 @@ Public Sub getProjectname(path As String) As String
 End Sub
 
 Sub ListViewParent_Resize
-	If editorLV.Size=0 Then
+	Dim clv As CustomListView
+	clv=editorLV
+	If clv.Size=0 Then
 		Return
 	End If
-	Dim itemWidth As Double = editorLV.AsView.Width-10dip
+	Dim itemWidth As Double = clv.AsView.Width-10dip
 	'Dim ExtraSize As Int
 	'ExtraSize=15
 	'For i = Max(0, editorLV.FirstVisibleIndex - ExtraSize) To Min(editorLV.LastVisibleIndex + ExtraSize,editorLV.Size - 1)
-	For i =  editorLV.FirstVisibleIndex To editorLV.LastVisibleIndex
+	For i =  clv.FirstVisibleIndex To clv.LastVisibleIndex
 		Dim p As Pane
-		p=editorLV.GetPanel(i)
+		p=clv.GetPanel(i)
 		If p.NumberOfNodes=0 Then
 			Continue
 		End If
@@ -379,7 +400,7 @@ Sub ListViewParent_Resize
 		p.SetLayoutAnimated(0, 0, 0, itemWidth, h + 10dip)
 		sourceTa.SetLayoutAnimated(5dip, 0, 0, itemWidth/2, h+5dip)
 		targetTa.SetLayoutAnimated(5dip, itemWidth/2, 0, itemWidth/2, h+5dip)
-		editorLV.ResizeItem(i,h+10dip)
+		clv.ResizeItem(i,h+10dip)
 		sourcelbl.RemoveNodeFromParent
 		targetlbl.RemoveNodeFromParent
 	Next

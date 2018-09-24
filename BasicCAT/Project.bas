@@ -12,7 +12,7 @@ Sub Class_Globals
 	Public status As String
 	Private currentFilename As String
 	Private segments As List
-	Private projectTM As TM
+	Public projectTM As TM
 	Public lastEntry As Int
 	Private lastFilename As String
 	Public settings As Map
