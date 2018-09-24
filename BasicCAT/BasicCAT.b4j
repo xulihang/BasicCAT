@@ -1,20 +1,24 @@
 ﻿AppType=JavaFX
 Build1=Default,b4j.example
 File1=editor.bjl
-File10=segmentation_en_exception.conf
-File11=supportedFiles.txt
-File12=tableview.bjl
-File13=tabpane.bjl
-File14=term.bjl
-File15=upperRight.bjl
+File10=searchTableView.bjl
+File11=segment.bjl
+File12=segmentation_en.conf
+File13=segmentation_en_exception.conf
+File14=supportedFiles.txt
+File15=tableview.bjl
+File16=tabpane.bjl
+File17=term.bjl
+File18=tmSetting.bjl
+File19=upperRight.bjl
 File2=leftProject.bjl
 File3=Log.bjl
 File4=lowerRight.bjl
 File5=main.bjl
-File6=right.bjl
-File7=searchTableView.bjl
-File8=segment.bjl
-File9=segmentation_en.conf
+File6=pretranslate.bjl
+File7=preTranslateProgress.bjl
+File8=projectSetting.bjl
+File9=right.bjl
 FileGroup1=Default Group
 FileGroup10=Default Group
 FileGroup11=Default Group
@@ -22,6 +26,10 @@ FileGroup12=Default Group
 FileGroup13=Default Group
 FileGroup14=Default Group
 FileGroup15=Default Group
+FileGroup16=Default Group
+FileGroup17=Default Group
+FileGroup18=Default Group
+FileGroup19=Default Group
 FileGroup2=Default Group
 FileGroup3=Default Group
 FileGroup4=Default Group
@@ -33,6 +41,8 @@ FileGroup9=Default Group
 Group=Default Group
 Library1=jcore
 Library10=jb4xencryption
+Library11=jokhttputils2
+Library12=jshell
 Library2=jfx
 Library3=javaobject
 Library4=cssutils
@@ -42,15 +52,18 @@ Library7=jxui
 Library8=jsql
 Library9=jrandomaccessfile
 Module1=FileChooserUtils
+Module10=preTrasnlateProgressDialog
 Module2=Project
 Module3=segmentation
 Module4=CustomListView
 Module5=txtFilter
 Module6=TM
 Module7=KeyValueStore
-NumberOfFiles=15
-NumberOfLibraries=10
-NumberOfModules=7
+Module8=ProjectSettings
+Module9=preTranslateDialog
+NumberOfFiles=19
+NumberOfLibraries=12
+NumberOfModules=10
 Version=6.51
 @EndOfDesignText@
 #Region Project Attributes 
@@ -60,6 +73,7 @@ Version=6.51
 
 #AdditionalJar: sqlite-jdbc-3.7.2
 #AdditionalJar: bcprov-jdk15on-154
+#AdditionalJar: fuzzywuzzy-1.1.10
 
 Sub Process_Globals
 	Private fx As JFX
@@ -92,6 +106,14 @@ End Sub
 Sub MainForm_Resize (Width As Double, Height As Double)
 	adjustDividerPositions
 	CallSubDelayed(Me, "ListViewParent_Resize")
+End Sub
+
+Sub MainForm_CloseRequest (EventData As Event)
+	If currentProject.IsInitialized Then
+		If currentProject.sh.IsInitialized Then
+			currentProject.sh.KillProcess
+		End If
+	End If
 End Sub
 
 Sub init
@@ -201,15 +223,48 @@ Sub MenuBar1_Action
 				currentProject.save
 			End If
 		Case "_Generate target files"
+			If currentProject.IsInitialized=False Then
+				Return
+			End If
 			currentProject.generateTargetFiles
 		Case "_Close"
-			editorLV.Clear
+			Log("closing")
+			If currentProject.sh.IsInitialized Then
+				currentProject.sh.KillProcess
+			End If
+			Dim currentProject As Project
+			tmTableView.ClearSelection
+			tmTableView.Items.Clear
 			projectTreeTableView.ClearSelection
 			projectTreeTableView.Root.Children.Clear
-			MainForm.Title="BasicCAT"
-			Dim currentProject As Project
+			editorLV.Clear
+			'MainForm.RootPane.RemoveAllNodes
+			'MainForm.RootPane.LoadLayout("main")
+			'init
+		Case "Project Settings"
+			If currentProject.IsInitialized=False Then
+				fx.Msgbox(MainForm,"Please open a project first.","")
+				Return
+			End If
+			Dim ps As ProjectSettings
+			ps.Initialize
+			currentProject.saveSettings(ps.ShowAndWait)
+		Case "Pre-translate"
+			If currentProject.IsInitialized=False Then
+				fx.Msgbox(MainForm,"Please open a project first.","")
+				Return
+			End If
+			Dim ptDialog As preTranslateDialog
+			ptDialog.Initialize
+			currentProject.preTranslate(ptDialog.ShowAndWait)
 		Case "_Exit"
 			'Dim currentProject as Project
+			If currentProject.IsInitialized Then
+				If currentProject.sh.IsInitialized Then
+					currentProject.sh.KillProcess
+				End If
+			End If
+			
 			ExitApplication
 		Case "_About"
 			fx.Msgbox(MainForm,"BasicCAT 1.0"&CRLF&"@xulihang 2018","BasicCAT")
@@ -289,10 +344,10 @@ Public Sub getProjectname(path As String) As String
 End Sub
 
 Sub ListViewParent_Resize
-	Dim itemWidth As Double = editorLV.AsView.Width-10dip
 	If editorLV.Size=0 Then
 		Return
 	End If
+	Dim itemWidth As Double = editorLV.AsView.Width-10dip
 	'Dim ExtraSize As Int
 	'ExtraSize=15
 	'For i = Max(0, editorLV.FirstVisibleIndex - ExtraSize) To Min(editorLV.LastVisibleIndex + ExtraSize,editorLV.Size - 1)
@@ -333,6 +388,9 @@ End Sub
 
 
 Sub editorLV_VisibleRangeChanged (FirstIndex As Int, LastIndex As Int)
+	If editorLV.Size=0 Then
+		Return
+	End If
 	currentProject.fillPane(FirstIndex,LastIndex)
 	ListViewParent_Resize
 	currentProject.saveAlltheTranslation(FirstIndex,LastIndex)
@@ -345,7 +403,7 @@ End Sub
 
 
 Sub tmTableView_MouseClicked (EventData As MouseEvent)
-	If tmTableView.SelectedRowValues<>Null Then
+	If tmTableView.SelectedRowValues<>Null And editorLV.Size<>0 Then
 		Dim pane As Pane
 		pane=editorLV.GetPanel(currentProject.lastEntry)
 		Dim targetTextArea As TextArea

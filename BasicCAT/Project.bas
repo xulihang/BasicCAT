@@ -14,7 +14,9 @@ Sub Class_Globals
 	Private segments As List
 	Private projectTM As TM
 	Public lastEntry As Int
-	private lastFilename as String
+	Private lastFilename As String
+	Public settings As Map
+	Public sh As Shell
 End Sub
 
 'Initializes the object. You can add parameters to this method if needed.
@@ -22,27 +24,62 @@ Public Sub Initialize
 	files.Initialize
 	projectFile.Initialize
 	segments.Initialize
+	settings.Initialize
+
 End Sub
 
 Sub initializeTM(projectPath As String)
 	projectTM.Initialize(projectPath)
+	Dim externalTMList As List
+	externalTMList=settings.Get("tmList")
+	Log(externalTMList.Size)
+	For i=0 To externalTMList.Size-1
+		Dim filename As String
+		filename=externalTMList.Get(i)
+		If File.Exists(File.Combine(Main.currentProject.path,"TM"),filename)=False Then
+			fx.Msgbox(Main.MainForm,filename&"外部记忆文件不存在，会将其从列表中移除","")
+            externalTMList.RemoveAt(i)
+			settings.Put("tmList",externalTMList)
+			save
+		End If
+	Next
+	projectTM.importExternalTranslationMemory(externalTMList)
+	runTMBackend
+End Sub
+
+Sub runTMBackend
+	If sh.IsInitialized Then
+		Dim sh As Shell
+	End If
+	sh.Initialize("sh","java",Array As String("-jar","TMBackend.jar","51041"))
+	sh.WorkingDirectory=File.DirApp
+	sh.RunWithOutputEvents(-1)
+End Sub
+
+Sub sh_ProcessCompleted (Success As Boolean, ExitCode As Int, StdOut As String, StdErr As String)
+	If Success And ExitCode = 0 Then
+		Log("Success")
+		Log(StdOut)
+	Else
+		Log("Error: " & StdErr)
+	End If
 End Sub
 
 Public Sub open(jsonPath As String)
 	Main.addProjectTreeTableItem
 	path=getProjectPath(jsonPath)
-	initializeTM(path)
-	Log(path)
 	Dim json As JSONParser
 	json.Initialize(File.ReadString(jsonPath,""))
 	projectFile=json.NextObject
+	lastEntry=projectFile.Get("lastEntry")
+	lastFilename=projectFile.Get("lastFile")
+	settings=projectFile.Get("settings")
 	files.AddAll(projectFile.Get("files"))
 	For Each filepath As String In files
 		addFilesToTreeTable(filepath)
 	Next
-	lastEntry=projectFile.Get("lastEntry")
-	lastFilename=projectFile.Get("lastFile")
-	jumpToLastEntry
+	initializeTM(path)
+	'jumpToLastEntry
 End Sub
 
 Sub jumpToLastEntry
@@ -55,6 +92,9 @@ End Sub
 Public Sub newProjectSetting(source As String,target As String)
 	projectFile.Put("source",source)
 	projectFile.Put("target",target)
+	Dim tmList As List
+	tmList.Initialize
+	settings.Put("tmList",tmList)
 End Sub
 
 Public Sub addFile(filepath As String)
@@ -87,6 +127,12 @@ Sub creatWorkFile(filename As String)
 	End If
 End Sub
 
+Public Sub saveSettings(newsettings As Map)
+	projectFile.Put("settings",newsettings)
+	Log(newsettings)
+	save
+	projectTM.importExternalTranslationMemory(settings.Get("tmList"))
+End Sub
 
 public Sub save
 	If File.Exists(path,"")=False Then
@@ -98,6 +144,7 @@ public Sub save
 	projectFile.Put("files",files)
 	projectFile.Put("lastFile",lastFilename)
 	projectFile.Put("lastEntry",lastEntry)
+	projectFile.Put("settings",settings)
 	Dim json As JSONGenerator
 	json.Initialize(projectFile)
 	File.WriteString(path,"project.json",json.ToPrettyString(4))
@@ -130,7 +177,7 @@ Sub getProjectPath(jsonPath As String) As String
 	Try
 		ProjectPath=jsonPath.SubString2(0,jsonPath.LastIndexOf("\"))
 	Catch
-		ProjectPath=jsonPath.SubString2(0,jsonPath.LastIndexOf("\"))
+		ProjectPath=jsonPath.SubString2(0,jsonPath.LastIndexOf("/"))
 		Log(LastException)
 	End Try
 	Return ProjectPath
@@ -164,8 +211,8 @@ Sub openFile(filename As String,onOpeningProject As Boolean)
 	If lastFilename=currentFilename Then
 		Log("ddd"&True)
 		Log(lastEntry)
-		Sleep(0)
 		Main.editorLV.JumpToItem(lastEntry)
+		Wait For(fillPaneAsync(lastEntry-10,lastEntry+10)) Complete (Result As Object)
 		Dim pane As Pane
 		pane=Main.editorLV.GetPanel(lastEntry)
 		Dim ta As TextArea
@@ -360,7 +407,7 @@ Sub targetTextArea_FocusChanged (HasFocus As Boolean)
 		Return
 	End If
 	If HasFocus Then
-
+        Log("hasFocus")
 		showTM(TextArea1)
 	Else
 		lastEntry=Main.editorLV.GetItemFromView(TextArea1.Parent)
@@ -368,19 +415,52 @@ Sub targetTextArea_FocusChanged (HasFocus As Boolean)
 	End If
 End Sub
 
-Sub showTM(targetTextArea As TextArea)
-	Main.tmTableView.Items.Clear
+Sub showTM2(targetTextArea As TextArea)
 	Dim pane As Pane
 	pane=targetTextArea.Parent
 	Dim sourceTA As TextArea
 	sourceTA=pane.GetNode(0)
 	Log(sourceTA.Text)
-	For Each matchList As List In projectTM.getMatchList(sourceTA.Text)
+	If projectTM.currentSource=sourceTA.Text Then
+		Return
+	End If
+	Main.tmTableView.Items.Clear
+	projectTM.currentSource=sourceTA.Text
+	Wait For (projectTM.getMatchList(sourceTA.Text)) Complete (Result As List)
+
+	For Each matchList As List In Result
 		Dim row()  As Object = Array As String(matchList.Get(0),matchList.Get(1),matchList.Get(2),matchList.Get(3))
 		Main.tmTableView.Items.Add(row)
 	Next
 End Sub
 
+Sub showTM(targetTextArea As TextArea)
+	Dim pane As Pane
+	pane=targetTextArea.Parent
+	Dim sourceTA As TextArea
+	sourceTA=pane.GetNode(0)
+	If projectTM.currentSource=sourceTA.Text Then
+		Return
+	End If
+	projectTM.currentSource=sourceTA.Text
+	Main.tmTableView.Items.Clear
+	Dim job1 As HttpJob
+	job1.Initialize("job1",Me)
+	job1.Download2("http://127.0.0.1:51041/getMatchList",Array As String("source",sourceTA.Text,"path",path))
+	Wait For JobDone(job As HttpJob)
+	If job.Success Then
+		Log("job")
+		Dim json As JSONParser
+		json.Initialize(job.GetString)
+		Dim result As List
+		result=json.NextArray
+		For Each matchList As List In result 
+			Dim row()  As Object = Array As String(matchList.Get(0),matchList.Get(1),matchList.Get(2),matchList.Get(3))
+			Main.tmTableView.Items.Add(row)
+		Next
+	End If
+	job.Release
+End Sub
 
 Public Sub saveAlltheTranslation(FirstIndex As Int, LastIndex As Int)
 	For i=Max(0,FirstIndex) To Min(LastIndex,Main.editorLV.Size-1)
@@ -405,7 +485,7 @@ Sub saveTranslation(targetTextArea As TextArea)
 End Sub
 
 Public Sub fillPane(FirstIndex As Int, LastIndex As Int)
-	
+	Log("fillPane")
 	Dim ExtraSize As Int
 	ExtraSize=15
 	For i = 0 To Main.editorLV.Size - 1
@@ -414,7 +494,47 @@ Public Sub fillPane(FirstIndex As Int, LastIndex As Int)
 		If i > FirstIndex - ExtraSize And i < LastIndex + ExtraSize Then
 			'visible+
 			If segmentPane.NumberOfNodes = 0 Then
+                
+				Dim bitext As List
+				bitext=segments.Get(i)
+				Dim source As String
+				source=bitext.Get(0)
+				segmentPane.LoadLayout("segment")
+				segmentPane.SetSize(Main.editorLV.AsView.Width,50dip)
+				Dim sourceTextArea As TextArea
+				sourceTextArea=segmentPane.GetNode(0)
+				sourceTextArea.Text=source
+				addKeyEvent(sourceTextArea,"sourceTextArea")
 
+				Dim targetTextArea As TextArea
+				targetTextArea=segmentPane.GetNode(1)
+				targetTextArea.Text=bitext.Get(1)
+				addKeyEvent(targetTextArea,"targetTextArea")
+				Log(bitext)
+				Log(targetTextArea.Text)
+				Log(i)
+			End If
+		Else
+			'not visible
+			If segmentPane.NumberOfNodes > 0 Then
+				segmentPane.RemoveAllNodes '<--- remove the layout
+			End If
+		End If
+	Next
+End Sub
+
+Public Sub fillPaneAsync(FirstIndex As Int, LastIndex As Int) As ResumableSub
+	
+	Dim ExtraSize As Int
+	ExtraSize=15
+	For i = 0 To Main.editorLV.Size - 1
+		Dim segmentPane As Pane
+		segmentPane=Main.editorLV.GetPanel(i)
+		If i > FirstIndex - ExtraSize And i < LastIndex + ExtraSize Then
+			'visible+
+			Sleep(0)
+			If segmentPane.NumberOfNodes = 0 Then
+                
 				Dim bitext As List
 				bitext=segments.Get(i)
 				Dim source As String
@@ -439,6 +559,65 @@ Public Sub fillPane(FirstIndex As Int, LastIndex As Int)
 			End If
 		End If
 	Next
-	'For i = Max(0, FirstIndex - ExtraSize) To Min(LastIndex + ExtraSize,Main.editorLV.Size - 1)
-	'Next
+	Return Null
+End Sub
+
+Sub preTranslate(options As Map)
+	If options.Get("type")="TM" Then
+		preTrasnlateProgressDialog.Show
+		Dim index As Int=-1
+		For Each bitext As List In segments
+			index=index+1
+			Dim source,target As String
+			source=bitext.Get(0)
+			target=bitext.Get(1)
+			If target<>"" Then
+				Continue
+			End If
+			Dim job1 As HttpJob
+			job1.Initialize("job1",Me)
+			job1.Download2("http://127.0.0.1:51041/getMatchList",Array As String("source",source,"path",path))
+			Wait For JobDone(job As HttpJob)
+			If job.Success Then
+				Log("job")
+				Dim json As JSONParser
+				json.Initialize(job.GetString)
+				Dim result As List
+				result=json.NextArray
+			End If
+			job.Release
+			If result.Size=0 Then
+				preTrasnlateProgressDialog.update(index,segments.Size,source,"")
+				Continue
+			Else
+				Dim matchList As List
+				matchList=result.Get(0)
+				Dim similarity As Double
+				similarity=matchList.Get(0)
+				If similarity>=options.Get("rate") Then
+					bitext.Set(1,matchList.Get(2))
+					segments.Set(index,bitext)
+					Log(segments.Get(index))
+					preTrasnlateProgressDialog.update(index,segments.Size,source,matchList.Get(2))
+				Else
+					preTrasnlateProgressDialog.update(index,segments.Size,source,"similarity is too low")
+				End If
+			End If
+		Next
+		preTrasnlateProgressDialog.close
+		fillVisibleTargetTextArea
+	End If
+
+End Sub
+
+Sub fillVisibleTargetTextArea
+	For i=Main.editorLV.FirstVisibleIndex To Main.editorLV.LastVisibleIndex
+		Dim p As Pane
+		p=Main.editorLV.GetPanel(i)
+		Dim targetTextArea As TextArea
+		targetTextArea=p.GetNode(1)
+		Dim bitext As List
+		bitext=segments.Get(i)
+		targetTextArea.Text=bitext.Get(1)
+	Next
 End Sub

@@ -470,6 +470,9 @@ End Sub
 
 'Returns the index of the item that holds the given view.
 Public Sub GetItemFromView(v As B4XView) As Int
+	If items.Size=0 Then
+		Return
+	End If
 	Dim parent = v As Object, current As B4XView
 	Do While sv.ScrollViewInnerPanel <> parent
 		current = parent

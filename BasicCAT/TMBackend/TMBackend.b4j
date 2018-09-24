@@ -1,0 +1,52 @@
+﻿AppType=StandardJava
+Build1=Default,b4j.example
+Group=Default Group
+Library1=jcore
+Library2=jserver
+Library3=json
+Library4=apachestringutilsb4j
+Library5=jsql
+Library6=jrandomaccessfile
+Library7=jb4xencryption
+Module1=getMatchList
+Module2=TM
+Module3=KeyValueStore
+NumberOfFiles=0
+NumberOfLibraries=7
+NumberOfModules=3
+Version=6.51
+@EndOfDesignText@
+'Non-UI application (console / server application)
+#Region Project Attributes 
+	#CommandLineArgs:
+	#MergeLibraries: True 
+#End Region
+
+#AdditionalJar: sqlite-jdbc-3.7.2
+#AdditionalJar: bcprov-jdk15on-154
+
+Sub Process_Globals
+	Private srvr As Server
+End Sub
+
+Sub AppStart (Args() As String)
+	Dim port As Int
+	Log(Args.Length)
+	If Args.Length>0 Then
+		port=Args(0)
+		Log(port)
+	Else
+		port=51040
+	End If
+	srvr.Initialize("srvr")
+	srvr.AddHandler("/getMatchList","getMatchList",False)
+	srvr.Port=port
+	srvr.Start
+	
+	StartMessageLoop
+End Sub
+
+'Return true to allow the default exceptions handler to handle the uncaught exception.
+Sub Application_Error (Error As Exception, StackTrace As String) As Boolean
+	Return True
+End Sub
