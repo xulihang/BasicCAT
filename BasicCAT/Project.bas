@@ -242,11 +242,13 @@ Public Sub creatSegmentPane(bitext As List) As Pane
 	Dim sourceTextArea As TextArea
 	sourceTextArea=segmentPane.GetNode(0)
 	sourceTextArea.Text=source
+	'sourceTextArea.Style = "-fx-font-family: Tahoma;"
 	addKeyEvent(sourceTextArea,"sourceTextArea")
 
 	Dim targetTextArea As TextArea
 	targetTextArea=segmentPane.GetNode(1)
 	targetTextArea.Text=bitext.Get(1)
+	'targetTextArea.Style = "-fx-font-family: Arial Unicode MS;"
 	addKeyEvent(targetTextArea,"targetTextArea")
 
 	Return segmentPane
@@ -506,11 +508,13 @@ Public Sub fillPane(FirstIndex As Int, LastIndex As Int)
 				Dim sourceTextArea As TextArea
 				sourceTextArea=segmentPane.GetNode(0)
 				sourceTextArea.Text=source
+				'sourceTextArea.Style = "-fx-font-family: Tahoma;"
 				addKeyEvent(sourceTextArea,"sourceTextArea")
 
 				Dim targetTextArea As TextArea
 				targetTextArea=segmentPane.GetNode(1)
 				targetTextArea.Text=bitext.Get(1)
+				'targetTextArea.Style = "-fx-font-family: Arial Unicode MS;"
 				addKeyEvent(targetTextArea,"targetTextArea")
 				Log(bitext)
 				Log(targetTextArea.Text)
@@ -547,11 +551,13 @@ Public Sub fillPaneAsync(FirstIndex As Int, LastIndex As Int) As ResumableSub
 				Dim sourceTextArea As TextArea
 				sourceTextArea=segmentPane.GetNode(0)
 				sourceTextArea.Text=source
+				'sourceTextArea.Style = "-fx-font-family: Tahoma;"
 				addKeyEvent(sourceTextArea,"sourceTextArea")
 
 				Dim targetTextArea As TextArea
 				targetTextArea=segmentPane.GetNode(1)
 				targetTextArea.Text=bitext.Get(1)
+				'targetTextArea.Style = "-fx-font-family: Arial Unicode MS;"
 				addKeyEvent(targetTextArea,"targetTextArea")
 			End If
 		Else

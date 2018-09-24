@@ -112,7 +112,7 @@ End Sub
 
 Sub MainForm_Resize (Width As Double, Height As Double)
 	adjustDividerPositions
-	CallSubDelayed(Me,"ListViewParent_Resize")
+	'CallSubDelayed(Me,"ListViewParent_Resize")
 End Sub
 
 Sub MainForm_CloseRequest (EventData As Event)
@@ -237,18 +237,17 @@ Sub MenuBar1_Action
 			currentProject.generateTargetFiles
 		Case "_Close"
 			Log("closing")
-			If currentProject.sh.IsInitialized Then
-				currentProject.sh.KillProcess
+			If currentProject.IsInitialized Then
+				If currentProject.sh.IsInitialized Then
+					currentProject.sh.KillProcess
+				End If
+				Dim currentProject As Project
+				tmTableView.ClearSelection
+				tmTableView.Items.Clear
+				projectTreeTableView.ClearSelection
+				projectTreeTableView.Root.Children.Clear
+				editorLV.Clear
 			End If
-			Dim currentProject As Project
-			tmTableView.ClearSelection
-			tmTableView.Items.Clear
-			projectTreeTableView.ClearSelection
-			projectTreeTableView.Root.Children.Clear
-			editorLV.Clear
-			'MainForm.RootPane.RemoveAllNodes
-			'MainForm.RootPane.LoadLayout("main")
-			'init
 		Case "Project Settings"
 			If currentProject.IsInitialized=False Then
 				fx.Msgbox(MainForm,"Please open a project first.","")
@@ -368,11 +367,11 @@ Sub ListViewParent_Resize
 	If clv.Size=0 Then
 		Return
 	End If
-	Dim itemWidth As Double = clv.AsView.Width-10dip
-	'Dim ExtraSize As Int
-	'ExtraSize=15
-	'For i = Max(0, editorLV.FirstVisibleIndex - ExtraSize) To Min(editorLV.LastVisibleIndex + ExtraSize,editorLV.Size - 1)
-	For i =  clv.FirstVisibleIndex To clv.LastVisibleIndex
+	Dim itemWidth As Double = clv.AsView.Parent.Width
+	Dim ExtraSize As Int
+	ExtraSize=3
+	For i = Max(0, editorLV.FirstVisibleIndex - ExtraSize) To Min(editorLV.LastVisibleIndex + ExtraSize,editorLV.Size - 1)
+	'For i =  clv.FirstVisibleIndex To clv.LastVisibleIndex
 		Dim p As Pane
 		p=clv.GetPanel(i)
 		If p.NumberOfNodes=0 Then
@@ -382,10 +381,10 @@ Sub ListViewParent_Resize
 		Dim targetTa As TextArea = p.GetNode(1)
 		Dim sourcelbl,targetlbl As Label
 		sourcelbl.Initialize("")
-		sourcelbl.Font = fx.DefaultFont(15)
-		p.AddNode(sourcelbl, 0, 0, itemWidth/2, -1)
+		sourcelbl.Font = fx.CreateFont("Tahoma",16,False,False)
+		p.AddNode(sourcelbl,0, 0, itemWidth/2, -1)
 		targetlbl.Initialize("")
-		targetlbl.Font = fx.DefaultFont(15)
+		targetlbl.Font = fx.CreateFont("Tahoma",16,False,False)
 		p.AddNode(targetlbl, 0, 0, itemWidth/2, -1)
 
 		sourcelbl.Text = sourceTa.Text&CRLF&"12345"
@@ -396,10 +395,18 @@ Sub ListViewParent_Resize
 		'force the label to refresh its layout.
 		jo.RunMethod("applyCss", Null)
 		jo.RunMethod("layout", Null)
-		Dim h As Int = Max(Max(50, sourcelbl.Height + 20), targetlbl.Height + 20)
-		p.SetLayoutAnimated(0, 0, 0, itemWidth, h + 10dip)
-		sourceTa.SetLayoutAnimated(5dip, 0, 0, itemWidth/2, h+5dip)
-		targetTa.SetLayoutAnimated(5dip, itemWidth/2, 0, itemWidth/2, h+5dip)
+		Dim h As Int = Max(Max(30, sourcelbl.Height + 20), targetlbl.Height + 20)
+		'p.SetLayoutAnimated(0, 0, 0, clv.AsView.Width, h + 10dip)
+		'sourceTa.SetLayoutAnimated(0, 5dip, 0, itemWidth/2-5dip, h+5dip)
+		'targetTa.SetLayoutAnimated(0, itemWidth/2-5dip, 0, itemWidth/2-10dip, h+5dip)
+		p.Left=0
+		p.SetSize(itemWidth,h+10dip)
+		sourceTa.Left=5dip
+		sourceTa.SetSize(itemWidth/2-15dip,h+5dip)
+		targetTa.Left=sourceTa.Left+sourceTa.Width
+		targetTa.SetSize(itemWidth/2-15dip,h+5dip)
+		
+		
 		clv.ResizeItem(i,h+10dip)
 		sourcelbl.RemoveNodeFromParent
 		targetlbl.RemoveNodeFromParent
@@ -413,7 +420,7 @@ Sub editorLV_VisibleRangeChanged (FirstIndex As Int, LastIndex As Int)
 		Return
 	End If
 	currentProject.fillPane(FirstIndex,LastIndex)
-	ListViewParent_Resize
+	CallSubDelayed(Me,"ListViewParent_Resize")
 	currentProject.saveAlltheTranslation(FirstIndex,LastIndex)
 End Sub
 
