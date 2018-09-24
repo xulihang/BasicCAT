@@ -15,6 +15,130 @@ Public Sub Initialize(projectPath As String)
 	similarityResult.Initialize(File.Combine(projectPath,"tm"),"similarity.db")
 	translationMemory.Initialize(File.Combine(projectPath,"tm"),"TM.db")
 	externalTranslationMemory.Initialize(File.Combine(projectPath,"tm"),"externalTM.db")
+
+	'similarityResultMap.Initialize
+	'For Each key As String In similarityResult.ListKeys
+	'	similarityResultMap.Put(key,similarityResult.Get(key))
+	'Next
+End Sub
+
+Sub close
+	similarityResult.Close
+	translationMemory.Close
+	externalTranslationMemory.Close
+End Sub
+
+
+
+Sub getOneUseMemory(source As String,rate As Int) As List
+	Dim matchList As List
+	matchList.Initialize
+	Dim onePairList As List
+	onePairList.Initialize
+	For i=0 To 1
+		If i=0 Then
+			Dim kvs As KeyValueStore
+			kvs=translationMemory
+		Else
+			Dim kvs As KeyValueStore
+			kvs=externalTranslationMemory
+		End If
+		For Each key As String In kvs.ListKeys
+			If basicCompare(source,key)=False Then
+				Continue
+			End If
+
+			Dim similarity As Double
+
+			similarity=getSimilarity(source,key)
+
+			If similarity>rate Then
+				Dim tmPairList As List
+				tmPairList.Initialize
+				tmPairList.Add(similarity)
+				tmPairList.Add(key)
+				
+				If i=0 Then
+					tmPairList.Add(kvs.Get(key))
+					tmPairList.Add("")
+				Else
+					Dim targetList As List
+					targetList=kvs.Get(key)
+					tmPairList.Add(targetList.Get(0))
+					tmPairList.Add(targetList.Get(1))
+				End If
+				If similarity=1 Then
+					'Log("exact match")
+					onePairList=tmPairList
+					Return onePairList
+				End If
+				matchList.Add(tmPairList)
+			End If
+		Next
+	Next
+	
+	onePairList=subtractedAndSortMatchList(matchList).Get(0)
+	Return onePairList
+End Sub
+
+Sub getOne(source As String,rate As Int) As List
+	Dim matchList As List
+	matchList.Initialize
+	Dim onePairList As List
+	onePairList.Initialize
+	For i=0 To 1
+		If i=0 Then
+			Dim kvs As KeyValueStore
+			kvs=translationMemory
+		Else
+			Dim kvs As KeyValueStore
+			kvs=externalTranslationMemory
+		End If
+		For Each key As String In kvs.ListKeys
+			If basicCompare(source,key)=False Then
+				Continue
+			End If
+			Dim pairList As List
+			pairList.Initialize
+			pairList.Add(source)
+			pairList.Add(key) ' two sourcelanguage sentences
+			Dim json As JSONGenerator
+			json.Initialize2(pairList)
+			Dim similarity As Double
+			If similarityResult.ContainsKey(json.ToString) Then
+				similarity=similarityResult.Get(json.ToString)
+
+			Else
+				similarity=getSimilarity(source,key)
+				similarityResult.Put(json.ToString,similarity)
+			End If
+			If similarity>rate Then
+				Dim tmPairList As List
+				tmPairList.Initialize
+				tmPairList.Add(similarity)
+				tmPairList.Add(key)
+				
+				If i=0 Then
+					tmPairList.Add(kvs.Get(key))
+					tmPairList.Add("")
+				Else
+					Dim targetList As List
+					targetList=kvs.Get(key)
+					tmPairList.Add(targetList.Get(0))
+					tmPairList.Add(targetList.Get(1))
+				End If
+				If similarity=1 Then
+					'Log("exact match")
+					onePairList=tmPairList
+					Return onePairList
+				End If
+				matchList.Add(tmPairList)
+			End If
+		Next
+	Next
+	
+	onePairList=subtractedAndSortMatchList(matchList).Get(0)
+	Return onePairList
 End Sub
 
 Sub getList(source As String) As List
@@ -63,7 +187,7 @@ Sub getList(source As String) As List
 					tmPairList.Add(targetList.Get(0))
 					tmPairList.Add(targetList.Get(1))
 				End If
-				Log(tmPairList)
+				'Log(tmPairList)
 				matchList.Add(tmPairList)
 			End If
 		Next

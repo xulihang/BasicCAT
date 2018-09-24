@@ -11,9 +11,10 @@ Library7=jb4xencryption
 Module1=getMatchList
 Module2=TM
 Module3=KeyValueStore
+Module4=getMatchForPretranslate
 NumberOfFiles=0
 NumberOfLibraries=7
-NumberOfModules=3
+NumberOfModules=4
 Version=6.51
 @EndOfDesignText@
 'Non-UI application (console / server application)
@@ -36,10 +37,11 @@ Sub AppStart (Args() As String)
 		port=Args(0)
 		Log(port)
 	Else
-		port=51040
+		port=51041
 	End If
 	srvr.Initialize("srvr")
 	srvr.AddHandler("/getMatchList","getMatchList",False)
+	srvr.AddHandler("/getOneMatch","getMatchForPretranslate",False)
 	srvr.Port=port
 	srvr.Start
 	

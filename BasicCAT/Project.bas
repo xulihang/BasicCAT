@@ -17,6 +17,8 @@ Sub Class_Globals
 	Private lastFilename As String
 	Public settings As Map
 	Public sh As Shell
+	Private maxRequest As Int
+	Private completed As Int
 End Sub
 
 'Initializes the object. You can add parameters to this method if needed.
@@ -563,61 +565,108 @@ Public Sub fillPaneAsync(FirstIndex As Int, LastIndex As Int) As ResumableSub
 End Sub
 
 Sub preTranslate(options As Map)
+	
 	If options.Get("type")="TM" Then
-		preTrasnlateProgressDialog.Show
+		maxRequest=0
+		completed=0
 		Dim index As Int=-1
-		For Each bitext As List In segments
-			index=index+1
-			Dim source,target As String
-			source=bitext.Get(0)
-			target=bitext.Get(1)
-			If target<>"" Then
-				Continue
-			End If
-			Dim job1 As HttpJob
-			job1.Initialize("job1",Me)
-			job1.Download2("http://127.0.0.1:51041/getMatchList",Array As String("source",source,"path",path))
-			Wait For JobDone(job As HttpJob)
-			If job.Success Then
-				Log("job")
-				Dim json As JSONParser
-				json.Initialize(job.GetString)
-				Dim result As List
-				result=json.NextArray
-			End If
-			job.Release
-			If result.Size=0 Then
-				preTrasnlateProgressDialog.update(index,segments.Size,source,"")
-				Continue
-			Else
-				Dim matchList As List
-				matchList=result.Get(0)
-				Dim similarity As Double
-				similarity=matchList.Get(0)
-				If similarity>=options.Get("rate") Then
-					bitext.Set(1,matchList.Get(2))
-					segments.Set(index,bitext)
-					Log(segments.Get(index))
-					preTrasnlateProgressDialog.update(index,segments.Size,source,matchList.Get(2))
+		preTrasnlateProgressDialog.Show(3)
+		
+		Dim seperatedSegments As List
+		seperatedSegments.Initialize
+		Dim eachsize As Int
+		eachsize=segments.Size/4
+		If segments.Size<20 Then
+			seperatedSegments.Add(segments)
+		Else
+			Dim indexToBeAdded As Int=0
+			For i=0 To 3
+			    Dim oneSeperatedSegments As List
+			    oneSeperatedSegments.Initialize
+				Dim endIndex As Int
+				If i=3 Then
+					endIndex=segments.Size-1
 				Else
-					preTrasnlateProgressDialog.update(index,segments.Size,source,"similarity is too low")
+					endIndex=eachsize+indexToBeAdded
 				End If
-			End If
+				For j=indexToBeAdded To endIndex
+					oneSeperatedSegments.Add(segments.Get(indexToBeAdded))
+					indexToBeAdded=indexToBeAdded+1
+				Next
+				seperatedSegments.Add(oneSeperatedSegments)
+			Next
+		End If
+		For Each oneSegments As List In seperatedSegments
+			For Each bitext As List In oneSegments
+				index=index+1
+				Dim source,target As String
+				source=bitext.Get(0)
+				target=bitext.Get(1)
+				If target<>"" Then
+					completed=completed+1
+					preTrasnlateProgressDialog.update(completed,segments.Size)
+					Continue
+				End If
+			    Do While maxRequest>=10
+					Sleep(1000)
+		        Loop
+				maxRequest=maxRequest+1
+                getOneMatch(bitext.Get(0),index,options.Get("rate"))
+			Next
 		Next
+		Do While completed<>segments.size
+			Sleep(1000)
+		Loop
 		preTrasnlateProgressDialog.close
 		fillVisibleTargetTextArea
 	End If
-
 End Sub
 
 Sub fillVisibleTargetTextArea
-	For i=Main.editorLV.FirstVisibleIndex To Main.editorLV.LastVisibleIndex
+	For i=Max(0,Main.editorLV.FirstVisibleIndex-15) To Min(Main.editorLV.Size-1,Main.editorLV.LastVisibleIndex+14)
 		Dim p As Pane
 		p=Main.editorLV.GetPanel(i)
+		If p.NumberOfNodes=0 Then
+			Continue
+		End If
 		Dim targetTextArea As TextArea
 		targetTextArea=p.GetNode(1)
 		Dim bitext As List
 		bitext=segments.Get(i)
 		targetTextArea.Text=bitext.Get(1)
 	Next
+End Sub
+
+'Good example. Use.
+Sub getOneMatch(source As String, index As Int,matchRate As Double)
+	Dim job As HttpJob
+	job.Initialize("job",Me)
+	job.Download2("http://127.0.0.1:51041/getOneMatch",Array As String("source",source,"path",path,"index",index,"matchrate",matchRate))
+				
+	Wait For (job) JobDone(job As HttpJob)
+	completed=completed+1
+	If job.Success Then
+		Log("job")
+		Dim json As JSONParser
+		json.Initialize(job.GetString)
+		Dim result As List
+		result=json.NextArray
+	End If
+	job.Release
+	maxRequest=maxRequest-1
+	Dim completedIndex As Int
+	completedIndex=result.Get(4)
+	Dim similarity As Double
+	similarity=result.Get(0)
+	Dim bitext As List
+	bitext=segments.Get(completedIndex)
+	Log(bitext.Get(0))
+	Log(similarity)
+	Log(matchRate)
+	Log(similarity>=matchRate)
+	If similarity>=matchRate Then
+		bitext.Set(1,result.Get(2))
+		segments.Set(completedIndex,bitext)
+	End If
+	preTrasnlateProgressDialog.update(completed,segments.Size)
 End Sub
