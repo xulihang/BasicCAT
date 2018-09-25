@@ -214,12 +214,12 @@ Sub openFile(filename As String,onOpeningProject As Boolean)
 		Log("ddd"&True)
 		Log(lastEntry)
 		Main.editorLV.JumpToItem(lastEntry)
-		Wait For(fillPaneAsync(lastEntry,lastEntry+10)) Complete (Result As Object)
-		Dim pane As Pane
-		pane=Main.editorLV.GetPanel(lastEntry)
-		Dim ta As TextArea
-		ta=pane.GetNode(1)
-		ta.RequestFocus
+		'Wait For(fillPaneAsync(lastEntry,lastEntry+10)) Complete (Result As Object)
+		'Dim pane As Pane
+		'pane=Main.editorLV.GetPanel(lastEntry)
+		'Dim ta As TextArea
+		'ta=pane.GetNode(1)
+		'ta.RequestFocus
 		
 	End If
 End Sub
@@ -233,24 +233,9 @@ Sub sourceTextArea_TextChanged (Old As String, New As String)
 End Sub
 
 Public Sub creatSegmentPane(bitext As List) As Pane
-	Dim source As String
-	source=bitext.Get(0)
 	Dim segmentPane As Pane
 	segmentPane.Initialize("segmentPane")
-	segmentPane.LoadLayout("segment")
-	segmentPane.SetSize(Main.editorLV.AsView.Width,50dip)
-	Dim sourceTextArea As TextArea
-	sourceTextArea=segmentPane.GetNode(0)
-	sourceTextArea.Text=source
-	'sourceTextArea.Style = "-fx-font-family: Tahoma;"
-	addKeyEvent(sourceTextArea,"sourceTextArea")
-
-	Dim targetTextArea As TextArea
-	targetTextArea=segmentPane.GetNode(1)
-	targetTextArea.Text=bitext.Get(1)
-	'targetTextArea.Style = "-fx-font-family: Arial Unicode MS;"
-	addKeyEvent(targetTextArea,"targetTextArea")
-
+	addTextAreaToSegmentPane(segmentPane,bitext.Get(0),bitext.Get(1))
 	Return segmentPane
 End Sub
 
@@ -259,6 +244,21 @@ Public Sub creatEmptyPane As Pane
 	segmentPane.Initialize("segmentPane")
 	segmentPane.SetSize(Main.editorLV.AsView.Width,50dip)
 	Return segmentPane
+End Sub
+
+Sub addTextAreaToSegmentPane(segmentpane As Pane,source As String,target As String)
+	segmentpane.LoadLayout("segment")
+	segmentpane.SetSize(Main.editorLV.AsView.Width,50dip)
+	Dim sourceTextArea As TextArea
+	sourceTextArea=segmentpane.GetNode(0)
+	sourceTextArea.Text=source
+	'sourceTextArea.Style = "-fx-font-family: Tahoma;"
+	addKeyEvent(sourceTextArea,"sourceTextArea")
+	Dim targetTextArea As TextArea
+	targetTextArea=segmentpane.GetNode(1)
+	targetTextArea.Text=target
+	'targetTextArea.Style = "-fx-font-family: Arial Unicode MS;"
+	addKeyEvent(targetTextArea,"targetTextArea")
 End Sub
 
 Sub addKeyEvent(textarea1 As TextArea,eventName As String)
@@ -279,28 +279,22 @@ Sub sourceTextArea_KeyPressed_Event (MethodName As String, Args() As Object) As 
 	Log(result)
 	If result="ENTER" Then
 		
+		Dim source As String
 		Dim newSegmentPane As Pane
 		newSegmentPane.Initialize("segmentPane")
-		newSegmentPane.LoadLayout("segment")
-		Dim newSourceTextArea As TextArea
-		newSourceTextArea=newSegmentPane.GetNode(0)
-		addKeyEvent(sourceTextArea,"sourceTextArea")
-		Dim targetTextArea As TextArea
-		targetTextArea=newSegmentPane.GetNode(1)
-		addKeyEvent(targetTextArea,"targetTextArea")
-		newSourceTextArea.Text=sourceTextArea.Text.SubString2(sourceTextArea.SelectionEnd,sourceTextArea.Text.Length)
-		If newSourceTextArea.Text.Trim="" Then
+		source=sourceTextArea.Text.SubString2(sourceTextArea.SelectionEnd,sourceTextArea.Text.Length)
+		If source.Trim="" Then
 			Return
 		End If
 		sourceTextArea.Text=sourceTextArea.Text.SubString2(0,sourceTextArea.SelectionEnd)
 		sourceTextArea.Text=sourceTextArea.Text.Replace(CRLF,"")
 		sourceTextArea.Tag=sourceTextArea.Text
-		
+		addTextAreaToSegmentPane(newSegmentPane,source,"")
 		Dim bitext,newBiText As List
 		bitext=segments.Get(index)
 		bitext.Set(0,sourceTextArea.Text)
 		newBiText.Initialize
-		newBiText.Add(newSourceTextArea.Text)
+		newBiText.Add(source)
 		newBiText.Add("")
 		newBiText.Add("")
 		newBiText.Add(bitext.Get(3))
@@ -473,6 +467,9 @@ Public Sub saveAlltheTranslation(FirstIndex As Int, LastIndex As Int)
 		Dim targetTextArea As TextArea
 		Dim p As Pane
 		p=Main.editorLV.GetPanel(i)
+		If p.NumberOfNodes=0 Then
+			Continue
+		End If
 		targetTextArea=p.GetNode(1)
 		bitext.Set(1,targetTextArea.Text)
 		projectTM.addPair(bitext.Get(0),bitext.Get(1))
@@ -501,24 +498,8 @@ Public Sub fillPane(FirstIndex As Int, LastIndex As Int)
                 
 				Dim bitext As List
 				bitext=segments.Get(i)
-				Dim source As String
-				source=bitext.Get(0)
-				segmentPane.LoadLayout("segment")
-				segmentPane.SetSize(Main.editorLV.AsView.Width,50dip)
-				Dim sourceTextArea As TextArea
-				sourceTextArea=segmentPane.GetNode(0)
-				sourceTextArea.Text=source
-				'sourceTextArea.Style = "-fx-font-family: Tahoma;"
-				addKeyEvent(sourceTextArea,"sourceTextArea")
-
-				Dim targetTextArea As TextArea
-				targetTextArea=segmentPane.GetNode(1)
-				targetTextArea.Text=bitext.Get(1)
-				'targetTextArea.Style = "-fx-font-family: Arial Unicode MS;"
-				addKeyEvent(targetTextArea,"targetTextArea")
-				Log(bitext)
-				Log(targetTextArea.Text)
-				Log(i)
+				addTextAreaToSegmentPane(segmentPane,bitext.Get(0),bitext.Get(1))
+				
 			End If
 		Else
 			'not visible
@@ -543,22 +524,8 @@ Public Sub fillPaneAsync(FirstIndex As Int, LastIndex As Int) As ResumableSub
                 
 				Dim bitext As List
 				bitext=segments.Get(i)
-				Dim source As String
-				source=bitext.Get(0)
-
-				segmentPane.LoadLayout("segment")
-				segmentPane.SetSize(Main.editorLV.AsView.Width,50dip)
-				Dim sourceTextArea As TextArea
-				sourceTextArea=segmentPane.GetNode(0)
-				sourceTextArea.Text=source
-				'sourceTextArea.Style = "-fx-font-family: Tahoma;"
-				addKeyEvent(sourceTextArea,"sourceTextArea")
-
-				Dim targetTextArea As TextArea
-				targetTextArea=segmentPane.GetNode(1)
-				targetTextArea.Text=bitext.Get(1)
-				'targetTextArea.Style = "-fx-font-family: Arial Unicode MS;"
-				addKeyEvent(targetTextArea,"targetTextArea")
+				addTextAreaToSegmentPane(segmentPane,bitext.Get(0),bitext.Get(1))
+				
 			End If
 		Else
 			'not visible
