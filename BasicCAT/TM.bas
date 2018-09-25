@@ -14,9 +14,9 @@ End Sub
 
 'Initializes the object. You can add parameters to this method if needed.
 Public Sub Initialize(projectPath As String)
-	similarityResult.Initialize(File.Combine(projectPath,"tm"),"similarity.db")
-	translationMemory.Initialize(File.Combine(projectPath,"tm"),"TM.db")
-	externalTranslationMemory.Initialize(File.Combine(projectPath,"tm"),"externalTM.db")
+	similarityResult.Initialize(File.Combine(projectPath,"TM"),"similarity.db")
+	translationMemory.Initialize(File.Combine(projectPath,"TM"),"TM.db")
+	externalTranslationMemory.Initialize(File.Combine(projectPath,"TM"),"externalTM.db")
 End Sub
 
 Sub addPair(source As String,target As String)
