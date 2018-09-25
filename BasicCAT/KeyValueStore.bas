@@ -18,6 +18,14 @@ Public Sub Initialize (Dir As String, FileName As String)
 #else
 	sql1.Initialize(Dir, FileName, True)
 #end if
+    If File.Exists(File.DirApp,"wal_enabled.conf") Then
+		If File.ReadString(File.DirApp,"wal_enabled.conf")=0 Then
+		    sql1.ExecNonQuery("PRAGMA journal_mode = wal")
+		End If
+    Else
+		sql1.ExecNonQuery("PRAGMA journal_mode = wal")
+    End If
+	
 	CreateTable
 End Sub
 

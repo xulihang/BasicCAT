@@ -78,7 +78,8 @@ Version=6.51
 	#MainFormHeight: 600 
 #End Region
 
-#AdditionalJar: sqlite-jdbc-3.7.2
+'#AdditionalJar: sqlite-jdbc-3.7.2
+#AdditionalJar: sqlite-jdbc-3.23.1
 #AdditionalJar: bcprov-jdk15on-154
 #AdditionalJar: fuzzywuzzy-1.1.10
 
@@ -103,6 +104,7 @@ Sub AppStart (Form1 As Form, Args() As String)
 	MainForm.RootPane.LoadLayout("main") 'Load the layout file.
 	MainForm.Show
 	init
+	Log(GetSystemProperty("os.name","windows"))
 End Sub
 
 'Return true to allow the default exceptions handler to handle the uncaught exception.
@@ -241,6 +243,7 @@ Sub MenuBar1_Action
 				If currentProject.sh.IsInitialized Then
 					currentProject.sh.KillProcess
 				End If
+				currentProject.projectTM.close
 				Dim currentProject As Project
 				tmTableView.ClearSelection
 				tmTableView.Items.Clear
@@ -267,6 +270,7 @@ Sub MenuBar1_Action
 		Case "_Exit"
 			'Dim currentProject as Project
 			If currentProject.IsInitialized Then
+				currentProject.projectTM.close
 				If currentProject.sh.IsInitialized Then
 					currentProject.sh.KillProcess
 				End If
@@ -338,24 +342,26 @@ End Sub
 
 Public Sub getFilename(path As String) As String
 	Dim filename As String
-	If filename.Contains("\") Then
+	
+	If GetSystemProperty("os.name","Windows").StartsWith("Windows") Then
 		filename=path.SubString2(path.LastIndexOf("\")+1,path.Length)
 	Else
 		filename=path.SubString2(path.LastIndexOf("/")+1,path.Length)
 	End If
+	Log(filename)
 	Return filename
 End Sub
 
 Public Sub getProjectname(path As String) As String
 	Dim Projectname As String
-	Try
+	If GetSystemProperty("os.name","Windows").StartsWith("Windows") Then
 		Projectname=path.SubString2(path.LastIndexOf("\"),path.Length)
 		Projectname=path.Replace(Projectname,"")
-	Catch
+	Else
 		Projectname=path.SubString2(path.LastIndexOf("/"),path.Length)
 		Projectname=path.Replace(Projectname,"")
 		Log(LastException)
-	End Try
+	End If
 	Log(Projectname)
 	Return Projectname
 End Sub

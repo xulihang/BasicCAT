@@ -46,7 +46,7 @@ Sub initializeTM(projectPath As String)
 		End If
 	Next
 	projectTM.importExternalTranslationMemory(externalTMList)
-	runTMBackend
+	'runTMBackend
 End Sub
 
 Sub runTMBackend
@@ -102,6 +102,8 @@ End Sub
 Public Sub addFile(filepath As String)
 	Dim filename As String
 	filename=Main.getFilename(filepath)
+	Log("fp"&filepath)
+	Log("fn"&filename)
 	Wait For (File.CopyAsync(filepath,"",File.Combine(path,"source"),filename)) Complete (Success As Boolean)
 	Log("Success: " & Success)
 	files.Add(filename)
@@ -284,7 +286,7 @@ Sub sourceTextArea_KeyPressed_Event (MethodName As String, Args() As Object) As 
 		newSegmentPane.Initialize("segmentPane")
 		source=sourceTextArea.Text.SubString2(sourceTextArea.SelectionEnd,sourceTextArea.Text.Length)
 		If source.Trim="" Then
-			Return
+			Return Null
 		End If
 		sourceTextArea.Text=sourceTextArea.Text.SubString2(0,sourceTextArea.SelectionEnd)
 		sourceTextArea.Text=sourceTextArea.Text.Replace(CRLF,"")
@@ -310,7 +312,7 @@ Sub sourceTextArea_KeyPressed_Event (MethodName As String, Args() As Object) As 
 		
 		If bitext.Get(3)<>nextBiText.Get(3) Then
 			fx.Msgbox(Main.MainForm,"Cannot merge segments as these two belong to different files.","")
-			Return
+			Return Null
 		End If
 		
 		Dim pane,nextPane As Pane
@@ -413,7 +415,7 @@ Sub targetTextArea_FocusChanged (HasFocus As Boolean)
 	End If
 End Sub
 
-Sub showTM2(targetTextArea As TextArea)
+Sub showTM(targetTextArea As TextArea)
 	Dim pane As Pane
 	pane=targetTextArea.Parent
 	Dim sourceTA As TextArea
@@ -432,33 +434,7 @@ Sub showTM2(targetTextArea As TextArea)
 	Next
 End Sub
 
-Sub showTM(targetTextArea As TextArea)
-	Dim pane As Pane
-	pane=targetTextArea.Parent
-	Dim sourceTA As TextArea
-	sourceTA=pane.GetNode(0)
-	If projectTM.currentSource=sourceTA.Text Then
-		Return
-	End If
-	projectTM.currentSource=sourceTA.Text
-	Main.tmTableView.Items.Clear
-	Dim job1 As HttpJob
-	job1.Initialize("job1",Me)
-	job1.Download2("http://127.0.0.1:51041/getMatchList",Array As String("source",sourceTA.Text,"path",path))
-	Wait For JobDone(job As HttpJob)
-	If job.Success Then
-		Log("job")
-		Dim json As JSONParser
-		json.Initialize(job.GetString)
-		Dim result As List
-		result=json.NextArray
-		For Each matchList As List In result 
-			Dim row()  As Object = Array As String(matchList.Get(0),matchList.Get(1),matchList.Get(2),matchList.Get(3))
-			Main.tmTableView.Items.Add(row)
-		Next
-	End If
-	job.Release
-End Sub
+
 
 Public Sub saveAlltheTranslation(FirstIndex As Int, LastIndex As Int)
 	For i=Max(0,FirstIndex) To Min(LastIndex,Main.editorLV.Size-1)
@@ -537,59 +513,69 @@ Public Sub fillPaneAsync(FirstIndex As Int, LastIndex As Int) As ResumableSub
 	Return Null
 End Sub
 
+Sub seperatedSegments(targetSegments As List) As List
+	Dim seperated As List
+	seperated.Initialize
+	Dim eachsize As Int
+	eachsize=targetSegments.Size/4
+	If targetSegments.Size<20 Then
+		seperated.Add(targetSegments)
+	Else
+		Dim indexToBeAdded As Int=0
+		For i=0 To 3
+			Dim oneSeperatedSegments As List
+			oneSeperatedSegments.Initialize
+			Dim endIndex As Int
+			If i=3 Then
+				endIndex=targetSegments.Size-1
+			Else
+				endIndex=eachsize+indexToBeAdded
+			End If
+			For j=indexToBeAdded To endIndex
+				oneSeperatedSegments.Add(targetSegments.Get(indexToBeAdded))
+				indexToBeAdded=indexToBeAdded+1
+			Next
+			seperated.Add(oneSeperatedSegments)
+		Next
+	End If
+	Return seperated
+End Sub
+
 Sub preTranslate(options As Map)
-	
 	If options.Get("type")="TM" Then
-		maxRequest=0
 		completed=0
 		Dim index As Int=-1
 		preTrasnlateProgressDialog.Show(3)
 		
-		Dim seperatedSegments As List
-		seperatedSegments.Initialize
-		Dim eachsize As Int
-		eachsize=segments.Size/4
-		If segments.Size<20 Then
-			seperatedSegments.Add(segments)
-		Else
-			Dim indexToBeAdded As Int=0
-			For i=0 To 3
-			    Dim oneSeperatedSegments As List
-			    oneSeperatedSegments.Initialize
-				Dim endIndex As Int
-				If i=3 Then
-					endIndex=segments.Size-1
-				Else
-					endIndex=eachsize+indexToBeAdded
-				End If
-				For j=indexToBeAdded To endIndex
-					oneSeperatedSegments.Add(segments.Get(indexToBeAdded))
-					indexToBeAdded=indexToBeAdded+1
-				Next
-				seperatedSegments.Add(oneSeperatedSegments)
-			Next
-		End If
-		For Each oneSegments As List In seperatedSegments
-			For Each bitext As List In oneSegments
-				index=index+1
-				Dim source,target As String
-				source=bitext.Get(0)
-				target=bitext.Get(1)
-				If target<>"" Then
-					completed=completed+1
-					preTrasnlateProgressDialog.update(completed,segments.Size)
-					Continue
-				End If
-			    Do While maxRequest>=10
-					Sleep(1000)
-		        Loop
-				maxRequest=maxRequest+1
-                getOneMatch(bitext.Get(0),index,options.Get("rate"))
-			Next
+		For Each bitext As List In segments
+			Sleep(0)
+			index=index+1
+			Dim target As String
+			target=bitext.Get(1)
+			If target<>"" Then
+				completed=completed+1
+				preTrasnlateProgressDialog.update(completed,segments.Size)
+				Continue
+			End If
+            Dim resultList As List
+			resultList=projectTM.getOneUseMemory(bitext.Get(0),options.Get("rate"))
+			Dim similarity,matchrate As Double
+			similarity=resultList.Get(0)
+			matchrate=options.Get("rate")
+			Dim bitext As List
+			bitext=segments.Get(index)
+			Log(bitext.Get(0))
+			Log(similarity)
+			Log(matchrate)
+			Log(similarity>=matchrate)
+			If similarity>=matchrate Then
+				bitext.Set(1,resultList.Get(2))
+				segments.Set(index,bitext)
+			End If
+			completed=completed+1
+			preTrasnlateProgressDialog.update(completed,segments.Size)
 		Next
-		Do While completed<>segments.size
-			Sleep(1000)
-		Loop
+
 		preTrasnlateProgressDialog.close
 		fillVisibleTargetTextArea
 	End If
@@ -608,6 +594,39 @@ Sub fillVisibleTargetTextArea
 		bitext=segments.Get(i)
 		targetTextArea.Text=bitext.Get(1)
 	Next
+End Sub
+
+
+Sub preTranslateViaNetwork(options As Map)
+	
+	If options.Get("type")="TM" Then
+		maxRequest=0
+		completed=0
+		Dim index As Int=-1
+		preTrasnlateProgressDialog.Show(3)
+		
+		For Each bitext As List In segments
+			index=index+1
+			Dim target As String
+			target=bitext.Get(1)
+			If target<>"" Then
+				completed=completed+1
+				preTrasnlateProgressDialog.update(completed,segments.Size)
+				Continue
+			End If
+			Do While maxRequest>=10
+				Sleep(1000)
+			Loop
+			maxRequest=maxRequest+1
+			getOneMatch(bitext.Get(0),index,options.Get("rate"))
+		Next
+
+		Do While completed<>segments.size
+			Sleep(1000)
+		Loop
+		preTrasnlateProgressDialog.close
+		fillVisibleTargetTextArea
+	End If
 End Sub
 
 'Good example. Use.
@@ -643,4 +662,33 @@ Sub getOneMatch(source As String, index As Int,matchRate As Double)
 	End If
 	job.Release
 	
+End Sub
+
+Sub showTM2(targetTextArea As TextArea)
+	Dim pane As Pane
+	pane=targetTextArea.Parent
+	Dim sourceTA As TextArea
+	sourceTA=pane.GetNode(0)
+	If projectTM.currentSource=sourceTA.Text Then
+		Return
+	End If
+	projectTM.currentSource=sourceTA.Text
+	Main.tmTableView.Items.Clear
+	Dim job As HttpJob
+	job.Initialize("job",Me)
+	job.Download2("http://127.0.0.1:51041/getMatchList",Array As String("source",sourceTA.Text,"path",path))
+	Wait For (job) JobDone(job As HttpJob)
+	If job.Success Then
+		Log("job")
+		Main.tmTableView.Items.Clear
+		Dim json As JSONParser
+		json.Initialize(job.GetString)
+		Dim result As List
+		result=json.NextArray
+		For Each matchList As List In result
+			Dim row()  As Object = Array As String(matchList.Get(0),matchList.Get(1),matchList.Get(2),matchList.Get(3))
+			Main.tmTableView.Items.Add(row)
+		Next
+	End If
+	job.Release
 End Sub

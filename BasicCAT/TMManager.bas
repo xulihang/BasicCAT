@@ -28,9 +28,9 @@ Sub frm_Resize (Width As Double, Height As Double)
 End Sub
 
 Sub LoadTM
-	Dim kvs As KeyValueStore = Main.currentProject.projectTM.translationMemory
-	For Each key As String In kvs.ListKeys
-		TMListView.Add(CreatSegmentPane(key,kvs.Get(key)),"")
+	Dim tmMap As KeyValueStore = Main.currentProject.projectTM.translationMemory
+	For Each key As String In tmMap.ListKeys
+		TMListView.Add(CreatSegmentPane(key,tmMap.Get(key)),"")
 		Log(key)
 	Next
 	CallSubDelayed(Me,"ListViewParent_Resize")
