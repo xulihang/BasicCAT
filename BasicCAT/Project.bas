@@ -214,7 +214,7 @@ Sub openFile(filename As String,onOpeningProject As Boolean)
 		Log("ddd"&True)
 		Log(lastEntry)
 		Main.editorLV.JumpToItem(lastEntry)
-		Wait For(fillPaneAsync(lastEntry-10,lastEntry+10)) Complete (Result As Object)
+		Wait For(fillPaneAsync(lastEntry,lastEntry+10)) Complete (Result As Object)
 		Dim pane As Pane
 		pane=Main.editorLV.GetPanel(lastEntry)
 		Dim ta As TextArea
@@ -657,22 +657,23 @@ Sub getOneMatch(source As String, index As Int,matchRate As Double)
 		json.Initialize(job.GetString)
 		Dim result As List
 		result=json.NextArray
+		maxRequest=maxRequest-1
+		Dim completedIndex As Int
+		completedIndex=result.Get(4)
+		Dim similarity As Double
+		similarity=result.Get(0)
+		Dim bitext As List
+		bitext=segments.Get(completedIndex)
+		Log(bitext.Get(0))
+		Log(similarity)
+		Log(matchRate)
+		Log(similarity>=matchRate)
+		If similarity>=matchRate Then
+			bitext.Set(1,result.Get(2))
+			segments.Set(completedIndex,bitext)
+		End If
+		preTrasnlateProgressDialog.update(completed,segments.Size)
 	End If
 	job.Release
-	maxRequest=maxRequest-1
-	Dim completedIndex As Int
-	completedIndex=result.Get(4)
-	Dim similarity As Double
-	similarity=result.Get(0)
-	Dim bitext As List
-	bitext=segments.Get(completedIndex)
-	Log(bitext.Get(0))
-	Log(similarity)
-	Log(matchRate)
-	Log(similarity>=matchRate)
-	If similarity>=matchRate Then
-		bitext.Set(1,result.Get(2))
-		segments.Set(completedIndex,bitext)
-	End If
-	preTrasnlateProgressDialog.update(completed,segments.Size)
+	
 End Sub

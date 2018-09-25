@@ -112,7 +112,7 @@ End Sub
 
 Sub MainForm_Resize (Width As Double, Height As Double)
 	adjustDividerPositions
-	'CallSubDelayed(Me,"ListViewParent_Resize")
+	CallSubDelayed(Me,"ListViewParent_Resize")
 End Sub
 
 Sub MainForm_CloseRequest (EventData As Event)
@@ -338,12 +338,11 @@ End Sub
 
 Public Sub getFilename(path As String) As String
 	Dim filename As String
-	Try
+	If filename.Contains("\") Then
 		filename=path.SubString2(path.LastIndexOf("\")+1,path.Length)
-	Catch
+	Else
 		filename=path.SubString2(path.LastIndexOf("/")+1,path.Length)
-		Log(LastException)
-	End Try
+	End If
 	Return filename
 End Sub
 
