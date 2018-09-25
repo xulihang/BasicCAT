@@ -6,29 +6,25 @@ Version=6.51
 @EndOfDesignText@
 Sub Class_Globals
 	Private similarityResult As KeyValueStore
-	Public translationMemory As KeyValueStore
+	Private translationMemory As KeyValueStore
 	Private externalTranslationMemory As KeyValueStore
 End Sub
 
 'Initializes the object. You can add parameters to this method if needed.
 Public Sub Initialize(projectPath As String)
-	similarityResult.Initialize(File.Combine(projectPath,"tm"),"similarity.db")
-	translationMemory.Initialize(File.Combine(projectPath,"tm"),"TM.db")
-	externalTranslationMemory.Initialize(File.Combine(projectPath,"tm"),"externalTM.db")
-
-	'similarityResultMap.Initialize
-	'For Each key As String In similarityResult.ListKeys
-	'	similarityResultMap.Put(key,similarityResult.Get(key))
-	'Next
+	Dim db As ConnectedDB
+	If Main.connectedDBMap.ContainsKey(projectPath) Then
+		db=Main.connectedDBMap.Get(projectPath)
+		If db.IsInitialized=False Then
+			db.Initialize(projectPath)
+		End If
+	Else
+		db.Initialize(projectPath)
+	End If
+	similarityResult=db.similarityResult
+	translationMemory=db.translationMemory
+	externalTranslationMemory=db.externalTranslationMemory
 End Sub
-
-Sub close
-	similarityResult.Close
-	translationMemory.Close
-	externalTranslationMemory.Close
-End Sub
-
-
 
 Sub getOneUseMemory(source As String,rate As Int) As List
 	Dim matchList As List
@@ -49,8 +45,9 @@ Sub getOneUseMemory(source As String,rate As Int) As List
 			End If
 
 			Dim similarity As Double
-
 			similarity=getSimilarity(source,key)
+
+
 
 			If similarity>rate Then
 				Dim tmPairList As List

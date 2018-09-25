@@ -8,13 +8,17 @@ Library4=apachestringutilsb4j
 Library5=jsql
 Library6=jrandomaccessfile
 Library7=jb4xencryption
+Library8=jokhttputils2
 Module1=getMatchList
 Module2=TM
 Module3=KeyValueStore
 Module4=getMatchForPretranslate
+Module5=ConnectedDB
+Module6=getSimilarityScore
+Module7=TMUtils
 NumberOfFiles=0
-NumberOfLibraries=7
-NumberOfModules=4
+NumberOfLibraries=8
+NumberOfModules=7
 Version=6.51
 @EndOfDesignText@
 'Non-UI application (console / server application)
@@ -28,9 +32,11 @@ Version=6.51
 
 Sub Process_Globals
 	Private srvr As Server
+	Public connectedDBMap As Map
 End Sub
 
 Sub AppStart (Args() As String)
+	connectedDBMap.Initialize
 	Dim port As Int
 	Log(Args.Length)
 	If Args.Length>0 Then
@@ -42,6 +48,7 @@ Sub AppStart (Args() As String)
 	srvr.Initialize("srvr")
 	srvr.AddHandler("/getMatchList","getMatchList",False)
 	srvr.AddHandler("/getOneMatch","getMatchForPretranslate",False)
+	srvr.AddHandler("/getSimilarity","getSimilarityScore",False)
 	srvr.Port=port
 	srvr.Start
 	

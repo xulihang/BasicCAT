@@ -22,8 +22,8 @@ Sub Handle(req As ServletRequest, resp As ServletResponse)
 	Log(source)
 	Dim projectTM As TM
 	projectTM.Initialize(path)
-    Dim matchList As List
-    matchList.Initialize
+	Dim matchList As List
+	matchList.Initialize
 	matchList.AddAll(projectTM.getList(source))
 	Dim json As JSONGenerator
 	json.Initialize2(matchList)
