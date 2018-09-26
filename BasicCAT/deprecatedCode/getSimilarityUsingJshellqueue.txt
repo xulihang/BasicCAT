@@ -1,0 +1,95 @@
+	Private Queue As ShellQueue
+	Private matchedList As List
+	Private queuecompleted As Boolean=False
+
+Sub getMatchList(source As String) As ResumableSub
+	
+	matchedList.Initialize
+	Dim ConcurrentJobs As Int = 8
+	Queue.Initialize(ConcurrentJobs, 5000, Me, "mtc")
+	For i=0 To 1
+		If i=0 Then
+			Dim kvs As KeyValueStore
+			kvs=translationMemory
+		Else
+			Dim kvs As KeyValueStore
+			kvs=externalTranslationMemory
+		End If
+		For Each key As String In kvs.ListKeys
+			If basicCompare(source,key)=False Then
+				Continue
+			End If
+			Dim pairList As List
+			pairList.Initialize
+			pairList.Add(source)
+			pairList.Add(key) ' two sourcelanguage sentences
+			Dim json As JSONGenerator
+			json.Initialize2(pairList)
+			pairList.Add(i)
+			Dim similarity As Double
+			If similarityResult.ContainsKey(json.ToString) Then
+				similarity=similarityResult.Get(json.ToString)
+				addToMatchList(source,key,similarity,i)
+			Else
+				Queue.AddToQueue("java",Array As String("-jar","getSimilarity.jar",source,key),File.DirApp,True,pairList)
+			End If
+		Next
+	Next
+	Queue.StartQueue
+	Do While queuecompleted=False
+		Sleep(1000)
+	Loop
+	Return subtractedAndSortMatchList(matchedList)
+End Sub
+
+Sub mtc_QueueFinished
+	Log($"Queue Complete"$)
+	queuecompleted=True
+End Sub
+
+Sub mtc_JobCompleted(Job As ShellQueueJob)
+	Dim Offline As Boolean = Job.StdOut.ToLowerCase.Contains("request timed out") Or Job.StdOut.ToLowerCase.Contains("unreachable")
+	If Not(Offline) Then
+		Log("Online")
+	Else
+		Log(" : OFFLINE / UNREACHABLE")
+	End If
+	Dim similarity As Double
+	For Each line As String In Regex.Split(CRLF,Job.StdOut)
+		If line.StartsWith("similarity") Then
+			similarity=line.Replace("similarity:","")
+		End If
+	Next
+	Log(similarity)
+	Dim pairlist As List
+	pairlist=Job.Tag
+	Dim i As Int
+	i=pairlist.Get(2)
+	pairlist.RemoveAt(2)
+	Dim json As JSONGenerator
+	json.Initialize2(pairlist)
+	similarityResult.Put(json.ToString,similarity)
+	addToMatchList(pairlist.Get(0),pairlist.Get(1),similarity,i)
+End Sub
+
+Sub addToMatchList(str1 As String,str2 As String,similarity As Double,i As Int)
+	If similarity>0.5 Then
+		Dim tmPairList As List
+		tmPairList.Initialize
+		tmPairList.Add(similarity)
+		tmPairList.Add(str1)
+				
+		If i=0 Then
+			tmPairList.Add(str2)
+			tmPairList.Add("")
+		Else
+			
+			Dim targetList As List
+			targetList=externalTranslationMemory.Get(str2)
+			tmPairList.Add(targetList.Get(0))
+			tmPairList.Add(targetList.Get(1))
+		End If
+		Log(tmPairList)
+		matchedList.Add(tmPairList)
+	End If
+End Sub

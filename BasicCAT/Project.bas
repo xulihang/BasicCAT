@@ -21,6 +21,7 @@ Sub Class_Globals
 	Public sh As Shell
 	Private maxRequest As Int
 	Private completed As Int
+	
 End Sub
 
 'Initializes the object. You can add parameters to this method if needed.
@@ -476,7 +477,8 @@ Sub showTM(targetTextArea As TextArea)
 	End If
 	Main.tmTableView.Items.Clear
 	projectTM.currentSource=sourceTA.Text
-	Wait For (projectTM.getMatchList(sourceTA.Text)) Complete (Result As List)
+	Dim senderFilter As Object = projectTM.getMatchList(sourceTA.Text)
+	Wait For (senderFilter) Complete (Result As List)
 
 	For Each matchList As List In Result
 		Dim row()  As Object = Array As String(matchList.Get(0),matchList.Get(1),matchList.Get(2),matchList.Get(3))
@@ -638,7 +640,8 @@ Sub preTranslate(options As Map)
 				Continue
 			End If
             Dim resultList As List
-			resultList=projectTM.getOneUseMemory(bitext.Get(0),options.Get("rate"))
+			Wait For (projectTM.getOneUseMemory(bitext.Get(0),options.Get("rate"))) Complete (Result As List)
+			resultList=Result
 			Dim similarity,matchrate As Double
 			similarity=resultList.Get(0)
 			matchrate=options.Get("rate")
@@ -771,8 +774,4 @@ Sub showTM2(targetTextArea As TextArea)
 		Next
 	End If
 	job.Release
-End Sub
-
-Sub asJO(o As JavaObject) As JavaObject
-	Return o
 End Sub

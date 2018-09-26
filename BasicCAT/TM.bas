@@ -12,6 +12,7 @@ Sub Class_Globals
 	Public currentSource As String
 	Private maxRequest As Int=0
 	Private completed As Int=0
+
 End Sub
 
 'Initializes the object. You can add parameters to this method if needed.
@@ -237,7 +238,22 @@ Sub getSimilarityFuzzyWuzzy(str1 As String,str2 As String) As Double
 	Return result
 End Sub
 
+
 Sub getSimilarity(str1 As String,str2 As String) As Double
+	Dim result As Double
+	result=1-editDistance(str1,str2)/Max(str1.Length,str2.Length)
+	Dim str As String
+	str=result
+	Dim su As ApacheSU
+	str=su.Left(str,4)
+	result=str
+	Return result
+End Sub
+
+
+
+Sub getSimilarity2(str1 As String,str2 As String) As ResumableSub
+	Sleep(0)
 	Dim result As Double
 	result=1-editDistance(str1,str2)/Max(str1.Length,str2.Length)
 	Dim str As String

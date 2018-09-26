@@ -7,7 +7,7 @@ Version=6.5
 'KeyValueStore: v2.20
 Sub Class_Globals
 	Private sql1 As SQL
-	Private ser As B4XSerializator
+	'Private ser As B4XSerializator
 End Sub
 
 'Initializes the store and sets the store file.
@@ -30,6 +30,7 @@ Public Sub Initialize (Dir As String, FileName As String)
 End Sub
 
 Public Sub Put(Key As String, Value As Object)
+	Dim ser As B4XSerializator
 	sql1.ExecNonQuery2("INSERT OR REPLACE INTO main VALUES(?, ?)", Array (Key, ser.ConvertObjectToBytes(Value)))
 End Sub
 
@@ -38,6 +39,7 @@ Public Sub Get(Key As String) As Object
 	Dim rs As ResultSet = sql1.ExecQuery2("SELECT value FROM main WHERE key = ?", Array As String(Key))
 	Dim result As Object = Null
 	If rs.NextRow Then
+		Dim ser As B4XSerializator
 		result = ser.ConvertBytesToObject(rs.GetBlob2(0))
 	End If
 	rs.Close
@@ -108,6 +110,7 @@ Public Sub PutEncrypted (Key As String, Value As Object, Password As String)
 #else
 	Dim cipher As B4XCipher
 #end if
+	Dim ser As B4XSerializator
 	Put(Key, cipher.Encrypt(ser.ConvertObjectToBytes(Value), Password))
 End Sub
 
@@ -120,6 +123,7 @@ Public Sub GetEncrypted (Key As String, Password As String) As Object
 #end if
 	Dim b() As Byte = Get(Key)
 	If b = Null Then Return Null
+	Dim ser As B4XSerializator
 	Return ser.ConvertBytesToObject(cipher.Decrypt(b, Password))
 End Sub
 
