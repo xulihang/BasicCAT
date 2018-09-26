@@ -9,7 +9,7 @@ Sub Process_Globals
 	Private fx As JFX
 End Sub
 
-Sub creatTxtWorkFile(filename As String,path As String)
+Sub creatWorkFile(filename As String,path As String)
 	Dim workfile As Map
 	workfile.Initialize
 	workfile.Put("filename",filename)
@@ -46,7 +46,7 @@ Sub creatTxtWorkFile(filename As String,path As String)
 	File.WriteString(File.Combine(path,"work"),filename&".json",json.ToPrettyString(4))
 End Sub
 
-Sub saveTxtWorkFile(filename As String,segments As List,path As String)
+Sub saveWorkFile(filename As String,segments As List,path As String)
 	Dim workfile As Map
 	workfile.Initialize
 	workfile.Put("filename",filename)
@@ -87,7 +87,7 @@ Sub saveTxtWorkFile(filename As String,segments As List,path As String)
 	File.WriteString(File.Combine(path,"work"),filename&".json",json.ToPrettyString(4))
 End Sub
 
-Sub readTxtFile(filename As String,segments As List,path As String)
+Sub readFile(filename As String,segments As List,path As String)
 	Dim innerFilename As String
 	innerFilename=filename
 	Dim workfile As Map
@@ -122,7 +122,7 @@ Sub readTxtFile(filename As String,segments As List,path As String)
 	File.WriteString(File.DirApp,"out",result)
 End Sub
 
-Sub generateTxtFile(filename As String,path As String,projectFile As Map)
+Sub generateFile(filename As String,path As String,projectFile As Map)
 	Dim innerfilename As String=filename
 	Dim result As String
 	Dim workfile As Map

@@ -1,27 +1,28 @@
 ﻿AppType=JavaFX
 Build1=Default,b4j.example
 File1=editor.bjl
-File10=searchTableView.bjl
-File11=segment.bjl
-File12=segmentation_en.conf
-File13=segmentation_en_exception.conf
-File14=supportedFiles.txt
-File15=tableview.bjl
-File16=tabpane.bjl
-File17=term.bjl
-File18=tmList.bjl
-File19=TMManager.bjl
+File10=right.bjl
+File11=searchTableView.bjl
+File12=segment.bjl
+File13=segmentation_en.conf
+File14=segmentation_en_exception.conf
+File15=supportedFiles.txt
+File16=tableview.bjl
+File17=tabpane.bjl
+File18=term.bjl
+File19=tmList.bjl
 File2=leftProject.bjl
-File20=TMsegment.bjl
-File21=tmSetting.bjl
-File22=upperRight.bjl
+File20=TMManager.bjl
+File21=TMsegment.bjl
+File22=tmSetting.bjl
+File23=upperRight.bjl
 File3=Log.bjl
 File4=lowerRight.bjl
 File5=main.bjl
-File6=pretranslate.bjl
-File7=preTranslateProgress.bjl
-File8=projectSetting.bjl
-File9=right.bjl
+File6=oneterm.bjl
+File7=pretranslate.bjl
+File8=preTranslateProgress.bjl
+File9=projectSetting.bjl
 FileGroup1=Default Group
 FileGroup10=Default Group
 FileGroup11=Default Group
@@ -37,6 +38,7 @@ FileGroup2=Default Group
 FileGroup20=Default Group
 FileGroup21=Default Group
 FileGroup22=Default Group
+FileGroup23=Default Group
 FileGroup3=Default Group
 FileGroup4=Default Group
 FileGroup5=Default Group
@@ -49,6 +51,7 @@ Library1=jcore
 Library10=jb4xencryption
 Library11=jokhttputils2
 Library12=jshell
+Library13=jreflection
 Library2=jfx
 Library3=javaobject
 Library4=cssutils
@@ -60,6 +63,7 @@ Library9=jrandomaccessfile
 Module1=FileChooserUtils
 Module10=preTrasnlateProgressDialog
 Module11=TMManager
+Module12=Term
 Module2=Project
 Module3=segmentation
 Module4=CustomListView
@@ -68,9 +72,9 @@ Module6=TM
 Module7=KeyValueStore
 Module8=ProjectSettings
 Module9=preTranslateDialog
-NumberOfFiles=22
-NumberOfLibraries=12
-NumberOfModules=11
+NumberOfFiles=23
+NumberOfLibraries=13
+NumberOfModules=12
 Version=6.51
 @EndOfDesignText@
 #Region Project Attributes 
@@ -97,6 +101,10 @@ Sub Process_Globals
 	Private LogWebView As WebView
 	Public tmTableView As TableView
 	Private searchTableView As TableView
+	Private addTermButton As Button
+	Public sourceTermTextField As TextField
+	Public targetTermTextField1 As TextField
+	Public termLV As ListView
 End Sub
 
 Sub AppStart (Form1 As Form, Args() As String)
@@ -442,5 +450,25 @@ Sub tmTableView_MouseClicked (EventData As MouseEvent)
 		Dim targetTextArea As TextArea
 		targetTextArea=pane.GetNode(1)
 		targetTextArea.Text=tmTableView.SelectedRowValues(2)
+	End If
+End Sub
+
+Sub addTermButton_MouseClicked (EventData As MouseEvent)
+	If currentProject.IsInitialized Then
+		currentProject.projectTerm.addTerm(sourceTermTextField.Text,targetTermTextField1.Text)
+	End If
+End Sub
+
+Sub termLV_MouseClicked (EventData As MouseEvent)
+	If termLV.SelectedItem<>Null Then
+		Dim p As Pane
+		p=termLV.SelectedItem
+		Dim lbl As Label
+		lbl=p.GetNode(1)
+		Dim pane As Pane
+		pane=editorLV.GetPanel(currentProject.lastEntry)
+		Dim targetTextArea As TextArea
+		targetTextArea=pane.GetNode(1)
+		targetTextArea.Text=targetTextArea.Text.SubString2(0,targetTextArea.SelectionStart)&lbl.Text&targetTextArea.Text.SubString2(targetTextArea.SelectionStart,targetTextArea.Text.Length)
 	End If
 End Sub

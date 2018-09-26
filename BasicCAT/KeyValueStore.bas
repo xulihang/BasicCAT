@@ -34,6 +34,7 @@ Public Sub Put(Key As String, Value As Object)
 End Sub
 
 Public Sub Get(Key As String) As Object
+	'Log(Key)
 	Dim rs As ResultSet = sql1.ExecQuery2("SELECT value FROM main WHERE key = ?", Array As String(Key))
 	Dim result As Object = Null
 	If rs.NextRow Then

@@ -4,6 +4,7 @@ ModulesStructureVersion=1
 Type=Class
 Version=6.51
 @EndOfDesignText@
+#RaisesSynchronousEvents: SubThatCanRaiseEvent
 Sub Class_Globals
 	Private fx As JFX
 	Public path As String
@@ -13,6 +14,7 @@ Sub Class_Globals
 	Private currentFilename As String
 	Private segments As List
 	Public projectTM As TM
+	Public projectTerm As Term
 	Public lastEntry As Int
 	Private lastFilename As String
 	Public settings As Map
@@ -49,6 +51,10 @@ Sub initializeTM(projectPath As String)
 	'runTMBackend
 End Sub
 
+Sub initializeTerm(projectPath As String)
+	projectTerm.Initialize(projectPath,projectFile.Get("source"))
+End Sub
+
 Sub runTMBackend
 	If sh.IsInitialized Then
 		Dim sh As Shell
@@ -81,6 +87,7 @@ Public Sub open(jsonPath As String)
 		addFilesToTreeTable(filepath)
 	Next
 	initializeTM(path)
+	initializeTerm(path)
 	'jumpToLastEntry
 End Sub
 
@@ -125,7 +132,7 @@ End Sub
 
 Sub creatWorkFile(filename As String)
 	If filename.EndsWith(".txt") Then
-		txtFilter.creatTxtWorkFile(filename,path)
+		txtFilter.creatWorkFile(filename,path)
 	Else
 		
 	End If
@@ -145,6 +152,9 @@ public Sub save
 	If projectTM.IsInitialized=False Then
 		initializeTM(path)
 	End If
+	If projectTerm.IsInitialized=False Then
+		initializeTerm(path)
+	End If
 	projectFile.Put("files",files)
 	projectFile.Put("lastFile",lastFilename)
 	projectFile.Put("lastEntry",lastEntry)
@@ -154,7 +164,7 @@ public Sub save
 	File.WriteString(path,"project.json",json.ToPrettyString(4))
 	If currentFilename.EndsWith(".txt") Then
 		saveAlltheTranslation(Main.editorLV.FirstVisibleIndex,Main.editorLV.LastVisibleIndex)
-		txtFilter.saveTxtWorkFile(currentFilename,segments,path)
+		txtFilter.saveWorkFile(currentFilename,segments,path)
 	End If
 	status="saved"
 End Sub
@@ -165,12 +175,13 @@ Sub creatProjectFiles
 	File.MakeDir(path,"work")
 	File.MakeDir(path,"target")
 	File.MakeDir(path,"TM")
+	File.MakeDir(path,"Term")
 End Sub
 
 Public Sub generateTargetFiles
 	For Each filename As String In files
 		If filename.EndsWith(".txt") Then
-			txtFilter.generateTxtFile(filename,path,projectFile)
+			txtFilter.generateFile(filename,path,projectFile)
 		End If
 	Next
 End Sub
@@ -208,7 +219,7 @@ Sub openFile(filename As String,onOpeningProject As Boolean)
 	currentFilename=filename
 
 	If currentFilename.EndsWith(".txt") Then
-		txtFilter.readTxtFile(filename,segments,path)
+		txtFilter.readFile(filename,segments,path)
 	End If
 
 	Log("currentFilename:"&currentFilename)
@@ -256,11 +267,13 @@ Sub addTextAreaToSegmentPane(segmentpane As Pane,source As String,target As Stri
 	sourceTextArea.Text=source
 	'sourceTextArea.Style = "-fx-font-family: Tahoma;"
 	addKeyEvent(sourceTextArea,"sourceTextArea")
+	addSelectionChangedEvent(sourceTextArea,"sourceTextAreaSelection")
 	Dim targetTextArea As TextArea
 	targetTextArea=segmentpane.GetNode(1)
 	targetTextArea.Text=target
 	'targetTextArea.Style = "-fx-font-family: Arial Unicode MS;"
 	addKeyEvent(targetTextArea,"targetTextArea")
+	addSelectionChangedEvent(targetTextArea,"targetTextAreaSelection")
 End Sub
 
 Sub addKeyEvent(textarea1 As TextArea,eventName As String)
@@ -268,6 +281,41 @@ Sub addKeyEvent(textarea1 As TextArea,eventName As String)
 	Dim O As Object = CJO.CreateEventFromUI("javafx.event.EventHandler",eventName&"_KeyPressed",Null)
 	CJO.RunMethod("setOnKeyPressed",Array(O))
 	CJO.RunMethod("setFocusTraversable",Array(True))
+End Sub
+
+Sub addSelectionChangedEvent(textarea1 As TextArea,eventName As String)
+	Dim Obj As Reflector
+	Obj.Target = textarea1
+	Obj.AddChangeListener(eventName, "selectionProperty")
+	
+End Sub
+
+Sub sourceTextAreaSelection_changed(old As Object, new As Object)
+	Log(GetType(new))
+	Dim ta As TextArea
+	ta=Sender
+	Dim indexString As String
+	indexString=new
+	Dim selectionStart,selectionEnd As Int
+	selectionStart=Regex.Split(",",indexString)(0)
+	selectionEnd=Regex.Split(",",indexString)(1)
+	If selectionEnd<>selectionStart Then
+		Main.sourceTermTextField.Text=ta.Text.SubString2(selectionStart,selectionEnd)
+	End If
+End Sub
+
+Sub targetTextAreaSelection_changed(old As Object, new As Object)
+	Log(GetType(new))
+	Dim ta As TextArea
+	ta=Sender
+	Dim indexString As String
+	indexString=new
+	Dim selectionStart,selectionEnd As Int
+	selectionStart=Regex.Split(",",indexString)(0)
+	selectionEnd=Regex.Split(",",indexString)(1)
+	If selectionEnd<>selectionStart Then
+		Main.targetTermTextField1.Text=ta.Text.SubString2(selectionStart,selectionEnd)
+	End If
 End Sub
 
 Sub sourceTextArea_KeyPressed_Event (MethodName As String, Args() As Object) As Object
@@ -374,6 +422,7 @@ Sub targetTextArea_KeyPressed_Event (MethodName As String, Args() As Object) As 
 			nextTA=nextPane.GetNode(1)
 			nextTA.RequestFocus
 			showTM(nextTA)
+			showTerm(nextTA)
 			lastEntry=Main.editorLV.GetItemFromView(nextPane)
 			lastFilename=currentFilename
 		Catch
@@ -409,6 +458,7 @@ Sub targetTextArea_FocusChanged (HasFocus As Boolean)
 	If HasFocus Then
         Log("hasFocus")
 		showTM(TextArea1)
+		showTerm(TextArea1)
 	Else
 		lastEntry=Main.editorLV.GetItemFromView(TextArea1.Parent)
 		lastFilename=currentFilename
@@ -431,6 +481,29 @@ Sub showTM(targetTextArea As TextArea)
 	For Each matchList As List In Result
 		Dim row()  As Object = Array As String(matchList.Get(0),matchList.Get(1),matchList.Get(2),matchList.Get(3))
 		Main.tmTableView.Items.Add(row)
+	Next
+End Sub
+
+Sub showTerm(targetTextArea As TextArea)
+	Dim pane As Pane
+	pane=targetTextArea.Parent
+	Dim sourceTA As TextArea
+	sourceTA=pane.GetNode(0)
+	Dim terms As List
+	terms=projectTerm.termsInASentence(sourceTA.Text)
+	Main.termLV.Items.Clear
+	For Each termList As List In terms
+		Dim p As Pane
+		p.Initialize("termpane")
+		p.LoadLayout("oneterm")
+		p.SetSize(Main.termLV.Width,50)
+		Dim lbl1 As Label
+		lbl1=p.GetNode(0)
+		lbl1.Text=termList.Get(0)
+		Dim lbl2 As Label
+		lbl2=p.GetNode(1)
+		lbl2.Text=termList.Get(1)
+		Main.termLV.Items.Add(p)
 	Next
 End Sub
 
@@ -691,4 +764,8 @@ Sub showTM2(targetTextArea As TextArea)
 		Next
 	End If
 	job.Release
+End Sub
+
+Sub asJO(o As JavaObject) As JavaObject
+	Return o
 End Sub
