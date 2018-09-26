@@ -127,7 +127,18 @@ Sub getOneUseMemory(source As String,rate As Int) As ResumableSub
 			If basicCompare(source,key)=False Then
 				Continue
 			End If
-
+			
+			If kvs.ContainsKey("source") Then
+				Dim tmPairList As List
+				tmPairList.Initialize
+				tmPairList.Add(1)
+				tmPairList.Add(key)
+				tmPairList.Add(kvs.Get(key))
+				tmPairList.Add("")
+				onePairList=tmPairList
+				Return onePairList
+			End If
+			
 			Dim similarity As Double
 			wait for (getSimilarityFuzzyWuzzy(source,key)) Complete (Result As Double)
 			similarity=Result

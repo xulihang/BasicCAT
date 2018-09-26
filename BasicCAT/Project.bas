@@ -10,16 +10,14 @@ Sub Class_Globals
 	Public path As String
 	Private files As List
 	Private projectFile As Map
-	Public status As String
 	Private currentFilename As String
-	Private segments As List
+	Public segments As List
 	Public projectTM As TM
 	Public projectTerm As Term
 	Public lastEntry As Int
 	Private lastFilename As String
 	Public settings As Map
 	Public sh As Shell
-	Private maxRequest As Int
 	Private completed As Int
 	
 End Sub
@@ -167,7 +165,6 @@ public Sub save
 		saveAlltheTranslation(Main.editorLV.FirstVisibleIndex,Main.editorLV.LastVisibleIndex)
 		txtFilter.saveWorkFile(currentFilename,segments,path)
 	End If
-	status="saved"
 End Sub
 
 Sub creatProjectFiles
@@ -295,27 +292,78 @@ Sub sourceTextAreaSelection_changed(old As Object, new As Object)
 	Log(GetType(new))
 	Dim ta As TextArea
 	ta=Sender
-	Dim indexString As String
-	indexString=new
-	Dim selectionStart,selectionEnd As Int
-	selectionStart=Regex.Split(",",indexString)(0)
-	selectionEnd=Regex.Split(",",indexString)(1)
-	If selectionEnd<>selectionStart Then
-		Main.sourceTermTextField.Text=ta.Text.SubString2(selectionStart,selectionEnd)
-	End If
+	onSelectionChanged(new,ta,True)
 End Sub
 
 Sub targetTextAreaSelection_changed(old As Object, new As Object)
 	Log(GetType(new))
 	Dim ta As TextArea
 	ta=Sender
+    onSelectionChanged(new,ta,False)
+End Sub
+
+Sub onSelectionChanged(new As Object,ta As TextArea,isSource As Boolean)
 	Dim indexString As String
 	indexString=new
 	Dim selectionStart,selectionEnd As Int
 	selectionStart=Regex.Split(",",indexString)(0)
 	selectionEnd=Regex.Split(",",indexString)(1)
+	Dim selectedText As String
 	If selectionEnd<>selectionStart Then
-		Main.targetTermTextField1.Text=ta.Text.SubString2(selectionStart,selectionEnd)
+		selectedText=ta.Text.SubString2(selectionStart,selectionEnd)
+		If isSource Then
+		    Main.sourceTermTextField.Text=selectedText
+		Else
+			Main.targetTermTextField1.Text=selectedText
+		End If
+	Else
+		Return
+	End If
+	
+	Dim index As Int
+	If isSource Then
+		index=0
+	Else
+		index=1
+	End If
+	
+	If Main.TabPane1.SelectedIndex=1 Then
+		
+		If projectFile.Get("source")="EN" And isSource=True Then
+			If selectionEnd<>ta.Text.Length Then
+				Dim lastChar As String
+				lastChar=ta.Text.SubString2(selectionEnd,Min(ta.Text.Length,selectionEnd+1))
+				If Regex.IsMatch("\s|,|\.|\!|\?|"&Chr(34),lastChar)=False Then
+					Return
+				End If
+			End If
+		End If
+		If projectFile.Get("target")="EN" And isSource=False Then
+			If selectionEnd<>ta.Text.Length Then
+				If ta.Text.SubString2(selectionEnd,Min(ta.Text.Length,selectionEnd+1))<>" " Then
+					Return
+				End If
+			End If
+		End If
+		
+		Main.searchTableView.Items.Clear
+		Dim result As List
+		result.Initialize
+		
+		For i=0 To segments.Size-1
+			Dim segment As List
+			segment=segments.Get(i)
+			Dim content As String
+			content=segment.Get(index)
+			segment.Add(i)
+			If content.Contains(selectedText) And content<>ta.Text Then
+				result.Add(segment)
+			End If
+		Next
+		For Each segment As List In result
+			Dim row()  As Object = Array As String(segment.Get(4),segment.Get(0),segment.Get(1))
+			Main.searchTableView.Items.Add(row)
+		Next
 	End If
 End Sub
 
@@ -683,98 +731,3 @@ Sub fillVisibleTargetTextArea
 End Sub
 
 
-Sub preTranslateViaNetwork(options As Map)
-	
-	If options.Get("type")="TM" Then
-		maxRequest=0
-		completed=0
-		Dim index As Int=-1
-		preTrasnlateProgressDialog.Show(3)
-		
-		For Each bitext As List In segments
-			index=index+1
-			Dim target As String
-			target=bitext.Get(1)
-			If target<>"" Then
-				completed=completed+1
-				preTrasnlateProgressDialog.update(completed,segments.Size)
-				Continue
-			End If
-			Do While maxRequest>=10
-				Sleep(1000)
-			Loop
-			maxRequest=maxRequest+1
-			getOneMatch(bitext.Get(0),index,options.Get("rate"))
-		Next
-
-		Do While completed<>segments.size
-			Sleep(1000)
-		Loop
-		preTrasnlateProgressDialog.close
-		fillVisibleTargetTextArea
-	End If
-End Sub
-
-'Good example. Use.
-Sub getOneMatch(source As String, index As Int,matchRate As Double)
-	Dim job As HttpJob
-	job.Initialize("job",Me)
-	job.Download2("http://127.0.0.1:51041/getOneMatch",Array As String("source",source,"path",path,"index",index,"matchrate",matchRate))
-				
-	Wait For (job) JobDone(job As HttpJob)
-	completed=completed+1
-	If job.Success Then
-		Log("job")
-		Dim json As JSONParser
-		json.Initialize(job.GetString)
-		Dim result As List
-		result=json.NextArray
-		maxRequest=maxRequest-1
-		Dim completedIndex As Int
-		completedIndex=result.Get(4)
-		Dim similarity As Double
-		similarity=result.Get(0)
-		Dim bitext As List
-		bitext=segments.Get(completedIndex)
-		Log(bitext.Get(0))
-		Log(similarity)
-		Log(matchRate)
-		Log(similarity>=matchRate)
-		If similarity>=matchRate Then
-			bitext.Set(1,result.Get(2))
-			segments.Set(completedIndex,bitext)
-		End If
-		preTrasnlateProgressDialog.update(completed,segments.Size)
-	End If
-	job.Release
-	
-End Sub
-
-Sub showTM2(targetTextArea As TextArea)
-	Dim pane As Pane
-	pane=targetTextArea.Parent
-	Dim sourceTA As TextArea
-	sourceTA=pane.GetNode(0)
-	If projectTM.currentSource=sourceTA.Text Then
-		Return
-	End If
-	projectTM.currentSource=sourceTA.Text
-	Main.tmTableView.Items.Clear
-	Dim job As HttpJob
-	job.Initialize("job",Me)
-	job.Download2("http://127.0.0.1:51041/getMatchList",Array As String("source",sourceTA.Text,"path",path))
-	Wait For (job) JobDone(job As HttpJob)
-	If job.Success Then
-		Log("job")
-		Main.tmTableView.Items.Clear
-		Dim json As JSONParser
-		json.Initialize(job.GetString)
-		Dim result As List
-		result=json.NextArray
-		For Each matchList As List In result
-			Dim row()  As Object = Array As String(matchList.Get(0),matchList.Get(1),matchList.Get(2),matchList.Get(3))
-			Main.tmTableView.Items.Add(row)
-		Next
-	End If
-	job.Release
-End Sub

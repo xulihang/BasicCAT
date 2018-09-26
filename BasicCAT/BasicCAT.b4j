@@ -17,6 +17,7 @@ File21=TMManager.bjl
 File22=TMsegment.bjl
 File23=tmSetting.bjl
 File24=upperRight.bjl
+File25=viewSegment.bjl
 File3=Log.bjl
 File4=lowerRight.bjl
 File5=main.bjl
@@ -41,6 +42,7 @@ FileGroup21=Default Group
 FileGroup22=Default Group
 FileGroup23=Default Group
 FileGroup24=Default Group
+FileGroup25=Default Group
 FileGroup3=Default Group
 FileGroup4=Default Group
 FileGroup5=Default Group
@@ -68,6 +70,7 @@ Module11=TMManager
 Module12=TermManager
 Module13=Utils
 Module14=preTrasnlateProgressDialog
+Module15=viewSegment
 Module2=Project
 Module3=segmentation
 Module4=CustomListView
@@ -76,9 +79,9 @@ Module6=TM
 Module7=Term
 Module8=KeyValueStore
 Module9=ProjectSettings
-NumberOfFiles=24
+NumberOfFiles=25
 NumberOfLibraries=13
-NumberOfModules=14
+NumberOfModules=15
 Version=6.51
 @EndOfDesignText@
 #Region Project Attributes 
@@ -101,10 +104,10 @@ Sub Process_Globals
 	Public projectTreeTableView As TreeTableView
 	Public currentProject As Project
 	Private lowerRightSplitPane As SplitPane
-	Private TabPane1 As TabPane
+	Public TabPane1 As TabPane
 	Private LogWebView As WebView
 	Public tmTableView As TableView
-	Private searchTableView As TableView
+	Public searchTableView As TableView
 	Private addTermButton As Button
 	Public sourceTermTextField As TextField
 	Public targetTermTextField1 As TextField
@@ -457,9 +460,31 @@ End Sub
 
 
 Sub TabPane1_TabChanged (SelectedTab As TabPage)
-	
+    	
 End Sub
 
+Sub searchTableView_MouseClicked (EventData As MouseEvent)
+	If EventData.PrimaryButtonPressed Then
+		If searchTableView.SelectedRowValues<>Null Then
+			Dim index As Int
+			index=searchTableView.SelectedRowValues(0)
+			Log(index)
+			Log(currentProject.segments.Get(index))
+			Dim context As String
+			'For i=Max(index-5,0) To Min(index+5,currentProject.segments.Size-1)
+			'	Dim segment As List
+			'	segment=currentProject.segments.Get(i)
+			'	context=segment.Get(2)&context
+			'Next
+			For Each row() As String In searchTableView.Items
+				context=context&row(0)&" "&row(1)&CRLF&"  "&row(2)&CRLF&CRLF
+			Next
+			Dim viewSegmentForm As viewSegment
+			viewSegmentForm.Initialize
+			viewSegmentForm.show(context)
+		End If
+	End If
+End Sub
 
 Sub tmTableView_MouseClicked (EventData As MouseEvent)
 	If tmTableView.SelectedRowValues<>Null And editorLV.Size<>0 Then
@@ -489,4 +514,19 @@ Sub termLV_MouseClicked (EventData As MouseEvent)
 		targetTextArea=pane.GetNode(1)
 		targetTextArea.Text=targetTextArea.Text.SubString2(0,targetTextArea.SelectionStart)&lbl.Text&targetTextArea.Text.SubString2(targetTextArea.SelectionStart,targetTextArea.Text.Length)
 	End If
+End Sub
+
+
+
+Sub searchTableView_Action
+	Dim mi As MenuItem
+	mi=Sender
+	Select mi.Text
+		Case "Go to the segment"
+			If searchTableView.SelectedRowValues<>Null Then
+				Dim index As Int
+				index=searchTableView.SelectedRowValues(0)
+				editorLV.JumpToItem(index)
+			End If
+	End Select
 End Sub
