@@ -6,7 +6,7 @@ Version=6.51
 @EndOfDesignText@
 Sub Class_Globals
 	Private fx As JFX
-	Private terminology As KeyValueStore
+	Public terminology As KeyValueStore
 	Private dictionary As KeyValueStore
 	Private sourceLanguage As String
 End Sub

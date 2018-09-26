@@ -548,6 +548,10 @@ Public Sub fillPane(FirstIndex As Int, LastIndex As Int)
 				Dim bitext As List
 				bitext=segments.Get(i)
 				addTextAreaToSegmentPane(segmentPane,bitext.Get(0),bitext.Get(1))
+				If Main.calculatedHeight.ContainsKey(bitext.Get(0)&"	"&bitext.Get(1)) Then
+					Dim h As Int=Main.calculatedHeight.Get(bitext.Get(0)&"	"&bitext.Get(1))
+					Main.setLayout(segmentPane,i,h)
+				End If
 				
 			End If
 		Else
@@ -574,7 +578,10 @@ Public Sub fillPaneAsync(FirstIndex As Int, LastIndex As Int) As ResumableSub
 				Dim bitext As List
 				bitext=segments.Get(i)
 				addTextAreaToSegmentPane(segmentPane,bitext.Get(0),bitext.Get(1))
-				
+				If Main.calculatedHeight.ContainsKey(bitext.Get(0)&"	"&bitext.Get(1)) Then
+					Dim h As Int=Main.calculatedHeight.Get(bitext.Get(0)&"	"&bitext.Get(1))
+					Main.setLayout(segmentPane,i,h)
+				End If
 			End If
 		Else
 			'not visible

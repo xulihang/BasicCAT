@@ -10,12 +10,13 @@ File15=supportedFiles.txt
 File16=tableview.bjl
 File17=tabpane.bjl
 File18=term.bjl
-File19=tmList.bjl
+File19=TermManager.bjl
 File2=leftProject.bjl
-File20=TMManager.bjl
-File21=TMsegment.bjl
-File22=tmSetting.bjl
-File23=upperRight.bjl
+File20=tmList.bjl
+File21=TMManager.bjl
+File22=TMsegment.bjl
+File23=tmSetting.bjl
+File24=upperRight.bjl
 File3=Log.bjl
 File4=lowerRight.bjl
 File5=main.bjl
@@ -39,6 +40,7 @@ FileGroup20=Default Group
 FileGroup21=Default Group
 FileGroup22=Default Group
 FileGroup23=Default Group
+FileGroup24=Default Group
 FileGroup3=Default Group
 FileGroup4=Default Group
 FileGroup5=Default Group
@@ -61,20 +63,22 @@ Library7=jxui
 Library8=jsql
 Library9=jrandomaccessfile
 Module1=FileChooserUtils
-Module10=preTrasnlateProgressDialog
+Module10=preTranslateDialog
 Module11=TMManager
-Module12=Term
+Module12=TermManager
+Module13=Utils
+Module14=preTrasnlateProgressDialog
 Module2=Project
 Module3=segmentation
 Module4=CustomListView
 Module5=txtFilter
 Module6=TM
-Module7=KeyValueStore
-Module8=ProjectSettings
-Module9=preTranslateDialog
-NumberOfFiles=23
+Module7=Term
+Module8=KeyValueStore
+Module9=ProjectSettings
+NumberOfFiles=24
 NumberOfLibraries=13
-NumberOfModules=12
+NumberOfModules=14
 Version=6.51
 @EndOfDesignText@
 #Region Project Attributes 
@@ -105,6 +109,7 @@ Sub Process_Globals
 	Public sourceTermTextField As TextField
 	Public targetTermTextField1 As TextField
 	Public termLV As ListView
+	Public calculatedHeight As Map
 End Sub
 
 Sub AppStart (Form1 As Form, Args() As String)
@@ -122,6 +127,7 @@ End Sub
 
 Sub MainForm_Resize (Width As Double, Height As Double)
 	adjustDividerPositions
+	calculatedHeight.Clear
 	CallSubDelayed(Me,"ListViewParent_Resize")
 End Sub
 
@@ -147,6 +153,7 @@ Sub init
 	lowerRightSplitPane.LoadLayout("tabpane")
 	TabPane1.LoadLayout("tableview", "TM Match")
 	TabPane1.LoadLayout("searchTableView", "Segment Search")
+	calculatedHeight.Initialize
 	adjustDividerPositions
 End Sub
 
@@ -342,8 +349,11 @@ Sub projectTreeTableView_SelectedItemChanged (SelectedItem As TreeTableItem)
 				Dim tmm As TMManager
 				tmm.Initialize
 				tmm.ShowAndWait
-		    Case "Terminology"
-
+			Case "Terminology"
+				projectTreeTableView.ClearSelection
+				Dim termm As TermManager
+				termm.Initialize
+				termm.ShowAndWait
 		End Select
 	End If
 End Sub
@@ -390,43 +400,51 @@ Sub ListViewParent_Resize
 		If p.NumberOfNodes=0 Then
 			Continue
 		End If
+		
 		Dim sourceTa As TextArea = p.GetNode(0)
 		Dim targetTa As TextArea = p.GetNode(1)
-		Dim sourcelbl,targetlbl As Label
-		sourcelbl.Initialize("")
-		sourcelbl.Font = fx.CreateFont("Tahoma",16,False,False)
-		p.AddNode(sourcelbl,0, 0, itemWidth/2, -1)
-		targetlbl.Initialize("")
-		targetlbl.Font = fx.CreateFont("Tahoma",16,False,False)
-		p.AddNode(targetlbl, 0, 0, itemWidth/2, -1)
+		If calculatedHeight.ContainsKey(sourceTa.Text&"	"&targetTa.Text)=False Then
+			Dim sourcelbl,targetlbl As Label
+			sourcelbl.Initialize("")
+			sourcelbl.Font = fx.CreateFont("Tahoma",16,False,False)
+			p.AddNode(sourcelbl,0, 0, itemWidth/2, -1)
+			targetlbl.Initialize("")
+			targetlbl.Font = fx.CreateFont("Tahoma",16,False,False)
+			p.AddNode(targetlbl, 0, 0, itemWidth/2, -1)
 
-		sourcelbl.Text = sourceTa.Text&CRLF&"12345"
-		sourcelbl.WrapText = True
-		targetlbl.Text = targetTa.Text&CRLF&"12345"
-		targetlbl.WrapText = True
-		Dim jo As JavaObject = p
-		'force the label to refresh its layout.
-		jo.RunMethod("applyCss", Null)
-		jo.RunMethod("layout", Null)
-		Dim h As Int = Max(Max(30, sourcelbl.Height + 20), targetlbl.Height + 20)
-		'p.SetLayoutAnimated(0, 0, 0, clv.AsView.Width, h + 10dip)
-		'sourceTa.SetLayoutAnimated(0, 5dip, 0, itemWidth/2-5dip, h+5dip)
-		'targetTa.SetLayoutAnimated(0, itemWidth/2-5dip, 0, itemWidth/2-10dip, h+5dip)
-		p.Left=0
-		p.SetSize(itemWidth,h+10dip)
-		sourceTa.Left=5dip
-		sourceTa.SetSize(itemWidth/2-15dip,h+5dip)
-		targetTa.Left=sourceTa.Left+sourceTa.Width
-		targetTa.SetSize(itemWidth/2-15dip,h+5dip)
-		
-		
-		clv.ResizeItem(i,h+10dip)
-		sourcelbl.RemoveNodeFromParent
-		targetlbl.RemoveNodeFromParent
+			sourcelbl.Text = sourceTa.Text&CRLF&"12345"
+			sourcelbl.WrapText = True
+			targetlbl.Text = targetTa.Text&CRLF&"12345"
+			targetlbl.WrapText = True
+			Dim jo As JavaObject = p
+			'force the label to refresh its layout.
+			jo.RunMethod("applyCss", Null)
+			jo.RunMethod("layout", Null)
+			Dim h As Int = Max(Max(30, sourcelbl.Height + 20), targetlbl.Height + 20)
+			calculatedHeight.Put(sourceTa.Text&"	"&targetTa.Text,h)
+			setLayout(p,i,h)
+			sourcelbl.RemoveNodeFromParent
+			targetlbl.RemoveNodeFromParent
+		Else
+			Dim h As Int =calculatedHeight.get(sourceTa.Text&"	"&targetTa.Text)
+			setLayout(p,i,h)
+		End If
 	Next
 End Sub
 
-
+Public Sub setLayout(p As Pane,index As Int,h As Int)
+	Dim itemwidth As Double
+	itemwidth=editorLV.AsView.Width
+	p.Left=0
+	p.SetSize(itemwidth,h+10dip)
+	Dim sourceTa As TextArea = p.GetNode(0)
+	Dim targetTa As TextArea = p.GetNode(1)
+	sourceTa.Left=5dip
+	sourceTa.SetSize(itemwidth/2-15dip,h+5dip)
+	targetTa.Left=sourceTa.Left+sourceTa.Width
+	targetTa.SetSize(itemwidth/2-15dip,h+5dip)
+	editorLV.ResizeItem(index,h+10dip)
+End Sub
 
 Sub editorLV_VisibleRangeChanged (FirstIndex As Int, LastIndex As Int)
 	If editorLV.Size=0 Then

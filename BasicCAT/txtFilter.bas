@@ -106,6 +106,7 @@ Sub readFile(filename As String,segments As List,path As String)
 
 			If index<=20 Then
 				Main.editorLV.Add(Main.currentProject.creatSegmentPane(bitext),"")
+				
 				index=index+1
 			Else
 				Main.editorLV.Add(Main.currentProject.creatEmptyPane,"")
