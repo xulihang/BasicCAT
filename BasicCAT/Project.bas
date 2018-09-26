@@ -467,6 +467,8 @@ Sub targetTextArea_FocusChanged (HasFocus As Boolean)
 End Sub
 
 Sub showTM(targetTextArea As TextArea)
+	Dim time As Long
+	time=DateTime.Now
 	Dim pane As Pane
 	pane=targetTextArea.Parent
 	Dim sourceTA As TextArea
@@ -484,6 +486,7 @@ Sub showTM(targetTextArea As TextArea)
 		Dim row()  As Object = Array As String(matchList.Get(0),matchList.Get(1),matchList.Get(2),matchList.Get(3))
 		Main.tmTableView.Items.Add(row)
 	Next
+	Log(DateTime.Now-time)
 End Sub
 
 Sub showTerm(targetTextArea As TextArea)

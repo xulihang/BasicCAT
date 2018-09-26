@@ -6,24 +6,18 @@ Version=6.51
 @EndOfDesignText@
 Sub Class_Globals
 	Private fx As JFX
-	Private similarityResult As KeyValueStore
 	Public translationMemory As KeyValueStore
 	Private externalTranslationMemory As KeyValueStore
 	Public currentSource As String
-	Private maxRequest As Int=0
-	Private completed As Int=0
-
 End Sub
 
 'Initializes the object. You can add parameters to this method if needed.
 Public Sub Initialize(projectPath As String)
-	similarityResult.Initialize(File.Combine(projectPath,"TM"),"similarity.db")
 	translationMemory.Initialize(File.Combine(projectPath,"TM"),"TM.db")
     externalTranslationMemory.Initialize(File.Combine(projectPath,"TM"),"externalTM.db")
 End Sub
 
 public Sub close
-    similarityResult.Close
 	translationMemory.Close
 	externalTranslationMemory.Close	
 End Sub
@@ -64,6 +58,7 @@ Sub importTxt(filename As String)
 	Next
 End Sub
 
+
 Sub getMatchList(source As String) As ResumableSub
 	Dim matchList As List
 	matchList.Initialize
@@ -88,13 +83,8 @@ Sub getMatchList(source As String) As ResumableSub
 			Dim json As JSONGenerator
 			json.Initialize2(pairList)
 			Dim similarity As Double
-			If similarityResult.ContainsKey(json.ToString) Then
-				similarity=similarityResult.Get(json.ToString)
-
-			Else
-				similarity=getSimilarity(source,key)
-				similarityResult.Put(json.ToString,similarity)
-			End If
+			wait for (getSimilarityFuzzyWuzzy(source,key)) Complete (Result As Double)
+			similarity=Result
 			If similarity>0.5 Then
 				Dim tmPairList As List
 				tmPairList.Initialize
@@ -120,7 +110,7 @@ Sub getMatchList(source As String) As ResumableSub
 End Sub
 
 
-Sub getOneUseMemory(source As String,rate As Int) As List
+Sub getOneUseMemory(source As String,rate As Int) As ResumableSub
 	Dim matchList As List
 	matchList.Initialize
 	Dim onePairList As List
@@ -139,7 +129,8 @@ Sub getOneUseMemory(source As String,rate As Int) As List
 			End If
 
 			Dim similarity As Double
-			similarity=getSimilarity(source,key)
+			wait for (getSimilarityFuzzyWuzzy(source,key)) Complete (Result As Double)
+			similarity=Result
 
 
 
@@ -229,9 +220,9 @@ Sub NextIsMoreSimilar(list2 As List,list1 As List) As Boolean
 	End If
 End Sub
 
-Sub getSimilarityFuzzyWuzzy(str1 As String,str2 As String) As Double
+Sub getSimilarityFuzzyWuzzy(str1 As String,str2 As String) As ResumableSub
+	Sleep(0)
 	Dim result As Double
-
 	Dim jo As JavaObject
 	result=jo.InitializeStatic("me.xdrop.fuzzywuzzy.FuzzySearch").RunMethod("ratio",Array As String(str1,str2))
 	result=result/100
@@ -239,20 +230,7 @@ Sub getSimilarityFuzzyWuzzy(str1 As String,str2 As String) As Double
 End Sub
 
 
-Sub getSimilarity(str1 As String,str2 As String) As Double
-	Dim result As Double
-	result=1-editDistance(str1,str2)/Max(str1.Length,str2.Length)
-	Dim str As String
-	str=result
-	Dim su As ApacheSU
-	str=su.Left(str,4)
-	result=str
-	Return result
-End Sub
-
-
-
-Sub getSimilarity2(str1 As String,str2 As String) As ResumableSub
+Sub getSimilarity(str1 As String,str2 As String) As ResumableSub
 	Sleep(0)
 	Dim result As Double
 	result=1-editDistance(str1,str2)/Max(str1.Length,str2.Length)
@@ -317,102 +295,5 @@ Sub editDistance(str1 As String,str2 As String) As Int
 	
 	Return a(str1.Length,str2.Length)
 	
-End Sub
-
-
-Sub getMatchListViaNetwork(source As String) As ResumableSub
-	completed=0
-	maxRequest=0
-	Dim matchList As List
-	matchList.Initialize
-	Log(source&" ss")
-	For i=0 To 1
-		If i=0 Then
-			Dim kvs As KeyValueStore
-			kvs=translationMemory
-		Else
-			Dim kvs As KeyValueStore
-			kvs=externalTranslationMemory
-		End If
-		For Each key As String In kvs.ListKeys
-			'Sleep(0)
-			If basicCompare(source,key)=False Then
-				completed=completed+1
-				Continue
-			End If
-			Dim pairList As List
-			pairList.Initialize
-			pairList.Add(source)
-			pairList.Add(key) ' two sourcelanguage sentences
-			Dim json As JSONGenerator
-			json.Initialize2(pairList)
-			Dim similarity As Double
-			If similarityResult.ContainsKey(json.ToString) Then
-				similarity=similarityResult.Get(json.ToString)
-				If similarity>0.5 Then
-					Dim tmPairList As List
-					tmPairList.Initialize
-					tmPairList.Add(similarity)
-					tmPairList.Add(key)
-				
-					If i=0 Then
-						tmPairList.Add(kvs.Get(key))
-						tmPairList.Add("")
-					Else
-						Dim targetList As List
-						targetList=kvs.Get(key)
-						tmPairList.Add(targetList.Get(0))
-						tmPairList.Add(targetList.Get(1))
-					End If
-					matchList.Add(tmPairList)
-				End If
-				completed=completed+1
-			Else
-				Dim note As String
-				If i=0 Then
-					note=""
-				Else
-					note=targetList.Get(1)
-				End If
-				
-				Do While maxRequest>=8
-					Sleep(200)
-				Loop
-				maxRequest=maxRequest+1
-
-				getSimilarityViaNetwork(source,key,kvs.Get(key),note,matchList)
-			End If
-		Next
-	Next
-	Do While completed<translationMemory.ListKeys.Size+externalTranslationMemory.ListKeys.Size
-		Log(completed)
-		Log(translationMemory.ListKeys.Size+externalTranslationMemory.ListKeys.Size)
-		Sleep(1000)
-	Loop
-	Log(matchList)
-	Return subtractedAndSortMatchList(matchList)
-End Sub
-
-Sub getSimilarityViaNetwork(source As String,key As String,target As String,note As String,matchlist As List)
-	Dim job As HttpJob
-	job.Initialize("job",Me)
-	job.Download2("http://127.0.0.1:51041/getSimilarity",Array As String("str1",source,"str2",key,"note",note,"target",target))
-	Dim similarity As Double
-	wait For (job) JobDone(job As HttpJob)
-	completed=completed+1
-	maxRequest=maxRequest-1
-	If job.Success Then
-		Log("job")
-		Dim jsonp As JSONParser
-		jsonp.Initialize(job.GetString)
-		Dim resultList As List
-		resultList=jsonp.NextArray
-		similarity=resultList.Get(0)
-		Log(similarity)
-		If similarity>0.5 Then
-			matchlist.Add(resultList)
-		End If
-	End If
-	job.Release
 End Sub
 
