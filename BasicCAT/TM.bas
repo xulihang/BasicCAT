@@ -29,6 +29,10 @@ Sub addPair(source As String,target As String)
 	translationMemory.Put(source,target)
 End Sub
 
+Public Sub deleteExternalTranslationMemory
+	externalTranslationMemory.DeleteAll
+End Sub
+
 Public Sub importExternalTranslationMemory(tmList As List)
 	For Each tmfile As String In tmList
 		If tmfile.EndsWith(".txt") Then
@@ -40,10 +44,16 @@ Public Sub importExternalTranslationMemory(tmList As List)
 End Sub
 
 Sub importTxt(filename As String)
+	progressDialog.Show("Loading external memory")
 	Dim content As String
 	content=File.ReadString(File.Combine(Main.currentProject.path,"TM"),filename)
-	For Each line As String In Regex.Split(CRLF,content)
+	Dim segments As List
+	segments=Regex.Split(CRLF,content)
+	Dim index As Int=0
+	For Each line As String In segments
 		Sleep(0)
+		index=index+1
+		progressDialog.update(index,segments.Size)
 		Dim source,target As String
 		Dim targetList As List
 		targetList.Initialize
@@ -56,6 +66,7 @@ Sub importTxt(filename As String)
 		targetList.Add(filename)
 		externalTranslationMemory.put(source,targetList)
 	Next
+	progressDialog.close
 End Sub
 
 

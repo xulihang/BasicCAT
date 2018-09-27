@@ -3,7 +3,7 @@ Build1=Default,b4j.example
 File1=editor.bjl
 File10=preferences.bjl
 File11=pretranslate.bjl
-File12=preTranslateProgress.bjl
+File12=progress.bjl
 File13=projectSetting.bjl
 File14=right.bjl
 File15=searchTableView.bjl
@@ -85,7 +85,7 @@ Module15=Utils
 Module16=TMManager
 Module17=viewSegment
 Module18=TermManager
-Module19=preTrasnlateProgressDialog
+Module19=progressDialog
 Module2=Project
 Module3=segmentation
 Module4=CustomListView
@@ -287,7 +287,12 @@ Sub MenuBar1_Action
 			End If
 			Dim ps As ProjectSettings
 			ps.Initialize
-			currentProject.saveSettings(ps.ShowAndWait)
+			Dim resultList As List
+			resultList=ps.ShowAndWait
+			If resultList.Get(0)<>"canceled" Then
+				currentProject.saveSettings(resultList.Get(1))
+			End If
+			
 		Case "Pre-translate"
 			If currentProject.IsInitialized=False Then
 				fx.Msgbox(MainForm,"Please open a project first.","")

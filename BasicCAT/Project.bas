@@ -40,7 +40,7 @@ Sub initializeTM(projectPath As String)
 		Dim filename As String
 		filename=externalTMList.Get(i)
 		If File.Exists(File.Combine(Main.currentProject.path,"TM"),filename)=False Then
-			fx.Msgbox(Main.MainForm,filename&"外部记忆文件不存在，会将其从列表中移除","")
+			fx.Msgbox(Main.MainForm,filename&" does not exist. Will be deleted.","")
             externalTMList.RemoveAt(i)
 			settings.Put("tmList",externalTMList)
 			save
@@ -123,6 +123,7 @@ Public Sub saveSettings(newsettings As Map)
 	projectFile.Put("settings",newsettings)
 	Log(newsettings)
 	save
+	projectTM.deleteExternalTranslationMemory
 	projectTM.importExternalTranslationMemory(settings.Get("tmList"))
 End Sub
 
@@ -735,7 +736,7 @@ Sub preTranslate(options As Map)
 	If options.Get("type")<>"" Then
 		completed=0
 		Dim index As Int=-1
-		preTrasnlateProgressDialog.Show
+		progressDialog.Show("Pretranslating...")
 		For Each bitext As List In segments
 			Sleep(0)
 			index=index+1
@@ -743,7 +744,7 @@ Sub preTranslate(options As Map)
 			target=bitext.Get(1)
 			If target<>"" Then
 				completed=completed+1
-				preTrasnlateProgressDialog.update(completed,segments.Size)
+				progressDialog.update(completed,segments.Size)
 				Continue
 			End If
 			
@@ -777,15 +778,15 @@ Sub preTranslate(options As Map)
 				
 			completed=completed+1
 
-			preTrasnlateProgressDialog.update(completed,segments.Size)
+			progressDialog.update(completed,segments.Size)
 			If completed>=segments.Size Then
-				preTrasnlateProgressDialog.close
+				progressDialog.close
 				fillVisibleTargetTextArea
 				Return
 			End If
 		Next
 
-		preTrasnlateProgressDialog.close
+		progressDialog.close
 		fillVisibleTargetTextArea
 	End If
 End Sub

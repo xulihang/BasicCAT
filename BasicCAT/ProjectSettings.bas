@@ -14,6 +14,7 @@ Sub Class_Globals
 	Private AddTMButton As Button
 	Private DeleteTMButton As Button
 	Private TMListView As ListView
+	Private resultList As List
 End Sub
 
 'Initializes the object. You can add parameters to this method if needed.
@@ -24,11 +25,12 @@ Public Sub Initialize
 	settings=Main.currentProject.settings
 	settingTabPane.LoadLayout("tmSetting","TM")
 	TMListView.Items.AddAll(settings.Get("tmList"))
+	resultList.Initialize
 End Sub
 
-Public Sub ShowAndWait As Map
+Public Sub ShowAndWait As List
 	frm.ShowAndWait
-	Return settings
+	Return resultList
 End Sub
 
 Sub settingTabPane_TabChanged (SelectedTab As TabPage)
@@ -36,11 +38,14 @@ Sub settingTabPane_TabChanged (SelectedTab As TabPage)
 End Sub
 
 Sub cancelButton_MouseClicked (EventData As MouseEvent)
+	resultList.Add("canceled")
 	frm.Close
 End Sub
 
 Sub applyButton_MouseClicked (EventData As MouseEvent)
+	resultList.Add("changed")
 	settings.Put("tmList",TMListView.Items)
+	resultList.Add(settings)
 	frm.Close
 End Sub
 

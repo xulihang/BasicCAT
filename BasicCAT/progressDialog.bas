@@ -14,9 +14,10 @@ Sub Process_Globals
 	Private ProgressBar1 As ProgressBar
 End Sub
 
-Sub Show
+Sub Show(title As String)
 	frm.Initialize("frm",600,200)
 	frm.RootPane.LoadLayout("progress")
+	frm.Title=title
 	frm.Show
 
 End Sub
