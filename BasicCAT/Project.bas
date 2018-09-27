@@ -18,7 +18,7 @@ Sub Class_Globals
 	Private lastFilename As String
 	Public settings As Map
 	Public sh As Shell
-	public completed As Int
+	Public completed As Int
 	
 End Sub
 
@@ -114,28 +114,10 @@ Public Sub addFile(filepath As String)
 	Log("Success: " & Success)
 	files.Add(filename)
 	addFilesToTreeTable(filename)
-	creatWorkFile(filename)
+	creatWorkFileAccordingExtension(filename)
 	save
 End Sub
 
-Sub addFilesToTreeTable(filename As String)
-	Dim subTreeTableItem As TreeTableItem
-	subTreeTableItem=Main.projectTreeTableView.Root.Children.Get(0)
-	Dim lbl As Label
-	lbl.Initialize("lbl")
-	lbl.Text=filename
-	Dim tti As TreeTableItem
-	tti.Initialize("tti",Array As Object(lbl))
-	subTreeTableItem.Children.Add(tti)
-End Sub
-
-Sub creatWorkFile(filename As String)
-	If filename.EndsWith(".txt") Then
-		txtFilter.creatWorkFile(filename,path)
-	Else
-		
-	End If
-End Sub
 
 Public Sub saveSettings(newsettings As Map)
 	projectFile.Put("settings",newsettings)
@@ -161,10 +143,7 @@ public Sub save
 	Dim json As JSONGenerator
 	json.Initialize(projectFile)
 	File.WriteString(path,"project.json",json.ToPrettyString(4))
-	If currentFilename.EndsWith(".txt") Then
-		saveAlltheTranslation(Main.editorLV.FirstVisibleIndex,Main.editorLV.LastVisibleIndex)
-		txtFilter.saveWorkFile(currentFilename,segments,path)
-	End If
+	saveFileAccordingToExtenstion(currentFilename)
 End Sub
 
 Sub creatProjectFiles
@@ -197,14 +176,53 @@ Sub getProjectPath(jsonPath As String) As String
 End Sub
 
 Sub lbl_MouseClicked (EventData As MouseEvent)
-	Dim lbl As Label
-	lbl=Sender
-	Log("file changed"&lbl.Text)
-	Dim filename As String
-	filename=lbl.text
-	If currentFilename<>filename Then
-		openFile(filename,False)
+	If EventData.PrimaryButtonPressed Then
+		Dim lbl As Label
+		lbl=Sender
+		Log("file changed"&lbl.Text)
+		Dim filename As String
+		filename=lbl.text
+		If currentFilename<>filename Then
+			openFile(filename,False)
+		End If
 	End If
+End Sub
+
+Sub removeFileMi_Action
+	Dim mi As MenuItem
+	mi=Sender
+	Dim tti As TreeTableItem
+	Dim subTreeTableItem As TreeTableItem
+	subTreeTableItem=Main.projectTreeTableView.Root.Children.Get(0)
+	tti=mi.Tag
+	Dim lbl As Label
+	lbl=tti.GetValue(0)
+	Dim filename As String
+	filename=lbl.Text
+	Dim result As Int
+	result=fx.Msgbox2(Main.MainForm,"Remove corresponding translation memories?","","Yes","Cancel","No",fx.MSGBOX_CONFIRMATION)
+	Log(result)
+	'yes -1, no -2, cancel -3
+	If result=-3 Then
+		Return
+	End If 
+	If currentFilename=filename Then
+		Main.editorLV.Clear
+		segments.Clear
+		currentFilename=""
+	End If
+	If result=-1 Then
+		For Each bitext As List In getSegmentsAccordingToExtenstion(filename)
+			projectTM.translationMemory.Remove(bitext.Get(0))
+		Next
+	End If
+
+	subTreeTableItem.Children.RemoveAt(subTreeTableItem.Children.IndexOf(mi.Tag))
+	files.RemoveAt(files.IndexOf(filename))
+	File.Delete(File.Combine(path,"source"),filename)
+	File.Delete(File.Combine(path,"work"),filename&".json")
+	
+	fx.Msgbox(Main.MainForm,"Done","")
 End Sub
 
 Sub openFile(filename As String,onOpeningProject As Boolean)
@@ -216,9 +234,7 @@ Sub openFile(filename As String,onOpeningProject As Boolean)
 	segments.Clear
 	currentFilename=filename
 
-	If currentFilename.EndsWith(".txt") Then
-		txtFilter.readFile(filename,segments,path)
-	End If
+	readFileAccordingToExtenstion(currentFilename)
 
 	Log("currentFilename:"&currentFilename)
 	If lastFilename=currentFilename Then
@@ -233,6 +249,26 @@ Sub openFile(filename As String,onOpeningProject As Boolean)
 		'ta.RequestFocus
 		
 	End If
+End Sub
+
+Sub addFilesToTreeTable(filename As String)
+	Dim subTreeTableItem As TreeTableItem
+	subTreeTableItem=Main.projectTreeTableView.Root.Children.Get(0)
+	Dim tti As TreeTableItem
+	Dim lbl As Label
+	lbl.Initialize("lbl")
+	lbl.Text=filename
+	Dim cm As ContextMenu
+	cm.Initialize("cm")
+	Dim mi As MenuItem
+	mi.Initialize("Remove","removeFileMi")
+	cm.MenuItems.Add(mi)
+
+	lbl.ContextMenu=cm
+	
+	tti.Initialize("tti",Array As Object(lbl))
+	mi.Tag=tti
+	subTreeTableItem.Children.Add(tti)
 End Sub
 
 Sub targetTextArea_TextChanged (Old As String, New As String)
@@ -740,10 +776,13 @@ Sub preTranslate(options As Map)
 			End If
 				
 			completed=completed+1
+
+			preTrasnlateProgressDialog.update(completed,segments.Size)
 			If completed>=segments.Size Then
+				preTrasnlateProgressDialog.close
+				fillVisibleTargetTextArea
 				Return
 			End If
-			preTrasnlateProgressDialog.update(completed,segments.Size)
 		Next
 
 		preTrasnlateProgressDialog.close
@@ -766,4 +805,32 @@ Sub fillVisibleTargetTextArea
 	Next
 End Sub
 
+Sub creatWorkFileAccordingExtension(filename As String)
+	If filename.EndsWith(".txt") Then
+		txtFilter.creatWorkFile(filename,path)
+	Else
+		
+	End If
+End Sub
 
+Sub readFileAccordingToExtenstion(filename As String)
+	If filename.EndsWith(".txt") Then
+		txtFilter.readFile(filename,segments,path)
+	End If
+End Sub
+
+
+Sub saveFileAccordingToExtenstion(filename As String)
+	If filename.EndsWith(".txt") Then
+		saveAlltheTranslation(Main.editorLV.FirstVisibleIndex,Main.editorLV.LastVisibleIndex)
+		txtFilter.saveWorkFile(filename,segments,path)
+	End If
+End Sub
+
+Sub getSegmentsAccordingToExtenstion(filename As String) As List
+	If filename.EndsWith(".txt") Then
+		Return txtFilter.readFileAndGetAlltheSegments(filename,path)
+	Else
+		Return Null
+	End If
+End Sub

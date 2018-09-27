@@ -231,7 +231,7 @@ Sub MenuBar1_Action
 			currentProject.Initialize
 			currentProject.open(path)
 			MainForm.Title=getProjectname(path)
-		Case "EN to ZH Project"
+		Case "en to zh Project"
 			If currentProject.IsInitialized Then
 				fx.Msgbox(MainForm,"Please close the current project first.","")
 			    Return
@@ -240,7 +240,7 @@ Sub MenuBar1_Action
 			currentProject.newProjectSetting("en","zh")
 			MainForm.Title="Untitled-1"
 			addProjectTreeTableItem
-		Case "ZH to EN Project"
+		Case "zh to en Project"
 			If currentProject.IsInitialized Then
 				fx.Msgbox(MainForm,"Please close the current project first.","")
 				Return
@@ -279,18 +279,7 @@ Sub MenuBar1_Action
 			currentProject.generateTargetFiles
 		Case "_Close"
 			Log("closing")
-			If currentProject.IsInitialized Then
-				If currentProject.sh.IsInitialized Then
-					currentProject.sh.KillProcess
-				End If
-				currentProject.projectTM.close
-				Dim currentProject As Project
-				tmTableView.ClearSelection
-				tmTableView.Items.Clear
-				projectTreeTableView.ClearSelection
-				projectTreeTableView.Root.Children.Clear
-				editorLV.Clear
-			End If
+			closeProject
 		Case "Project Settings"
 			If currentProject.IsInitialized=False Then
 				fx.Msgbox(MainForm,"Please open a project first.","")
@@ -555,4 +544,19 @@ Sub searchTableView_Action
 				editorLV.JumpToItem(index)
 			End If
 	End Select
+End Sub
+
+Public Sub closeProject
+	If currentProject.IsInitialized Then
+		If currentProject.sh.IsInitialized Then
+			currentProject.sh.KillProcess
+		End If
+		currentProject.projectTM.close
+		Dim currentProject As Project
+		tmTableView.ClearSelection
+		tmTableView.Items.Clear
+		projectTreeTableView.ClearSelection
+		projectTreeTableView.Root.Children.Clear
+		editorLV.Clear
+	End If
 End Sub

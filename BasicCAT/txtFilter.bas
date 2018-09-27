@@ -154,5 +154,24 @@ Sub generateFile(filename As String,path As String,projectFile As Map)
 			result=result&translation
 		Next
 	Next
-    File.WriteString(File.Combine(path,"target"),filename,result)
+	File.WriteString(File.Combine(path,"target"),filename,result)
+End Sub
+
+Sub readFileAndGetAlltheSegments(filename As String,path As String) As List
+	Dim segments As List
+	segments.Initialize
+	Dim innerFilename As String
+	innerFilename=filename
+	Dim workfile As Map
+	Dim json As JSONParser
+	json.Initialize(File.ReadString(File.Combine(path,"work"),filename&".json"))
+	workfile=json.NextObject
+	Dim sourceFiles As List
+	sourceFiles=workfile.Get("files")
+	For Each sourceFileMap As Map In sourceFiles
+		Dim segmentsList As List
+		segmentsList=sourceFileMap.Get(innerFilename)
+		segments.AddAll(segmentsList)
+	Next
+	Return segments
 End Sub
