@@ -319,3 +319,7 @@ Sub editDistance(str1 As String,str2 As String) As Int
 	
 End Sub
 
+Sub getExternalMemorySize As Int
+	Return externalTranslationMemory.ListKeys.Size
+End Sub
+

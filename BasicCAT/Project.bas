@@ -222,7 +222,7 @@ Sub removeFileMi_Action
 	files.RemoveAt(files.IndexOf(filename))
 	File.Delete(File.Combine(path,"source"),filename)
 	File.Delete(File.Combine(path,"work"),filename&".json")
-	
+	save
 	fx.Msgbox(Main.MainForm,"Done","")
 End Sub
 
@@ -752,6 +752,10 @@ Sub preTranslate(options As Map)
 			bitext=segments.Get(index)
 			
 			If options.Get("type")="TM" Then
+				If projectTM.ExternalMemorySize=0 Then
+					progressDialog.close
+					Return
+				End If
 	            Dim resultList As List
 				Wait For (projectTM.getOneUseMemory(bitext.Get(0),options.Get("rate"))) Complete (Result As List)
 				resultList=Result

@@ -37,6 +37,10 @@ Sub settingTabPane_TabChanged (SelectedTab As TabPage)
 	
 End Sub
 
+Sub frm_CloseRequest (EventData As Event)
+	resultList.Add("canceled")
+End Sub
+
 Sub cancelButton_MouseClicked (EventData As MouseEvent)
 	resultList.Add("canceled")
 	frm.Close
