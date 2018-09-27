@@ -546,8 +546,10 @@ Sub showMT(source As String)
 	Dim mtPreferences As Map
 	If Main.preferencesMap.ContainsKey("mt") Then
 		mtPreferences=Main.preferencesMap.get("mt")
+	Else
+		Return
 	End If
-	If mtPreferences.Get("baidu_isEnabled") Then
+	If Utils.get_isEnabled("baidu_isEnabled",mtPreferences)=True Then
 		wait for (MT.getMT(source,projectFile.Get("source"),projectFile.Get("target"),"baidu")) Complete (Result As String)
 		If Result<>"" Then
 			Dim row()  As Object = Array As String("","",Result,"MT")

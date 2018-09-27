@@ -21,6 +21,7 @@ Public Sub Initialize
 	frm.Initialize("frm",600,500)
 	frm.RootPane.LoadLayout("preferences")
 	preferencesMap.Initialize
+	mtPreferences.Initialize
 	initList
     If File.Exists(File.DirApp,"preferences.conf") Then
 	    Dim json As JSONParser
@@ -42,6 +43,7 @@ End Sub
 
 
 Sub cancelButton_MouseClicked (EventData As MouseEvent)
+	Log(Main.preferencesMap)
 	frm.Close
 End Sub
 
@@ -50,6 +52,7 @@ Sub applyButton_MouseClicked (EventData As MouseEvent)
 	Dim json As JSONGenerator
 	json.Initialize(preferencesMap)
 	File.WriteString(File.DirApp,"preferences.conf",json.ToString)
+	Main.preferencesMap=preferencesMap
 	frm.Close
 End Sub
 

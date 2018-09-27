@@ -9,6 +9,17 @@ Sub Process_Globals
 	Private fx As JFX
 End Sub
 
+Sub getMap(key As String,parentmap As Map) As Map
+	Return parentmap.Get(key)
+End Sub
+
+Sub get_isEnabled(key As String,parentmap As Map) As Boolean
+	If parentmap.ContainsKey(key) = False Then
+		Return False
+	Else
+		Return parentmap.Get(key)
+	End If
+End Sub
 
 Sub ListViewParent_Resize(clv As CustomListView)
 	If clv.Size=0 Then
