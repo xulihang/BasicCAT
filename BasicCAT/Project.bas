@@ -808,7 +808,7 @@ End Sub
 
 Sub creatWorkFileAccordingExtension(filename As String)
 	If filename.EndsWith(".txt") Then
-		txtFilter.creatWorkFile(filename,path)
+		txtFilter.creatWorkFile(filename,path,projectFile.Get("source"))
 	Else
 		
 	End If

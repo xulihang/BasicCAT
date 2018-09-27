@@ -9,7 +9,7 @@ Sub Process_Globals
 	Private fx As JFX
 End Sub
 
-Sub creatWorkFile(filename As String,path As String)
+Sub creatWorkFile(filename As String,path As String,sourceLang As String)
 	Dim workfile As Map
 	workfile.Initialize
 	workfile.Put("filename",filename)
@@ -22,7 +22,7 @@ Sub creatWorkFile(filename As String,path As String)
 	Dim segmentsList As List
 	segmentsList.Initialize
 	Dim inbetweenContent As String
-	For Each source As String In segmentation.segmentedTxt(File.ReadString(File.Combine(path,"source"),filename),False)
+	For Each source As String In segmentation.segmentedTxt(File.ReadString(File.Combine(path,"source"),filename),False,sourceLang)
 		Dim bitext As List
 		bitext.Initialize
 		If source.Trim="" Then 'newline

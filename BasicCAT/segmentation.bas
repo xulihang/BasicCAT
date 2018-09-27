@@ -9,11 +9,11 @@ Sub Process_Globals
 	Private fx As JFX
 End Sub
 
-Public Sub segmentedTxt(text As String,Trim As Boolean) As List
+Public Sub segmentedTxt(text As String,Trim As Boolean,sourceLang As String) As List
 	Dim segmentationRule As List
-	segmentationRule=File.ReadList(File.DirAssets,"segmentation_en.conf")
+	segmentationRule=File.ReadList(File.DirAssets,"segmentation_"&sourceLang&".conf")
 	Dim segmentationExceptionRule As List
-	segmentationExceptionRule=File.ReadList(File.DirAssets,"segmentation_en_exception.conf")
+	segmentationExceptionRule=File.ReadList(File.DirAssets,"segmentation_"&sourceLang&"_exception.conf")
 	
 	Dim seperatedByCRLF As String
 	seperatedByCRLF=text
