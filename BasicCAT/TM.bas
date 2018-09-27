@@ -18,8 +18,10 @@ Public Sub Initialize(projectPath As String)
 End Sub
 
 public Sub close
-	translationMemory.Close
-	externalTranslationMemory.Close	
+	If translationMemory.IsInitialized Then
+		translationMemory.Close
+		externalTranslationMemory.Close
+	End If
 End Sub
 
 Sub addPair(source As String,target As String)

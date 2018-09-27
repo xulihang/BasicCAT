@@ -577,6 +577,9 @@ Sub showTM(targetTextArea As TextArea)
 	Next
 	Log(DateTime.Now-time)
 	showMT(sourceTA.Text)
+	If Main.TMViewToggleButton.Selected=False Then
+		Main.TMViewToggleButton_SelectedChange(False)
+	End If
 End Sub
 
 Sub showMT(source As String)

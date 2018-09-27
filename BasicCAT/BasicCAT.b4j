@@ -81,9 +81,9 @@ Library8=jsql
 Library9=jrandomaccessfile
 Module1=FileChooserUtils
 Module10=preTranslateDialog
-Module11=progressDialog
-Module12=MT
-Module13=Preferences
+Module11=Preferences
+Module12=progressDialog
+Module13=MT
 Module14=MTParamsFiller
 Module15=InputBox
 Module16=Utils
@@ -133,6 +133,10 @@ Sub Process_Globals
 	Public termLV As ListView
 	Public calculatedHeight As Map
 	Public preferencesMap As Map
+	Private viewTextArea As TextArea
+	Private segmentSearchToggleButton As ToggleButton
+	public TMViewToggleButton As ToggleButton
+	Private viewTMTextArea As TextArea
 End Sub
 
 Sub AppStart (Form1 As Form, Args() As String)
@@ -195,7 +199,7 @@ Sub adjustDividerPositions
 End Sub
 
 Public Sub addProjectTreeTableItem
-	For Each item As String In Array As String("Project Files","Translation Memory","Terminology")
+	For Each item As String In Array As String("Project Files","Translation Memory","Terminology","Statistics","Preview")
 		Dim lbl As Label
 		lbl.Initialize("lbl")
 		lbl.Text=item
@@ -567,5 +571,30 @@ Public Sub closeProject
 		projectTreeTableView.ClearSelection
 		projectTreeTableView.Root.Children.Clear
 		editorLV.Clear
+	End If
+End Sub
+
+
+Sub segmentSearchToggleButton_SelectedChange(Selected As Boolean)
+	toggleTableOrTextArea(Selected,segmentSearchToggleButton,viewTextArea,searchTableView)
+End Sub
+
+Sub TMViewToggleButton_SelectedChange(Selected As Boolean)
+	toggleTableOrTextArea(Selected,TMViewToggleButton,viewTMTextArea,tmTableView)
+End Sub
+
+Sub toggleTableOrTextArea(selected As Boolean,tb As ToggleButton, ta As TextArea,tv As TableView)
+	If selected Then
+		tb.Text="L"
+		tv.Visible=True
+	Else
+		tb.Text="C"
+		tv.Visible=False
+		ta.Text=""
+		Dim index As Int=0
+		For Each row() As String In tv.Items
+			index=index+1
+			ta.Text=ta.Text&index&CRLF&row(1)&CRLF&row(2)&CRLF&CRLF
+		Next
 	End If
 End Sub
