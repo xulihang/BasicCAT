@@ -329,7 +329,7 @@ Sub onSelectionChanged(new As Object,ta As TextArea,isSource As Boolean)
 	
 	If Main.TabPane1.SelectedIndex=1 Then
 		
-		If projectFile.Get("source")="EN" And isSource=True Then
+		If projectFile.Get("source")="en" And isSource=True Then
 			If selectionEnd<>ta.Text.Length Then
 				Dim lastChar As String
 				lastChar=ta.Text.SubString2(selectionEnd,Min(ta.Text.Length,selectionEnd+1))
@@ -338,7 +338,7 @@ Sub onSelectionChanged(new As Object,ta As TextArea,isSource As Boolean)
 				End If
 			End If
 		End If
-		If projectFile.Get("target")="EN" And isSource=False Then
+		If projectFile.Get("target")="en" And isSource=False Then
 			If selectionEnd<>ta.Text.Length Then
 				If ta.Text.SubString2(selectionEnd,Min(ta.Text.Length,selectionEnd+1))<>" " Then
 					Return
@@ -424,9 +424,9 @@ Sub sourceTextArea_KeyPressed_Event (MethodName As String, Args() As Object) As 
 		Dim sourceWhitespace,targetWhitespace As String
 		sourceWhitespace=""
 		targetWhitespace=""
-		If projectFile.Get("source")="EN" Then
+		If projectFile.Get("source")="en" Then
 			sourceWhitespace=" "
-		else if projectFile.Get("target")="EN" Then
+		else if projectFile.Get("target")="en" Then
 			targetWhitespace=" "
 		End If
 		
@@ -531,10 +531,29 @@ Sub showTM(targetTextArea As TextArea)
 	Wait For (senderFilter) Complete (Result As List)
 
 	For Each matchList As List In Result
+
+		If matchList.Get(1)=sourceTA.Text And matchList.Get(3)="" Then
+			Continue 'itself
+		End If
 		Dim row()  As Object = Array As String(matchList.Get(0),matchList.Get(1),matchList.Get(2),matchList.Get(3))
 		Main.tmTableView.Items.Add(row)
 	Next
 	Log(DateTime.Now-time)
+	showMT(sourceTA.Text)
+End Sub
+
+Sub showMT(source As String)
+	Dim mtPreferences As Map
+	If Main.preferencesMap.ContainsKey("mt") Then
+		mtPreferences=Main.preferencesMap.get("mt")
+	End If
+	If mtPreferences.Get("baidu_isEnabled") Then
+		wait for (MT.getMT(source,projectFile.Get("source"),projectFile.Get("target"),"baidu")) Complete (Result As String)
+		If Result<>"" Then
+			Dim row()  As Object = Array As String("","",Result,"MT")
+			Main.tmTableView.Items.InsertAt(Min(Main.tmTableView.Items.Size,1),row)
+		End If
+	End If
 End Sub
 
 Sub showTerm(targetTextArea As TextArea)

@@ -147,7 +147,7 @@ Sub generateFile(filename As String,path As String,projectFile As Map)
 				translation=fullsource
 			Else
 				translation=fullsource.Replace(source,target)
-				If projectFile.Get("source")="EN" Then
+				If projectFile.Get("source")="en" Then
 					translation=translation.Replace(" ","")
 				End If
 			End If

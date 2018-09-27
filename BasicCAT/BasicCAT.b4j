@@ -1,30 +1,34 @@
 ﻿AppType=JavaFX
 Build1=Default,b4j.example
 File1=editor.bjl
-File10=right.bjl
-File11=searchTableView.bjl
-File12=segment.bjl
-File13=segmentation_en.conf
-File14=segmentation_en_exception.conf
-File15=supportedFiles.txt
-File16=tableview.bjl
-File17=tabpane.bjl
-File18=term.bjl
-File19=TermManager.bjl
-File2=leftProject.bjl
-File20=tmList.bjl
-File21=TMManager.bjl
-File22=TMsegment.bjl
-File23=tmSetting.bjl
-File24=upperRight.bjl
-File25=viewSegment.bjl
-File3=Log.bjl
-File4=lowerRight.bjl
-File5=main.bjl
-File6=oneterm.bjl
-File7=pretranslate.bjl
-File8=preTranslateProgress.bjl
-File9=projectSetting.bjl
+File10=preferences.bjl
+File11=pretranslate.bjl
+File12=preTranslateProgress.bjl
+File13=projectSetting.bjl
+File14=right.bjl
+File15=searchTableView.bjl
+File16=segment.bjl
+File17=segmentation_en.conf
+File18=segmentation_en_exception.conf
+File19=supportedFiles.txt
+File2=inputbox.bjl
+File20=tableview.bjl
+File21=tabpane.bjl
+File22=term.bjl
+File23=TermManager.bjl
+File24=tmList.bjl
+File25=TMManager.bjl
+File26=TMsegment.bjl
+File27=tmSetting.bjl
+File28=upperRight.bjl
+File29=viewSegment.bjl
+File3=leftProject.bjl
+File4=Log.bjl
+File5=lowerRight.bjl
+File6=main.bjl
+File7=mtparamfiller.bjl
+File8=mtSetting.bjl
+File9=oneterm.bjl
 FileGroup1=Default Group
 FileGroup10=Default Group
 FileGroup11=Default Group
@@ -43,6 +47,10 @@ FileGroup22=Default Group
 FileGroup23=Default Group
 FileGroup24=Default Group
 FileGroup25=Default Group
+FileGroup26=Default Group
+FileGroup27=Default Group
+FileGroup28=Default Group
+FileGroup29=Default Group
 FileGroup3=Default Group
 FileGroup4=Default Group
 FileGroup5=Default Group
@@ -56,6 +64,9 @@ Library10=jb4xencryption
 Library11=jokhttputils2
 Library12=jshell
 Library13=jreflection
+Library14=encryption
+Library15=byteconverter
+Library16=jstringutils
 Library2=jfx
 Library3=javaobject
 Library4=cssutils
@@ -66,11 +77,15 @@ Library8=jsql
 Library9=jrandomaccessfile
 Module1=FileChooserUtils
 Module10=preTranslateDialog
-Module11=TMManager
-Module12=TermManager
-Module13=Utils
-Module14=preTrasnlateProgressDialog
-Module15=viewSegment
+Module11=viewSegment
+Module12=TMManager
+Module13=TermManager
+Module14=Utils
+Module15=preTrasnlateProgressDialog
+Module16=MT
+Module17=Preferences
+Module18=MTParamsFiller
+Module19=InputBox
 Module2=Project
 Module3=segmentation
 Module4=CustomListView
@@ -79,9 +94,9 @@ Module6=TM
 Module7=Term
 Module8=KeyValueStore
 Module9=ProjectSettings
-NumberOfFiles=25
-NumberOfLibraries=13
-NumberOfModules=15
+NumberOfFiles=29
+NumberOfLibraries=16
+NumberOfModules=19
 Version=6.51
 @EndOfDesignText@
 #Region Project Attributes 
@@ -113,6 +128,7 @@ Sub Process_Globals
 	Public targetTermTextField1 As TextField
 	Public termLV As ListView
 	Public calculatedHeight As Map
+	Public preferencesMap As Map
 End Sub
 
 Sub AppStart (Form1 As Form, Args() As String)
@@ -158,6 +174,12 @@ Sub init
 	TabPane1.LoadLayout("searchTableView", "Segment Search")
 	calculatedHeight.Initialize
 	adjustDividerPositions
+	preferencesMap.Initialize
+	If File.Exists(File.DirApp,"preferences.conf") Then
+		Dim json As JSONParser
+		json.Initialize(File.ReadString(File.DirApp,"preferences.conf"))
+		preferencesMap=json.NextObject
+	End If
 End Sub
 
 Sub adjustDividerPositions
@@ -215,7 +237,7 @@ Sub MenuBar1_Action
 			    Return
 			End If
 			currentProject.Initialize
-			currentProject.newProjectSetting("EN","ZH")
+			currentProject.newProjectSetting("en","zh")
 			MainForm.Title="Untitled-1"
 			addProjectTreeTableItem
 		Case "ZH to EN Project"
@@ -224,7 +246,7 @@ Sub MenuBar1_Action
 				Return
 			End If
 			currentProject.Initialize
-			currentProject.newProjectSetting("ZH","EN")
+			currentProject.newProjectSetting("zh","en")
 			MainForm.Title="Untitled-1"
 			addProjectTreeTableItem
 		Case "_Save"
@@ -295,6 +317,10 @@ Sub MenuBar1_Action
 			End If
 			
 			ExitApplication
+		Case "Preferences"
+			Dim pref As Preferences
+			pref.Initialize
+			pref.ShowAndWait
 		Case "_About"
 			fx.Msgbox(MainForm,"BasicCAT 1.0"&CRLF&"@xulihang 2018","BasicCAT")
 	End Select
