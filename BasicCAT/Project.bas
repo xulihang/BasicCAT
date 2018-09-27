@@ -18,7 +18,7 @@ Sub Class_Globals
 	Private lastFilename As String
 	Public settings As Map
 	Public sh As Shell
-	Private completed As Int
+	public completed As Int
 	
 End Sub
 
@@ -696,11 +696,10 @@ Sub seperatedSegments(targetSegments As List) As List
 End Sub
 
 Sub preTranslate(options As Map)
-	If options.Get("type")="TM" Then
+	If options.Get("type")<>"" Then
 		completed=0
 		Dim index As Int=-1
-		preTrasnlateProgressDialog.Show(3)
-		
+		preTrasnlateProgressDialog.Show
 		For Each bitext As List In segments
 			Sleep(0)
 			index=index+1
@@ -711,23 +710,39 @@ Sub preTranslate(options As Map)
 				preTrasnlateProgressDialog.update(completed,segments.Size)
 				Continue
 			End If
-            Dim resultList As List
-			Wait For (projectTM.getOneUseMemory(bitext.Get(0),options.Get("rate"))) Complete (Result As List)
-			resultList=Result
-			Dim similarity,matchrate As Double
-			similarity=resultList.Get(0)
-			matchrate=options.Get("rate")
+			
 			Dim bitext As List
 			bitext=segments.Get(index)
-			Log(bitext.Get(0))
-			Log(similarity)
-			Log(matchrate)
-			Log(similarity>=matchrate)
-			If similarity>=matchrate Then
-				bitext.Set(1,resultList.Get(2))
-				segments.Set(index,bitext)
+			
+			If options.Get("type")="TM" Then
+	            Dim resultList As List
+				Wait For (projectTM.getOneUseMemory(bitext.Get(0),options.Get("rate"))) Complete (Result As List)
+				resultList=Result
+				Dim similarity,matchrate As Double
+				similarity=resultList.Get(0)
+				matchrate=options.Get("rate")
+
+				Log(bitext.Get(0))
+				Log(similarity)
+				Log(matchrate)
+				Log(similarity>=matchrate)
+				
+				If similarity>=matchrate Then
+					bitext.Set(1,resultList.Get(2))
+					segments.Set(index,bitext)
+				End If
+			Else if options.Get("type")="MT" Then
+				wait for (MT.getMT(bitext.Get(0),projectFile.Get("source"),projectFile.Get("target"),options.Get("engine"))) Complete (translation As String)
+				If translation<>"" Then
+					bitext.Set(1,translation)
+					segments.Set(index,bitext)
+				End If
 			End If
+				
 			completed=completed+1
+			If completed>=segments.Size Then
+				Return
+			End If
 			preTrasnlateProgressDialog.update(completed,segments.Size)
 		Next
 

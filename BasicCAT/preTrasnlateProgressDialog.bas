@@ -11,9 +11,10 @@ Sub Process_Globals
 
 
 	Private Label1 As Label
+	Private ProgressBar1 As ProgressBar
 End Sub
 
-Sub Show(index As Int)
+Sub Show
 	frm.Initialize("frm",600,200)
 	frm.RootPane.LoadLayout("preTranslateProgress")
 	frm.Show
@@ -22,8 +23,15 @@ End Sub
 
 Sub update(completed As Int,segmentSize As Int)
 	Label1.Text=completed&"/"&segmentSize
+	ProgressBar1.Progress=completed/segmentSize
 End Sub
 
 Sub close
-	frm.Close
+	frm.Close	
+End Sub
+
+Sub frm_CloseRequest (EventData As Event)
+	Main.currentProject.completed=Main.currentProject.segments.Size
+	fx.Msgbox(frm,"The process is canceled.","")
+	Return
 End Sub
