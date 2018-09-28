@@ -615,13 +615,15 @@ Sub showMT(source As String)
 	Else
 		Return
 	End If
-	If Utils.get_isEnabled("baidu_isEnabled",mtPreferences)=True Then
-		wait for (MT.getMT(source,projectFile.Get("source"),projectFile.Get("target"),"baidu")) Complete (Result As String)
-		If Result<>"" Then
-			Dim row()  As Object = Array As String("","",Result,"MT")
-			Main.tmTableView.Items.InsertAt(Min(Main.tmTableView.Items.Size,1),row)
+	For Each engine As String In Array As String("yandex","baidu")
+		If Utils.get_isEnabled(engine&"_isEnabled",mtPreferences)=True Then
+			wait for (MT.getMT(source,projectFile.Get("source"),projectFile.Get("target"),engine)) Complete (Result As String)
+			If Result<>"" Then
+				Dim row()  As Object = Array As String("","",Result,engine&" MT")
+				Main.tmTableView.Items.InsertAt(Min(Main.tmTableView.Items.Size,1),row)
+			End If
 		End If
-	End If
+	Next
 End Sub
 
 Sub showTerm(targetTextArea As TextArea)

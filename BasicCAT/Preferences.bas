@@ -60,7 +60,7 @@ Sub categoryListView_SelectedIndexChanged(Index As Int)
 	
 	Log(Index)
 	Select Index
-		Case Index
+		Case 0
 			SettingPane.LoadLayout("mtSetting")
 			loadMT
 	End Select
@@ -77,7 +77,11 @@ Sub mtTableView_MouseClicked (EventData As MouseEvent)
 				filler.Initialize("baidu",preferencesMap)
 				mtPreferences.Put("baidu",filler.showAndWait)
 				Log(mtPreferences)
-				
+			Case "yandex"
+				Dim filler As MTParamsFiller
+				filler.Initialize("yandex",preferencesMap)
+				mtPreferences.Put("yandex",filler.showAndWait)
+				Log(mtPreferences)
 		End Select
 		preferencesMap.Put("mt",mtPreferences)
 	End If
@@ -85,50 +89,53 @@ Sub mtTableView_MouseClicked (EventData As MouseEvent)
 End Sub
 
 Sub loadMT
-	Dim chkbox As CheckBox
-	chkbox.Initialize("chkbox")
-	chkbox.Text=""
-	chkbox.Tag="baidu"
-	If mtPreferences.ContainsKey("baidu_isEnabled") Then
-		chkbox.Checked=mtPreferences.Get("baidu_isEnabled")
-	End If
-	Dim Row() As Object = Array ("baidu", chkbox)
-	mtTableView.Items.Add(Row)
+	For Each item As String In Array As String("baidu","yandex")
+		Dim chkbox As CheckBox
+		chkbox.Initialize("chkbox")
+		chkbox.Text=""
+		chkbox.Tag=item
+		If mtPreferences.ContainsKey(item&"_isEnabled") Then
+			chkbox.Checked=mtPreferences.Get(item&"_isEnabled")
+		End If
+		Dim Row() As Object = Array (item, chkbox)
+		mtTableView.Items.Add(Row)
+	Next
+
 End Sub
 
 Sub chkbox_CheckedChange(Checked As Boolean)
 	
 	Dim chkbox As CheckBox
 	chkbox=Sender
-	Select chkbox.Tag
-		Case "baidu"
-			Dim params As Map
-			Dim isfilled As Boolean=True
-			If mtPreferences.ContainsKey("baidu") Then
-				params=mtPreferences.Get("baidu")
-				Log(params)
-				If params.Size=0 Then
-					isfilled=False
-				End If
-	            For Each key As String In params.Keys
-					Log(params.Get(key))
-					If params.Get(key)="" Then
-						isfilled=False
-					End If
-	            Next
-			Else
+	Dim engine As String
+    engine=chkbox.Tag
+	
+	Dim params As Map
+	Dim isfilled As Boolean=True
+	
+	If mtPreferences.ContainsKey(engine) Then
+		params=mtPreferences.Get(engine)
+		Log(params)
+		If params.Size=0 Then
+			isfilled=False
+		End If
+        For Each key As String In params.Keys
+			Log(params.Get(key))
+			If params.Get(key)="" Then
 				isfilled=False
 			End If
-			
-			If isfilled=True Then
-				mtPreferences.Put("baidu_isEnabled",Checked)
-			Else
-				If Checked Then
-					fx.Msgbox(frm,"参数未填写完整","")
-				End If
-				chkbox.Checked=False
-				
-			End If
-				
-	End Select
+        Next
+	Else
+		isfilled=False
+	End If
+	
+	If isfilled=True Then
+		mtPreferences.Put(engine&"_isEnabled",Checked)
+	Else
+		If Checked Then
+			fx.Msgbox(frm,"参数未填写完整","")
+		End If
+		chkbox.Checked=False
+		
+	End If
 End Sub

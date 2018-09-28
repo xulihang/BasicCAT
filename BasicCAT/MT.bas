@@ -12,10 +12,14 @@ End Sub
 
 
 Sub getMT(source As String,sourceLang As String,targetLang As String,MTEngine As String) As ResumableSub
-	If MTEngine="baidu" Then
-		wait for (BaiduMT(source,sourceLang,targetLang)) Complete (result As String)
-		Return result
-	End If
+	Select MTEngine
+		Case "baidu"
+			wait for (BaiduMT(source,sourceLang,targetLang)) Complete (result As String)
+			Return result
+		Case "yandex"
+			wait for (yandexMT(source,sourceLang,targetLang)) Complete (result As String)
+			Return result
+	End Select
 End Sub
 
 Sub BaiduMT(source As String,sourceLang As String,targetLang As String) As ResumableSub
@@ -59,5 +63,34 @@ Sub BaiduMT(source As String,sourceLang As String,targetLang As String) As Resum
 		target=""
 	End If
 	job.Release
-    Return target
+	Return target
+End Sub
+
+Sub yandexMT(source As String,sourceLang As String,targetLang As String) As ResumableSub
+	Dim target As String
+	Dim su As StringUtils
+	Dim job As HttpJob
+	job.Initialize("job",Me)
+	Dim params As String
+	params="?key="&Utils.getMap("yandex",Utils.getMap("mt",Main.preferencesMap)).Get("key")&"&text="&su.EncodeUrl(source,"UTF-8")&"&lang="&sourceLang&"-"&targetLang
+	job.Download("https://translate.yandex.net/api/v1.5/tr.json/translate"&params)
+	wait For (job) JobDone(job As HttpJob)
+	If job.Success Then
+		Log(job.GetString)
+		Dim json As JSONParser
+		json.Initialize(job.GetString)
+		Dim map1 As Map
+		map1=json.NextObject
+		If map1.Get("code")=200 Then
+			Dim result As List
+			result=map1.Get("text")
+			target=result.Get(0)
+		Else
+			target=""
+		End If
+	Else
+		target=""
+	End If
+	job.Release
+	Return target
 End Sub
