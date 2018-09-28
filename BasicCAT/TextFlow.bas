@@ -24,6 +24,15 @@ Public Sub AddText(text As String) As TextFlow
 	Return Me
 End Sub
 
+Public Sub AddTextWithStrikethrough(text As String,realText As String) As TextFlow
+	Dim lastItem As JavaObject
+	lastItem.InitializeNewInstance("javafx.scene.text.Text", Array(text))
+	texts.Add(lastItem)
+	allText=allText&realText
+	lastItem.RunMethod("setStrikethrough", Array(True))
+	Return Me
+End Sub
+
 Public Sub getText As String
 	Return allText
 End Sub

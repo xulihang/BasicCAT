@@ -824,7 +824,7 @@ Sub preTranslate(options As Map)
 	End If
 End Sub
 
-Sub fillVisibleTargetTextArea
+Public Sub fillVisibleTargetTextArea
 	For i=Max(0,Main.editorLV.FirstVisibleIndex-15) To Min(Main.editorLV.Size-1,Main.editorLV.LastVisibleIndex+14)
 		Dim p As Pane
 		p=Main.editorLV.GetPanel(i)

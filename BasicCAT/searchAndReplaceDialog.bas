@@ -44,7 +44,9 @@ Sub showRegexResult
 End Sub
 
 Sub showResult
+	Dim index As Int=-1
 	For Each bitext As List In Main.currentProject.segments
+		index=index+1
 		Dim source,target,find,sourceLeft,targetLeft As String
 		source=bitext.Get(0)
 		target=bitext.Get(1)
@@ -88,7 +90,7 @@ Sub showResult
 				For Each text As String In textSegments
 					If text=find Then
 						If replaceTextField.Text="" Then
-							tf.AddText(find).SetColor(fx.Colors.Red).SetStrikethrough(True)
+							tf.AddTextWithStrikethrough(find,"").SetColor(fx.Colors.Red)
 						Else
 							tf.AddText(replaceTextField.Text).SetColor(fx.Colors.DarkGray).SetUnderline(True)
 						End If
@@ -103,10 +105,13 @@ Sub showResult
 				tf.AddText(target)
 			End If
 			
-			
+			Dim tagList As List
+			tagList.Initialize
+			tagList.Add(index)
+			tagList.Add(tf.getText)
 			Dim pane As Pane = tf.CreateTextFlow
-			pane.Tag=tf.getText
-			pane.SetSize(resultListView.Width,MeasureMultilineTextHeight(fx.DefaultFont(15),resultListView.Width,pane.Tag))
+			pane.Tag=tagList
+			pane.SetSize(resultListView.Width,MeasureMultilineTextHeight(fx.DefaultFont(15),resultListView.Width,tagList.Get(1)))
 			resultListView.Items.Add(pane)
 		End If
 	Next
@@ -163,14 +168,46 @@ End Sub
 
 Sub resultListView_Resize (Width As Double, Height As Double)
 	For Each p As Pane In resultListView.Items
-		p.SetSize(Width,MeasureMultilineTextHeight(fx.DefaultFont(15),Width,p.Tag))
+		Dim tagList As List
+		tagList=p.Tag
+		p.SetSize(Width,MeasureMultilineTextHeight(fx.DefaultFont(15),Width,tagList.Get(1)))
 	Next
+End Sub
+
+Sub replaceSelectedButton_MouseClicked (EventData As MouseEvent)
+	If resultListView.SelectedItem<>Null Then
+		Dim p As Pane
+		p=resultListView.SelectedItem
+		Dim tagList As List
+		tagList=p.Tag
+		Dim target,after As String
+		Log(Regex.Split(CRLF,tagList.Get(1)))
+		target=Regex.Split(CRLF,tagList.Get(1))(1)
+		target=target.SubString2("Target: ".Length,target.Length)
+		after=Regex.Split(CRLF,tagList.Get(1))(2)
+		after=after.SubString2("After: ".Length,after.Length)
+		Dim bitext As List
+		bitext=Main.currentProject.segments.Get(tagList.Get(0))
+		If bitext.Get(1)=target Then
+			bitext.Set(1,after)
+		End If
+		Main.currentProject.segments.Set(tagList.Get(0),bitext)
+		Main.currentProject.fillVisibleTargetTextArea
+		resultListView.Items.RemoveAt(resultListView.SelectedIndex)
+	End If
+End Sub
+
+Sub replaceAllButton_MouseClicked (EventData As MouseEvent)
+	
 End Sub
 
 Sub MeasureMultilineTextHeight (Font As Font, Width As Double, Text As String) As Double
 	Dim jo As JavaObject = Me
 	Return jo.RunMethod("MeasureMultilineTextHeight", Array(Font, Text, Width))
 End Sub
+
+
+
 
 #if Java
 import java.lang.reflect.InvocationTargetException;
@@ -184,3 +221,6 @@ public static double MeasureMultilineTextHeight(Font f, String text, double widt
   return (Double)m.invoke(null, f, text, width, TextBoundsType.LOGICAL);
   }
 #End If
+
+
+
