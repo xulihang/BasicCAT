@@ -7,25 +7,26 @@ File12=pretranslate.bjl
 File13=progress.bjl
 File14=projectSetting.bjl
 File15=right.bjl
-File16=searchTableView.bjl
-File17=segment.bjl
-File18=segmentation_en.conf
-File19=segmentation_en_exception.conf
+File16=searchandreplace.bjl
+File17=searchTableView.bjl
+File18=segment.bjl
+File19=segmentation_en.conf
 File2=inputbox.bjl
-File20=segmentation_zh.conf
-File21=segmentation_zh_exception.conf
-File22=supportedFiles.txt
-File23=tableview.bjl
-File24=tabpane.bjl
-File25=term.bjl
-File26=TermManager.bjl
-File27=tmList.bjl
-File28=TMManager.bjl
-File29=TMsegment.bjl
+File20=segmentation_en_exception.conf
+File21=segmentation_zh.conf
+File22=segmentation_zh_exception.conf
+File23=supportedFiles.txt
+File24=tableview.bjl
+File25=tabpane.bjl
+File26=term.bjl
+File27=TermManager.bjl
+File28=tmList.bjl
+File29=TMManager.bjl
 File3=leftProject.bjl
-File30=tmSetting.bjl
-File31=upperRight.bjl
-File32=viewSegment.bjl
+File30=TMsegment.bjl
+File31=tmSetting.bjl
+File32=upperRight.bjl
+File33=viewSegment.bjl
 File4=Log.bjl
 File5=lowerRight.bjl
 File6=main.bjl
@@ -58,6 +59,7 @@ FileGroup3=Default Group
 FileGroup30=Default Group
 FileGroup31=Default Group
 FileGroup32=Default Group
+FileGroup33=Default Group
 FileGroup4=Default Group
 FileGroup5=Default Group
 FileGroup6=Default Group
@@ -94,6 +96,8 @@ Module18=TMManager
 Module19=viewSegment
 Module2=Project
 Module20=TermManager
+Module21=searchAndReplaceDialog
+Module22=TextFlow
 Module3=segmentation
 Module4=CustomListView
 Module5=txtFilter
@@ -101,9 +105,9 @@ Module6=TM
 Module7=Term
 Module8=KeyValueStore
 Module9=ProjectSettings
-NumberOfFiles=32
+NumberOfFiles=33
 NumberOfLibraries=16
-NumberOfModules=20
+NumberOfModules=22
 Version=6.51
 @EndOfDesignText@
 #Region Project Attributes 
@@ -312,7 +316,9 @@ Sub MenuBar1_Action
 				End If
 			Next
 		Case "Search and Replace"
-			
+			Dim sap As searchAndReplaceDialog
+			sap.Initialize
+			sap.show
 		Case "Project Settings"
 			If currentProject.IsInitialized=False Then
 				fx.Msgbox(MainForm,"Please open a project first.","")
