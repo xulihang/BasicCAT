@@ -304,7 +304,30 @@ Sub replaceSelectedButton_MouseClicked (EventData As MouseEvent)
 End Sub
 
 Sub replaceAllButton_MouseClicked (EventData As MouseEvent)
-	
+	If resultListView.Items.Size>0 Then
+		Dim tempList As List
+		tempList.Initialize
+		tempList.AddAll(resultListView.Items)
+		For Each p As Pane In tempList
+			Dim tagList As List
+			tagList=p.Tag
+			Dim target,after As String
+			Log(Regex.Split(CRLF,tagList.Get(1)))
+			target=Regex.Split(CRLF,tagList.Get(1))(1)
+			target=target.SubString2("Target: ".Length,target.Length)
+			after=Regex.Split(CRLF,tagList.Get(1))(2)
+			after=after.SubString2("After: ".Length,after.Length)
+			Dim bitext As List
+			bitext=Main.currentProject.segments.Get(tagList.Get(0))
+			If bitext.Get(1)=target Then
+				bitext.Set(1,after)
+			End If
+			Main.currentProject.segments.Set(tagList.Get(0),bitext)
+			Main.currentProject.fillVisibleTargetTextArea
+			resultListView.Items.RemoveAt(resultListView.Items.IndexOf(p))
+		Next
+    End If
+
 End Sub
 
 Sub MeasureMultilineTextHeight (Font As Font, Width As Double, Text As String) As Double
@@ -312,7 +335,15 @@ Sub MeasureMultilineTextHeight (Font As Font, Width As Double, Text As String) A
 	Return jo.RunMethod("MeasureMultilineTextHeight", Array(Font, Text, Width))
 End Sub
 
-
+Sub resultListView_Action
+	Dim p As Pane
+	p=resultListView.Items.Get(resultListView.SelectedIndex)
+	Dim taglist As List
+	taglist=p.Tag
+	Main.editorLV.JumpToItem(taglist.get(0))
+	Main.MainForm.AlwaysOnTop=True
+	Main.MainForm.AlwaysOnTop=False
+End Sub
 
 
 #if Java
