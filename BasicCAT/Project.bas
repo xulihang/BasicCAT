@@ -492,33 +492,50 @@ Sub targetTextArea_KeyPressed_Event (MethodName As String, Args() As Object) As 
 	Dim KEvt As JavaObject = Args(0)
 	Dim result As String
 	result=KEvt.RunMethod("getCode",Null)
-	If result="ENTER" Then
-		Dim targetTextArea As TextArea
-		targetTextArea=Sender
+	Log(result)
+	Dim offset As Int
+	Dim targetTextArea As TextArea
+	targetTextArea=Sender
+	If result="ENTER" Or result="DOWN" Then
+		changeSegment(1,targetTextArea)
+	Else if result="UP" Then
+		changeSegment(-1,targetTextArea)
+	End If
+
+
+End Sub
+
+Sub changeSegment(offset As Int,targetTextArea As TextArea)
+	Try
 		targetTextArea.Text=targetTextArea.Text.Replace(CRLF,"")
 		saveTranslation(targetTextArea)
-		Try
-			Dim pane As Pane
-			pane=targetTextArea.Parent
-			Dim index As Int
-			index=Main.editorLV.GetItemFromView(pane)
-			If index=Main.editorLV.Size-1 Then
-				index=-1
+		Dim pane As Pane
+		pane=targetTextArea.Parent
+		Dim index As Int
+		index=Main.editorLV.GetItemFromView(pane)
+		If index+offset>=Main.editorLV.Size Or index+offset<0 Then
+			Return
+		End If
+		Dim nextPane As Pane
+		nextPane=Main.editorLV.GetPanel(index+offset)
+		Dim nextTA As TextArea
+		nextTA=nextPane.GetNode(1)
+		nextTA.RequestFocus
+		lastEntry=Main.editorLV.GetItemFromView(nextPane)
+		lastFilename=currentFilename
+		showTM(nextTA)
+		showTerm(nextTA)
+		Main.updateSegmentLabel(lastEntry,segments.Size)
+		If index+offset<Main.editorLV.FirstVisibleIndex+1 Or index+offset>Main.editorLV.LastVisibleIndex-1 Then
+			If offset<0 Then
+				Main.editorLV.ScrollToItem(index+offset)
+			Else
+				Main.editorLV.ScrollToItem(index+offset-Main.editorLV.LastVisibleIndex+Main.editorLV.FirstVisibleIndex+1)
 			End If
-			Dim nextPane As Pane
-			nextPane=Main.editorLV.GetPanel(index+1)
-			Dim nextTA As TextArea
-			nextTA=nextPane.GetNode(1)
-			nextTA.RequestFocus
-			lastEntry=Main.editorLV.GetItemFromView(nextPane)
-			lastFilename=currentFilename
-			showTM(nextTA)
-			showTerm(nextTA)
-			Main.updateSegmentLabel(lastEntry,segments.Size)
-		Catch
-			Log(LastException)
-		End Try
-	End If
+		End If
+	Catch
+		Log(LastException)
+	End Try
 End Sub
 
 Sub sourceTextArea_FocusChanged (HasFocus As Boolean)
