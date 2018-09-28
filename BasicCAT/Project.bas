@@ -493,7 +493,6 @@ Sub targetTextArea_KeyPressed_Event (MethodName As String, Args() As Object) As 
 	Dim result As String
 	result=KEvt.RunMethod("getCode",Null)
 	Log(result)
-	Dim offset As Int
 	Dim targetTextArea As TextArea
 	targetTextArea=Sender
 	If result="ENTER" Or result="DOWN" Then

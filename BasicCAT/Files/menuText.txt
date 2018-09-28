@@ -1,0 +1,5 @@
+_Generate target files
+Go to the next untranslated segment
+Search and Replace
+Project Settings
+Pre-translate

@@ -1,36 +1,37 @@
 ﻿AppType=JavaFX
 Build1=Default,b4j.example
 File1=editor.bjl
-File10=preferences.bjl
-File11=pretranslate.bjl
-File12=progress.bjl
-File13=projectSetting.bjl
-File14=right.bjl
-File15=searchTableView.bjl
-File16=segment.bjl
-File17=segmentation_en.conf
-File18=segmentation_en_exception.conf
-File19=segmentation_zh.conf
+File10=oneterm.bjl
+File11=preferences.bjl
+File12=pretranslate.bjl
+File13=progress.bjl
+File14=projectSetting.bjl
+File15=right.bjl
+File16=searchTableView.bjl
+File17=segment.bjl
+File18=segmentation_en.conf
+File19=segmentation_en_exception.conf
 File2=inputbox.bjl
-File20=segmentation_zh_exception.conf
-File21=supportedFiles.txt
-File22=tableview.bjl
-File23=tabpane.bjl
-File24=term.bjl
-File25=TermManager.bjl
-File26=tmList.bjl
-File27=TMManager.bjl
-File28=TMsegment.bjl
-File29=tmSetting.bjl
+File20=segmentation_zh.conf
+File21=segmentation_zh_exception.conf
+File22=supportedFiles.txt
+File23=tableview.bjl
+File24=tabpane.bjl
+File25=term.bjl
+File26=TermManager.bjl
+File27=tmList.bjl
+File28=TMManager.bjl
+File29=TMsegment.bjl
 File3=leftProject.bjl
-File30=upperRight.bjl
-File31=viewSegment.bjl
+File30=tmSetting.bjl
+File31=upperRight.bjl
+File32=viewSegment.bjl
 File4=Log.bjl
 File5=lowerRight.bjl
 File6=main.bjl
-File7=mtparamfiller.bjl
-File8=mtSetting.bjl
-File9=oneterm.bjl
+File7=menuText.txt
+File8=mtparamfiller.bjl
+File9=mtSetting.bjl
 FileGroup1=Default Group
 FileGroup10=Default Group
 FileGroup11=Default Group
@@ -56,6 +57,7 @@ FileGroup29=Default Group
 FileGroup3=Default Group
 FileGroup30=Default Group
 FileGroup31=Default Group
+FileGroup32=Default Group
 FileGroup4=Default Group
 FileGroup5=Default Group
 FileGroup6=Default Group
@@ -81,17 +83,17 @@ Library8=jsql
 Library9=jrandomaccessfile
 Module1=FileChooserUtils
 Module10=preTranslateDialog
-Module11=Preferences
-Module12=progressDialog
+Module11=Utils
+Module12=editDistance
 Module13=MT
-Module14=MTParamsFiller
-Module15=InputBox
-Module16=Utils
-Module17=TMManager
-Module18=viewSegment
-Module19=TermManager
+Module14=Preferences
+Module15=progressDialog
+Module16=MTParamsFiller
+Module17=InputBox
+Module18=TMManager
+Module19=viewSegment
 Module2=Project
-Module20=editDistance
+Module20=TermManager
 Module3=segmentation
 Module4=CustomListView
 Module5=txtFilter
@@ -99,7 +101,7 @@ Module6=TM
 Module7=Term
 Module8=KeyValueStore
 Module9=ProjectSettings
-NumberOfFiles=31
+NumberOfFiles=32
 NumberOfLibraries=16
 NumberOfModules=20
 Version=6.51
@@ -139,6 +141,7 @@ Sub Process_Globals
 	Public TMViewToggleButton As ToggleButton
 	Private viewTMTextArea As TextArea
 	Private segmentLabel As Label
+	Private MenuBar1 As MenuBar
 End Sub
 
 Sub AppStart (Form1 As Form, Args() As String)
@@ -192,6 +195,8 @@ Sub init
 	End If
 	tmTableView.SetColumnWidth(1,200)
 	tmTableView.SetColumnWidth(2,200)
+	Utils.disableMenuItems(MenuBar1,Array As String("_Save","_Close"))
+	Utils.disableMenuItems(MenuBar1,File.ReadList(File.DirAssets,"menuText.txt"))
 End Sub
 
 Sub adjustDividerPositions
@@ -243,6 +248,8 @@ Sub MenuBar1_Action
 			currentProject.Initialize
 			currentProject.open(path)
 			MainForm.Title=getProjectname(path)
+			Utils.enableMenuItems(MenuBar1,Array As String("_Save","_Close"))
+			Utils.enableMenuItems(MenuBar1,File.ReadList(File.DirAssets,"menuText.txt"))
 		Case "en to zh Project"
 			If currentProject.IsInitialized Then
 				fx.Msgbox(MainForm,"Please close the current project first.","")
@@ -252,6 +259,7 @@ Sub MenuBar1_Action
 			currentProject.newProjectSetting("en","zh")
 			MainForm.Title="Untitled-1"
 			addProjectTreeTableItem
+			Utils.enableMenuItems(MenuBar1,Array As String("_Save","_Close"))
 		Case "zh to en Project"
 			If currentProject.IsInitialized Then
 				fx.Msgbox(MainForm,"Please close the current project first.","")
@@ -261,6 +269,7 @@ Sub MenuBar1_Action
 			currentProject.newProjectSetting("zh","en")
 			MainForm.Title="Untitled-1"
 			addProjectTreeTableItem
+			Utils.enableMenuItems(MenuBar1,Array As String("_Save","_Close"))
 		Case "_Save"
 			If currentProject.path="" Then
 				If currentProject.IsInitialized=False Then
@@ -281,6 +290,7 @@ Sub MenuBar1_Action
 				currentProject.path=path
 				currentProject.save
 				MainForm.Title=path
+				Utils.enableMenuItems(MenuBar1,File.ReadList(File.DirAssets,"menuText.txt"))
 			Else
 				currentProject.save
 			End If
@@ -292,6 +302,17 @@ Sub MenuBar1_Action
 		Case "_Close"
 			Log("closing")
 			closeProject
+		Case "Go to the next untranslated segment"
+			For i=currentProject.lastEntry To editorLV.Size-1
+				Dim p As Pane
+				p=editorLV.GetPanel(i)
+				If Utils.getTextFromPane(1,p)="" Then
+					editorLV.JumpToItem(i)
+					Return
+				End If
+			Next
+		Case "Search and Replace"
+			
 		Case "Project Settings"
 			If currentProject.IsInitialized=False Then
 				fx.Msgbox(MainForm,"Please open a project first.","")
@@ -308,6 +329,10 @@ Sub MenuBar1_Action
 		Case "Pre-translate"
 			If currentProject.IsInitialized=False Then
 				fx.Msgbox(MainForm,"Please open a project first.","")
+				Return
+			End If
+			If editorLV.Size=0 Then
+				fx.Msgbox(MainForm,"Please open a file first.","")
 				Return
 			End If
 			Dim ptDialog As preTranslateDialog
@@ -549,7 +574,7 @@ Sub termLV_MouseClicked (EventData As MouseEvent)
 End Sub
 
 Sub tmTableView_SelectedRowChanged(Index As Int, Row() As Object)
-	If Row<>Null and Row.Length<>0 Then
+	If Row<>Null And Row.Length<>0 Then
 		Dim pane As Pane
 		pane=editorLV.GetPanel(currentProject.lastEntry)
 		Dim sourceTextArea As TextArea
@@ -590,6 +615,9 @@ Public Sub closeProject
 		projectTreeTableView.ClearSelection
 		projectTreeTableView.Root.Children.Clear
 		editorLV.Clear
+		MainForm.Title="BasicCAT"
+		Utils.disableMenuItems(MenuBar1,Array As String("_Save","_Close"))
+		Utils.disableMenuItems(MenuBar1,File.ReadList(File.DirAssets,"menuText.txt"))
 	End If
 End Sub
 

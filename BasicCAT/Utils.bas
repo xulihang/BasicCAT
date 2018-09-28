@@ -7,6 +7,7 @@ Version=6.51
 'Static code module
 Sub Process_Globals
 	Private fx As JFX
+	Private menus As Map
 End Sub
 
 Sub getMap(key As String,parentmap As Map) As Map
@@ -19,6 +20,44 @@ Sub get_isEnabled(key As String,parentmap As Map) As Boolean
 	Else
 		Return parentmap.Get(key)
 	End If
+End Sub
+
+Sub getTextFromPane(index As Int,p As Pane) As String
+	Dim ta As TextArea
+	ta=p.GetNode(index)
+	Return ta.Text 
+End Sub
+
+Sub enableMenuItems(mb As MenuBar,menuText As List)
+	If menus.IsInitialized=False Then
+		menus.Initialize
+		CollectMenuItems(mb.Menus)
+	End If
+	For Each text As String In menuText
+		Dim mi As MenuItem = menus.Get(text)
+		mi.Enabled = True
+	Next
+End Sub
+
+Sub disableMenuItems(mb As MenuBar,menuText As List)
+	If menus.IsInitialized=False Then
+		menus.Initialize
+		CollectMenuItems(mb.Menus)
+	End If
+	For Each text As String In menuText
+		Dim mi As MenuItem = menus.Get(text)
+		mi.Enabled = False
+	Next
+End Sub
+
+Sub CollectMenuItems(Items As List)
+	For Each mi As MenuItem In Items
+		If mi.Text <> Null And mi.Text <> "" Then menus.Put(mi.Text, mi)
+		If mi Is Menu Then
+			Dim mn As Menu = mi
+			CollectMenuItems(mn.MenuItems)
+		End If
+	Next
 End Sub
 
 Sub ListViewParent_Resize(clv As CustomListView)
