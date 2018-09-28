@@ -38,8 +38,113 @@ Sub findButton_Click
 End Sub
 
 Sub showRegexResult
+	Dim index As Int=-1
 	For Each bitext As List In Main.currentProject.segments
+		index=index+1
+		Dim tf As TextFlow
+		tf.Initialize
+		Dim source,target,pattern,sourceLeft,targetLeft As String
+		source=bitext.Get(0)
+		target=bitext.Get(1)
+		sourceLeft=source
+		targetLeft=target
+		pattern=findTextField.Text
+		Log(pattern)
+		Dim textSegments As List
+		textSegments.Initialize
+		Dim sourceMatcher,targetMatcher As Matcher
+		sourceMatcher=Regex.Matcher(pattern,source)
+		targetMatcher=Regex.Matcher(pattern,target)
+		Dim inSource,inTarget As Boolean
+		inSource=Regex.Matcher(pattern,source).Find
+		inTarget=Regex.Matcher(pattern,target).Find
 		
+		Dim shouldShow As Boolean=False
+		
+		If searchSourceCheckBox.Checked Then
+			If inSource Or inTarget Then
+				shouldShow=True
+			End If
+		Else
+			If inTarget Then
+				shouldShow=True
+			End If
+		End If
+		
+		tf.AddText("Source: ")
+		If shouldShow Then
+
+			If searchSourceCheckBox.Checked Then
+				If inSource Then
+					Do While sourceMatcher.Find
+						Log("Found: " & sourceMatcher.Match)
+						Dim textBefore As String
+						textBefore=sourceLeft.SubString2(0,sourceLeft.IndexOf(sourceMatcher.Match))
+						If textBefore<>"" Then
+							tf.AddText(textBefore)
+							textSegments.Add(textBefore)
+						End If
+						tf.AddText(sourceMatcher.Match).SetColor(fx.Colors.Blue).SetUnderline(True)
+						sourceLeft=sourceLeft.SubString2(sourceLeft.IndexOf(sourceMatcher.Match)+sourceMatcher.Match.Length,sourceLeft.Length)
+					Loop
+					tf.AddText(sourceLeft)
+				Else
+					tf.AddText(source)
+				End If
+			Else
+				tf.AddText(source)
+			End If
+			tf.AddText(CRLF&"Target: ")
+
+			If inTarget Then
+			    Do While targetMatcher.Find
+					Dim find As String
+			        find=targetMatcher.Match
+					Dim textBefore As String
+					textBefore=targetLeft.SubString2(0,targetLeft.IndexOf(find))
+					If textBefore<>"" Then
+						tf.AddText(textBefore)
+						textSegments.Add(textBefore)
+					End If
+					tf.AddText(find).SetColor(fx.Colors.Blue).SetUnderline(True)
+					textSegments.Add(find)
+					targetLeft=targetLeft.SubString2(targetLeft.IndexOf(find)+find.Length,targetLeft.Length)
+				Loop
+				tf.AddText(targetLeft)
+				textSegments.Add(targetLeft)
+				tf.AddText(CRLF&"After: ")
+
+				For Each text As String In textSegments
+					Log("text"&text)
+					If Regex.IsMatch(pattern,text) Then
+						Dim replace As String
+						replace=Regex.Replace(pattern,text,replaceTextField.Text)
+						Log("replace"&replace)
+						If replace="" Then
+							tf.AddTextWithStrikethrough(text,"").SetColor(fx.Colors.Red)
+						Else
+							tf.AddText(replace).SetColor(fx.Colors.Green).SetUnderline(True)
+						End If
+					Else
+						tf.AddText(text)
+					End If
+				Next
+				
+			Else
+				tf.AddText(target)
+				tf.AddText(CRLF&"After: ")
+				tf.AddText(target)
+			End If
+			Dim tagList As List
+			tagList.Initialize
+			tagList.Add(index)
+			tagList.Add(tf.getText)
+			Dim pane As Pane = tf.CreateTextFlow
+			pane.Tag=tagList
+			pane.SetSize(resultListView.Width,MeasureMultilineTextHeight(fx.DefaultFont(15),resultListView.Width,tagList.Get(1)))
+			resultListView.Items.Add(pane)
+		End If
+
 	Next
 End Sub
 
@@ -92,7 +197,7 @@ Sub showResult
 						If replaceTextField.Text="" Then
 							tf.AddTextWithStrikethrough(find,"").SetColor(fx.Colors.Red)
 						Else
-							tf.AddText(replaceTextField.Text).SetColor(fx.Colors.DarkGray).SetUnderline(True)
+							tf.AddText(replaceTextField.Text).SetColor(fx.Colors.Green).SetUnderline(True)
 						End If
 						
 					Else
@@ -116,6 +221,7 @@ Sub showResult
 		End If
 	Next
 End Sub
+
 Sub addText(tf As TextFlow,target As String,find As String,textSegments As List,isInTarget As Boolean)
 	Dim targetLeft As String
 	targetLeft=target
