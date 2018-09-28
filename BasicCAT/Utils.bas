@@ -51,3 +51,16 @@ Sub ListViewParent_Resize(clv As CustomListView)
 		clv.ResizeItem(i,h+10dip)
 	Next
 End Sub
+
+
+Sub buildHtmlString(raw As String) As String
+	Dim su As ApacheSU
+	Dim result As String
+	Dim htmlhead As String
+	htmlhead="<!DOCTYPE HTML><html><head><meta charset="&Chr(34)&"utf-8"&Chr(34)&" /><style type="&Chr(34)&"text/css"&Chr(34)&">p {font-size: 18px}</style></head><body>"
+	Dim htmlend As String
+	htmlend="</body></html>"
+	result=result&"<p>"&raw&"</p>"
+	result=htmlhead&result&htmlend
+	Return result
+End Sub

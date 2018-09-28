@@ -21,13 +21,14 @@ End Sub
 Sub termsInASentence(sentence As String) As List
 	Dim result As List
 	result.Initialize
-	If sourceLanguage="EN" Then
+	If sourceLanguage="en" Then
 		Log(sentence)
 		sentence=Regex.Replace("[\x21-\x2F\x3A-\x40\x5B-\x60\x7B-\x7E]",sentence,"")
-		Log(sentence)
+		'Log(sentence)
 		Dim words() As String
 		words=Regex.Split(" ",sentence)
 		For Each word As String In words
+			'Log(word)
 			If terminology.ContainsKey(word) Then
 				Dim oneterm As List
 				oneterm.Initialize

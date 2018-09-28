@@ -91,6 +91,7 @@ Module17=TMManager
 Module18=viewSegment
 Module19=TermManager
 Module2=Project
+Module20=editDistance
 Module3=segmentation
 Module4=CustomListView
 Module5=txtFilter
@@ -100,7 +101,7 @@ Module8=KeyValueStore
 Module9=ProjectSettings
 NumberOfFiles=31
 NumberOfLibraries=16
-NumberOfModules=19
+NumberOfModules=20
 Version=6.51
 @EndOfDesignText@
 #Region Project Attributes 
@@ -124,7 +125,7 @@ Sub Process_Globals
 	Public currentProject As Project
 	Private lowerRightSplitPane As SplitPane
 	Public TabPane1 As TabPane
-	Private LogWebView As WebView
+	Public LogWebView As WebView
 	Public tmTableView As TableView
 	Public searchTableView As TableView
 	Private addTermButton As Button
@@ -135,8 +136,9 @@ Sub Process_Globals
 	Public preferencesMap As Map
 	Private viewTextArea As TextArea
 	Private segmentSearchToggleButton As ToggleButton
-	public TMViewToggleButton As ToggleButton
+	Public TMViewToggleButton As ToggleButton
 	Private viewTMTextArea As TextArea
+	Private segmentLabel As Label
 End Sub
 
 Sub AppStart (Form1 As Form, Args() As String)
@@ -188,6 +190,8 @@ Sub init
 		json.Initialize(File.ReadString(File.DirApp,"preferences.conf"))
 		preferencesMap=json.NextObject
 	End If
+	tmTableView.SetColumnWidth(1,200)
+	tmTableView.SetColumnWidth(2,200)
 End Sub
 
 Sub adjustDividerPositions
@@ -515,7 +519,7 @@ Sub searchTableView_MouseClicked (EventData As MouseEvent)
 End Sub
 
 Sub tmTableView_MouseClicked (EventData As MouseEvent)
-	If tmTableView.SelectedRowValues<>Null And editorLV.Size<>0 Then
+	If EventData.ClickCount=2 And tmTableView.SelectedRowValues<>Null And editorLV.Size<>0 Then
 		Dim pane As Pane
 		pane=editorLV.GetPanel(currentProject.lastEntry)
 		Dim targetTextArea As TextArea
@@ -544,7 +548,22 @@ Sub termLV_MouseClicked (EventData As MouseEvent)
 	End If
 End Sub
 
+Sub tmTableView_SelectedRowChanged(Index As Int, Row() As Object)
+	If Row<>Null and Row.Length<>0 Then
+		Dim pane As Pane
+		pane=editorLV.GetPanel(currentProject.lastEntry)
+		Dim sourceTextArea As TextArea
+		sourceTextArea=pane.GetNode(0)
+		If Row(1)="" Then
+			LogWebView.LoadHtml(Utils.buildHtmlString(Row(2)))
+			Return
+		End If
+		Dim html As String
+		html=editDistance.showDiff(sourceTextArea.Text,Row(1)).Replace("</body>","<p>"&Row(2)&"</p></body>")
+		LogWebView.LoadHtml(html)
+	End If
 
+End Sub
 
 Sub searchTableView_Action
 	Dim mi As MenuItem
@@ -598,3 +617,8 @@ Sub toggleTableOrTextArea(selected As Boolean,tb As ToggleButton, ta As TextArea
 		Next
 	End If
 End Sub
+
+Public Sub updateSegmentLabel(current As String,total As String)
+	segmentLabel.Text=(current+1)&"/"&total
+End Sub
+

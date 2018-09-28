@@ -43,7 +43,7 @@ Sub BaiduMT(source As String,sourceLang As String,targetLang As String) As Resum
 	wait for (job) JobDone(job As HttpJob)
 	Dim target As String
 	If job.Success Then
-		Log(job.GetString)
+		'Log(job.GetString)
 		If job.GetString.Contains("error") Then
 			target=""
 		Else

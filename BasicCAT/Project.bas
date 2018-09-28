@@ -232,6 +232,9 @@ Sub openFile(filename As String,onOpeningProject As Boolean)
 	End If
 	
 	Main.editorLV.Clear
+	Main.tmTableView.Items.Clear
+	Main.LogWebView.LoadHtml("")
+	Main.searchTableView.Items.Clear
 	segments.Clear
 	currentFilename=filename
 
@@ -507,10 +510,11 @@ Sub targetTextArea_KeyPressed_Event (MethodName As String, Args() As Object) As 
 			Dim nextTA As TextArea
 			nextTA=nextPane.GetNode(1)
 			nextTA.RequestFocus
-			showTM(nextTA)
-			showTerm(nextTA)
 			lastEntry=Main.editorLV.GetItemFromView(nextPane)
 			lastFilename=currentFilename
+			showTM(nextTA)
+			showTerm(nextTA)
+			Main.updateSegmentLabel(lastEntry,segments.Size)
 		Catch
 			Log(LastException)
 		End Try
@@ -541,14 +545,15 @@ Sub targetTextArea_FocusChanged (HasFocus As Boolean)
 		Log("Null,Textarea Parent")
 		Return
 	End If
+	lastEntry=Main.editorLV.GetItemFromView(TextArea1.Parent)
+	lastFilename=currentFilename
 	If HasFocus Then
         Log("hasFocus")
 		showTM(TextArea1)
 		showTerm(TextArea1)
-	Else
-		lastEntry=Main.editorLV.GetItemFromView(TextArea1.Parent)
-		lastFilename=currentFilename
+		Main.updateSegmentLabel(Main.editorLV.GetItemFromView(TextArea1.Parent),segments.Size)
 	End If
+
 End Sub
 
 Sub showTM(targetTextArea As TextArea)
@@ -563,9 +568,11 @@ Sub showTM(targetTextArea As TextArea)
 		Return
 	End If
 	Main.tmTableView.Items.Clear
+	Main.LogWebView.LoadHtml("")
 	projectTM.currentSource=sourceTA.Text
 	Dim senderFilter As Object = projectTM.getMatchList(sourceTA.Text)
 	Wait For (senderFilter) Complete (Result As List)
+
 
 	For Each matchList As List In Result
 
@@ -579,6 +586,9 @@ Sub showTM(targetTextArea As TextArea)
 	showMT(sourceTA.Text)
 	If Main.TMViewToggleButton.Selected=False Then
 		Main.TMViewToggleButton_SelectedChange(False)
+	End If
+	If Main.tmTableView.Items.Size<>0 Then
+		Main.tmTableView.SelectedRow=0
 	End If
 End Sub
 
