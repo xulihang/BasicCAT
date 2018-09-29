@@ -42,7 +42,7 @@ Sub fillData(filename As String) As String
 	
 	Dim percent As String
 	percent=targetSentences/sourceSentences*100
-	percent=percent.SubString2(0,2)&"%"
+	percent=percent.SubString2(0,min(2,percent.Length))&"%"
 	
 	Dim one As String
 	one=$"<tr>

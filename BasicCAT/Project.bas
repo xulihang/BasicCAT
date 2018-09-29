@@ -9,8 +9,8 @@ Sub Class_Globals
 	Private fx As JFX
 	Public path As String
 	Public files As List
-	public projectFile As Map
-	Private currentFilename As String
+	Public projectFile As Map
+	Public currentFilename As String
 	Public segments As List
 	Public projectTM As TM
 	Public projectTerm As Term
@@ -138,6 +138,7 @@ public Sub save
 	If projectTerm.IsInitialized=False Then
 		initializeTerm(path)
 	End If
+	showPreView
 	projectFile.Put("files",files)
 	projectFile.Put("lastFile",lastFilename)
 	projectFile.Put("lastEntry",lastEntry)
@@ -146,6 +147,12 @@ public Sub save
 	json.Initialize(projectFile)
 	File.WriteString(path,"project.json",json.ToPrettyString(4))
 	saveFileAccordingToExtenstion(currentFilename)
+End Sub
+
+Sub showPreView
+	If Main.pre.IsInitialized And Main.pre.isShowing Then
+		Main.pre.loadText
+	End If
 End Sub
 
 Sub creatProjectFiles
@@ -536,6 +543,7 @@ Sub changeSegment(offset As Int,targetTextArea As TextArea)
 	Catch
 		Log(LastException)
 	End Try
+	showPreView
 End Sub
 
 Sub sourceTextArea_FocusChanged (HasFocus As Boolean)

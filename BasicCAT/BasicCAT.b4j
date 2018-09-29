@@ -4,30 +4,31 @@ File1=editor.bjl
 File10=oneterm.bjl
 File11=preferences.bjl
 File12=pretranslate.bjl
-File13=progress.bjl
-File14=projectSetting.bjl
-File15=right.bjl
-File16=searchandreplace.bjl
-File17=searchTableView.bjl
-File18=segment.bjl
-File19=segmentation_en.conf
+File13=preview.bjl
+File14=progress.bjl
+File15=projectSetting.bjl
+File16=right.bjl
+File17=searchandreplace.bjl
+File18=searchTableView.bjl
+File19=segment.bjl
 File2=inputbox.bjl
-File20=segmentation_en_exception.conf
-File21=segmentation_zh.conf
-File22=segmentation_zh_exception.conf
-File23=statistics.bjl
-File24=supportedFiles.txt
-File25=tableview.bjl
-File26=tabpane.bjl
-File27=term.bjl
-File28=TermManager.bjl
-File29=tmList.bjl
+File20=segmentation_en.conf
+File21=segmentation_en_exception.conf
+File22=segmentation_zh.conf
+File23=segmentation_zh_exception.conf
+File24=statistics.bjl
+File25=supportedFiles.txt
+File26=tableview.bjl
+File27=tabpane.bjl
+File28=term.bjl
+File29=TermManager.bjl
 File3=leftProject.bjl
-File30=TMManager.bjl
-File31=TMsegment.bjl
-File32=tmSetting.bjl
-File33=upperRight.bjl
-File34=viewSegment.bjl
+File30=tmList.bjl
+File31=TMManager.bjl
+File32=TMsegment.bjl
+File33=tmSetting.bjl
+File34=upperRight.bjl
+File35=viewSegment.bjl
 File4=Log.bjl
 File5=lowerRight.bjl
 File6=main.bjl
@@ -62,6 +63,7 @@ FileGroup31=Default Group
 FileGroup32=Default Group
 FileGroup33=Default Group
 FileGroup34=Default Group
+FileGroup35=Default Group
 FileGroup4=Default Group
 FileGroup5=Default Group
 FileGroup6=Default Group
@@ -109,7 +111,7 @@ Module6=TM
 Module7=Term
 Module8=KeyValueStore
 Module9=ProjectSettings
-NumberOfFiles=34
+NumberOfFiles=35
 NumberOfLibraries=16
 NumberOfModules=24
 Version=6.51
@@ -150,6 +152,7 @@ Sub Process_Globals
 	Private viewTMTextArea As TextArea
 	Private segmentLabel As Label
 	Private MenuBar1 As MenuBar
+	Public pre As Previewer
 End Sub
 
 Sub AppStart (Form1 As Form, Args() As String)
@@ -157,6 +160,7 @@ Sub AppStart (Form1 As Form, Args() As String)
 	MainForm.RootPane.LoadLayout("main") 'Load the layout file.
 	MainForm.Show
 	init
+	Log(fx.Screens)
 	Log(GetSystemProperty("os.name","windows"))
 End Sub
 
@@ -426,8 +430,12 @@ Sub projectTreeTableView_SelectedItemChanged (SelectedItem As TreeTableItem)
 				termm.ShowAndWait
 			Case "Preview"
 				projectTreeTableView.ClearSelection
-				Dim pre As Previewer
-				pre.Initialize
+				If pre.IsInitialized=False Then
+					pre.Initialize
+				End If
+				If pre.isShowing=False Then
+					pre.Show
+				End If
 			Case "Statistics"
 				projectTreeTableView.ClearSelection
 				Dim st As statistics
