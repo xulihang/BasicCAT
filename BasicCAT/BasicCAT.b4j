@@ -15,18 +15,19 @@ File2=inputbox.bjl
 File20=segmentation_en_exception.conf
 File21=segmentation_zh.conf
 File22=segmentation_zh_exception.conf
-File23=supportedFiles.txt
-File24=tableview.bjl
-File25=tabpane.bjl
-File26=term.bjl
-File27=TermManager.bjl
-File28=tmList.bjl
-File29=TMManager.bjl
+File23=statistics.bjl
+File24=supportedFiles.txt
+File25=tableview.bjl
+File26=tabpane.bjl
+File27=term.bjl
+File28=TermManager.bjl
+File29=tmList.bjl
 File3=leftProject.bjl
-File30=TMsegment.bjl
-File31=tmSetting.bjl
-File32=upperRight.bjl
-File33=viewSegment.bjl
+File30=TMManager.bjl
+File31=TMsegment.bjl
+File32=tmSetting.bjl
+File33=upperRight.bjl
+File34=viewSegment.bjl
 File4=Log.bjl
 File5=lowerRight.bjl
 File6=main.bjl
@@ -60,6 +61,7 @@ FileGroup30=Default Group
 FileGroup31=Default Group
 FileGroup32=Default Group
 FileGroup33=Default Group
+FileGroup34=Default Group
 FileGroup4=Default Group
 FileGroup5=Default Group
 FileGroup6=Default Group
@@ -85,17 +87,17 @@ Library8=jsql
 Library9=jrandomaccessfile
 Module1=FileChooserUtils
 Module10=preTranslateDialog
-Module11=Previewer
-Module12=statistics
-Module13=searchAndReplaceDialog
-Module14=TextFlow
-Module15=Utils
-Module16=editDistance
-Module17=MT
-Module18=Preferences
-Module19=progressDialog
+Module11=MT
+Module12=MTParamsFiller
+Module13=Preferences
+Module14=Previewer
+Module15=statistics
+Module16=searchAndReplaceDialog
+Module17=TextFlow
+Module18=Utils
+Module19=editDistance
 Module2=Project
-Module20=MTParamsFiller
+Module20=progressDialog
 Module21=InputBox
 Module22=TMManager
 Module23=viewSegment
@@ -107,7 +109,7 @@ Module6=TM
 Module7=Term
 Module8=KeyValueStore
 Module9=ProjectSettings
-NumberOfFiles=33
+NumberOfFiles=34
 NumberOfLibraries=16
 NumberOfModules=24
 Version=6.51
@@ -422,6 +424,15 @@ Sub projectTreeTableView_SelectedItemChanged (SelectedItem As TreeTableItem)
 				Dim termm As TermManager
 				termm.Initialize
 				termm.ShowAndWait
+			Case "Preview"
+				projectTreeTableView.ClearSelection
+				Dim pre As Previewer
+				pre.Initialize
+			Case "Statistics"
+				projectTreeTableView.ClearSelection
+				Dim st As statistics
+				st.Initialize
+				st.Show
 		End Select
 	End If
 End Sub

@@ -8,8 +8,8 @@ Version=6.51
 Sub Class_Globals
 	Private fx As JFX
 	Public path As String
-	Private files As List
-	Private projectFile As Map
+	Public files As List
+	public projectFile As Map
 	Private currentFilename As String
 	Public segments As List
 	Public projectTM As TM
@@ -19,6 +19,7 @@ Sub Class_Globals
 	Public settings As Map
 	Public sh As Shell
 	Public completed As Int
+
 	
 End Sub
 

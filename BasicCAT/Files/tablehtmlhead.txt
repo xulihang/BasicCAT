@@ -1,0 +1,13 @@
+	<table border="1" cellpadding="0" cellspacing="1">
+	<tr>
+	<th rowspan="2">Filename</th>
+	<th colspan="2">Words</th>
+	<th colspan="2">Sentences</th>
+	<th rowspan="2">Progress</th>
+
+	</tr>
+	<tr>
+	<th>Source</th><th>Target</th>
+	<th>Source</th><th>Target</th>
+
+	</tr>
