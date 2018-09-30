@@ -31,7 +31,7 @@ Public Sub loadText
 	If Main.editorLV.Size<>Main.currentProject.segments.Size Then
 		Return
 	End If
-	For i=Max(0,Main.currentProject.lastEntry-2) To Min(Main.currentProject.lastEntry+10,Main.currentProject.segments.Size-1)
+	For i=Max(0,Main.currentProject.lastEntry-3) To Min(Main.currentProject.lastEntry+7,Main.currentProject.segments.Size-1)
 
 		Dim p As Pane
 		p=Main.editorLV.GetPanel(i)
@@ -54,7 +54,7 @@ Public Sub loadText
 			End If
 		End If
 		If i=Main.currentProject.lastEntry Then
-			translation=$"<span id="current">${translation}</span>"$
+			translation=$"<span id="current" name="current" >${translation}</span>"$
 		End If
 		text=text&translation
 	Next
@@ -69,12 +69,18 @@ Sub loadHtml(text As String)
 	<html>
 	<head>
 	<meta charset="utf-8"/>
-	<script language="javascript" type="text/javascript"> 
-         window.location.hash = "#current";
-    </script> </head><body>
+	<style type="text/css">
+	#current {color:green;}
+	</style>
+ </head><body><p>
 	"$
 	
-	htmlend="<body></html>"
+	htmlend=$"</p></body>
+		<script language="javascript" type="text/javascript"> 
+         window.location.hash = "#current";
+    </script>
+	</html>"$
 	text=htmlhead&text&htmlend
 	WebView1.LoadHtml(text)
+	Log(text)
 End Sub
