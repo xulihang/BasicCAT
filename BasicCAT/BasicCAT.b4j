@@ -90,12 +90,12 @@ Library8=jsql
 Library9=jrandomaccessfile
 Module1=FileChooserUtils
 Module10=preTranslateDialog
-Module11=Previewer
-Module12=statistics
-Module13=Utils
-Module14=MT
-Module15=MTParamsFiller
-Module16=Preferences
+Module11=MT
+Module12=Preferences
+Module13=MTParamsFiller
+Module14=Previewer
+Module15=statistics
+Module16=Utils
 Module17=searchAndReplaceDialog
 Module18=TextFlow
 Module19=editDistance
@@ -154,7 +154,7 @@ Sub Process_Globals
 	Private segmentLabel As Label
 	Private MenuBar1 As MenuBar
 	Public pre As Previewer
-	Public currentXY As List
+
 End Sub
 
 Sub AppStart (Form1 As Form, Args() As String)
@@ -202,7 +202,7 @@ Sub init
 	calculatedHeight.Initialize
 	adjustDividerPositions
 	preferencesMap.Initialize
-	currentXY.Initialize
+
 	If File.Exists(File.DirApp,"preferences.conf") Then
 		Dim json As JSONParser
 		json.Initialize(File.ReadString(File.DirApp,"preferences.conf"))

@@ -91,6 +91,35 @@ Sub ListViewParent_Resize(clv As CustomListView)
 	Next
 End Sub
 
+Sub GetScreenPosition(n As Node) As Map
+	Dim m As Map = CreateMap("x": 0, "y": 0)
+	Dim x = 0, y = 0 As Double
+	Dim joNode = n, joScene, joStage As JavaObject
+  
+	'Get the scene position:
+	joScene = joNode.RunMethod("getScene",Null)
+	If joScene.IsInitialized = False Then Return m
+	x = x + joScene.RunMethod("getX", Null)
+	y = y + joScene.RunMethod("getY", Null)
+
+	'Get the stage position:
+	joStage = joScene.RunMethod("getWindow", Null)
+	If joStage.IsInitialized = False Then Return m
+	x = x + joStage.RunMethod("getX", Null)
+	y = y + joStage.RunMethod("getY", Null)
+  
+	'Get the node position in the scene:
+	Do While True
+		y = y + joNode.RunMethod("getLayoutY", Null)
+		x = x + joNode.RunMethod("getLayoutX", Null)
+		joNode = joNode.RunMethod("getParent", Null)
+		If joNode.IsInitialized = False Then Exit
+	Loop
+
+	m.Put("x", x)
+	m.Put("y", y)
+	Return m
+End Sub
 
 Sub buildHtmlString(raw As String) As String
 	Dim su As ApacheSU

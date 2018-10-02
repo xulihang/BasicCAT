@@ -286,6 +286,34 @@ Sub addFilesToTreeTable(filename As String)
 End Sub
 
 Sub targetTextArea_TextChanged (Old As String, New As String)
+	Log("Old:"&Old)
+	Log("New:"&New)
+	Log(Old="")
+	Log(New.Length)
+	If Old="" And New.Length>1 Then
+		Return
+	End If
+	Dim ta As TextArea
+	ta=Sender
+	Log(ta.Left)
+	Log(ta.Top)
+
+	If cmClicked=True Then
+		cmClicked=False
+	Else
+		cm.MenuItems.Clear
+        For Each text As String In Array ("1","2")
+			Dim mi As MenuItem
+			mi.Initialize(text, "mi")
+			cm.MenuItems.Add(mi)
+		Next
+		Sleep(100)
+		Dim map1 As Map
+		map1=Utils.GetScreenPosition(ta)
+		Log(map1)
+		Dim jo As JavaObject = cm
+		jo.RunMethod("show", Array(ta, map1.Get("x")+ta.Width/10, map1.Get("y")+ta.Height))
+	End If
 	CallSubDelayed(Main, "ListViewParent_Resize")
 End Sub
 
@@ -445,6 +473,7 @@ Sub mi_Action
 	targetTextArea=p.GetNode(1)
 	targetTextArea.Text=targetTextArea.Text.SubString2(0,targetTextArea.SelectionStart)&mi.Text&targetTextArea.Text.SubString2(targetTextArea.SelectionStart,targetTextArea.Text.Length)
 	Sleep(0)
+	targetTextArea.SetSelection(targetTextArea.Text.Length,targetTextArea.Text.Length)
 End Sub
 
 Sub sourceTextArea_MouseClicked (EventData As MouseEvent)
@@ -552,8 +581,6 @@ Sub targetTextArea_KeyPressed_Event (MethodName As String, Args() As Object) As 
 	Else if result="UP" Then
 		changeSegment(-1,targetTextArea)
 	End If
-
-
 End Sub
 
 Sub changeSegment(offset As Int,targetTextArea As TextArea)
@@ -622,8 +649,8 @@ Sub targetTextArea_FocusChanged (HasFocus As Boolean)
 		showTerm(TextArea1)
 		Main.updateSegmentLabel(Main.editorLV.GetItemFromView(TextArea1.Parent),segments.Size)
 	End If
-
 End Sub
+
 
 Sub showTM(targetTextArea As TextArea)
 	Dim time As Long
