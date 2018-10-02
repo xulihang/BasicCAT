@@ -79,6 +79,7 @@ Library13=jreflection
 Library14=encryption
 Library15=byteconverter
 Library16=jstringutils
+Library17=jawtrobot
 Library2=jfx
 Library3=javaobject
 Library4=cssutils
@@ -112,7 +113,7 @@ Module7=Term
 Module8=KeyValueStore
 Module9=ProjectSettings
 NumberOfFiles=35
-NumberOfLibraries=16
+NumberOfLibraries=17
 NumberOfModules=24
 Version=6.51
 @EndOfDesignText@
@@ -153,6 +154,7 @@ Sub Process_Globals
 	Private segmentLabel As Label
 	Private MenuBar1 As MenuBar
 	Public pre As Previewer
+	Public currentXY As List
 End Sub
 
 Sub AppStart (Form1 As Form, Args() As String)
@@ -200,6 +202,7 @@ Sub init
 	calculatedHeight.Initialize
 	adjustDividerPositions
 	preferencesMap.Initialize
+	currentXY.Initialize
 	If File.Exists(File.DirApp,"preferences.conf") Then
 		Dim json As JSONParser
 		json.Initialize(File.ReadString(File.DirApp,"preferences.conf"))
@@ -677,3 +680,14 @@ Public Sub updateSegmentLabel(current As String,total As String)
 	segmentLabel.Text=(current+1)&"/"&total
 End Sub
 
+Public Sub getLeft As Double
+	'Return MainForm.WindowLeft+mainSplitPane.DividerPositions(0)*mainSplitPane.Width+editorLV.AsView.Left
+	Dim robot As AWTRobot
+	Return robot.RobotMouseCurrentLocation(0)-MainForm.WindowLeft
+End Sub
+
+Public Sub getTop As Double
+	'Return MainForm.WindowTop+(1-rightSplitPane.DividerPositions(0))*rightSplitPane.Height+editorLV.AsView.Top
+	Dim robot As AWTRobot
+	Return robot.RobotMouseCurrentLocation(1)-MainForm.WindowTop
+End Sub

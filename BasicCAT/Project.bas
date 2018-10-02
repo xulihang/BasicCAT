@@ -19,7 +19,8 @@ Sub Class_Globals
 	Public settings As Map
 	Public sh As Shell
 	Public completed As Int
-
+	Private cmClicked As Boolean=False
+	Private cm As ContextMenu
 	
 End Sub
 
@@ -29,7 +30,8 @@ Public Sub Initialize
 	projectFile.Initialize
 	segments.Initialize
 	settings.Initialize
-
+	
+	cm.Initialize("cm")
 End Sub
 
 Sub initializeTM(projectPath As String)
@@ -351,6 +353,7 @@ Sub targetTextAreaSelection_changed(old As Object, new As Object)
 End Sub
 
 Sub onSelectionChanged(new As Object,ta As TextArea,isSource As Boolean)
+	
 	Dim indexString As String
 	indexString=new
 	Dim selectionStart,selectionEnd As Int
@@ -367,14 +370,30 @@ Sub onSelectionChanged(new As Object,ta As TextArea,isSource As Boolean)
 	Else
 		Return
 	End If
+	'---------------------- add term
 	
 	Dim index As Int
 	If isSource Then
 		index=0
+		If cmClicked=True Then
+			cmClicked=False
+		Else
+			cm.MenuItems.Clear
+			wait for (getMeans(selectedText)) complete (result As List)
+			For Each text As String In result
+				Dim mi As MenuItem
+				mi.Initialize(text, "mi")
+				cm.MenuItems.Add(mi)
+			Next
+			Sleep(100)
+			Dim jo As JavaObject = cm
+			jo.RunMethod("show", Array(ta, Main.getLeft, Main.getTop))
+		End If
+		
 	Else
 		index=1
 	End If
-	
+	'------------------ show word meaning
 	If Main.TabPane1.SelectedIndex=1 Then
 		
 		If projectFile.Get("source")="en" And isSource=True Then
@@ -413,7 +432,32 @@ Sub onSelectionChanged(new As Object,ta As TextArea,isSource As Boolean)
 			Main.searchTableView.Items.Add(row)
 		Next
 	End If
+	'---------- show segment search
 End Sub
+
+Sub mi_Action
+	cmClicked=True
+	Dim mi As MenuItem
+	mi=Sender
+	Dim p As Pane
+	p=Main.editorLV.GetPanel(lastEntry)
+	Dim targetTextArea As TextArea
+	targetTextArea=p.GetNode(1)
+	targetTextArea.Text=targetTextArea.Text.SubString2(0,targetTextArea.SelectionStart)&mi.Text&targetTextArea.Text.SubString2(targetTextArea.SelectionStart,targetTextArea.Text.Length)
+	Sleep(0)
+End Sub
+
+Sub sourceTextArea_MouseClicked (EventData As MouseEvent)
+
+	Dim ta As TextArea
+	ta=Sender
+	lastEntry=Main.editorLV.GetItemFromView(ta.Parent)
+	If ta.SelectionEnd=ta.SelectionStart Then
+		Dim jo As JavaObject = cm
+		jo.RunMethod("hide", Null)
+	End If
+End Sub
+
 
 Sub sourceTextArea_KeyPressed_Event (MethodName As String, Args() As Object) As Object
 	Dim sourceTextArea As TextArea
@@ -633,6 +677,23 @@ Sub showMT(source As String)
 			End If
 		End If
 	Next
+End Sub
+
+Sub getMeans(source As String) As ResumableSub
+	Dim emptyList As List
+	emptyList.Initialize
+	Dim mtPreferences As Map
+	If Main.preferencesMap.ContainsKey("mt") Then
+		mtPreferences=Main.preferencesMap.get("mt")
+	Else
+		Return emptyList
+	End If
+	If Utils.get_isEnabled("youdao_isEnabled",mtPreferences)=True Then
+		wait for (MT.youdaoMT(source,projectFile.Get("source"),projectFile.Get("target"),True)) Complete (Result As List)
+		Return Result
+	Else
+		Return emptyList
+	End If
 End Sub
 
 Sub showTerm(targetTextArea As TextArea)

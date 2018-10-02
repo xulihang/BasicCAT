@@ -99,7 +99,9 @@ Sub yandexMT(source As String,sourceLang As String,targetLang As String) As Resu
 End Sub
 
 Sub youdaoMT(source As String,sourceLang As String,targetLang As String,lookup As Boolean) As ResumableSub
-	
+	If lookup=True Then
+		source=source.Trim
+	End If
 	Dim salt As Int
 	salt=Rnd(1,1000)
 	Dim appid,sign,key As String
@@ -131,7 +133,7 @@ Sub youdaoMT(source As String,sourceLang As String,targetLang As String,lookup A
 			Dim translationList As List
 			translationList=result.Get("translation")
 			target=translationList.Get(0)
-			If lookup=True Then
+			If lookup=True And result.ContainsKey("basic") Then
 				Dim basic As Map
 				basic=result.Get("basic")
 				meansList.AddAll(basic.Get("explains"))
@@ -146,3 +148,4 @@ Sub youdaoMT(source As String,sourceLang As String,targetLang As String,lookup A
 		Return target
 	End If
 End Sub
+
