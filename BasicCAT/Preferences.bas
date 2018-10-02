@@ -71,25 +71,19 @@ Sub mtTableView_MouseClicked (EventData As MouseEvent)
 		Log(mtTableView.SelectedRowValues(0))
 		Dim engineName As String
 		engineName=mtTableView.SelectedRowValues(0)
-	    Select engineName
-			Case "baidu"
-                Dim filler As MTParamsFiller
-				filler.Initialize("baidu",preferencesMap)
-				mtPreferences.Put("baidu",filler.showAndWait)
-				Log(mtPreferences)
-			Case "yandex"
-				Dim filler As MTParamsFiller
-				filler.Initialize("yandex",preferencesMap)
-				mtPreferences.Put("yandex",filler.showAndWait)
-				Log(mtPreferences)
-		End Select
+
+        Dim filler As MTParamsFiller
+		filler.Initialize(engineName,preferencesMap)
+		mtPreferences.Put(engineName,filler.showAndWait)
+		Log(mtPreferences)
+
 		preferencesMap.Put("mt",mtPreferences)
 	End If
 	
 End Sub
 
 Sub loadMT
-	For Each item As String In Array As String("baidu","yandex")
+	For Each item As String In Array As String("baidu","yandex","youdao")
 		Dim chkbox As CheckBox
 		chkbox.Initialize("chkbox")
 		chkbox.Text=""
@@ -133,7 +127,7 @@ Sub chkbox_CheckedChange(Checked As Boolean)
 		mtPreferences.Put(engine&"_isEnabled",Checked)
 	Else
 		If Checked Then
-			fx.Msgbox(frm,"参数未填写完整","")
+			fx.Msgbox(frm,"params are not filled completely","")
 		End If
 		chkbox.Checked=False
 		

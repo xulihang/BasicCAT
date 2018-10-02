@@ -72,6 +72,26 @@ Sub init(engineName As String)
 			End If
 			paramsTableView.Items.Add(Row1)
 			params.Put(Row1(0),Row1(1))
+		Case "youdao"
+			paramsTableView.SetColumns(Array As String("param","value"))
+			
+			Dim Row1() As Object
+			If params.ContainsKey("appid") Then
+				Row1=Array ("appid", params.Get("appid"))
+			Else
+				Row1=Array ("appid", "")
+			End If
+			paramsTableView.Items.Add(Row1)
+			params.Put(Row1(0),Row1(1))
+			
+			Dim Row2() As Object
+			If params.ContainsKey("key") Then
+				Row2=Array ("key", params.Get("key"))
+			Else
+				Row2=Array ("key", "")
+			End If
+			paramsTableView.Items.Add(Row2)
+			params.Put(Row2(0),Row2(1))
 	End Select
 End Sub
 

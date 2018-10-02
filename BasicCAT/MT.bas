@@ -19,6 +19,9 @@ Sub getMT(source As String,sourceLang As String,targetLang As String,MTEngine As
 		Case "yandex"
 			wait for (yandexMT(source,sourceLang,targetLang)) Complete (result As String)
 			Return result
+		Case "youdao"
+			wait for (youdaoMT(source,sourceLang,targetLang,False)) Complete (result As String)
+			Return result
 	End Select
 End Sub
 
@@ -93,4 +96,53 @@ Sub yandexMT(source As String,sourceLang As String,targetLang As String) As Resu
 	End If
 	job.Release
 	Return target
+End Sub
+
+Sub youdaoMT(source As String,sourceLang As String,targetLang As String,lookup As Boolean) As ResumableSub
+	
+	Dim salt As Int
+	salt=Rnd(1,1000)
+	Dim appid,sign,key As String
+	appid=Utils.getMap("youdao",Utils.getMap("mt",Main.preferencesMap)).Get("appid")
+	key=Utils.getMap("youdao",Utils.getMap("mt",Main.preferencesMap)).Get("key")
+	sign=appid&source&salt&key
+	Dim md As MessageDigest
+	sign=Bconv.HexFromBytes(md.GetMessageDigest(Bconv.StringToBytes(sign,"UTF-8"),"MD5"))
+	sign=sign.ToLowerCase
+	
+	Dim su As StringUtils
+	source=su.EncodeUrl(source,"UTF-8")
+	Dim param As String
+	param="?appKey="&appid&"&q="&source&"&from="&sourceLang&"&to="&targetLang&"&salt="&salt&"&sign="&sign
+	Dim job As HttpJob
+	job.Initialize("job",Me)
+	job.Download("http://openapi.youdao.com/api"&param)
+	wait for (job) JobDone(job As HttpJob)
+	Dim target As String=""
+	Dim meansList As List
+	meansList.Initialize
+	If job.Success Then
+		Log(job.GetString)
+		Dim json As JSONParser
+		json.Initialize(job.GetString)
+		Dim result As Map
+		result=json.NextObject
+		If result.Get("errorCode")="0" Then
+			Dim translationList As List
+			translationList=result.Get("translation")
+			target=translationList.Get(0)
+			If lookup=True Then
+				Dim basic As Map
+				basic=result.Get("basic")
+				meansList.AddAll(basic.Get("explains"))
+				meansList.Add(target)
+			End If
+		End If
+	End If
+	job.Release
+	If lookup Then
+		Return meansList
+	Else
+		Return target
+	End If
 End Sub
