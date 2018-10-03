@@ -14,6 +14,10 @@ Sub Class_Globals
 	Private categoryListView As ListView
 	Private mtTableView As TableView
 	Private mtPreferences As Map
+
+	Private ExternalTMCheckBox As CheckBox
+	Private lookupCheckBox As CheckBox
+    Private unsavedPreferences As Map
 End Sub
 
 'Initializes the object. You can add parameters to this method if needed.
@@ -22,6 +26,7 @@ Public Sub Initialize
 	frm.RootPane.LoadLayout("preferences")
 	preferencesMap.Initialize
 	mtPreferences.Initialize
+	unsavedPreferences.Initialize
 	initList
     If File.Exists(File.DirApp,"preferences.conf") Then
 	    Dim json As JSONParser
@@ -31,10 +36,14 @@ Public Sub Initialize
 			mtPreferences=preferencesMap.Get("mt")
 		End If
     End If
+	For Each key As String In preferencesMap.Keys
+		unsavedPreferences.Put(key,preferencesMap.Get(key))
+	Next
 End Sub
 
+
 Sub initList
-	categoryListView.Items.AddAll(Array As String("Machine Translation"))
+	categoryListView.Items.AddAll(Array As String("General","Machine Translation","Word Lookup"))
 End Sub
 
 Public Sub ShowAndWait
@@ -48,7 +57,9 @@ Sub cancelButton_MouseClicked (EventData As MouseEvent)
 End Sub
 
 Sub applyButton_MouseClicked (EventData As MouseEvent)
-	preferencesMap.Put("mt",mtPreferences)
+	For Each key As String In unsavedPreferences.Keys
+		preferencesMap.Put(key,unsavedPreferences.get(key))
+	Next
 	Dim json As JSONGenerator
 	json.Initialize(preferencesMap)
 	File.WriteString(File.DirApp,"preferences.conf",json.ToString)
@@ -61,8 +72,21 @@ Sub categoryListView_SelectedIndexChanged(Index As Int)
 	Log(Index)
 	Select Index
 		Case 0
+			SettingPane.RemoveAllNodes
+			SettingPane.LoadLayout("generalSetting")
+			If unsavedPreferences.ContainsKey("checkExternalTMOnOpening") Then
+				ExternalTMCheckBox.Checked=unsavedPreferences.get("checkExternalTMOnOpening")
+			End If
+		Case 1
+			SettingPane.RemoveAllNodes
 			SettingPane.LoadLayout("mtSetting")
 			loadMT
+		Case 2
+			SettingPane.RemoveAllNodes
+			SettingPane.LoadLayout("wordLookupSetting")
+			If unsavedPreferences.ContainsKey("lookupWord") Then
+				lookupCheckBox.Checked=unsavedPreferences.get("lookupWord")
+			End If
 	End Select
 End Sub
 
@@ -77,7 +101,7 @@ Sub mtTableView_MouseClicked (EventData As MouseEvent)
 		mtPreferences.Put(engineName,filler.showAndWait)
 		Log(mtPreferences)
 
-		preferencesMap.Put("mt",mtPreferences)
+		unsavedPreferences.Put("mt",mtPreferences)
 	End If
 	
 End Sub
@@ -132,4 +156,13 @@ Sub chkbox_CheckedChange(Checked As Boolean)
 		chkbox.Checked=False
 		
 	End If
+End Sub
+
+
+Sub lookupCheckBox_CheckedChange(Checked As Boolean)
+	unsavedPreferences.Put("lookupWord",Checked)
+End Sub
+
+Sub ExternalTMCheckBox_CheckedChange(Checked As Boolean)
+	unsavedPreferences.Put("checkExternalTMOnOpening",Checked)
 End Sub

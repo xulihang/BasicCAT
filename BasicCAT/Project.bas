@@ -286,33 +286,45 @@ Sub addFilesToTreeTable(filename As String)
 End Sub
 
 Sub targetTextArea_TextChanged (Old As String, New As String)
-	Log("Old:"&Old)
-	Log("New:"&New)
-	Log(Old="")
-	Log(New.Length)
+
 	If Old="" And New.Length>1 Then
 		Return
 	End If
+	Dim lastChar As String
+	If New.Length>1 Then
+		lastChar=New.CharAt(New.Length-1)
+	Else
+		lastChar=New
+	End If
+
 	Dim ta As TextArea
 	ta=Sender
-	Log(ta.Left)
-	Log(ta.Top)
+
 
 	If cmClicked=True Then
 		cmClicked=False
 	Else
-		cm.MenuItems.Clear
-        For Each text As String In Array ("1","2")
-			Dim mi As MenuItem
-			mi.Initialize(text, "mi")
-			cm.MenuItems.Add(mi)
-		Next
-		Sleep(100)
-		Dim map1 As Map
-		map1=Utils.GetScreenPosition(ta)
-		Log(map1)
-		Dim jo As JavaObject = cm
-		jo.RunMethod("show", Array(ta, map1.Get("x")+ta.Width/10, map1.Get("y")+ta.Height))
+		If Utils.isList(ta.Tag) Then
+			cm.MenuItems.Clear
+			Sleep(0)
+			Dim segmentsList As List
+			segmentsList=ta.Tag
+			For Each text As String In segmentsList
+				If text.StartsWith(lastChar) Then
+					Dim mi As MenuItem
+					mi.Initialize(text, "mi")
+					mi.Tag=lastChar
+					cm.MenuItems.Add(mi)
+				End If
+			Next
+			If cm.MenuItems.Size<>0 Then
+				Dim map1 As Map
+				map1=Utils.GetScreenPosition(ta)
+				Log(map1)
+				Dim jo As JavaObject = cm
+				jo.RunMethod("show", Array(ta, map1.Get("x")+ta.Width/10, map1.Get("y")+ta.Height))
+			End If
+		End If
 	End If
 	CallSubDelayed(Main, "ListViewParent_Resize")
 End Sub
@@ -471,7 +483,7 @@ Sub mi_Action
 	p=Main.editorLV.GetPanel(lastEntry)
 	Dim targetTextArea As TextArea
 	targetTextArea=p.GetNode(1)
-	targetTextArea.Text=targetTextArea.Text.SubString2(0,targetTextArea.SelectionStart)&mi.Text&targetTextArea.Text.SubString2(targetTextArea.SelectionStart,targetTextArea.Text.Length)
+	targetTextArea.Text=targetTextArea.Text.SubString2(0,targetTextArea.SelectionStart)&mi.Text.Replace(mi.Tag,"")&targetTextArea.Text.SubString2(targetTextArea.SelectionStart,targetTextArea.Text.Length)
 	Sleep(0)
 	targetTextArea.SetSelection(targetTextArea.Text.Length,targetTextArea.Text.Length)
 End Sub
@@ -651,6 +663,22 @@ Sub targetTextArea_FocusChanged (HasFocus As Boolean)
 	End If
 End Sub
 
+Sub loadITPSegments(targetTextArea As TextArea,engine As String,fullTranslation As String)
+	Dim pane As Pane
+	pane=targetTextArea.Parent
+	Dim sourceTA As TextArea
+	sourceTA=pane.GetNode(0)
+	wait for (ITP.getAllSegmentTranslation(sourceTA.Text,engine)) Complete (Result As List)
+	Result.Add(fullTranslation)
+	If Utils.isList(targetTextArea.Tag) Then
+		Dim list1 As List
+		list1=targetTextArea.Tag
+		list1.AddAll(Result)
+		targetTextArea.Tag=ITP.duplicatedRemovedList(list1)
+	Else
+		targetTextArea.Tag=Result
+	End If
+End Sub
 
 Sub showTM(targetTextArea As TextArea)
 	Dim time As Long
@@ -679,7 +707,9 @@ Sub showTM(targetTextArea As TextArea)
 		Main.tmTableView.Items.Add(row)
 	Next
 	Log(DateTime.Now-time)
-	showMT(sourceTA.Text)
+	
+	showMT(sourceTA.Text,targetTextArea)
+	
 	If Main.TMViewToggleButton.Selected=False Then
 		Main.TMViewToggleButton_SelectedChange(False)
 	End If
@@ -688,7 +718,7 @@ Sub showTM(targetTextArea As TextArea)
 	End If
 End Sub
 
-Sub showMT(source As String)
+Sub showMT(source As String,targetTextArea As TextArea)
 	Dim mtPreferences As Map
 	If Main.preferencesMap.ContainsKey("mt") Then
 		mtPreferences=Main.preferencesMap.get("mt")
@@ -702,6 +732,7 @@ Sub showMT(source As String)
 				Dim row()  As Object = Array As String("","",Result,engine&" MT")
 				Main.tmTableView.Items.InsertAt(Min(Main.tmTableView.Items.Size,1),row)
 			End If
+			loadITPSegments(targetTextArea,engine,Result)
 		End If
 	Next
 End Sub
@@ -715,12 +746,27 @@ Sub getMeans(source As String) As ResumableSub
 	Else
 		Return emptyList
 	End If
-	If Utils.get_isEnabled("youdao_isEnabled",mtPreferences)=True Then
-		wait for (MT.youdaoMT(source,projectFile.Get("source"),projectFile.Get("target"),True)) Complete (Result As List)
-		Return Result
+	
+	Dim youdaoSetuped As Boolean=True
+	If mtPreferences.ContainsKey("youdao") Then
+		For Each param As String In Utils.getMap("youdao",mtPreferences).Values
+			If param="" Then
+				youdaoSetuped=False
+			End If
+		Next
 	Else
-		Return emptyList
+		youdaoSetuped=False
 	End If
+
+	If youdaoSetuped=True Then
+		If Main.preferencesMap.ContainsKey("lookupWord") Then
+			If Main.preferencesMap.Get("lookupWord")=True Then
+				wait for (MT.youdaoMT(source,projectFile.Get("source"),projectFile.Get("target"),True)) Complete (Result As List)
+				Return Result
+			End If
+		End If
+	End If
+	Return emptyList
 End Sub
 
 Sub showTerm(targetTextArea As TextArea)

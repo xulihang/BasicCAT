@@ -132,3 +132,12 @@ Sub buildHtmlString(raw As String) As String
 	result=htmlhead&result&htmlend
 	Return result
 End Sub
+
+
+Sub isList(o As Object) As Boolean
+	If GetType(o)="java.util.ArrayList" Then
+		Return True
+	Else
+		Return False
+	End If
+End Sub
