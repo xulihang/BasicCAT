@@ -21,7 +21,7 @@ Sub Class_Globals
 	Public completed As Int
 	Private cmClicked As Boolean=False
 	Private cm As ContextMenu
-	
+	private cursorReachEnd as Boolean=False
 End Sub
 
 'Initializes the object. You can add parameters to this method if needed.
@@ -379,17 +379,20 @@ Sub addSelectionChangedEvent(textarea1 As TextArea,eventName As String)
 End Sub
 
 Sub sourceTextAreaSelection_changed(old As Object, new As Object)
-	Log(GetType(new))
+
 	Dim ta As TextArea
 	ta=Sender
 	onSelectionChanged(new,ta,True)
 End Sub
 
 Sub targetTextAreaSelection_changed(old As Object, new As Object)
-	Log(GetType(new))
+	cursorReachEnd=False
+    Log(old)
+	Log(new)
 	Dim ta As TextArea
 	ta=Sender
     onSelectionChanged(new,ta,False)
+
 End Sub
 
 Sub onSelectionChanged(new As Object,ta As TextArea,isSource As Boolean)
@@ -588,10 +591,20 @@ Sub targetTextArea_KeyPressed_Event (MethodName As String, Args() As Object) As 
 	Log(result)
 	Dim targetTextArea As TextArea
 	targetTextArea=Sender
-	If result="ENTER" Or result="DOWN" Then
+	If result="ENTER" Then
 		changeSegment(1,targetTextArea)
+	Else if result="DOWN" Then
+		If 	cursorReachEnd=False Then
+			cursorReachEnd=True
+		Else
+			changeSegment(1,targetTextArea)
+		End If
 	Else if result="UP" Then
-		changeSegment(-1,targetTextArea)
+		If 	cursorReachEnd=False Then
+			cursorReachEnd=True
+		Else
+			changeSegment(-1,targetTextArea)
+		End If
 	End If
 End Sub
 
