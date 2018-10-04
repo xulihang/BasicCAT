@@ -38,6 +38,13 @@ Sub findButton_Click
 End Sub
 
 Sub showRegexResult
+	Try
+		Regex.Matcher(findTextField.Text,"").Find
+	Catch
+		fx.Msgbox(frm,"Invalid expression","")
+		Return
+		Log(LastException)
+	End Try
 	Dim index As Int=-1
 	For Each bitext As List In Main.currentProject.segments
 		index=index+1
@@ -49,7 +56,7 @@ Sub showRegexResult
 		sourceLeft=source
 		targetLeft=target
 		pattern=findTextField.Text
-		Log(pattern)
+		'Log(pattern)
 		Dim textSegments As List
 		textSegments.Initialize
 		Dim sourceMatcher,targetMatcher As Matcher
@@ -304,7 +311,9 @@ Sub replaceSelectedButton_MouseClicked (EventData As MouseEvent)
 End Sub
 
 Sub replaceAllButton_MouseClicked (EventData As MouseEvent)
+	
 	If resultListView.Items.Size>0 Then
+		Dim count As Int=0
 		Dim tempList As List
 		tempList.Initialize
 		tempList.AddAll(resultListView.Items)
@@ -325,8 +334,11 @@ Sub replaceAllButton_MouseClicked (EventData As MouseEvent)
 			Main.currentProject.segments.Set(tagList.Get(0),bitext)
 			Main.currentProject.fillVisibleTargetTextArea
 			resultListView.Items.RemoveAt(resultListView.Items.IndexOf(p))
+			count=count+1
 		Next
-    End If
+        fx.Msgbox(frm,count&" matches are replaced.","")
+	End If
+	
 
 End Sub
 

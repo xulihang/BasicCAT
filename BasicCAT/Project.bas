@@ -286,7 +286,8 @@ Sub addFilesToTreeTable(filename As String)
 End Sub
 
 Sub targetTextArea_TextChanged (Old As String, New As String)
-
+	'Log(Old)
+	'Log(New)
 	If Old="" And New.Length>1 Then
 		Return
 	End If
@@ -297,6 +298,8 @@ Sub targetTextArea_TextChanged (Old As String, New As String)
 		lastString=New
 	End If
 	If projectFile.Get("target")="zh" Then
+		Old=Regex.Replace("[a-zA-Z]|[^\u4e00-\u9fa5]",Old,"")
+		New=Regex.Replace("[a-zA-Z]|[^\u4e00-\u9fa5]",New,"")
 		If New.Length>Old.Length Then
 			lastString=New.Replace(Old,"")
 		End If
@@ -308,7 +311,8 @@ Sub targetTextArea_TextChanged (Old As String, New As String)
 			lastString=wordList.Get(wordList.Size-1)
 		End If
 	End If
-
+	'Log("old"&Old)
+	'Log("last"&lastString)
 
 	Dim ta As TextArea
 	ta=Sender

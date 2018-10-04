@@ -95,12 +95,12 @@ Library9=jrandomaccessfile
 Module1=FileChooserUtils
 Module10=preTranslateDialog
 Module11=ITP
-Module12=Utils
-Module13=Preferences
-Module14=MT
-Module15=MTParamsFiller
-Module16=Previewer
-Module17=statistics
+Module12=statistics
+Module13=Utils
+Module14=Preferences
+Module15=MT
+Module16=MTParamsFiller
+Module17=Previewer
 Module18=searchAndReplaceDialog
 Module19=TextFlow
 Module2=Project
@@ -587,13 +587,20 @@ Sub tmTableView_MouseClicked (EventData As MouseEvent)
 End Sub
 
 Sub fillWithTM
-	If tmTableView.SelectedRowValues<>Null And editorLV.Size<>0 Then
-		Dim pane As Pane
-		pane=editorLV.GetPanel(currentProject.lastEntry)
-		Dim targetTextArea As TextArea
-		targetTextArea=pane.GetNode(1)
-		targetTextArea.Text=tmTableView.SelectedRowValues(2)
+	If tmTableView.Items.Size<>0 Then
+		Log(tmTableView.SelectedRow)
+		If tmTableView.SelectedRow=-1 Then
+			tmTableView.SelectedRow=0
+		End If
+		If tmTableView.SelectedRowValues<>Null And editorLV.Size<>0 Then
+			Dim pane As Pane
+			pane=editorLV.GetPanel(currentProject.lastEntry)
+			Dim targetTextArea As TextArea
+			targetTextArea=pane.GetNode(1)
+			targetTextArea.Text=tmTableView.SelectedRowValues(2)
+		End If
 	End If
+
 End Sub
 
 Sub addTermButton_MouseClicked (EventData As MouseEvent)

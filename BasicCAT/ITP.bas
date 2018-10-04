@@ -10,14 +10,29 @@ Sub Process_Globals
 End Sub
 
 Sub getAllSegmentTranslation(text As String,engine As String) As ResumableSub
+	Dim sourceLang,targetLang As String
+	sourceLang=Main.currentProject.projectFile.Get("source")
+	targetLang=Main.currentProject.projectFile.Get("target")
 	Dim translationList As List
 	translationList.Initialize
 	
 	Dim wordList As List
 	wordList.Initialize
-	wordList.AddAll(Regex.Split(" ",text))
+	
+	Dim pattern As String
+	If sourceLang="zh" Then
+		pattern=""
+		wait for (getStanfordTokenizedResult(text)) Complete (resultList As List)
+		wordList.AddAll(resultList)
+		Log(resultList)
+	Else
+		pattern=" "
+	End If
+	
+	wordList.AddAll(Regex.Split(pattern,text))
+
 	For Each word As String In wordList
-		wait for (MT.getMT(word,"en","zh",engine)) Complete (result As String)
+		wait for (MT.getMT(word,sourceLang,targetLang,engine)) Complete (result As String)
 		translationList.Add(result)
 	Next
 	
@@ -28,14 +43,41 @@ Sub getAllSegmentTranslation(text As String,engine As String) As ResumableSub
 	duplicatedRemovedList2(grams,wordList)
 	Log("grams"&grams)
 	For Each gram As String In grams
-		wait for (MT.getMT(gram,"en","zh",engine)) Complete (result As String)
+		wait for (MT.getMT(gram,sourceLang,targetLang,engine)) Complete (result As String)
 		translationList.Add(result)
 	Next
 	
 	Return duplicatedRemovedList(translationList)
 End Sub
 
+Sub getStanfordTokenizedResult(sentence As String) As ResumableSub
+	Dim tokens As List
+	tokens.Initialize
+	Dim params As String
+	Dim su As StringUtils
+	params=su.EncodeUrl($"{"annotators":"tokenize","outputFormat":"json"}"$,"UTF-8")
+	Dim job As HttpJob
+	job.Initialize("job",Me)
+	job.PostString("http://localhost:9000/?properties="&params,sentence)
+	wait for (job) JobDone(job As HttpJob)
+	If job.Success Then
+		Log(job.GetString)
+		Dim json As JSONParser
+		json.Initialize(job.GetString)
+		Dim map1 As Map
+		map1=json.NextObject
+		Dim list1 As List
+		list1=map1.Get("tokens")
+		For Each token As Map In list1
+			tokens.Add(token.Get("word"))
+		Next
+	End If
+	job.Release
+	Return tokens
+End Sub
+
 Sub getStanfordParsedResult(sentence As String) As ResumableSub
+	Dim parse As String
 	Dim params As String
 	Dim su As StringUtils
 	params=su.EncodeUrl($"{"annotators":"parse","outputFormat":"json"}"$,"UTF-8")
@@ -53,13 +95,11 @@ Sub getStanfordParsedResult(sentence As String) As ResumableSub
 		list1=map1.Get("sentences")
 		Dim map2 As Map
 		map2=list1.Get(0)
-		Dim parse As String
 		parse=map2.Get("parse")
 		Log(parse)
-		Return parse
 	End If
 	job.Release
-	Return ""
+	Return parse
 End Sub
 
 Sub getGramsFromStringViaRe2(text As String) As List
