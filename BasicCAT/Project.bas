@@ -21,7 +21,7 @@ Sub Class_Globals
 	Public completed As Int
 	Private cmClicked As Boolean=False
 	Private cm As ContextMenu
-	private cursorReachEnd as Boolean=False
+	Private cursorReachEnd As Boolean=False
 End Sub
 
 'Initializes the object. You can add parameters to this method if needed.
@@ -290,12 +290,25 @@ Sub targetTextArea_TextChanged (Old As String, New As String)
 	If Old="" And New.Length>1 Then
 		Return
 	End If
-	Dim lastChar As String
+	Dim lastString As String
 	If New.Length>1 Then
-		lastChar=New.CharAt(New.Length-1)
+		lastString=New.CharAt(New.Length-1)
 	Else
-		lastChar=New
+		lastString=New
 	End If
+	If projectFile.Get("target")="zh" Then
+		If New.Length>Old.Length Then
+			lastString=New.Replace(Old,"")
+		End If
+	else if projectFile.Get("target")="en" Then
+		Dim wordList As List
+		wordList.Initialize
+		wordList.AddAll(Regex.Split(" ",New))
+		If wordList.Size<>0 Then
+			lastString=wordList.Get(wordList.Size-1)
+		End If
+	End If
+
 
 	Dim ta As TextArea
 	ta=Sender
@@ -310,10 +323,10 @@ Sub targetTextArea_TextChanged (Old As String, New As String)
 			Dim segmentsList As List
 			segmentsList=ta.Tag
 			For Each text As String In segmentsList
-				If text.StartsWith(lastChar) Then
+				If text.StartsWith(lastString) Then
 					Dim mi As MenuItem
 					mi.Initialize(text, "mi")
-					mi.Tag=lastChar
+					mi.Tag=lastString
 					cm.MenuItems.Add(mi)
 				End If
 			Next

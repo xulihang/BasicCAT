@@ -62,7 +62,7 @@ Sub getStanfordParsedResult(sentence As String) As ResumableSub
 	Return ""
 End Sub
 
-Sub getGramsFromStringViaRe(text As String) As List
+Sub getGramsFromStringViaRe2(text As String) As List
 	Dim gramsList As List
 	gramsList.Initialize
 	For Each item As String In Array As String("N","V","P")
@@ -84,11 +84,58 @@ Sub getGramsFromStringViaRe(text As String) As List
 	Return gramsList
 End Sub
 
+
+Sub getGramsFromStringViaRe(text As String) As List
+	Dim gramsList As List
+	gramsList.Initialize
+	text=Regex.Replace("\r\n",text,"")
+	text=Regex.Replace(" {1,}",text," ")
+	For Each item As String In Array As String("NP","VP","PP")
+		Dim matcher As Matcher
+		'\(NP .*?\){2,}
+		'\(.*?
+		'\)
+		matcher=Regex.Matcher("\("&item&" .*?\){2,}",text)
+		Do While matcher.Find
+			gramsList.Add(Regex.Replace("\(.*? |\)",matcher.Match,""))
+			Log(matcher.Match)
+		Loop
+	Next
+
+	gramsList=getLongGrams(text,gramsList,"VP")
+
+	Return gramsList
+End Sub
+
+Sub getLongGrams(text As String,gramsList As List,item As String) As List
+	Dim matcher As Matcher
+
+	matcher=Regex.Matcher("\("&item&" .*\){2,}",text)
+		
+	Do While matcher.Find
+		Log(matcher.Match)
+		gramsList.Add(Regex.Replace("\(.*? |\)",matcher.Match,""))
+		
+		Dim matcher2 As Matcher
+		matcher2=Regex.Matcher("\("&item&" .*?\){2,}",matcher.Match)
+		Do While matcher2.Find
+
+			'all.Add(matcher2.Match)
+			gramsList.Add(Regex.Replace("\(.*? |\)",matcher2.Match,""))
+			getLongGrams(matcher.Match.Replace(matcher2.Match,""),gramsList,item)
+		Loop
+		
+	Loop
+	Return duplicatedRemovedList(gramsList)
+End Sub
+
 Sub duplicatedRemovedList(list1 As List) As List
 	Dim newList As List
 	newList.Initialize
 	For Each item As String In list1 
-		If newList.IndexOf(item)=-1 Then
+		Dim matcher As Matcher
+		matcher=Regex.Matcher(",",item) ' remove grams with comma
+		If newList.IndexOf(item)=-1 And matcher.Find=False Then
 			newList.Add(item)
 		End If
 	Next

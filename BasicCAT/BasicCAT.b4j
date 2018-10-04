@@ -94,22 +94,22 @@ Library8=jsql
 Library9=jrandomaccessfile
 Module1=FileChooserUtils
 Module10=preTranslateDialog
-Module11=Preferences
+Module11=ITP
 Module12=Utils
-Module13=MT
-Module14=MTParamsFiller
-Module15=Previewer
-Module16=statistics
-Module17=searchAndReplaceDialog
-Module18=TextFlow
-Module19=editDistance
+Module13=Preferences
+Module14=MT
+Module15=MTParamsFiller
+Module16=Previewer
+Module17=statistics
+Module18=searchAndReplaceDialog
+Module19=TextFlow
 Module2=Project
-Module20=progressDialog
-Module21=InputBox
-Module22=TMManager
-Module23=viewSegment
-Module24=TermManager
-Module25=ITP
+Module20=editDistance
+Module21=progressDialog
+Module22=InputBox
+Module23=TMManager
+Module24=viewSegment
+Module25=TermManager
 Module3=segmentation
 Module4=CustomListView
 Module5=txtFilter
@@ -331,6 +331,8 @@ Sub MenuBar1_Action
 					Return
 				End If
 			Next
+		Case "Fill with the first matched TM"
+			fillWithTM
 		Case "Search and Replace"
 			Dim sap As searchAndReplaceDialog
 			sap.Initialize
@@ -515,7 +517,7 @@ Sub ListViewParent_Resize
 			'force the label to refresh its layout.
 			jo.RunMethod("applyCss", Null)
 			jo.RunMethod("layout", Null)
-			Dim h As Int = Max(Max(30, sourcelbl.Height + 20), targetlbl.Height + 20)
+			Dim h As Int = Max(Max(20, sourcelbl.Height + 10), targetlbl.Height + 10)
 			calculatedHeight.Put(sourceTa.Text&"	"&targetTa.Text,h)
 			setLayout(p,i,h)
 			sourcelbl.RemoveNodeFromParent
@@ -579,7 +581,13 @@ Sub searchTableView_MouseClicked (EventData As MouseEvent)
 End Sub
 
 Sub tmTableView_MouseClicked (EventData As MouseEvent)
-	If EventData.ClickCount=2 And tmTableView.SelectedRowValues<>Null And editorLV.Size<>0 Then
+	If EventData.ClickCount=2 Then
+		fillWithTM
+	End If
+End Sub
+
+Sub fillWithTM
+	If tmTableView.SelectedRowValues<>Null And editorLV.Size<>0 Then
 		Dim pane As Pane
 		pane=editorLV.GetPanel(currentProject.lastEntry)
 		Dim targetTextArea As TextArea

@@ -1,5 +1,6 @@
 _Generate target files
 Go to the next untranslated segment
+Fill with the first matched TM
 Search and Replace
 Project Settings
 Pre-translate
