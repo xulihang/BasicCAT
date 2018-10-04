@@ -159,8 +159,9 @@ Sub Process_Globals
 	Private segmentLabel As Label
 	Private MenuBar1 As MenuBar
 	Public pre As Previewer
-
+    Private autosaveTimer As Timer
 	
+	Private operationLabel As Label
 End Sub
 
 Sub AppStart (Form1 As Form, Args() As String)
@@ -192,6 +193,8 @@ Sub MainForm_CloseRequest (EventData As Event)
 End Sub
 
 Sub init
+	autosaveTimer.Initialize("autosaveTimer",60000)
+	autosaveTimer.Enabled=False
 	mainSplitPane.LoadLayout("leftProject")
 	mainSplitPane.LoadLayout("right")
 
@@ -268,6 +271,7 @@ Sub MenuBar1_Action
 			End If
 			currentProject.Initialize
 			currentProject.open(path)
+			autosaveTimer.Enabled=True
 			MainForm.Title=getProjectname(path)
 			Utils.enableMenuItems(MenuBar1,Array As String("_Save","_Close"))
 			Utils.enableMenuItems(MenuBar1,File.ReadList(File.DirAssets,"menuText.txt"))
@@ -292,10 +296,11 @@ Sub MenuBar1_Action
 			addProjectTreeTableItem
 			Utils.enableMenuItems(MenuBar1,Array As String("_Save","_Close"))
 		Case "_Save"
+			If currentProject.IsInitialized=False Then
+				Return
+			End If
+			autosaveTimer.Enabled=True
 			If currentProject.path="" Then
-				If currentProject.IsInitialized=False Then
-					Return
-				End If
 				Dim fc As FileChooser
 				fc.Initialize
 				fc.Title="Please enter the folder name to store the project."
@@ -655,6 +660,7 @@ Sub searchTableView_Action
 End Sub
 
 Public Sub closeProject
+	autosaveTimer.Enabled=False
 	If currentProject.IsInitialized Then
 		If currentProject.sh.IsInitialized Then
 			currentProject.sh.KillProcess
@@ -750,4 +756,29 @@ Public Sub getTop As Double
 	'Return MainForm.WindowTop+(1-rightSplitPane.DividerPositions(0))*rightSplitPane.Height+editorLV.AsView.Top
 	Dim robot As AWTRobot
 	Return robot.RobotMouseCurrentLocation(1)-MainForm.WindowTop
+End Sub
+
+Sub autosaveTimer_Tick
+	If currentProject.IsInitialized=False Then
+		Return
+	End If
+	If currentProject.path="" Then
+		Return
+	Else
+		createBakupFiles
+		currentProject.save
+	End If
+End Sub
+
+Sub createBakupFiles
+	Log(File.Exists(currentProject.path,"bak"))
+    If File.Exists(currentProject.path,"bak")=False Then
+		File.MakeDir(currentProject.path,"bak")
+    End If
+	Utils.CopyFolder(File.Combine(currentProject.path, "work"),File.Combine(currentProject.path, "bak"))
+	File.Copy(currentProject.path,"project.json",File.Combine(currentProject.path,"bak"),"project.json")
+End Sub
+
+Public Sub updateSavedTime
+	operationLabel.Text="Project saved at "&DateTime.Time(DateTime.Now)
 End Sub

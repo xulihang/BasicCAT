@@ -149,6 +149,7 @@ public Sub save
 	json.Initialize(projectFile)
 	File.WriteString(path,"project.json",json.ToPrettyString(4))
 	saveFileAccordingToExtenstion(currentFilename)
+	Main.updateSavedTime
 End Sub
 
 Sub showPreView
@@ -164,6 +165,7 @@ Sub creatProjectFiles
 	File.MakeDir(path,"target")
 	File.MakeDir(path,"TM")
 	File.MakeDir(path,"Term")
+	File.MakeDir(path,"bak")
 End Sub
 
 Public Sub generateTargetFiles

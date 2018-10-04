@@ -132,6 +132,16 @@ Sub buildHtmlString(raw As String) As String
 	Return result
 End Sub
 
+Sub CopyFolder(Source As String, targetFolder As String)
+	If File.Exists(targetFolder, "") = False Then File.MakeDir(targetFolder, "")
+	For Each f As String In File.ListFiles(Source)
+		If File.IsDirectory(Source, f) Then
+			CopyFolder(File.Combine(Source, f), File.Combine(targetFolder, f))
+			Continue
+		End If
+		wait for (File.CopyAsync(Source, f, targetFolder, f)) Complete (Success As Boolean)
+	Next
+End Sub
 
 Sub isList(o As Object) As Boolean
 	If GetType(o)="java.util.ArrayList" Then
