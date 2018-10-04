@@ -467,13 +467,16 @@ Sub onSelectionChanged(new As Object,ta As TextArea,isSource As Boolean)
 		End If
 		If projectFile.Get("target")="en" And isSource=False Then
 			If selectionEnd<>ta.Text.Length Then
-				If ta.Text.SubString2(selectionEnd,Min(ta.Text.Length,selectionEnd+1))<>" " Then
+				Dim lastChar As String
+				lastChar=ta.Text.SubString2(selectionEnd,Min(ta.Text.Length,selectionEnd+1))
+				If Regex.IsMatch("\s|,|\.|\!|\?|"&Chr(34),lastChar)=False Then
 					Return
 				End If
 			End If
 		End If
 		
 		Main.searchTableView.Items.Clear
+		Main.searchTableView.Tag=selectedText
 		Dim result As List
 		result.Initialize
 		
@@ -491,6 +494,7 @@ Sub onSelectionChanged(new As Object,ta As TextArea,isSource As Boolean)
 			Dim row()  As Object = Array As String(segment.Get(4),segment.Get(0),segment.Get(1))
 			Main.searchTableView.Items.Add(row)
 		Next
+		Main.changeWhenSegmentOrSelectionChanges
 	End If
 	'---------- show segment search
 End Sub
@@ -740,9 +744,7 @@ Sub showTM(targetTextArea As TextArea)
 	
 	showMT(sourceTA.Text,targetTextArea)
 	
-	If Main.TMViewToggleButton.Selected=False Then
-		Main.TMViewToggleButton_SelectedChange(False)
-	End If
+	Main.changeWhenSegmentOrSelectionChanges
 	If Main.tmTableView.Items.Size<>0 Then
 		Main.tmTableView.SelectedRow=0
 	End If
@@ -761,6 +763,7 @@ Sub showMT(source As String,targetTextArea As TextArea)
 			If Result<>"" Then
 				Dim row()  As Object = Array As String("","",Result,engine&" MT")
 				Main.tmTableView.Items.InsertAt(Min(Main.tmTableView.Items.Size,1),row)
+				Main.changeWhenSegmentOrSelectionChanges
 			End If
 			loadITPSegments(targetTextArea,engine,Result)
 		End If

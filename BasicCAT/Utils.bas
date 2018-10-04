@@ -122,7 +122,6 @@ Sub GetScreenPosition(n As Node) As Map
 End Sub
 
 Sub buildHtmlString(raw As String) As String
-	Dim su As ApacheSU
 	Dim result As String
 	Dim htmlhead As String
 	htmlhead="<!DOCTYPE HTML><html><head><meta charset="&Chr(34)&"utf-8"&Chr(34)&" /><style type="&Chr(34)&"text/css"&Chr(34)&">p {font-size: 18px}</style></head><body>"

@@ -94,14 +94,14 @@ Library8=jsql
 Library9=jrandomaccessfile
 Module1=FileChooserUtils
 Module10=preTranslateDialog
-Module11=ITP
-Module12=statistics
-Module13=Utils
-Module14=Preferences
-Module15=MT
-Module16=MTParamsFiller
-Module17=Previewer
-Module18=searchAndReplaceDialog
+Module11=Utils
+Module12=searchAndReplaceDialog
+Module13=ITP
+Module14=Previewer
+Module15=statistics
+Module16=Preferences
+Module17=MT
+Module18=MTParamsFiller
 Module19=TextFlow
 Module2=Project
 Module20=editDistance
@@ -152,14 +152,15 @@ Sub Process_Globals
 	Public termLV As ListView
 	Public calculatedHeight As Map
 	Public preferencesMap As Map
-	Private viewTextArea As TextArea
+	Private contextWebView As WebView
 	Private segmentSearchToggleButton As ToggleButton
-	Public TMViewToggleButton As ToggleButton
+	Private TMViewToggleButton As ToggleButton
 	Private viewTMTextArea As TextArea
 	Private segmentLabel As Label
 	Private MenuBar1 As MenuBar
 	Public pre As Previewer
 
+	
 End Sub
 
 Sub AppStart (Form1 As Form, Args() As String)
@@ -673,11 +674,50 @@ End Sub
 
 
 Sub segmentSearchToggleButton_SelectedChange(Selected As Boolean)
-	toggleTableOrTextArea(Selected,segmentSearchToggleButton,viewTextArea,searchTableView)
+	'toggleTableOrTextArea(Selected,segmentSearchToggleButton,contextWebView,searchTableView)
+	toggleTableOrWebView(Selected,segmentSearchToggleButton,contextWebView,searchTableView)
 End Sub
 
 Sub TMViewToggleButton_SelectedChange(Selected As Boolean)
 	toggleTableOrTextArea(Selected,TMViewToggleButton,viewTMTextArea,tmTableView)
+End Sub
+
+Public Sub changeWhenSegmentOrSelectionChanges
+	If TabPane1.SelectedIndex=1 Then
+		If segmentSearchToggleButton.Selected=False Then
+			segmentSearchToggleButton_SelectedChange(False)
+		End If
+	Else
+		If TMViewToggleButton.Selected=False Then
+			TMViewToggleButton_SelectedChange(False)
+		End If
+	End If
+End Sub
+
+
+Sub toggleTableOrWebView(selected As Boolean,tb As ToggleButton, wv As WebView,tv As TableView)
+	If selected Then
+		tb.Text="L"
+		tv.Visible=True
+	Else
+		Dim html As String
+		Dim htmlhead As String
+		htmlhead=$"<!DOCTYPE HTML><html><head><meta charset="utf-8" />
+		<style type="text/css">
+		p {font-size: 18px}
+		#selected {color:green;}
+		</style></head><body>"$
+		Dim htmlend As String
+		htmlend="</body></html>"
+		tb.Text="C"
+		tv.Visible=False
+		Dim index As Int=0
+		For Each row() As String In tv.Items
+			index=index+1
+			html=html&index&"<br/>"&row(1).Replace(searchTableView.Tag,$"<span id="selected">${searchTableView.Tag}</span>"$)&"<br />"&row(2).Replace(searchTableView.Tag,$"<span id="selected">${searchTableView.Tag}</span>"$)&"<br />"&"<br />"
+		Next
+		wv.LoadHtml(htmlhead&html&htmlend)
+	End If
 End Sub
 
 Sub toggleTableOrTextArea(selected As Boolean,tb As ToggleButton, ta As TextArea,tv As TableView)
