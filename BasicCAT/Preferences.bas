@@ -18,6 +18,9 @@ Sub Class_Globals
 	Private ExternalTMCheckBox As CheckBox
 	Private lookupCheckBox As CheckBox
     Private unsavedPreferences As Map
+	Private autocompleteEnabledCheckBox As CheckBox
+	Private corenlpAddressEnTextField As TextField
+	Private corenlpAddressZhTextField As TextField
 End Sub
 
 'Initializes the object. You can add parameters to this method if needed.
@@ -43,7 +46,7 @@ End Sub
 
 
 Sub initList
-	categoryListView.Items.AddAll(Array As String("General","Machine Translation","Word Lookup"))
+	categoryListView.Items.AddAll(Array As String("General","Appearance","Machine Translation","Word Lookup","Autocomplete","Language Check","Version Control"))
 End Sub
 
 Public Sub ShowAndWait
@@ -72,21 +75,47 @@ Sub categoryListView_SelectedIndexChanged(Index As Int)
 	Log(Index)
 	Select Index
 		Case 0
+			'general
 			SettingPane.RemoveAllNodes
 			SettingPane.LoadLayout("generalSetting")
 			If unsavedPreferences.ContainsKey("checkExternalTMOnOpening") Then
 				ExternalTMCheckBox.Checked=unsavedPreferences.get("checkExternalTMOnOpening")
 			End If
 		Case 1
+			'appearance
+			SettingPane.RemoveAllNodes
+			SettingPane.LoadLayout("appearance")
+		Case 2
+			'mt
 			SettingPane.RemoveAllNodes
 			SettingPane.LoadLayout("mtSetting")
 			loadMT
-		Case 2
+		Case 3
+			'word lookup
 			SettingPane.RemoveAllNodes
 			SettingPane.LoadLayout("wordLookupSetting")
 			If unsavedPreferences.ContainsKey("lookupWord") Then
 				lookupCheckBox.Checked=unsavedPreferences.get("lookupWord")
 			End If
+		Case 4
+			'autocomplete
+			SettingPane.RemoveAllNodes
+			SettingPane.LoadLayout("autocomplete")
+			If unsavedPreferences.ContainsKey("autocompleteEnabled") Then
+				autocompleteEnabledCheckBox.Checked=unsavedPreferences.get("autocompleteEnabled")
+			End If
+			If unsavedPreferences.ContainsKey("corenlp_en_address") Then
+				corenlpAddressEnTextField.Text=unsavedPreferences.get("corenlp_en_address")
+			End If
+			If unsavedPreferences.ContainsKey("corenlp_zh_address") Then
+				corenlpAddressZhTextField.Text=unsavedPreferences.get("corenlp_zh_address")
+			End If
+		Case 5
+			'Language Check
+			
+		Case 6
+			'Version Control
+			
 	End Select
 End Sub
 
@@ -165,4 +194,13 @@ End Sub
 
 Sub ExternalTMCheckBox_CheckedChange(Checked As Boolean)
 	unsavedPreferences.Put("checkExternalTMOnOpening",Checked)
+End Sub
+
+Sub autocompleteEnabledCheckBox_CheckedChange(Checked As Boolean)
+	unsavedPreferences.Put("autocompleteEnabled",Checked)
+End Sub
+
+Sub saveAddressButton_MouseClicked (EventData As MouseEvent)
+	unsavedPreferences.Put("corenlp_en_address",corenlpAddressEnTextField.Text)
+	unsavedPreferences.Put("corenlp_zh_address",corenlpAddressZhTextField.Text)
 End Sub

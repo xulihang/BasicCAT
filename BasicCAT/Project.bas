@@ -34,7 +34,7 @@ Public Sub Initialize
 	cm.Initialize("cm")
 End Sub
 
-Sub initializeTM(projectPath As String)
+Sub initializeTM(projectPath As String,isExistingProject As Boolean)
 	projectTM.Initialize(projectPath)
 	Dim externalTMList As List
 	externalTMList=settings.Get("tmList")
@@ -49,6 +49,14 @@ Sub initializeTM(projectPath As String)
 			save
 		End If
 	Next
+	If isExistingProject Then
+		If Main.preferencesMap.ContainsKey("checkExternalTMOnOpening") Then
+			If Main.preferencesMap.Get("checkExternalTMOnOpening")=True Then
+			    Return
+			End If
+		End If
+	End If
+
 	projectTM.importExternalTranslationMemory(externalTMList)
 	'runTMBackend
 End Sub
@@ -88,7 +96,7 @@ Public Sub open(jsonPath As String)
 	For Each filepath As String In files
 		addFilesToTreeTable(filepath)
 	Next
-	initializeTM(path)
+	initializeTM(path,True)
 	initializeTerm(path)
 	'jumpToLastEntry
 End Sub
@@ -135,7 +143,7 @@ public Sub save
 		creatProjectFiles
 	End If
 	If projectTM.IsInitialized=False Then
-		initializeTM(path)
+		initializeTM(path,False)
 	End If
 	If projectTerm.IsInitialized=False Then
 		initializeTerm(path)
@@ -700,6 +708,13 @@ Sub targetTextArea_FocusChanged (HasFocus As Boolean)
 End Sub
 
 Sub loadITPSegments(targetTextArea As TextArea,engine As String,fullTranslation As String)
+	If Main.preferencesMap.ContainsKey("autocompleteEnabled") Then
+		If Main.preferencesMap.Get("autocompleteEnabled")=False Then
+			Return
+		End If
+	Else
+		Return
+	End If
 	Dim pane As Pane
 	pane=targetTextArea.Parent
 	Dim sourceTA As TextArea

@@ -13,8 +13,18 @@ Sub getAllSegmentTranslation(text As String,engine As String) As ResumableSub
 	Dim sourceLang,targetLang As String
 	sourceLang=Main.currentProject.projectFile.Get("source")
 	targetLang=Main.currentProject.projectFile.Get("target")
+	
 	Dim translationList As List
 	translationList.Initialize
+
+	Dim address As String=""
+	If Main.preferencesMap.ContainsKey("corenlp_"&sourceLang&"_address") Then
+		address=Main.preferencesMap.Get("corenlp_"&sourceLang&"_address")
+	End If
+	
+	
+	
+
 	
 	Dim wordList As List
 	wordList.Initialize
@@ -22,7 +32,7 @@ Sub getAllSegmentTranslation(text As String,engine As String) As ResumableSub
 	Dim pattern As String
 	If sourceLang="zh" Then
 		pattern=""
-		wait for (getStanfordTokenizedResult(text)) Complete (resultList As List)
+		wait for (getStanfordTokenizedResult(text,address)) Complete (resultList As List)
 		wordList.AddAll(resultList)
 		Log(resultList)
 	Else
@@ -36,21 +46,24 @@ Sub getAllSegmentTranslation(text As String,engine As String) As ResumableSub
 		translationList.Add(result)
 	Next
 	
-	Dim grams As List
-	grams.Initialize
-	wait for (getStanfordParsedResult(text)) Complete (result As String)
-	grams.AddAll(getGramsFromStringViaRe(result))
-	duplicatedRemovedList2(grams,wordList)
-	Log("grams"&grams)
-	For Each gram As String In grams
-		wait for (MT.getMT(gram,sourceLang,targetLang,engine)) Complete (result As String)
-		translationList.Add(result)
-	Next
+	If address<>"" Then
+		Dim grams As List
+		grams.Initialize
+		wait for (getStanfordParsedResult(text,address)) Complete (result As String)
+		grams.AddAll(getGramsFromStringViaRe(result))
+		duplicatedRemovedList2(grams,wordList)
+		Log("grams"&grams)
+		For Each gram As String In grams
+			wait for (MT.getMT(gram,sourceLang,targetLang,engine)) Complete (result As String)
+			translationList.Add(result)
+		Next
+	End If
+
 	
 	Return duplicatedRemovedList(translationList)
 End Sub
 
-Sub getStanfordTokenizedResult(sentence As String) As ResumableSub
+Sub getStanfordTokenizedResult(sentence As String, address As String) As ResumableSub
 	Dim tokens As List
 	tokens.Initialize
 	Dim params As String
@@ -58,7 +71,7 @@ Sub getStanfordTokenizedResult(sentence As String) As ResumableSub
 	params=su.EncodeUrl($"{"annotators":"tokenize","outputFormat":"json"}"$,"UTF-8")
 	Dim job As HttpJob
 	job.Initialize("job",Me)
-	job.PostString("http://localhost:9000/?properties="&params,sentence)
+	job.PostString("http://"&address&"/?properties="&params,sentence)
 	wait for (job) JobDone(job As HttpJob)
 	If job.Success Then
 		Log(job.GetString)
@@ -76,14 +89,14 @@ Sub getStanfordTokenizedResult(sentence As String) As ResumableSub
 	Return tokens
 End Sub
 
-Sub getStanfordParsedResult(sentence As String) As ResumableSub
+Sub getStanfordParsedResult(sentence As String,address As String) As ResumableSub
 	Dim parse As String
 	Dim params As String
 	Dim su As StringUtils
 	params=su.EncodeUrl($"{"annotators":"parse","outputFormat":"json"}"$,"UTF-8")
 	Dim job As HttpJob
 	job.Initialize("job",Me)
-	job.PostString("http://localhost:9000/?properties="&params,sentence)
+	job.PostString("http://"&address&"/?properties="&params,sentence)
 	wait for (job) JobDone(job As HttpJob)
 	If job.Success Then
 		Log(job.GetString)
@@ -174,7 +187,7 @@ Sub duplicatedRemovedList(list1 As List) As List
 	newList.Initialize
 	For Each item As String In list1 
 		Dim matcher As Matcher
-		matcher=Regex.Matcher(",",item) ' remove grams with comma
+		matcher=Regex.Matcher(",|，",item) ' remove grams with comma
 		If newList.IndexOf(item)=-1 And matcher.Find=False Then
 			newList.Add(item)
 		End If
