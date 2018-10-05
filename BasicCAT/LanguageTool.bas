@@ -13,6 +13,16 @@ End Sub
 Sub check(text As String,entry As Int,langcode As String) As ResumableSub
 	Dim values As List
 	values.Initialize
+    
+	Dim address As String
+	If Main.preferencesMap.ContainsKey("languagetool_address") Then
+
+		address=Main.preferencesMap.Get("languagetool_address")
+	Else
+		return values
+	End If
+	
+
 	Select langcode
 		Case "en"
 			langcode="en-US"
@@ -22,7 +32,7 @@ Sub check(text As String,entry As Int,langcode As String) As ResumableSub
 	params="?language="&langcode&"&text="&su.EncodeUrl(text,"UTF-8")
 	Dim job As HttpJob
 	job.Initialize("job",Me)
-	job.Download("http://localhost:8081/v2/check"&params)
+	job.Download("http://"&address&"/v2/check"&params)
 	wait for (job) JobDone(job As HttpJob)
 	If job.Success Then
 		Log(job.GetString)

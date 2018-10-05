@@ -21,6 +21,8 @@ Sub Class_Globals
 	Private autocompleteEnabledCheckBox As CheckBox
 	Private corenlpAddressTextField As TextField
 	Private corenlpPathTextField As TextField
+	Private languagetoolAddressTextField As TextField
+	Private languagetoolEnabledCheckBox As CheckBox
 End Sub
 
 'Initializes the object. You can add parameters to this method if needed.
@@ -112,7 +114,14 @@ Sub categoryListView_SelectedIndexChanged(Index As Int)
 			End If
 		Case 5
 			'Language Check
-			
+			SettingPane.RemoveAllNodes
+			SettingPane.LoadLayout("settingLanguagecheck")
+			If unsavedPreferences.ContainsKey("languagetoolEnabled") Then
+				languagetoolEnabledCheckBox.Checked=unsavedPreferences.get("languagetoolEnabled")
+			End If
+			If unsavedPreferences.ContainsKey("languagetool_address") Then
+				languagetoolAddressTextField.Text=unsavedPreferences.get("languagetool_address")
+			End If
 		Case 6
 			'Version Control
 			
@@ -203,4 +212,12 @@ End Sub
 Sub saveAddressButton_MouseClicked (EventData As MouseEvent)
 	unsavedPreferences.Put("corenlp_address",corenlpAddressTextField.Text)
 	unsavedPreferences.Put("corenlp_path",corenlpPathTextField.Text)
+End Sub
+
+Sub saveLanguageToolAddressButton_MouseClicked (EventData As MouseEvent)
+	unsavedPreferences.Put("languagetool_address",languagetoolAddressTextField.Text)
+End Sub
+
+Sub languagetoolEnabledCheckBox_CheckedChange(Checked As Boolean)
+	unsavedPreferences.Put("languagetoolEnabled",Checked)
 End Sub

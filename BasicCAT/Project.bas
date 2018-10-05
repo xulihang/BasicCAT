@@ -704,8 +704,13 @@ Sub targetTextArea_FocusChanged (HasFocus As Boolean)
 	Else
 		Log("loseFocus")
 		previousEntry=lastEntry
-		wait for (LanguageTool.check(TextArea1.Text,lastEntry,projectFile.Get("target"))) complete (result As List)
-		showReplacements(result,TextArea1)
+		If Main.preferencesMap.ContainsKey("languagetoolEnabled") Then
+			If Main.preferencesMap.Get("languagetoolEnabled")=True Then
+				wait for (LanguageTool.check(TextArea1.Text,lastEntry,projectFile.Get("target"))) complete (result As List)
+				showReplacements(result,TextArea1)
+			End If
+		End If
+
 	End If
 End Sub
 
