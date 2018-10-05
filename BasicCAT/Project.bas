@@ -15,6 +15,7 @@ Sub Class_Globals
 	Public projectTM As TM
 	Public projectTerm As Term
 	Public lastEntry As Int
+	Private previousEntry As Int
 	Private lastFilename As String
 	Public settings As Map
 	Public completed As Int
@@ -277,16 +278,19 @@ Sub addFilesToTreeTable(filename As String)
 End Sub
 
 Sub targetTextArea_TextChanged (Old As String, New As String)
-	'Log(Old)
-	'Log(New)
+	Log(Old)
+	Log(New)
 	If Old="" And New.Length>1 Then
+		Return
+	End If
+	If New.Contains(CRLF) Then
 		Return
 	End If
 	Dim ta As TextArea
 	ta=Sender
 	
 	Old=Old.SubString2(0,Min(ta.SelectionStart,Old.Length))
-	New=New.SubString2(0,min(ta.SelectionStart,New.Length))
+	New=New.SubString2(0,Min(ta.SelectionStart,New.Length))
 	Dim lastString As String
 	If New.Length>1 Then
 		lastString=New.CharAt(New.Length-1)
@@ -697,7 +701,56 @@ Sub targetTextArea_FocusChanged (HasFocus As Boolean)
 		showTM(TextArea1)
 		showTerm(TextArea1)
 		Main.updateSegmentLabel(Main.editorLV.GetItemFromView(TextArea1.Parent),segments.Size)
+	Else
+		Log("loseFocus")
+		previousEntry=lastEntry
+		wait for (LanguageTool.check(TextArea1.Text,lastEntry,projectFile.Get("target"))) complete (result As List)
+		showReplacements(result,TextArea1)
 	End If
+End Sub
+
+Sub showReplacements(values As List,ta As TextArea)
+	If values.Size=0 Then
+		Return
+	End If
+	Dim replacementsCM As ContextMenu
+	replacementsCM.Initialize("replacementsCM")
+	Dim replacements As List
+	replacements=values.Get(2)
+	For Each replace As Map In replacements
+		Dim mi As MenuItem
+		mi.Initialize(replace.Get("value"), "replacementMi")
+		Dim tagList As List
+		tagList=values
+		tagList.set(2,replace.Get("value"))
+		mi.Tag=tagList
+		replacementsCM.MenuItems.Add(mi)
+	Next
+	Sleep(100)
+	Dim map1 As Map
+	map1=Utils.GetScreenPosition(ta)
+	Log(map1)
+	Dim jo As JavaObject = replacementsCM
+	jo.RunMethod("show", Array(ta, map1.Get("x")+ta.Width/10, map1.Get("y")+ta.Height))
+End Sub
+
+Sub replacementMi_Action
+	Dim mi As MenuItem
+	mi=Sender
+	Dim tagList As List
+	tagList=mi.Tag
+	Dim offset,length As Int
+	offset=tagList.Get(0)
+	length=tagList.Get(1)
+	Dim replacement As String
+	replacement=tagList.Get(2)
+	Dim p As Pane
+	p=Main.editorLV.GetPanel(previousEntry)
+	Dim targetTextArea As TextArea
+	targetTextArea=p.GetNode(1)
+	targetTextArea.Text=targetTextArea.Text.SubString2(0,offset)&replacement&targetTextArea.Text.SubString2(offset+length,targetTextArea.Text.Length)
+	Sleep(0)
+	targetTextArea.SetSelection(targetTextArea.Text.Length,targetTextArea.Text.Length)
 End Sub
 
 Sub loadITPSegments(targetTextArea As TextArea,engine As String,fullTranslation As String)

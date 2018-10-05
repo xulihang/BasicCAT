@@ -143,6 +143,11 @@ Sub CopyFolder(Source As String, targetFolder As String)
 	Next
 End Sub
 
+Sub MeasureMultilineTextHeight (Font As Font, Width As Double, Text As String) As Double
+	Dim jo As JavaObject = Me
+	Return jo.RunMethod("MeasureMultilineTextHeight", Array(Font, Text, Width))
+End Sub
+
 Sub isList(o As Object) As Boolean
 	If GetType(o)="java.util.ArrayList" Then
 		Return True
@@ -158,6 +163,19 @@ Sub isChinese(text As String) As Boolean
 End Sub
 
 #If JAVA
+
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import javafx.scene.text.Font;
+import javafx.scene.text.TextBoundsType;
+
+public static double MeasureMultilineTextHeight(Font f, String text, double width) throws Exception {
+  Method m = Class.forName("com.sun.javafx.scene.control.skin.Utils").getDeclaredMethod("computeTextHeight",
+  Font.class, String.class, double.class, TextBoundsType.class);
+  m.setAccessible(true);
+  return (Double)m.invoke(null, f, text, width, TextBoundsType.LOGICAL);
+  }
+
 private static boolean isChinese(char c) {
 
     Character.UnicodeBlock ub = Character.UnicodeBlock.of(c);

@@ -199,7 +199,8 @@ Public Sub InsertAtTextItem(Index As Int, Text As Object, Value As Object)
 	End If
 	Dim pnl As B4XView = CreatePanel("")
 	Dim lbl As B4XView = CreateLabel(Text)
-	lbl.Height = Max(50dip, lbl.Height)
+	lbl.SetTextAlignment("TOP","LEFT")
+	lbl.Height = Max(30dip, Utils.MeasureMultilineTextHeight(lbl.Font,sv.Width,lbl.Text))
 	pnl.AddView(lbl, 5dip, 2dip, sv.ScrollViewContentWidth - 10dip, lbl.Height)
 	lbl.TextColor = DefaultTextColor
 	pnl.Color = DefaultTextBackgroundColor

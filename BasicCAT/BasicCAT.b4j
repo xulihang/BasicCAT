@@ -1,44 +1,45 @@
 ﻿AppType=JavaFX
 Build1=Default,b4j.example
 File1=appearance.bjl
-File10=menuText.txt
-File11=mtparamfiller.bjl
-File12=mtSetting.bjl
-File13=oneterm.bjl
-File14=preferences.bjl
-File15=pretranslate.bjl
-File16=preview.bjl
-File17=progress.bjl
-File18=projectSetting.bjl
-File19=right.bjl
+File10=main.bjl
+File11=menuText.txt
+File12=mtparamfiller.bjl
+File13=mtSetting.bjl
+File14=oneterm.bjl
+File15=preferences.bjl
+File16=pretranslate.bjl
+File17=preview.bjl
+File18=progress.bjl
+File19=projectSetting.bjl
 File2=autocomplete.bjl
-File20=searchandreplace.bjl
-File21=searchTableView.bjl
-File22=segment.bjl
-File23=segmentation_en.conf
-File24=segmentation_en_exception.conf
-File25=segmentation_zh.conf
-File26=segmentation_zh_exception.conf
-File27=statistics.bjl
-File28=supportedFiles.txt
-File29=tableview.bjl
-File3=editor.bjl
-File30=tabpane.bjl
-File31=term.bjl
-File32=TermManager.bjl
-File33=tmList.bjl
-File34=TMManager.bjl
-File35=TMsegment.bjl
-File36=tmSetting.bjl
-File37=upperRight.bjl
-File38=viewSegment.bjl
-File39=wordLookupSetting.bjl
-File4=generalSetting.bjl
-File5=inputbox.bjl
-File6=leftProject.bjl
-File7=Log.bjl
-File8=lowerRight.bjl
-File9=main.bjl
+File20=right.bjl
+File21=searchandreplace.bjl
+File22=searchTableView.bjl
+File23=segment.bjl
+File24=segmentation_en.conf
+File25=segmentation_en_exception.conf
+File26=segmentation_zh.conf
+File27=segmentation_zh_exception.conf
+File28=statistics.bjl
+File29=supportedFiles.txt
+File3=checkList.bjl
+File30=tableview.bjl
+File31=tabpane.bjl
+File32=term.bjl
+File33=TermManager.bjl
+File34=tmList.bjl
+File35=TMManager.bjl
+File36=TMsegment.bjl
+File37=tmSetting.bjl
+File38=upperRight.bjl
+File39=viewSegment.bjl
+File4=editor.bjl
+File40=wordLookupSetting.bjl
+File5=generalSetting.bjl
+File6=inputbox.bjl
+File7=leftProject.bjl
+File8=Log.bjl
+File9=lowerRight.bjl
 FileGroup1=Default Group
 FileGroup10=Default Group
 FileGroup11=Default Group
@@ -73,6 +74,7 @@ FileGroup37=Default Group
 FileGroup38=Default Group
 FileGroup39=Default Group
 FileGroup4=Default Group
+FileGroup40=Default Group
 FileGroup5=Default Group
 FileGroup6=Default Group
 FileGroup7=Default Group
@@ -98,8 +100,8 @@ Library8=jsql
 Library9=jrandomaccessfile
 Module1=FileChooserUtils
 Module10=preTranslateDialog
-Module11=Preferences
-Module12=ITP
+Module11=ITP
+Module12=Preferences
 Module13=Utils
 Module14=searchAndReplaceDialog
 Module15=Previewer
@@ -114,6 +116,7 @@ Module22=InputBox
 Module23=TMManager
 Module24=viewSegment
 Module25=TermManager
+Module26=LanguageTool
 Module3=segmentation
 Module4=CustomListView
 Module5=txtFilter
@@ -121,9 +124,9 @@ Module6=TM
 Module7=Term
 Module8=KeyValueStore
 Module9=ProjectSettings
-NumberOfFiles=39
+NumberOfFiles=40
 NumberOfLibraries=17
-NumberOfModules=25
+NumberOfModules=26
 Version=6.51
 @EndOfDesignText@
 #Region Project Attributes 
@@ -166,6 +169,7 @@ Sub Process_Globals
     Private autosaveTimer As Timer
 	
 	Private operationLabel As Label
+	Private checkLV As CustomListView
 End Sub
 
 Sub AppStart (Form1 As Form, Args() As String)
@@ -208,6 +212,7 @@ Sub init
 	lowerRightSplitPane.LoadLayout("tabpane")
 	TabPane1.LoadLayout("tableview", "TM Match")
 	TabPane1.LoadLayout("searchTableView", "Segment Search")
+	TabPane1.LoadLayout("checkList", "LanguageCheck")
 	calculatedHeight.Initialize
 	adjustDividerPositions
 	preferencesMap.Initialize
@@ -783,4 +788,48 @@ End Sub
 
 Public Sub updateSavedTime
 	operationLabel.Text="Project saved at "&DateTime.Time(DateTime.Now)
+End Sub
+
+Sub checkLV_MouseClicked (EventData As MouseEvent)
+	
+End Sub
+
+Public Sub addCheckList(replacements As List, message As String,offset As Int,length As Int,context As String,entry As Int)
+	Try
+	
+		TabPane1.SelectedIndex=2
+		checkLV.Clear
+		Log(offset)
+		Log(context)
+		Dim tf As TextFlow
+		tf.Initialize
+		tf.AddText("message:").SetUnderline(True)
+		tf.AddText(" "&message&CRLF)
+		tf.AddText("context: "&context.SubString2(0,offset))
+		tf.AddText(context.SubString2(offset,offset+length)).SetColor(fx.Colors.Red)
+		tf.AddText(context.SubString2(offset+length,context.Length))
+		Dim p As Pane=tf.CreateTextFlow
+		p.SetSize(checkLV.AsView.Width,Utils.MeasureMultilineTextHeight(fx.DefaultFont(15),checkLV.AsView.Width,tf.getText))
+		checkLV.Add(p,"")
+		For Each replacement As Map In replacements
+			Dim values As List
+			values.Initialize
+			values.Add(replacement.Get("value"))
+			values.Add(offset)
+			values.Add(length)
+			values.Add(entry)
+			checkLV.AddTextItem("replacement: "&replacement.Get("value"),values)
+		Next
+	Catch
+		Log(LastException)
+End Try
+End Sub
+
+Public Sub noErrors
+	checkLV.Clear
+	checkLV.AddTextItem("No errors","")
+End Sub
+
+Sub checkLV_ItemClick (Index As Int, Value As Object)
+	Log(Value)
 End Sub

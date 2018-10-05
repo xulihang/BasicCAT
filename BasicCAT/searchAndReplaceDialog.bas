@@ -148,7 +148,7 @@ Sub showRegexResult
 			tagList.Add(tf.getText)
 			Dim pane As Pane = tf.CreateTextFlow
 			pane.Tag=tagList
-			pane.SetSize(resultListView.Width,MeasureMultilineTextHeight(fx.DefaultFont(15),resultListView.Width,tagList.Get(1)))
+			pane.SetSize(resultListView.Width,utils.MeasureMultilineTextHeight(fx.DefaultFont(15),resultListView.Width,tagList.Get(1)))
 			resultListView.Items.Add(pane)
 		End If
 
@@ -223,7 +223,7 @@ Sub showResult
 			tagList.Add(tf.getText)
 			Dim pane As Pane = tf.CreateTextFlow
 			pane.Tag=tagList
-			pane.SetSize(resultListView.Width,MeasureMultilineTextHeight(fx.DefaultFont(15),resultListView.Width,tagList.Get(1)))
+			pane.SetSize(resultListView.Width,Utils.MeasureMultilineTextHeight(fx.DefaultFont(15),resultListView.Width,tagList.Get(1)))
 			resultListView.Items.Add(pane)
 		End If
 	Next
@@ -283,7 +283,7 @@ Sub resultListView_Resize (Width As Double, Height As Double)
 	For Each p As Pane In resultListView.Items
 		Dim tagList As List
 		tagList=p.Tag
-		p.SetSize(Width,MeasureMultilineTextHeight(fx.DefaultFont(15),Width,tagList.Get(1)))
+		p.SetSize(Width,utils.MeasureMultilineTextHeight(fx.DefaultFont(15),Width,tagList.Get(1)))
 	Next
 End Sub
 
@@ -342,11 +342,6 @@ Sub replaceAllButton_MouseClicked (EventData As MouseEvent)
 
 End Sub
 
-Sub MeasureMultilineTextHeight (Font As Font, Width As Double, Text As String) As Double
-	Dim jo As JavaObject = Me
-	Return jo.RunMethod("MeasureMultilineTextHeight", Array(Font, Text, Width))
-End Sub
-
 Sub resultListView_Action
 	Dim p As Pane
 	p=resultListView.Items.Get(resultListView.SelectedIndex)
@@ -358,18 +353,6 @@ Sub resultListView_Action
 End Sub
 
 
-#if Java
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import javafx.scene.text.Font;
-import javafx.scene.text.TextBoundsType;
-public static double MeasureMultilineTextHeight(Font f, String text, double width) throws Exception {
-  Method m = Class.forName("com.sun.javafx.scene.control.skin.Utils").getDeclaredMethod("computeTextHeight",
-  Font.class, String.class, double.class, TextBoundsType.class);
-  m.setAccessible(true);
-  return (Double)m.invoke(null, f, text, width, TextBoundsType.LOGICAL);
-  }
-#End If
 
 
 

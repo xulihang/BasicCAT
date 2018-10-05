@@ -190,7 +190,7 @@ Sub getLongGrams(text As String,gramsList As List,item As String) As List
 		gramsList.Add(Regex.Replace("\(.*? |\)",matcher.Match,""))
 		
 		Dim matcher2 As Matcher
-		matcher2=Regex.Matcher("\("&item&" .*?\){2,}",matcher.Match)
+		matcher2=Regex.Matcher("\("&item&" .*\){2,}",matcher.Match)
 		Do While matcher2.Find
 
 			'all.Add(matcher2.Match)
