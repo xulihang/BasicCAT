@@ -282,6 +282,11 @@ Sub targetTextArea_TextChanged (Old As String, New As String)
 	If Old="" And New.Length>1 Then
 		Return
 	End If
+	Dim ta As TextArea
+	ta=Sender
+	
+	Old=Old.SubString2(0,Min(ta.SelectionStart,Old.Length))
+	New=New.SubString2(0,min(ta.SelectionStart,New.Length))
 	Dim lastString As String
 	If New.Length>1 Then
 		lastString=New.CharAt(New.Length-1)
@@ -305,8 +310,7 @@ Sub targetTextArea_TextChanged (Old As String, New As String)
 	'Log("old"&Old)
 	'Log("last"&lastString)
 
-	Dim ta As TextArea
-	ta=Sender
+
 
 
 	If cmClicked=True Then
@@ -318,11 +322,19 @@ Sub targetTextArea_TextChanged (Old As String, New As String)
 			Dim segmentsList As List
 			segmentsList=ta.Tag
 			For Each text As String In segmentsList
-				If text.ToLowerCase.StartsWith(lastString.ToLowerCase) Then
-					Dim mi As MenuItem
-					mi.Initialize(text, "mi")
-					mi.Tag=lastString
-					cm.MenuItems.Add(mi)
+				If text.ToLowerCase.StartsWith(lastString.ToLowerCase) And text<>lastString Then
+					If text.StartsWith(lastString) Then
+						Dim mi As MenuItem
+						mi.Initialize(text, "mi")
+						mi.Tag=lastString
+						cm.MenuItems.Add(mi)
+					Else
+						Dim mi As MenuItem
+						mi.Initialize(text.ToLowerCase, "mi")
+						mi.Tag=lastString
+						cm.MenuItems.Add(mi)
+					End If
+
 				End If
 			Next
 			If cm.MenuItems.Size<>0 Then

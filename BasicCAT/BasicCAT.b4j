@@ -378,9 +378,10 @@ Sub MenuBar1_Action
 			'Dim currentProject as Project
 			If currentProject.IsInitialized Then
 				currentProject.projectTM.close
-				closeServer
+				
 			End If
-			
+			closeServer
+
 			ExitApplication
 		Case "Preferences"
 			Dim pref As Preferences
