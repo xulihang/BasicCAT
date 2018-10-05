@@ -17,7 +17,6 @@ Sub Class_Globals
 	Public lastEntry As Int
 	Private lastFilename As String
 	Public settings As Map
-	Public sh As Shell
 	Public completed As Int
 	Private cmClicked As Boolean=False
 	Private cm As ContextMenu
@@ -63,24 +62,6 @@ End Sub
 
 Sub initializeTerm(projectPath As String)
 	projectTerm.Initialize(projectPath,projectFile.Get("source"))
-End Sub
-
-Sub runTMBackend
-	If sh.IsInitialized Then
-		Dim sh As Shell
-	End If
-	sh.Initialize("sh","java",Array As String("-jar","TMBackend.jar","51041"))
-	sh.WorkingDirectory=File.DirApp
-	sh.RunWithOutputEvents(-1)
-End Sub
-
-Sub sh_ProcessCompleted (Success As Boolean, ExitCode As Int, StdOut As String, StdErr As String)
-	If Success And ExitCode = 0 Then
-		Log("Success")
-		Log(StdOut)
-	Else
-		Log("Error: " & StdErr)
-	End If
 End Sub
 
 Public Sub open(jsonPath As String)
@@ -337,7 +318,7 @@ Sub targetTextArea_TextChanged (Old As String, New As String)
 			Dim segmentsList As List
 			segmentsList=ta.Tag
 			For Each text As String In segmentsList
-				If text.StartsWith(lastString) Then
+				If text.ToLowerCase.StartsWith(lastString.ToLowerCase) Then
 					Dim mi As MenuItem
 					mi.Initialize(text, "mi")
 					mi.Tag=lastString

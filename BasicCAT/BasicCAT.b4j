@@ -189,11 +189,7 @@ Sub MainForm_Resize (Width As Double, Height As Double)
 End Sub
 
 Sub MainForm_CloseRequest (EventData As Event)
-	If currentProject.IsInitialized Then
-		If currentProject.sh.IsInitialized Then
-			currentProject.sh.KillProcess
-		End If
-	End If
+	closeServer
 End Sub
 
 Sub init
@@ -225,6 +221,12 @@ Sub init
 	tmTableView.SetColumnWidth(2,200)
 	Utils.disableMenuItems(MenuBar1,Array As String("_Save","_Close"))
 	Utils.disableMenuItems(MenuBar1,File.ReadList(File.DirAssets,"menuText.txt"))
+End Sub
+
+Sub closeServer
+	If ITP.sh.IsInitialized Then
+		ITP.sh.KillProcess
+	End If
 End Sub
 
 Sub adjustDividerPositions
@@ -376,9 +378,7 @@ Sub MenuBar1_Action
 			'Dim currentProject as Project
 			If currentProject.IsInitialized Then
 				currentProject.projectTM.close
-				If currentProject.sh.IsInitialized Then
-					currentProject.sh.KillProcess
-				End If
+				closeServer
 			End If
 			
 			ExitApplication
@@ -666,9 +666,6 @@ End Sub
 Public Sub closeProject
 	autosaveTimer.Enabled=False
 	If currentProject.IsInitialized Then
-		If currentProject.sh.IsInitialized Then
-			currentProject.sh.KillProcess
-		End If
 		currentProject.projectTM.close
 		Dim currentProject As Project
 		tmTableView.ClearSelection

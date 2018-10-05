@@ -19,8 +19,8 @@ Sub Class_Globals
 	Private lookupCheckBox As CheckBox
     Private unsavedPreferences As Map
 	Private autocompleteEnabledCheckBox As CheckBox
-	Private corenlpAddressEnTextField As TextField
-	Private corenlpAddressZhTextField As TextField
+	Private corenlpAddressTextField As TextField
+	Private corenlpPathTextField As TextField
 End Sub
 
 'Initializes the object. You can add parameters to this method if needed.
@@ -104,11 +104,11 @@ Sub categoryListView_SelectedIndexChanged(Index As Int)
 			If unsavedPreferences.ContainsKey("autocompleteEnabled") Then
 				autocompleteEnabledCheckBox.Checked=unsavedPreferences.get("autocompleteEnabled")
 			End If
-			If unsavedPreferences.ContainsKey("corenlp_en_address") Then
-				corenlpAddressEnTextField.Text=unsavedPreferences.get("corenlp_en_address")
+			If unsavedPreferences.ContainsKey("corenlp_address") Then
+				corenlpAddressTextField.Text=unsavedPreferences.get("corenlp_address")
 			End If
-			If unsavedPreferences.ContainsKey("corenlp_zh_address") Then
-				corenlpAddressZhTextField.Text=unsavedPreferences.get("corenlp_zh_address")
+			If unsavedPreferences.ContainsKey("corenlp_path") Then
+				corenlpPathTextField.Text=unsavedPreferences.get("corenlp_path")
 			End If
 		Case 5
 			'Language Check
@@ -201,6 +201,6 @@ Sub autocompleteEnabledCheckBox_CheckedChange(Checked As Boolean)
 End Sub
 
 Sub saveAddressButton_MouseClicked (EventData As MouseEvent)
-	unsavedPreferences.Put("corenlp_en_address",corenlpAddressEnTextField.Text)
-	unsavedPreferences.Put("corenlp_zh_address",corenlpAddressZhTextField.Text)
+	unsavedPreferences.Put("corenlp_address",corenlpAddressTextField.Text)
+	unsavedPreferences.Put("corenlp_path",corenlpPathTextField.Text)
 End Sub

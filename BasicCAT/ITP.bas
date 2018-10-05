@@ -7,6 +7,17 @@ Version=6.51
 'Static code module
 Sub Process_Globals
 	Private fx As JFX
+	Public sh As Shell
+End Sub
+
+Sub runCorenlpServer(sourcelang As String)
+
+	If sh.IsInitialized=False Then
+		sh.Initialize("sh","java",Array As String("-mx4g","-cp",$"*"$,"edu.stanford.nlp.pipeline.StanfordCoreNLPServer","-port","9000","-timeout","15000"))
+	End If
+	Log(Main.preferencesMap.Get("corenlp_path"))
+	sh.WorkingDirectory=Main.preferencesMap.Get("corenlp_path")
+	sh.RunWithOutputEvents(-1)
 End Sub
 
 Sub getAllSegmentTranslation(text As String,engine As String) As ResumableSub
@@ -14,25 +25,34 @@ Sub getAllSegmentTranslation(text As String,engine As String) As ResumableSub
 	sourceLang=Main.currentProject.projectFile.Get("source")
 	targetLang=Main.currentProject.projectFile.Get("target")
 	
+	
+	
 	Dim translationList As List
 	translationList.Initialize
-
-	Dim address As String=""
-	If Main.preferencesMap.ContainsKey("corenlp_"&sourceLang&"_address") Then
-		address=Main.preferencesMap.Get("corenlp_"&sourceLang&"_address")
+	
+	If Main.preferencesMap.ContainsKey("corenlp_path") Then
+		If File.Exists(Main.preferencesMap.Get("corenlp_path"),"")=False Then
+			Return translationList
+		Else
+			runCorenlpServer(sourceLang)
+		End If
+	Else
+		Return translationList
 	End If
 	
-	
-	
+	Dim address As String=""
+	If Main.preferencesMap.ContainsKey("corenlp_address") Then
+		address=Main.preferencesMap.Get("corenlp_address")
+		
+	End If
 
-	
 	Dim wordList As List
 	wordList.Initialize
 	
 	Dim pattern As String
 	If sourceLang="zh" Then
 		pattern=""
-		wait for (getStanfordTokenizedResult(text,address)) Complete (resultList As List)
+		wait for (getStanfordTokenizedResult(text,address,sourceLang)) Complete (resultList As List)
 		wordList.AddAll(resultList)
 		Log(resultList)
 	Else
@@ -49,7 +69,7 @@ Sub getAllSegmentTranslation(text As String,engine As String) As ResumableSub
 	If address<>"" Then
 		Dim grams As List
 		grams.Initialize
-		wait for (getStanfordParsedResult(text,address)) Complete (result As String)
+		wait for (getStanfordParsedResult(text,address,sourceLang)) Complete (result As String)
 		grams.AddAll(getGramsFromStringViaRe(result))
 		duplicatedRemovedList2(grams,wordList)
 		Log("grams"&grams)
@@ -63,12 +83,12 @@ Sub getAllSegmentTranslation(text As String,engine As String) As ResumableSub
 	Return duplicatedRemovedList(translationList)
 End Sub
 
-Sub getStanfordTokenizedResult(sentence As String, address As String) As ResumableSub
+Sub getStanfordTokenizedResult(sentence As String, address As String,lang As String) As ResumableSub
 	Dim tokens As List
 	tokens.Initialize
 	Dim params As String
 	Dim su As StringUtils
-	params=su.EncodeUrl($"{"annotators":"tokenize","outputFormat":"json"}"$,"UTF-8")
+	params=su.EncodeUrl($"{"annotators":"tokenize","outputFormat":"json","pipelineLanguage":"${lang}"}"$,"UTF-8")
 	Dim job As HttpJob
 	job.Initialize("job",Me)
 	job.PostString("http://"&address&"/?properties="&params,sentence)
@@ -89,11 +109,11 @@ Sub getStanfordTokenizedResult(sentence As String, address As String) As Resumab
 	Return tokens
 End Sub
 
-Sub getStanfordParsedResult(sentence As String,address As String) As ResumableSub
+Sub getStanfordParsedResult(sentence As String,address As String,lang As String) As ResumableSub
 	Dim parse As String
 	Dim params As String
 	Dim su As StringUtils
-	params=su.EncodeUrl($"{"annotators":"parse","outputFormat":"json"}"$,"UTF-8")
+	params=su.EncodeUrl($"{"annotators":"parse","outputFormat":"json","pipelineLanguage":"${lang}}"$,"UTF-8")
 	Dim job As HttpJob
 	job.Initialize("job",Me)
 	job.PostString("http://"&address&"/?properties="&params,sentence)
