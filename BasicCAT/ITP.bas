@@ -26,18 +26,14 @@ Sub getAllSegmentTranslation(text As String,engine As String) As ResumableSub
 	targetLang=Main.currentProject.projectFile.Get("target")
 	
 	
-	
+	'Log("text:"&text)
 	Dim translationList As List
 	translationList.Initialize
 	
 	If Main.preferencesMap.ContainsKey("corenlp_path") Then
-		If File.Exists(Main.preferencesMap.Get("corenlp_path"),"")=False Then
-			Return translationList
-		Else
+		If File.Exists(Main.preferencesMap.Get("corenlp_path"),"")=True Then
 			runCorenlpServer(sourceLang)
 		End If
-	Else
-		Return translationList
 	End If
 	
 	Dim address As String=""
@@ -45,6 +41,7 @@ Sub getAllSegmentTranslation(text As String,engine As String) As ResumableSub
 		address=Main.preferencesMap.Get("corenlp_address")
 		
 	End If
+	'Log("address:"&address)
 
 	Dim wordList As List
 	wordList.Initialize
@@ -161,9 +158,11 @@ End Sub
 Sub getGramsFromStringViaRe(text As String) As List
 	Dim gramsList As List
 	gramsList.Initialize
-	text=Regex.Replace("\r\n",text,"")
+	text=Regex.Replace("\r",text,"")
+	text=Regex.Replace("\n",text,"")
 	text=Regex.Replace(" {1,}",text," ")
-	For Each item As String In Array As String("NP","VP","PP")
+	Log(text)
+	For Each item As String In Array As String("NP","VP","PP","ADJP")
 		Dim matcher As Matcher
 		'\(NP .*?\){2,}
 		'\(.*?
@@ -175,9 +174,10 @@ Sub getGramsFromStringViaRe(text As String) As List
 		Loop
 	Next
 
-	gramsList=getLongGrams(text,gramsList,"VP")
+	gramsList.AddAll(getLongGrams(text,gramsList,"VP"))
+	gramsList.AddAll(getLongGrams(text,gramsList,"PP"))
 
-	Return gramsList
+	Return duplicatedRemovedList(gramsList)
 End Sub
 
 Sub getLongGrams(text As String,gramsList As List,item As String) As List
@@ -199,7 +199,7 @@ Sub getLongGrams(text As String,gramsList As List,item As String) As List
 		Loop
 		
 	Loop
-	Return duplicatedRemovedList(gramsList)
+	Return gramsList
 End Sub
 
 Sub duplicatedRemovedList(list1 As List) As List
