@@ -316,7 +316,7 @@ Sub targetTextArea_TextChanged (Old As String, New As String)
 	If Old="" And New.Length>1 Then
 		Return
 	End If
-	If New.Contains(CRLF) Then
+	If New.Contains(CRLF) or Old.Contains(CRLF) Then
 		Return
 	End If
 	Dim ta As TextArea
