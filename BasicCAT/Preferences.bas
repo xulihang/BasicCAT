@@ -23,6 +23,9 @@ Sub Class_Globals
 	Private corenlpPathTextField As TextField
 	Private languagetoolAddressTextField As TextField
 	Private languagetoolEnabledCheckBox As CheckBox
+	Private emailTextField As TextField
+	Private usernameTextField As TextField
+	Private vcsEnabledCheckBox As CheckBox
 End Sub
 
 'Initializes the object. You can add parameters to this method if needed.
@@ -124,7 +127,17 @@ Sub categoryListView_SelectedIndexChanged(Index As Int)
 			End If
 		Case 6
 			'Version Control
-			
+			SettingPane.RemoveAllNodes
+			SettingPane.LoadLayout("settingVersionControl")
+			If unsavedPreferences.ContainsKey("vcsEnabled") Then
+				vcsEnabledCheckBox.Checked=unsavedPreferences.get("vcsEnabled")
+			End If
+			If unsavedPreferences.ContainsKey("vcs_email") Then
+				emailTextField.Text=unsavedPreferences.get("vcs_email")
+			End If
+			If unsavedPreferences.ContainsKey("vcs_username") Then
+				usernameTextField.Text=unsavedPreferences.get("vcs_username")
+			End If
 	End Select
 End Sub
 
@@ -220,4 +233,13 @@ End Sub
 
 Sub languagetoolEnabledCheckBox_CheckedChange(Checked As Boolean)
 	unsavedPreferences.Put("languagetoolEnabled",Checked)
+End Sub
+
+Sub vcsEnabledCheckBox_CheckedChange(Checked As Boolean)
+	unsavedPreferences.Put("vcsEnabled",Checked)
+End Sub
+
+Sub saveVCSSettingButton_MouseClicked (EventData As MouseEvent)
+	unsavedPreferences.Put("vcs_username",usernameTextField.Text)
+	unsavedPreferences.Put("vcs_email",emailTextField.Text)
 End Sub

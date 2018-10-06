@@ -1,46 +1,48 @@
 ﻿AppType=JavaFX
 Build1=Default,b4j.example
-File1=appearance.bjl
-File10=main.bjl
-File11=menuText.txt
-File12=mtparamfiller.bjl
-File13=mtSetting.bjl
-File14=oneterm.bjl
-File15=preferences.bjl
-File16=pretranslate.bjl
-File17=preview.bjl
-File18=progress.bjl
-File19=projectSetting.bjl
-File2=autocomplete.bjl
-File20=right.bjl
-File21=searchandreplace.bjl
-File22=searchTableView.bjl
-File23=segment.bjl
-File24=segmentation_en.conf
-File25=segmentation_en_exception.conf
-File26=segmentation_zh.conf
-File27=segmentation_zh_exception.conf
-File28=settingLanguagecheck.bjl
-File29=statistics.bjl
-File3=checkList.bjl
-File30=supportedFiles.txt
-File31=tableview.bjl
-File32=tabpane.bjl
-File33=term.bjl
-File34=TermManager.bjl
-File35=tmList.bjl
-File36=TMManager.bjl
-File37=TMsegment.bjl
-File38=tmSetting.bjl
-File39=upperRight.bjl
-File4=editor.bjl
-File40=viewSegment.bjl
-File41=wordLookupSetting.bjl
-File5=generalSetting.bjl
-File6=inputbox.bjl
-File7=leftProject.bjl
-File8=Log.bjl
-File9=lowerRight.bjl
+File1=.gitignore
+File10=lowerRight.bjl
+File11=main.bjl
+File12=menuText.txt
+File13=mtparamfiller.bjl
+File14=mtSetting.bjl
+File15=oneterm.bjl
+File16=preferences.bjl
+File17=pretranslate.bjl
+File18=preview.bjl
+File19=progress.bjl
+File2=appearance.bjl
+File20=projectSetting.bjl
+File21=right.bjl
+File22=searchandreplace.bjl
+File23=searchTableView.bjl
+File24=segment.bjl
+File25=segmentation_en.conf
+File26=segmentation_en_exception.conf
+File27=segmentation_zh.conf
+File28=segmentation_zh_exception.conf
+File29=settingLanguagecheck.bjl
+File3=autocomplete.bjl
+File30=settingVersionControl.bjl
+File31=statistics.bjl
+File32=supportedFiles.txt
+File33=tableview.bjl
+File34=tabpane.bjl
+File35=term.bjl
+File36=TermManager.bjl
+File37=tmList.bjl
+File38=TMManager.bjl
+File39=TMsegment.bjl
+File4=checkList.bjl
+File40=tmSetting.bjl
+File41=upperRight.bjl
+File42=viewSegment.bjl
+File43=wordLookupSetting.bjl
+File5=editor.bjl
+File6=generalSetting.bjl
+File7=inputbox.bjl
+File8=leftProject.bjl
+File9=Log.bjl
 FileGroup1=Default Group
 FileGroup10=Default Group
 FileGroup11=Default Group
@@ -77,6 +79,8 @@ FileGroup39=Default Group
 FileGroup4=Default Group
 FileGroup40=Default Group
 FileGroup41=Default Group
+FileGroup42=Default Group
+FileGroup43=Default Group
 FileGroup5=Default Group
 FileGroup6=Default Group
 FileGroup7=Default Group
@@ -119,6 +123,7 @@ Module23=InputBox
 Module24=TMManager
 Module25=viewSegment
 Module26=TermManager
+Module27=git
 Module3=segmentation
 Module4=CustomListView
 Module5=txtFilter
@@ -126,9 +131,9 @@ Module6=TM
 Module7=Term
 Module8=KeyValueStore
 Module9=ProjectSettings
-NumberOfFiles=41
+NumberOfFiles=43
 NumberOfLibraries=17
-NumberOfModules=26
+NumberOfModules=27
 Version=6.51
 @EndOfDesignText@
 #Region Project Attributes 
@@ -136,10 +141,18 @@ Version=6.51
 	#MainFormHeight: 600 
 #End Region
 
-'#AdditionalJar: sqlite-jdbc-3.7.2
+
 #AdditionalJar: sqlite-jdbc-3.23.1
 #AdditionalJar: bcprov-jdk15on-154
 #AdditionalJar: fuzzywuzzy-1.1.10
+
+'-------- for jgit
+#AdditionalJar: org.eclipse.jgit-5.1.1.201809181055-r
+#AdditionalJar: jsch-0.1.54
+#AdditionalJar: jzlib-1.1.1
+#AdditionalJar: JavaEWAH-1.1.6
+#AdditionalJar: slf4j-api-1.7.2
+#AdditionalJar: slf4j-simple-1.7.25
 
 Sub Process_Globals
 	Private fx As JFX

@@ -22,6 +22,7 @@ Sub Class_Globals
 	Private cmClicked As Boolean=False
 	Private cm As ContextMenu
 	Private cursorReachEnd As Boolean=False
+	Private projectGit As git
 End Sub
 
 'Initializes the object. You can add parameters to this method if needed.
@@ -30,7 +31,6 @@ Public Sub Initialize
 	projectFile.Initialize
 	segments.Initialize
 	settings.Initialize
-	
 	cm.Initialize("cm")
 End Sub
 
@@ -139,7 +139,40 @@ public Sub save
 	json.Initialize(projectFile)
 	File.WriteString(path,"project.json",json.ToPrettyString(4))
 	saveFileAccordingToExtenstion(currentFilename)
+	
+	If Main.preferencesMap.ContainsKey("vcsEnabled") Then
+		If Main.preferencesMap.Get("vcsEnabled")=True Then
+			gitcommit
+		End If
+	End If
+	
 	Main.updateSavedTime
+End Sub
+
+Sub gitcommit
+	createGitignore
+	If projectGit.IsInitialized=False Then
+		projectGit.Initialize(path)
+	End If
+	Dim username,email As String
+	If Main.preferencesMap.ContainsKey("vcs_email") Then
+		email=Main.preferencesMap.Get("vcs_email")
+	End If
+	If Main.preferencesMap.ContainsKey("vcs_username") Then
+		username=Main.preferencesMap.Get("vcs_username")
+	End If
+	Dim diffList As List
+	diffList=projectGit.diffList
+	If diffList<>Null And diffList.Size<>0 Then
+		projectGit.add(".")
+		projectGit.commit("new text change",username,email)
+	End If
+End Sub
+
+Sub createGitignore
+	If File.Exists(path,".gitignore")=False Then
+		File.Copy(File.DirAssets,".gitignore",path,".gitignore")
+	End If
 End Sub
 
 Sub showPreView
