@@ -71,6 +71,7 @@ Sub saveWorkFile(filename As String,segments As List,path As String)
 
 			previousInnerFilename=bitext.Get(3)
 			segmentsForEachFile.Clear
+			segmentsForEachFile.Add(bitext)
 		End If
 	Next
 	'repeat as for the last file, filename will not change

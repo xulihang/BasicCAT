@@ -316,7 +316,7 @@ Sub targetTextArea_TextChanged (Old As String, New As String)
 	If Old="" And New.Length>1 Then
 		Return
 	End If
-	If New.Contains(CRLF) or Old.Contains(CRLF) Then
+	If New.Contains(CRLF) Or Old.Contains(CRLF) Then
 		Return
 	End If
 	Dim ta As TextArea
@@ -1121,6 +1121,8 @@ End Sub
 Sub creatWorkFileAccordingExtension(filename As String)
 	If filename.EndsWith(".txt") Then
 		txtFilter.creatWorkFile(filename,path,projectFile.Get("source"))
+	Else if filename.EndsWith(".idml") Then
+		idmlFilter.creatWorkFile(filename,path,projectFile.Get("source"))
 	Else
 		
 	End If
@@ -1129,6 +1131,8 @@ End Sub
 Sub readFileAccordingToExtenstion(filename As String)
 	If filename.EndsWith(".txt") Then
 		txtFilter.readFile(filename,segments,path)
+	else if filename.EndsWith(".idml") Then
+		idmlFilter.readFile(filename,segments,path)
 	End If
 End Sub
 
@@ -1137,6 +1141,9 @@ Sub saveFileAccordingToExtenstion(filename As String)
 	If filename.EndsWith(".txt") Then
 		saveAlltheTranslation(Main.editorLV.FirstVisibleIndex,Main.editorLV.LastVisibleIndex)
 		txtFilter.saveWorkFile(filename,segments,path)
+	else if filename.EndsWith(".idml") Then
+		saveAlltheTranslation(Main.editorLV.FirstVisibleIndex,Main.editorLV.LastVisibleIndex)
+		idmlFilter.saveWorkFile(filename,segments,path)
 	End If
 End Sub
 
@@ -1144,6 +1151,6 @@ Sub getSegmentsAccordingToExtenstion(filename As String) As List
 	If filename.EndsWith(".txt") Then
 		Return txtFilter.readFileAndGetAlltheSegments(filename,path)
 	Else
-		Return Null
+		Return idmlFilter.readFileAndGetAlltheSegments(filename,path)
 	End If
 End Sub
