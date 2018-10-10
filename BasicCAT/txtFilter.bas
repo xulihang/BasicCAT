@@ -22,7 +22,7 @@ Sub creatWorkFile(filename As String,path As String,sourceLang As String)
 	Dim segmentsList As List
 	segmentsList.Initialize
 	Dim inbetweenContent As String
-	For Each source As String In segmentation.segmentedTxt(File.ReadString(File.Combine(path,"source"),filename),False,sourceLang)
+	For Each source As String In segmentation.segmentedTxt(File.ReadString(File.Combine(path,"source"),filename),False,sourceLang,"txt")
 		Dim bitext As List
 		bitext.Initialize
 		If source.Trim="" Then 'newline

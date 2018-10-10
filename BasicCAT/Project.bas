@@ -191,13 +191,7 @@ Sub creatProjectFiles
 	File.MakeDir(path,"bak")
 End Sub
 
-Public Sub generateTargetFiles
-	For Each filename As String In files
-		If filename.EndsWith(".txt") Then
-			txtFilter.generateFile(filename,path,projectFile)
-		End If
-	Next
-End Sub
+
 
 
 Sub getProjectPath(jsonPath As String) As String
@@ -1147,10 +1141,20 @@ Sub saveFileAccordingToExtenstion(filename As String)
 	End If
 End Sub
 
-Sub getSegmentsAccordingToExtenstion(filename As String) As List
+Public Sub getSegmentsAccordingToExtenstion(filename As String) As List
 	If filename.EndsWith(".txt") Then
 		Return txtFilter.readFileAndGetAlltheSegments(filename,path)
 	Else
 		Return idmlFilter.readFileAndGetAlltheSegments(filename,path)
 	End If
+End Sub
+
+Public Sub generateTargetFiles
+	For Each filename As String In files
+		If filename.EndsWith(".txt") Then
+			txtFilter.generateFile(filename,path,projectFile)
+		Else if filename.EndsWith(".idml") Then
+			idmlFilter.generateFile(filename,path,projectFile)
+		End If
+	Next
 End Sub

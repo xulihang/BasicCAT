@@ -7,12 +7,25 @@ Version=6.51
 'Static code module
 Sub Process_Globals
 	Private fx As JFX
+	Private paragraphStyles As List
+	Private characterStyles As List
+	Private parser As SaxParser
+	Private order As List
 End Sub
 
 Sub creatWorkFile(filename As String,path As String,sourceLang As String)
+	If order.IsInitialized=False Then
+		parser.Initialize
+		order.Initialize
+	End If
 	Dim unzipedDirPath As String
 	unzipedDirPath=File.Combine(File.Combine(path,"source"),filename.Replace(".idml",""))
 	wait for (unzipAndLoadIDML(path,filename)) Complete (spreadsList As List)
+	
+	Dim styleXmlMap As Map
+	styleXmlMap=getXmlMap(File.ReadString(File.Combine(unzipedDirPath,"Resources"),"Styles.xml"))
+	paragraphStyles=getStyleList(styleXmlMap,"paragraph")
+	characterStyles=getStyleList(styleXmlMap,"character")
 	
 	Dim storiesList As List
 	storiesList.Initialize
@@ -54,12 +67,15 @@ Sub creatWorkFile(filename As String,path As String,sourceLang As String)
 	
 
 	For Each storyID As String In storiesList
+		Sleep(0)
+		Log(storyID)
 		Dim sourceFileMap As Map
 		sourceFileMap.Initialize
 		Dim segmentsList As List
 		segmentsList.Initialize
 		Dim storyString As String
 		storyString=File.ReadString(unzipedDirPath,"Stories/Story_"&storyID&".xml")
+		getBrContentOrder(File.Combine(unzipedDirPath,"Stories/Story_"&storyID&".xml"))
 		Dim storyContent As String
 		storyContent=getStoryContent(getXmlMap(storyString))
 		storyContent=stripContent(storyContent)
@@ -67,7 +83,7 @@ Sub creatWorkFile(filename As String,path As String,sourceLang As String)
 		Dim innerFilename As String
 		innerFilename="Story_"&storyID&".xml"
 		Log(storyContent)
-		For Each source As String In segmentation.segmentedTxt(storyContent,False,sourceLang)
+		For Each source As String In segmentation.segmentedTxt(storyContent,False,sourceLang,"idml")
 			Dim bitext As List
 			bitext.Initialize
 			If source.Trim="" Then 'newline
@@ -204,7 +220,6 @@ Sub readFile(filename As String,segments As List,path As String)
 End Sub
 
 Sub generateFile(filename As String,path As String,projectFile As Map)
-	Dim innerfilename As String=filename
 	Dim result As String
 	Dim workfile As Map
 	Dim json As JSONParser
@@ -213,6 +228,8 @@ Sub generateFile(filename As String,path As String,projectFile As Map)
 	Dim sourceFiles As List
 	sourceFiles=workfile.Get("files")
 	For Each sourceFileMap As Map In sourceFiles
+		Dim innerfilename As String
+		innerfilename=sourceFileMap.GetKeyAt(0)
 		Dim segmentsList As List
 		segmentsList=sourceFileMap.Get(innerfilename)
 		For Each bitext As List In segmentsList
@@ -260,32 +277,138 @@ Sub getSpreadsPathList(ParsedData As Map) As List
 	Return pathList
 End Sub
 
-Sub getStoryContent(ParsedData As Map) As String
+
+Sub getStyleList(ParsedData As Map, styleType As String) As List
+	Dim result As List
+	result.Initialize
+	Dim GroupName,styleName As String
+	Select styleType
+		Case "character"
+			GroupName="RootCharacterStyleGroup"
+			styleName="CharacterStyle"
+		Case "paragraph"
+			GroupName="RootParagraphStyleGroup"
+			styleName="ParagraphStyle"
+	End Select
+	Dim root As Map = ParsedData.Get("idPkg:Styles")
+	Dim styleGroup As Map = root.Get(GroupName)
+	Dim styles As List
+	styles=GetElements(styleGroup,styleName)
+	For Each style As Map In styles
+		Dim attributes As Map
+		attributes=style.Get("Attributes")
+		Dim name As String
+		name=attributes.Get("Self")
+		result.Add(name)
+	Next
+	Return result
+End Sub
+
+
+Sub getBrContentOrder(path As String)
+	order.Clear
+	parser.Parse(File.OpenInput(path,""),"Parser")
+	Log(order)
+End Sub
+
+
+Sub Parser_EndElement (Uri As String, Name As String, Text As StringBuilder)
+	If Name="Br" Or Name="Content" Then
+		order.Add(Name)
+	End If
+End Sub
+
+Sub getStoryContent(ParsedData As Map) As String	
 	Dim root As Map = ParsedData.Get("idPkg:Story")
 	Dim story As Map = root.Get("Story")
 	Dim content As String
 	Dim ParagraphStyleRanges As List
 	ParagraphStyleRanges=GetElements(story,"ParagraphStyleRange")
 	For Each ParagraphStyleRange As Map In ParagraphStyleRanges
+		Dim paragraphStyleRangeContent As String
+		
+		Dim paragraphAttributes As Map
+		paragraphAttributes=ParagraphStyleRange.Get("Attributes")
+
+		Dim paragraphStyleIndex As String
+		paragraphStyleIndex=paragraphStyles.IndexOf(paragraphAttributes.Get("AppliedParagraphStyle"))
+		
 		Dim CharacterStyleRanges As List
 		CharacterStyleRanges=GetElements(ParagraphStyleRange,"CharacterStyleRange")
+		
 		For Each CharacterStyleRange As Map In CharacterStyleRanges
-			For Each key As String In CharacterStyleRange.Keys
-				Log(key)
-				If key="Br" Then
-					content=content&CRLF
+			Dim characterStyleRangeContent As String
+			
+			Dim brcontentInOrder As List
+			brcontentInOrder.Initialize
+
+			Dim size As Int
+			size=GetElements(CharacterStyleRange,"Br").Size+GetElements(CharacterStyleRange,"Content").Size
+
+			For i=0 To Max(0,size-1)
+				If order.Size=0 Then
+					Exit
 				End If
-				If key="Content" Then
-					If CharacterStyleRange.Get("Content")=Null Then
-						Continue
-					End If
-					content=content&CharacterStyleRange.Get("Content")
+				If order.Get(i)="Br" Then
+					brcontentInOrder.Add(CRLF)
+				Else
+					brcontentInOrder.Add("Content")
 				End If
 			Next
-
+			For i=0 To Max(0,size-1)
+				If order.Size=0 Then
+					Exit
+				End If
+				order.RemoveAt(0)
+			Next
 			
+			Dim attributes As Map
+			attributes=CharacterStyleRange.Get("Attributes")
+			Dim characterStyleIndex As String
+			characterStyleIndex=characterStyles.IndexOf(attributes.Get("AppliedCharacterStyle"))
+
+			For Each key As String In CharacterStyleRange.Keys
+
+	
+				If key="Content" Then
+					Dim contentList As List
+					contentList=GetElements(CharacterStyleRange,"Content")
+					Dim j As Int=0
+					Do While j<contentList.Size
+						For k=0 To brcontentInOrder.Size-1
+							If brcontentInOrder.Get(k)="Content" Then
+
+								Dim oneContent As String=contentList.Get(j)
+								brcontentInOrder.Set(k,oneContent)
+								j=j+1
+								Continue
+							End If
+						Next
+					Loop
+					For Each item As String In brcontentInOrder
+						characterStyleRangeContent=characterStyleRangeContent&item
+					Next
+
+				End If
+			Next
+			characterStyleRangeContent=characterStyleRangeContent.Replace(" ","") 'replace LSEP
+			If characterStyleRangeContent.EndsWith(CRLF) Then
+				characterStyleRangeContent=characterStyleRangeContent.SubString2(0,characterStyleRangeContent.Length-1)
+				characterStyleRangeContent="<c"&characterStyleIndex&">"&characterStyleRangeContent&"</c"&characterStyleIndex&">"&CRLF
+			Else
+				characterStyleRangeContent="<c"&characterStyleIndex&">"&characterStyleRangeContent&"</c"&characterStyleIndex&">"
+			End If
+			
+			paragraphStyleRangeContent=paragraphStyleRangeContent&characterStyleRangeContent
 		Next
-		content=content&CRLF
+		
+		If paragraphStyleRangeContent.EndsWith(CRLF) Then
+			paragraphStyleRangeContent=paragraphStyleRangeContent.SubString2(0,paragraphStyleRangeContent.Length-1)
+			paragraphStyleRangeContent="<p"&paragraphStyleIndex&">"&paragraphStyleRangeContent&"</p"&paragraphStyleIndex&">"&CRLF
+		Else
+			paragraphStyleRangeContent="<p"&paragraphStyleIndex&">"&paragraphStyleRangeContent&"</p"&paragraphStyleIndex&">"&CRLF
+		End If
+		content=content&paragraphStyleRangeContent
 	Next
 	Return content
 End Sub

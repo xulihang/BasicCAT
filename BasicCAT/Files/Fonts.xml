@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<idPkg:Fonts xmlns:idPkg="http://ns.adobe.com/AdobeInDesign/idml/1.0/packaging" DOMVersion="8.0">
+	<FontFamily Self="di3e" Name="宋体">
+		<Font Self="di3eFontn宋体 Regular" FontFamily="宋体" Name="宋体 Regular" PostScriptName="SimSun" Status="Installed" FontStyleName="Regular" FontType="TrueType" WritingScript="25" FullName="SimSun" FullNameNative="宋体" FontStyleNameNative="常规" PlatformName="$ID/" Version="Version 5.16" />
+	</FontFamily>
+	<FontFamily Self="di74" Name="Times New Roman">
+		<Font Self="di74FontnTimes New Roman Regular" FontFamily="Times New Roman" Name="Times New Roman Regular" PostScriptName="TimesNewRomanPSMT" Status="Installed" FontStyleName="Regular" FontType="OpenTypeTT" WritingScript="0" FullName="Times New Roman" FullNameNative="Times New Roman" FontStyleNameNative="Regular" PlatformName="$ID/" Version="Version 7.00" />
+		<Font Self="di74FontnTimes New Roman Italic" FontFamily="Times New Roman" Name="Times New Roman Italic" PostScriptName="TimesNewRomanPS-ItalicMT" Status="Installed" FontStyleName="Italic" FontType="OpenTypeTT" WritingScript="0" FullName="Times New Roman Italic" FullNameNative="Times New Roman Italic" FontStyleNameNative="Italic" PlatformName="$ID/" Version="Version 7.00" />
+		<Font Self="di74FontnTimes New Roman Bold" FontFamily="Times New Roman" Name="Times New Roman Bold" PostScriptName="TimesNewRomanPS-BoldMT" Status="Installed" FontStyleName="Bold" FontType="OpenTypeTT" WritingScript="0" FullName="Times New Roman Bold" FullNameNative="Times New Roman Bold" FontStyleNameNative="Bold" PlatformName="$ID/" Version="Version 7.00" />
+		<Font Self="di74FontnTimes New Roman Bold Italic" FontFamily="Times New Roman" Name="Times New Roman Bold Italic" PostScriptName="TimesNewRomanPS-BoldItalicMT" Status="Installed" FontStyleName="Bold Italic" FontType="OpenTypeTT" WritingScript="0" FullName="Times New Roman Bold Italic" FullNameNative="Times New Roman Bold Italic" FontStyleNameNative="Bold Italic" PlatformName="$ID/" Version="Version 7.00" />
+	</FontFamily>
+	<FontFamily Self="diec" Name="思源宋体">
+		<Font Self="diecFontn思源宋体 ExtraLight" FontFamily="思源宋体" Name="思源宋体 ExtraLight" PostScriptName="SourceHanSerifSC-ExtraLight" Status="Installed" FontStyleName="ExtraLight" FontType="OpenTypeCID" WritingScript="25" FullName="Source Han Serif SC ExtraLight" FullNameNative="思源宋体 ExtraLight" FontStyleNameNative="ExtraLight" PlatformName="$ID/" Version="Version 1.001;PS 1.001;hotconv 16.6.54;makeotf.lib2.5.65590" />
+		<Font Self="diecFontn思源宋体 Light" FontFamily="思源宋体" Name="思源宋体 Light" PostScriptName="SourceHanSerifSC-Light" Status="Installed" FontStyleName="Light" FontType="OpenTypeCID" WritingScript="25" FullName="Source Han Serif SC Light" FullNameNative="思源宋体 Light" FontStyleNameNative="Light" PlatformName="$ID/" Version="Version 1.001;PS 1.001;hotconv 16.6.54;makeotf.lib2.5.65590" />
+		<Font Self="diecFontn思源宋体 Regular" FontFamily="思源宋体" Name="思源宋体 Regular" PostScriptName="SourceHanSerifSC-Regular" Status="Installed" FontStyleName="Regular" FontType="OpenTypeCID" WritingScript="25" FullName="Source Han Serif SC" FullNameNative="思源宋体 Regular" FontStyleNameNative="Regular" PlatformName="$ID/" Version="Version 1.001;PS 1.001;hotconv 16.6.54;makeotf.lib2.5.65590" />
+		<Font Self="diecFontn思源宋体 Medium" FontFamily="思源宋体" Name="思源宋体 Medium" PostScriptName="SourceHanSerifSC-Medium" Status="Installed" FontStyleName="Medium" FontType="OpenTypeCID" WritingScript="25" FullName="Source Han Serif SC Medium" FullNameNative="思源宋体 Medium" FontStyleNameNative="Medium" PlatformName="$ID/" Version="Version 1.001;PS 1.001;hotconv 16.6.54;makeotf.lib2.5.65590" />
+		<Font Self="diecFontn思源宋体 SemiBold" FontFamily="思源宋体" Name="思源宋体 SemiBold" PostScriptName="SourceHanSerifSC-SemiBold" Status="Installed" FontStyleName="SemiBold" FontType="OpenTypeCID" WritingScript="25" FullName="Source Han Serif SC SemiBold" FullNameNative="思源宋体 SemiBold" FontStyleNameNative="SemiBold" PlatformName="$ID/" Version="Version 1.001;PS 1.001;hotconv 16.6.54;makeotf.lib2.5.65590" />
+		<Font Self="diecFontn思源宋体 Bold" FontFamily="思源宋体" Name="思源宋体 Bold" PostScriptName="SourceHanSerifSC-Bold" Status="Installed" FontStyleName="Bold" FontType="OpenTypeCID" WritingScript="25" FullName="Source Han Serif SC Bold" FullNameNative="思源宋体 Bold" FontStyleNameNative="Bold" PlatformName="$ID/" Version="Version 1.001;PS 1.001;hotconv 16.6.54;makeotf.lib2.5.65590" />
+		<Font Self="diecFontn思源宋体 Heavy" FontFamily="思源宋体" Name="思源宋体 Heavy" PostScriptName="SourceHanSerifSC-Heavy" Status="Installed" FontStyleName="Heavy" FontType="OpenTypeCID" WritingScript="25" FullName="Source Han Serif SC Heavy" FullNameNative="思源宋体 Heavy" FontStyleNameNative="Heavy" PlatformName="$ID/" Version="Version 1.001;PS 1.001;hotconv 16.6.54;makeotf.lib2.5.65590" />
+	</FontFamily>
+	<FontFamily Self="died" Name="思源黑体">
+		<Font Self="diedFontn思源黑体 ExtraLight" FontFamily="思源黑体" Name="思源黑体 ExtraLight" PostScriptName="SourceHanSansSC-ExtraLight" Status="Installed" FontStyleName="ExtraLight" FontType="OpenTypeCID" WritingScript="25" FullName="Source Han Sans SC ExtraLight" FullNameNative="思源黑体 ExtraLight" FontStyleNameNative="ExtraLight" PlatformName="$ID/" Version="Version 1.004;PS 1.004;hotconv 1.0.82;makeotf.lib2.5.63406" />
+		<Font Self="diedFontn思源黑体 Light" FontFamily="思源黑体" Name="思源黑体 Light" PostScriptName="SourceHanSansSC-Light" Status="Installed" FontStyleName="Light" FontType="OpenTypeCID" WritingScript="25" FullName="Source Han Sans SC Light" FullNameNative="思源黑体 Light" FontStyleNameNative="Light" PlatformName="$ID/" Version="Version 1.004;PS 1.004;hotconv 1.0.82;makeotf.lib2.5.63406" />
+		<Font Self="diedFontn思源黑体 Normal" FontFamily="思源黑体" Name="思源黑体 Normal" PostScriptName="SourceHanSansSC-Normal" Status="Installed" FontStyleName="Normal" FontType="OpenTypeCID" WritingScript="25" FullName="Source Han Sans SC Normal" FullNameNative="思源黑体 Normal" FontStyleNameNative="Normal" PlatformName="$ID/" Version="Version 1.004;PS 1.004;hotconv 1.0.82;makeotf.lib2.5.63406" />
+		<Font Self="diedFontn思源黑体 Regular " FontFamily="思源黑体" Name="思源黑体 Regular " PostScriptName="SourceHanSansSC-Regular" Status="Installed" FontStyleName="Regular " FontType="OpenTypeCID" WritingScript="25" FullName="Source Han Sans SC Regular" FullNameNative="思源黑体 Regular" FontStyleNameNative="Regular " PlatformName="$ID/" Version="Version 1.004;PS 1.004;hotconv 1.0.82;makeotf.lib2.5.63406" />
+		<Font Self="diedFontn思源黑体 Medium" FontFamily="思源黑体" Name="思源黑体 Medium" PostScriptName="SourceHanSansSC-Medium" Status="Installed" FontStyleName="Medium" FontType="OpenTypeCID" WritingScript="25" FullName="Source Han Sans SC Medium" FullNameNative="思源黑体 Medium" FontStyleNameNative="Medium" PlatformName="$ID/" Version="Version 1.004;PS 1.004;hotconv 1.0.82;makeotf.lib2.5.63406" />
+		<Font Self="diedFontn思源黑体 Bold" FontFamily="思源黑体" Name="思源黑体 Bold" PostScriptName="SourceHanSansSC-Bold" Status="Installed" FontStyleName="Bold" FontType="OpenTypeCID" WritingScript="25" FullName="Source Han Sans SC Bold" FullNameNative="思源黑体 Bold" FontStyleNameNative="Bold" PlatformName="$ID/" Version="Version 1.004;PS 1.004;hotconv 1.0.82;makeotf.lib2.5.63406" />
+		<Font Self="diedFontn思源黑体 Heavy" FontFamily="思源黑体" Name="思源黑体 Heavy" PostScriptName="SourceHanSansSC-Heavy" Status="Installed" FontStyleName="Heavy" FontType="OpenTypeCID" WritingScript="25" FullName="Source Han Sans SC Heavy" FullNameNative="思源黑体 Heavy" FontStyleNameNative="Heavy" PlatformName="$ID/" Version="Version 1.004;PS 1.004;hotconv 1.0.82;makeotf.lib2.5.63406" />
+	</FontFamily>
+	<CompositeFont Self="CompositeFont/$ID/[No composite font]" Name="$ID/[No composite font]">
+		<CompositeFontEntry Self="u70" Name="$ID/Kanji" FontStyle="$ID/Regular" RelativeSize="100" HorizontalScale="100" VerticalScale="100" Locked="true" ScaleOption="true" BaselineShift="0">
+			<Properties>
+				<AppliedFont type="string">宋体</AppliedFont>
+			</Properties>
+		</CompositeFontEntry>
+		<CompositeFontEntry Self="u71" Name="$ID/Punctuation" FontStyle="$ID/Regular" RelativeSize="100" HorizontalScale="100" VerticalScale="100" CustomCharacters="—―‖‘’“”‥…′″∥、。〈〉《》「」『』【】〔〕〜・！（），．／：；？［］｛｝～" Locked="true" ScaleOption="true" BaselineShift="0">
+			<Properties>
+				<AppliedFont type="string">宋体</AppliedFont>
+			</Properties>
+		</CompositeFontEntry>
+		<CompositeFontEntry Self="u72" Name="$ID/Symbols" FontStyle="$ID/Regular" RelativeSize="100" HorizontalScale="100" VerticalScale="100" CustomCharacters="¢£§¨¬°±´¶×÷ΑΒΓΔΕΖΗΘΙΚΛΜΝΞΟΠΡΣΤΥΦΧΨΩαβγδεζηθικλμνξοπρστυφχψωЁАБВГДЕЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдежзийклмнопрстуфхцчшщъыьэюяё‐†‡‰※℃Å←↑→↓⇒⇔∀∂∃∇∈∋−√∝∞∠∧∨∩∪∫∬∴∵∽≒≠≡≦≧≪≫⊂⊃⊆⊇⊥⌒■□▲△▼▽◆◇○◎●◯★☆♀♂♪♭♯〃〆〇〒〓゛゜＃＄％＆＊＋－０１２３４５６７８９＜＝＞＠ＡＢＣＤＥＦＧＨＩＪＫＬＭＮＯＰＱＲＳＴＵＶＷＸＹＺ＼＾＿｀ａｂｃｄｅｆｇｈｉｊｋｌｍｎｏｐｑｒｓｔｕｖｗｘｙｚ｜￠￡￢￣￥" Locked="true" ScaleOption="true" BaselineShift="0">
+			<Properties>
+				<AppliedFont type="string">宋体</AppliedFont>
+			</Properties>
+		</CompositeFontEntry>
+		<CompositeFontEntry Self="u73" Name="$ID/Alphabetic" FontStyle="$ID/Regular" RelativeSize="100" HorizontalScale="100" VerticalScale="100" CustomCharacters=" !&quot;#$%&amp;&apos;()*+,-./:;&lt;=&gt;?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~ ¡¤¥¦©ª«­®¯²³µ·¸¹º»¼½¾¿ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõöøùúûüýþÿıŒœŠšŸŽžƒˆˇ˘˙˚˛˜˝–‚„•‹›⁄€™∆∏∑≈≤≥◊ﬀﬁﬂﬃﬄﬅﬆ" Locked="true" ScaleOption="false" BaselineShift="0">
+			<Properties>
+				<AppliedFont type="string">Times New Roman</AppliedFont>
+			</Properties>
+		</CompositeFontEntry>
+		<CompositeFontEntry Self="u75" Name="$ID/Numbers" FontStyle="$ID/Regular" RelativeSize="100" HorizontalScale="100" VerticalScale="100" CustomCharacters="0123456789" Locked="true" ScaleOption="false" BaselineShift="0">
+			<Properties>
+				<AppliedFont type="string">Times New Roman</AppliedFont>
+			</Properties>
+		</CompositeFontEntry>
+	</CompositeFont>
+</idPkg:Fonts>

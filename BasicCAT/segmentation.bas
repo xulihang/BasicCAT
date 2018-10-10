@@ -9,9 +9,14 @@ Sub Process_Globals
 	Private fx As JFX
 End Sub
 
-Public Sub segmentedTxt(text As String,Trim As Boolean,sourceLang As String) As List
+Public Sub segmentedTxt(text As String,Trim As Boolean,sourceLang As String,filetype As String) As List
 	Dim segmentationRule As List
-	segmentationRule=File.ReadList(File.DirAssets,"segmentation_"&sourceLang&".conf")
+	If filetype="idml" Then
+		segmentationRule=File.ReadList(File.DirAssets,"segmentation_"&sourceLang&"_idml.conf")
+	Else
+		segmentationRule=File.ReadList(File.DirAssets,"segmentation_"&sourceLang&".conf")
+	End If
+	
 	Dim segmentationExceptionRule As List
 	segmentationExceptionRule=File.ReadList(File.DirAssets,"segmentation_"&sourceLang&"_exception.conf")
 	

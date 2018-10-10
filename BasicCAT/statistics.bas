@@ -25,7 +25,7 @@ End Sub
 Sub fillData(filename As String) As String
 	Dim sourceWords,targetWords,sourceSentences,targetSentences As Int
 	Dim segments As List
-	segments=readFileAccordingToExtenstion(filename)
+	segments=Main.currentProject.getSegmentsAccordingToExtenstion(filename)
 	For Each bitext As List In segments
 		sourceWords=sourceWords+calculateWords(bitext.Get(0),Main.currentProject.projectFile.Get("source"))
 		targetWords=targetWords+calculateWords(bitext.Get(1),Main.currentProject.projectFile.Get("target"))
@@ -129,8 +129,3 @@ Sub calculateChineseWords(text As String) As Int
 	Return text.Length
 End Sub
 
-Sub readFileAccordingToExtenstion(filename As String) As List
-	If filename.EndsWith(".txt") Then
-		Return txtFilter.readFileAndGetAlltheSegments(filename,Main.currentProject.path)
-	End If
-End Sub
