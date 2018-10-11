@@ -534,7 +534,7 @@ Sub ListViewParent_Resize
 	If clv.Size=0 Then
 		Return
 	End If
-	Dim itemWidth As Double = upperRightSplitPane.Width-termLV.Width
+	Dim itemWidth As Double = clv.AsView.Width
 	Dim ExtraSize As Int
 	ExtraSize=3
 	For i = Max(0, editorLV.FirstVisibleIndex - ExtraSize) To Min(editorLV.LastVisibleIndex + ExtraSize,editorLV.Size - 1)

@@ -20,6 +20,8 @@ Sub loadStyles(unzipedDirPath As String)
 	characterStyles=getStyleList(styleXmlMap,"character")
 End Sub
 
+
+
 Sub creatWorkFile(filename As String,path As String,sourceLang As String)
 	If order.IsInitialized=False Then
 		parser.Initialize
@@ -87,20 +89,67 @@ Sub creatWorkFile(filename As String,path As String,sourceLang As String)
 		Dim innerFilename As String
 		innerFilename="Story_"&storyID&".xml"
 		Log(storyContent)
-		For Each source As String In segmentation.segmentedTxt(storyContent,False,sourceLang,"idml")
+		Dim index As Int=-1
+		Dim segmentedText As List
+		segmentedText=segmentation.segmentedTxt(storyContent,False,sourceLang,"idml")
+		For Each source As String In segmentedText
+			index=index+1
 			Dim bitext As List
 			bitext.Initialize
-			If source.Trim="" Then 'newline
+			If source.Trim="" And index<segmentedText.Size-1 Then 'newline
 				inbetweenContent=inbetweenContent&CRLF
 				Continue
-			Else if source.Trim<>"" Then
-				bitext.add(source.Trim)
+			Else if Regex.Replace("<.*?>",source,"").Trim="" And index<segmentedText.Size-1 Then ' pure tag maybe with \t \n
+				Log("totalmatch"&source)
+				Log(index)
+				Log(segmentedText.size)
+				inbetweenContent=inbetweenContent&source
+				Continue
+			Else
+                Dim sourceShown As String
+				sourceShown=source.Trim
+				sourceShown=Regex.Replace("<p\d+>",sourceShown,"")
+				sourceShown=Regex.Replace("</p\d+>",sourceShown,"")
+				sourceShown=sourceShown.Replace("<c0>","")
+				sourceShown=sourceShown.Replace("</c0>","")
+				If Regex.IsMatch("<.*?>",sourceShown) Then
+					sourceShown=Regex.Replace("<.*?>",sourceShown,"")
+				End If
+				Dim singleTagMatcher As Matcher
+				singleTagMatcher=Regex.Matcher("<.*?>",sourceShown)
+				Dim match As String
+				If singleTagMatcher.Find Then
+					match=singleTagMatcher.Match
+				End If
+				If singleTagMatcher.Find=False And sourceShown.Replace(match,"")="" Then
+					sourceShown=sourceShown.Replace(match,"")
+				End If
+				
+				Log("sourceShown"&sourceShown)
+				bitext.add(sourceShown)
 				bitext.Add("")
 				bitext.Add(inbetweenContent&source) 'inbetweenContent contains crlf and spaces between sentences
 				bitext.Add(innerFilename)
 				inbetweenContent=""
 			End If
-			segmentsList.Add(bitext)
+			Log(index)
+			Log(segmentedText.Size-1)
+			If index=segmentedText.Size-1 And sourceShown="" And segmentsList.size=0 Then
+				'This is a pagenum story
+				Continue
+			End If
+			If index=segmentedText.Size-1 And sourceShown="" Then
+				Log(bitext)
+				Log(segmentsList)
+				Dim previousBitext As List
+				previousBitext=segmentsList.Get(segmentsList.Size-1)
+				previousBitext.Set(0,previousBitext.Get(0)&bitext.Get(0))
+				previousBitext.Set(2,previousBitext.Get(2)&bitext.Get(2))
+				previousBitext.Set(3,previousBitext.Get(3)&bitext.Get(3))
+			Else
+				segmentsList.Add(bitext)
+			End If
+			
 		Next
 		sourceFileMap.Put(innerFilename,segmentsList)
 		sourceFiles.Add(sourceFileMap)
@@ -284,7 +333,7 @@ Sub taggedTextToXml(taggedText As String,storypath As String) As String
 	story.Put("ParagraphStyleRange",ParagraphStyleRanges)
 	Dim result As String
 	result=getXmlFromMap(storyMap)
-	'result=result.Replace("<Content>"&CRLF&"</Content>","<Br />")
+	result=result.Replace("<Content>"&Chr(13) & Chr(10) &"</Content>","<Br />")
 
 	Return result
 End Sub
@@ -334,13 +383,8 @@ Sub generateFile(filename As String,path As String,projectFile As Map)
 		storypath=File.Combine(File.Combine(path,"source"),filename.Replace(".idml",""))
 		storypath=File.Combine(File.Combine(storypath,"Stories"),innerfilename)
 		Log("storypath"&storypath)
-		
-		Dim tempTa As TextArea
-		tempTa.Initialize("")
-		tempTa.Text=taggedTextToXml(innerfileContent,storypath)
-		tempTa.Text=tempTa.Text.Replace("<Content>"&CRLF&"</Content>","<Br />")
-
-		File.WriteString(File.Combine(path,"target"),innerfilename,tempTa.Text)
+		'Log(innerfileContent)
+		File.WriteString(File.Combine(path,"target"),innerfilename,taggedTextToXml(innerfileContent,storypath))
 	Next
 
 End Sub
@@ -538,19 +582,25 @@ Sub getStoryContent(ParsedData As Map) As String
 				End If
 			Next
 			characterStyleRangeContent=characterStyleRangeContent.Replace(" ","") 'replace LSEP
-			characterStyleRangeContent="<c"&characterStyleIndex&">"&characterStyleRangeContent&"</c"&characterStyleIndex&">"
-			paragraphStyleRangeContent=paragraphStyleRangeContent&characterStyleRangeContent
+			characterStyleRangeContent="<c"&characterStyleIndex&">"&characterStyleRangeContent&"</c"&characterStyleIndex&">"&CRLF
+			paragraphStyleRangeContent=paragraphStyleRangeContent&characterStyleRangeContent&CRLF
 		Next
-		If paragraphStyleRangeContent.EndsWith(CRLF) Then
-			paragraphStyleRangeContent=paragraphStyleRangeContent.SubString2(0,paragraphStyleRangeContent.Length-1)
-			paragraphStyleRangeContent="<p"&paragraphStyleIndex&">"&paragraphStyleRangeContent&"</p"&paragraphStyleIndex&">"&CRLF
-		Else
-			paragraphStyleRangeContent="<p"&paragraphStyleIndex&">"&paragraphStyleRangeContent&"</p"&paragraphStyleIndex&">"&CRLF
-		End If
+		paragraphStyleRangeContent="<p"&paragraphStyleIndex&">"&paragraphStyleRangeContent&"</p"&paragraphStyleIndex&">"&CRLF
+		paragraphStyleRangeContent=mergeSameTags(paragraphStyleRangeContent)
 		content=content&paragraphStyleRangeContent
 	Next
 	'Log(content)
 	Return content
+End Sub
+
+Sub mergeSameTags(content As String) As String
+	Dim new As String=content
+	Dim matcher As Matcher
+	matcher=Regex.Matcher("</c(\d+)>",content)
+	Do While matcher.Find
+		new=Regex.Replace("(?s)"&matcher.Match&"\s*<c"&matcher.Group(1)&">",new,"")
+	Loop
+	Return new
 End Sub
 
 

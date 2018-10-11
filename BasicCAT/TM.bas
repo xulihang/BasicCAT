@@ -182,7 +182,9 @@ Sub getOneUseMemory(source As String,rate As Int) As ResumableSub
 			End If
 		Next
 	Next
-	
+	If matchList.Size=0 Then
+		Return onePairList
+	End If
 	onePairList=subtractedAndSortMatchList(matchList).Get(0)
 	Return onePairList
 End Sub
