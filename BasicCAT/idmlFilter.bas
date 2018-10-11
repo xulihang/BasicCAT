@@ -145,7 +145,6 @@ Sub creatWorkFile(filename As String,path As String,sourceLang As String)
 				previousBitext=segmentsList.Get(segmentsList.Size-1)
 				previousBitext.Set(0,previousBitext.Get(0)&bitext.Get(0))
 				previousBitext.Set(2,previousBitext.Get(2)&bitext.Get(2))
-				previousBitext.Set(3,previousBitext.Get(3)&bitext.Get(3))
 			Else
 				segmentsList.Add(bitext)
 			End If
