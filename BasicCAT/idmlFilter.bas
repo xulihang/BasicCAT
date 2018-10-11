@@ -13,6 +13,13 @@ Sub Process_Globals
 	Private order As List
 End Sub
 
+Sub loadStyles(unzipedDirPath As String)
+	Dim styleXmlMap As Map
+	styleXmlMap=getXmlMap(File.ReadString(File.Combine(unzipedDirPath,"Resources"),"Styles.xml"))
+	paragraphStyles=getStyleList(styleXmlMap,"paragraph")
+	characterStyles=getStyleList(styleXmlMap,"character")
+End Sub
+
 Sub creatWorkFile(filename As String,path As String,sourceLang As String)
 	If order.IsInitialized=False Then
 		parser.Initialize
@@ -22,10 +29,7 @@ Sub creatWorkFile(filename As String,path As String,sourceLang As String)
 	unzipedDirPath=File.Combine(File.Combine(path,"source"),filename.Replace(".idml",""))
 	wait for (unzipAndLoadIDML(path,filename)) Complete (spreadsList As List)
 	
-	Dim styleXmlMap As Map
-	styleXmlMap=getXmlMap(File.ReadString(File.Combine(unzipedDirPath,"Resources"),"Styles.xml"))
-	paragraphStyles=getStyleList(styleXmlMap,"paragraph")
-	characterStyles=getStyleList(styleXmlMap,"character")
+	loadStyles(unzipedDirPath)
 	
 	Dim storiesList As List
 	storiesList.Initialize
@@ -219,8 +223,82 @@ Sub readFile(filename As String,segments As List,path As String)
 	Next
 End Sub
 
-Sub generateFile(filename As String,path As String,projectFile As Map)
+Sub taggedTextToXml(taggedText As String,storypath As String) As String
+	Log("storypath"&storypath)
+	Dim storyMap As Map
+	storyMap=getXmlMap(File.ReadString(storypath,""))
+	Dim root As Map = storyMap.Get("idPkg:Story")
+	Dim story As Map = root.Get("Story")
+	Dim ParagraphStyleRanges As List
+	ParagraphStyleRanges=GetElements(story,"ParagraphStyleRange")
+	ParagraphStyleRanges.Clear
+	Dim matcher As Matcher
+	matcher=Regex.Matcher("(?s)<p\d+>.*?</p\d+>",taggedText)
+	Dim paragraphsTextList As List
+	paragraphsTextList.Initialize
+	
+	Do While matcher.Find
+		paragraphsTextList.Add(matcher.Match)
+	Loop
+	Log(paragraphsTextList)
+	For Each paragraphText As String In paragraphsTextList
+		Log(paragraphText)
+		Dim paragraphMap As Map
+		paragraphMap.Initialize
+		paragraphMap=CreateMap("Attributes":CreateMap("AppliedParagraphStyle":paragraphStyles.Get(getStyleIndex(paragraphText,"paragraph"))))
+		Dim matcher2 As Matcher
+		matcher2=Regex.Matcher("(?s)<c\d+>.*?</c\d+>",paragraphText)
+		Dim characterMapsList As List
+		characterMapsList.Initialize
+		Dim characterTextList As List
+		characterTextList.Initialize
+		Do While matcher2.Find
+			characterTextList.Add(matcher2.Match)
+		Loop
+		Log(characterTextList)
+		For Each characterText As String In characterTextList
+			'Log(characterText)
+			Dim styleIndex As String
+			styleIndex=getStyleIndex(characterText,"character")
+			Dim pureText As String=characterText
+			Dim tagMatcher As Matcher
+			tagMatcher=Regex.Matcher("<.*?>",characterText)
+			Do While tagMatcher.Find
+				pureText=pureText.Replace(tagMatcher.Match,"")
+			Loop
+			'Log(styleIndex)
+			Log(pureText)
+			If pureText.StartsWith("Z") Then
+				Log(pureText.Contains(CRLF))
+			End If
+
+
+			Dim list1 As List
+			list1=textToListInOrder(pureText)
+			characterMapsList.Add(CreateMap("Attributes":CreateMap("AppliedCharacterStyle":characterStyles.Get(styleIndex)),"Content":list1))
+		Next
+		paragraphMap.Put("CharacterStyleRange",characterMapsList)
+		Log(paragraphMap)
+		ParagraphStyleRanges.Add(paragraphMap)
+	Next
+	story.Put("ParagraphStyleRange",ParagraphStyleRanges)
 	Dim result As String
+	result=getXmlFromMap(storyMap)
+	'result=result.Replace("<Content>"&CRLF&"</Content>","<Br />")
+
+	Return result
+End Sub
+
+
+
+Sub generateFile(filename As String,path As String,projectFile As Map)
+	If paragraphStyles.IsInitialized=False Then
+		Dim unzipedDirPath As String
+		unzipedDirPath=File.Combine(File.Combine(path,"source"),filename.Replace(".idml",""))
+		loadStyles(unzipedDirPath)
+	End If
+    Log(filename)
+	Log(path)
 	Dim workfile As Map
 	Dim json As JSONParser
 	json.Initialize(File.ReadString(File.Combine(path,"work"),filename&".json"))
@@ -228,8 +306,10 @@ Sub generateFile(filename As String,path As String,projectFile As Map)
 	Dim sourceFiles As List
 	sourceFiles=workfile.Get("files")
 	For Each sourceFileMap As Map In sourceFiles
+		Sleep(0)
 		Dim innerfilename As String
 		innerfilename=sourceFileMap.GetKeyAt(0)
+		Dim innerfileContent As String
 		Dim segmentsList As List
 		segmentsList=sourceFileMap.Get(innerfilename)
 		For Each bitext As List In segmentsList
@@ -248,12 +328,67 @@ Sub generateFile(filename As String,path As String,projectFile As Map)
 					translation=translation.Replace(" ","")
 				End If
 			End If
-			result=result&translation
+			innerfileContent=innerfileContent&translation
 		Next
+		Dim storypath As String
+		storypath=File.Combine(File.Combine(path,"source"),filename.Replace(".idml",""))
+		storypath=File.Combine(File.Combine(storypath,"Stories"),innerfilename)
+		Log("storypath"&storypath)
+		
+		Dim tempTa As TextArea
+		tempTa.Initialize("")
+		tempTa.Text=taggedTextToXml(innerfileContent,storypath)
+		tempTa.Text=tempTa.Text.Replace("<Content>"&CRLF&"</Content>","<Br />")
+
+		File.WriteString(File.Combine(path,"target"),innerfilename,tempTa.Text)
 	Next
-	File.WriteString(File.Combine(path,"target"),filename,result)
+
 End Sub
 
+
+Sub textToListInOrder(pureText As String) As List
+
+	Dim result As List
+	result.Initialize
+	Dim splitted As List
+	splitted.Initialize
+	splitted.Addall(Regex.Split(CRLF,pureText))
+
+	For i=0 To splitted.Size-1
+		Dim content As String
+		content=splitted.Get(i)
+		If content<>"" Then
+			result.Add(splitted.Get(i))
+		End If
+		If i<>splitted.Size-1 Then
+			result.Add(CRLF)
+		End If
+		If i=splitted.Size-1 And pureText.EndsWith(CRLF) Then
+			result.Add(CRLF)
+		End If
+	Next
+
+	Return result
+End Sub
+
+Sub getStyleIndex(text As String,styleType As String) As Int
+	Dim pattern As String
+	Select styleType
+		Case "character"
+			pattern="<c\d+?>"
+		Case "paragraph"
+			pattern="<p\d+?>"
+	End Select
+	Log(text)
+	Dim styleIndex As String
+	Dim indexMatcher As Matcher
+	indexMatcher=Regex.Matcher(pattern,text)
+	indexMatcher.Find
+	styleIndex=indexMatcher.Match
+	styleIndex=styleIndex.SubString2(2,styleIndex.Length-1)
+	Log("styleindex:"&styleIndex)
+	Return styleIndex
+End Sub
 
 Sub getXmlMap(xmlstring As String) As Map
 	Dim ParsedData As Map
@@ -261,6 +396,12 @@ Sub getXmlMap(xmlstring As String) As Map
 	xm.Initialize
 	ParsedData = xm.Parse(xmlstring)
 	Return ParsedData
+End Sub
+
+Sub getXmlFromMap(map1 As Map) As String
+	Dim mx As Map2Xml
+	mx.Initialize
+	Return mx.MapToXml(map1)
 End Sub
 
 Sub getSpreadsPathList(ParsedData As Map) As List
@@ -318,7 +459,10 @@ Sub Parser_EndElement (Uri As String, Name As String, Text As StringBuilder)
 	End If
 End Sub
 
-Sub getStoryContent(ParsedData As Map) As String	
+
+
+Sub getStoryContent(ParsedData As Map) As String
+	
 	Dim root As Map = ParsedData.Get("idPkg:Story")
 	Dim story As Map = root.Get("Story")
 	Dim content As String
@@ -355,6 +499,7 @@ Sub getStoryContent(ParsedData As Map) As String
 					brcontentInOrder.Add("Content")
 				End If
 			Next
+
 			For i=0 To Max(0,size-1)
 				If order.Size=0 Then
 					Exit
@@ -381,27 +526,21 @@ Sub getStoryContent(ParsedData As Map) As String
 								Dim oneContent As String=contentList.Get(j)
 								brcontentInOrder.Set(k,oneContent)
 								j=j+1
-								Continue
 							End If
 						Next
 					Loop
+
 					For Each item As String In brcontentInOrder
 						characterStyleRangeContent=characterStyleRangeContent&item
 					Next
 
+					
 				End If
 			Next
 			characterStyleRangeContent=characterStyleRangeContent.Replace(" ","") 'replace LSEP
-			If characterStyleRangeContent.EndsWith(CRLF) Then
-				characterStyleRangeContent=characterStyleRangeContent.SubString2(0,characterStyleRangeContent.Length-1)
-				characterStyleRangeContent="<c"&characterStyleIndex&">"&characterStyleRangeContent&"</c"&characterStyleIndex&">"&CRLF
-			Else
-				characterStyleRangeContent="<c"&characterStyleIndex&">"&characterStyleRangeContent&"</c"&characterStyleIndex&">"
-			End If
-			
+			characterStyleRangeContent="<c"&characterStyleIndex&">"&characterStyleRangeContent&"</c"&characterStyleIndex&">"
 			paragraphStyleRangeContent=paragraphStyleRangeContent&characterStyleRangeContent
 		Next
-		
 		If paragraphStyleRangeContent.EndsWith(CRLF) Then
 			paragraphStyleRangeContent=paragraphStyleRangeContent.SubString2(0,paragraphStyleRangeContent.Length-1)
 			paragraphStyleRangeContent="<p"&paragraphStyleIndex&">"&paragraphStyleRangeContent&"</p"&paragraphStyleIndex&">"&CRLF
@@ -410,6 +549,7 @@ Sub getStoryContent(ParsedData As Map) As String
 		End If
 		content=content&paragraphStyleRangeContent
 	Next
+	'Log(content)
 	Return content
 End Sub
 
