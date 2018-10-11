@@ -212,6 +212,7 @@ End Sub
 Sub MainForm_Resize (Width As Double, Height As Double)
 	adjustDividerPositions
 	calculatedHeight.Clear
+
 	CallSubDelayed(Me,"ListViewParent_Resize")
 End Sub
 
@@ -230,6 +231,10 @@ Sub init
 	
 	upperRightSplitPane.LoadLayout("editor")
 	upperRightSplitPane.LoadLayout("term")
+	
+	Dim jo As JavaObject
+	jo=upperRightSplitPane
+	addPositionChangedEvent(jo.RunMethodJO("getDividers",Null).RunMethodJO("get",Array(0)),"dividerPosition")
 	
 	lowerRightSplitPane.LoadLayout("Log")
 	lowerRightSplitPane.LoadLayout("tabpane")
@@ -521,12 +526,15 @@ Public Sub getProjectname(path As String) As String
 End Sub
 
 Sub ListViewParent_Resize
+
 	Dim clv As CustomListView
 	clv=editorLV
+	clv.AsView.Width=clv.AsView.Parent.Width
+	clv.AsView.Height=clv.AsView.Parent.Height
 	If clv.Size=0 Then
 		Return
 	End If
-	Dim itemWidth As Double = clv.AsView.Parent.Width
+	Dim itemWidth As Double = upperRightSplitPane.Width-termLV.Width
 	Dim ExtraSize As Int
 	ExtraSize=3
 	For i = Max(0, editorLV.FirstVisibleIndex - ExtraSize) To Min(editorLV.LastVisibleIndex + ExtraSize,editorLV.Size - 1)
@@ -695,7 +703,9 @@ End Sub
 Public Sub closeProject
 	autosaveTimer.Enabled=False
 	If currentProject.IsInitialized Then
-		currentProject.projectTM.close
+		If currentProject.projectTM.IsInitialized Then
+			currentProject.projectTM.close
+		End If
 		Dim currentProject As Project
 		tmTableView.ClearSelection
 		tmTableView.Items.Clear
@@ -855,4 +865,15 @@ End Sub
 
 Sub checkLV_ItemClick (Index As Int, Value As Object)
 	Log(Value)
+End Sub
+
+
+Sub addPositionChangedEvent(divider As Object,eventName As String)
+	Dim Obj As Reflector
+	Obj.Target = divider
+	Obj.AddChangeListener(eventName, "positionProperty")
+End Sub
+
+Sub dividerPosition_changed(old As Object, new As Object)
+	CallSubDelayed(Me,"ListViewParent_Resize")
 End Sub

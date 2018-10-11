@@ -404,15 +404,22 @@ Sub addTextAreaToSegmentPane(segmentpane As Pane,source As String,target As Stri
 	Dim sourceTextArea As TextArea
 	sourceTextArea=segmentpane.GetNode(0)
 	sourceTextArea.Text=source
+
 	'sourceTextArea.Style = "-fx-font-family: Tahoma;"
 	addKeyEvent(sourceTextArea,"sourceTextArea")
 	addSelectionChangedEvent(sourceTextArea,"sourceTextAreaSelection")
 	Dim targetTextArea As TextArea
 	targetTextArea=segmentpane.GetNode(1)
 	targetTextArea.Text=target
+
 	'targetTextArea.Style = "-fx-font-family: Arial Unicode MS;"
 	addKeyEvent(targetTextArea,"targetTextArea")
 	addSelectionChangedEvent(targetTextArea,"targetTextAreaSelection")
+	
+	sourceTextArea.Left=5dip
+	sourceTextArea.SetSize(Main.editorLV.AsView.Width/2-15dip,50dip)
+	targetTextArea.Left=targetTextArea.Left+targetTextArea.Width
+	targetTextArea.SetSize(Main.editorLV.AsView.Width/2-15dip,50dip)
 End Sub
 
 Sub addKeyEvent(textarea1 As TextArea,eventName As String)
