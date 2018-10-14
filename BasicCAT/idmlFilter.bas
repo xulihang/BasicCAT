@@ -84,7 +84,7 @@ Sub creatWorkFile(filename As String,path As String,sourceLang As String)
 		getBrContentOrder(File.Combine(unzipedDirPath,"Stories/Story_"&storyID&".xml"))
 		Dim storyContent As String
 		storyContent=getStoryContent(getXmlMap(storyString))
-		storyContent=stripContent(storyContent)
+
 		Dim inbetweenContent As String
 		Dim innerFilename As String
 		innerFilename="Story_"&storyID&".xml"
@@ -107,26 +107,10 @@ Sub creatWorkFile(filename As String,path As String,sourceLang As String)
 				Continue
 			Else
                 Dim sourceShown As String
-				sourceShown=source.Trim
-				sourceShown=Regex.Replace("<p\d+>",sourceShown,"")
-				sourceShown=Regex.Replace("</p\d+>",sourceShown,"")
-				sourceShown=sourceShown.Replace("<c0>","")
-				sourceShown=sourceShown.Replace("</c0>","")
-				If Regex.IsMatch("<.*?>",sourceShown) Then
-					sourceShown=Regex.Replace("<.*?>",sourceShown,"")
-				End If
-				Dim singleTagMatcher As Matcher
-				singleTagMatcher=Regex.Matcher("<.*?>",sourceShown)
-				Dim match As String
-				If singleTagMatcher.Find Then
-					match=singleTagMatcher.Match
-				End If
-				If singleTagMatcher.Find=False And sourceShown.Replace(match,"")="" Then
-					sourceShown=sourceShown.Replace(match,"")
-				End If
+				sourceShown=Utils.getPureText(source)
 				
 				Log("sourceShown"&sourceShown)
-				bitext.add(sourceShown)
+				bitext.add(sourceShown.Trim)
 				bitext.Add("")
 				bitext.Add(inbetweenContent&source) 'inbetweenContent contains crlf and spaces between sentences
 				bitext.Add(innerFilename)
@@ -138,7 +122,7 @@ Sub creatWorkFile(filename As String,path As String,sourceLang As String)
 				'This is a pagenum story
 				Continue
 			End If
-			If index=segmentedText.Size-1 And sourceShown="" Then
+			If index=segmentedText.Size-1 And sourceShown="" Then 'last segment contains tags
 				Log(bitext)
 				Log(segmentsList)
 				Dim previousBitext As List
@@ -149,18 +133,72 @@ Sub creatWorkFile(filename As String,path As String,sourceLang As String)
 				segmentsList.Add(bitext)
 			End If
 			
+			
 		Next
-		sourceFileMap.Put(innerFilename,segmentsList)
-		sourceFiles.Add(sourceFileMap)
+		Log(segmentsList)
+		mergeSubsentences(segmentsList)
+		If segmentsList.Size<>0 Then
+			sourceFileMap.Put(innerFilename,segmentsList)
+			sourceFiles.Add(sourceFileMap)
+		End If
 	Next
 	
-	sourceFiles.Add(sourceFileMap)
 	workfile.Put("files",sourceFiles)
 	
 	Dim json As JSONGenerator
 	json.Initialize(workfile)
 	File.WriteString(File.Combine(path,"work"),filename&".json",json.ToPrettyString(4))
 End Sub
+
+Sub mergeSubsentences(segmentsList As List)
+	If segmentsList.Size<3 Then
+		Return
+	End If
+	Dim newList As List
+	newList.Initialize
+	Dim duplicatedList As List
+	duplicatedList.Initialize
+	duplicatedList.AddAll(segmentsList)
+	Dim previousMergedIndex As Int=segmentsList.Size
+	Dim merged As Boolean=False
+	For index=0 To segmentsList.Size-1
+        Log(index)
+		Dim previousSegment,bitext,nextSegment As List
+		bitext=duplicatedList.Get(index)
+		Dim previousSource,fullsource,nextSource As String
+
+		If index-1>=0 And index+1<=duplicatedList.Size-1 Then
+			previousSegment=duplicatedList.Get(index-1)
+			nextSegment=duplicatedList.Get(index+1)
+			previousSource=previousSegment.Get(2)
+			fullsource=bitext.Get(2)
+			nextSource=nextSegment.Get(2)
+
+			If merged=False Or index-previousMergedIndex>=3 Then
+				If Regex.IsMatch("<.*?>",fullsource.Trim) And Utils.isEndOfSentence(fullsource.Trim)=False And Utils.isEndOfSentence(nextSource) And previousSource.Contains("</p")=False And nextSource.Contains("<p")=False Then
+					Dim newSegment As List
+					newSegment.Initialize
+					newSegment.Add(previousSegment.Get(0)&fullsource.Trim&nextSegment.Get(0))
+					newSegment.Add("")
+					newSegment.Add(previousSegment.Get(2)&fullsource.Trim&nextSegment.Get(2))
+					newSegment.Add(previousSegment.Get(3))
+
+					previousMergedIndex=index
+					newList.RemoveAt(newList.Size-1)
+					newList.Add(newSegment)
+					merged=True
+				End If
+			End If
+		End If
+		
+		If merged=False Or index-previousMergedIndex>=2 Then
+			newList.Add(bitext)
+		End If
+	Next
+	segmentsList.Clear
+	segmentsList.AddAll(newList)
+End Sub
+
 
 Sub unzipAndLoadIDML(path As String,filename As String) As ResumableSub
 	Dim spreadsList As List

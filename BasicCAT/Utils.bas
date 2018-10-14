@@ -10,6 +10,45 @@ Sub Process_Globals
 	Private menus As Map
 End Sub
 
+Sub isEndOfSentence(Sentence As String) As Boolean
+	If getPureText(Sentence).StartsWith(" ")=False Then
+		Return False
+	End If
+	Dim matcher As Matcher
+	matcher=Regex.Matcher("\.|\!|\?",Sentence)
+	If matcher.Find Then
+		Return True
+	Else
+		Return False
+	End If
+End Sub
+
+Sub getPureText(tag As String) As String
+	Dim sourceShown As String
+	sourceShown=tag.Trim
+	sourceShown=Regex.Replace("<p\d+>",sourceShown,"")
+	sourceShown=Regex.Replace("</p\d+>",sourceShown,"")
+	sourceShown=sourceShown.Replace("<c0>","")
+	sourceShown=sourceShown.Replace("</c0>","")
+	If Regex.IsMatch("<.*?>",sourceShown) Then
+		sourceShown=Regex.Replace("<.*?>",sourceShown,"")
+	End If
+	Dim singleTagMatcher As Matcher
+	singleTagMatcher=Regex.Matcher("<.*?>",sourceShown)
+	Dim match As String
+	If singleTagMatcher.Find Then
+		match=singleTagMatcher.Match
+		If singleTagMatcher.Find=False Then
+			sourceShown=sourceShown.Replace(match,"")
+		End If
+	End If
+	Return sourceShown
+End Sub
+
+Sub getList(index As Int,parentlist As List) As List
+	Return parentlist.Get(index)
+End Sub
+
 Sub getMap(key As String,parentmap As Map) As Map
 	Return parentmap.Get(key)
 End Sub
