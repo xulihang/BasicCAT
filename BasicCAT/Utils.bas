@@ -11,9 +11,13 @@ Sub Process_Globals
 End Sub
 
 Sub isEndOfSentence(Sentence As String) As Boolean
-	If getPureText(Sentence).StartsWith(" ")=False Then
-		Return False
+	Sentence=Sentence.Trim
+	Dim firstChar As String
+	firstChar=getPureText(Sentence).CharAt(0)
+	If firstChar=CRLF Then
+	    Return False	
 	End If
+	
 	Dim matcher As Matcher
 	matcher=Regex.Matcher("\.|\!|\?",Sentence)
 	If matcher.Find Then

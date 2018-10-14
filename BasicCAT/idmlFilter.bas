@@ -136,7 +136,10 @@ Sub creatWorkFile(filename As String,path As String,sourceLang As String)
 			
 		Next
 		Log(segmentsList)
-		mergeSubsentences(segmentsList)
+		Do While containsSingleTagContent(segmentsList)
+			'Log(segmentsList)
+			mergeSubsentences(segmentsList)
+		Loop
 		If segmentsList.Size<>0 Then
 			sourceFileMap.Put(innerFilename,segmentsList)
 			sourceFiles.Add(sourceFileMap)
@@ -161,8 +164,8 @@ Sub mergeSubsentences(segmentsList As List)
 	duplicatedList.AddAll(segmentsList)
 	Dim previousMergedIndex As Int=segmentsList.Size
 	Dim merged As Boolean=False
+	
 	For index=0 To segmentsList.Size-1
-        Log(index)
 		Dim previousSegment,bitext,nextSegment As List
 		bitext=duplicatedList.Get(index)
 		Dim previousSource,fullsource,nextSource As String
@@ -178,7 +181,12 @@ Sub mergeSubsentences(segmentsList As List)
 				If Regex.IsMatch("<.*?>",fullsource.Trim) And Utils.isEndOfSentence(fullsource.Trim)=False And Utils.isEndOfSentence(nextSource) And previousSource.Contains("</p")=False And nextSource.Contains("<p")=False Then
 					Dim newSegment As List
 					newSegment.Initialize
-					newSegment.Add(previousSegment.Get(0)&fullsource.Trim&nextSegment.Get(0))
+					If Main.currentproject.projectFile.Get("source")="en" Then
+						newSegment.Add(previousSegment.Get(0)&" "&fullsource.Trim&" "&nextSegment.Get(0))
+					Else
+						newSegment.Add(previousSegment.Get(0)&fullsource.Trim&nextSegment.Get(0))
+					End If
+					
 					newSegment.Add("")
 					newSegment.Add(previousSegment.Get(2)&fullsource.Trim&nextSegment.Get(2))
 					newSegment.Add(previousSegment.Get(3))
@@ -197,6 +205,31 @@ Sub mergeSubsentences(segmentsList As List)
 	Next
 	segmentsList.Clear
 	segmentsList.AddAll(newList)
+End Sub
+
+Sub containsSingleTagContent(segmentsList As List) As Boolean
+	If segmentsList.Size<3 Then
+		Return False
+	End If
+	For index=0 To segmentsList.Size-1
+		Dim previousSegment,bitext,nextSegment As List
+		bitext=segmentsList.Get(index)
+		Dim previousSource,fullsource,nextSource As String
+		If index-1>=0 And index+1<=segmentsList.Size-1 Then
+			previousSegment=segmentsList.Get(index-1)
+			nextSegment=segmentsList.Get(index+1)
+			previousSource=previousSegment.Get(2)
+			fullsource=bitext.Get(2)
+			nextSource=nextSegment.Get(2)
+			Dim fullsource As String
+			fullsource=bitext.Get(2)
+			If Regex.IsMatch("<.*?>",fullsource.Trim) And Utils.isEndOfSentence(fullsource.Trim)=False  And Utils.isEndOfSentence(nextSource) And previousSource.Contains("</p")=False And nextSource.Contains("<p")=False Then
+				Log(fullsource)
+				Return True
+			End If
+		End If
+	Next
+	Return False
 End Sub
 
 
