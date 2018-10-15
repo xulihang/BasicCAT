@@ -1094,13 +1094,13 @@ Sub preTranslate(options As Map)
 			progressDialog.update(completed,segments.Size)
 			If completed>=segments.Size Then
 				progressDialog.close
-				fillVisibleTargetTextArea
+				CallSubDelayed(Me,"fillVisibleTargetTextArea")
 				Return
 			End If
 		Next
 
 		progressDialog.close
-		fillVisibleTargetTextArea
+		CallSubDelayed(Me,"fillVisibleTargetTextArea")
 	End If
 End Sub
 

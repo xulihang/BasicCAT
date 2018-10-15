@@ -124,6 +124,10 @@ End Sub
 
 
 Sub getOneUseMemory(source As String,rate As Int) As ResumableSub
+	
+	Dim similarityStore As Map
+	similarityStore.Initialize
+	
 	Dim matchList As List
 	matchList.Initialize
 	Dim onePairList As List
@@ -153,8 +157,16 @@ Sub getOneUseMemory(source As String,rate As Int) As ResumableSub
 			End If
 			
 			Dim similarity As Double
-			wait for (getSimilarityFuzzyWuzzy(source,key)) Complete (Result As Double)
-			similarity=Result
+			
+			If similarityStore.ContainsKey(source&"	"&key) Then
+				similarity=similarityStore.Get(source&"	"&key)
+			Else
+				wait for (getSimilarityFuzzyWuzzy(source,key)) Complete (Result As Double)
+				similarity=Result
+				similarityStore.Put(source&"	"&key,similarity)
+			End If
+			
+
 
 
 
