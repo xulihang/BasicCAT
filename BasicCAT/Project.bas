@@ -859,7 +859,7 @@ Sub showMT(source As String,targetTextArea As TextArea)
 	Else
 		Return
 	End If
-	For Each engine As String In Array As String("yandex","baidu","youdao","google")
+	For Each engine As String In Array As String("yandex","baidu","youdao","google","microsoft")
 		If Utils.get_isEnabled(engine&"_isEnabled",mtPreferences)=True Then
 			wait for (MT.getMT(source,projectFile.Get("source"),projectFile.Get("target"),engine)) Complete (Result As String)
 			If Result<>"" Then

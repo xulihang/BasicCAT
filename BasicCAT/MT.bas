@@ -25,6 +25,9 @@ Sub getMT(source As String,sourceLang As String,targetLang As String,MTEngine As
 		Case "google"
 			wait for (googleMT(source,sourceLang,targetLang)) Complete (result As String)
 			Return result
+		Case "microsoft"
+			wait for (microsoftMT(source,sourceLang,targetLang)) Complete (result As String)
+			Return result
 	End Select
 End Sub
 
@@ -101,6 +104,50 @@ Sub yandexMT(source As String,sourceLang As String,targetLang As String) As Resu
 	Return target
 End Sub
 
+Sub microsoftMT(source As String,sourceLang As String,targetLang As String) As ResumableSub
+	Dim target,key As String
+	key=Utils.getMap("microsoft",Utils.getMap("mt",Main.preferencesMap)).Get("key")
+	Dim sourceList As List
+	sourceList.Initialize
+	sourceList.Add(CreateMap("Text":source))
+	Dim jsong As JSONGenerator
+	jsong.Initialize2(sourceList)
+	source=jsong.ToString
+	
+	Dim job As HttpJob
+	job.Initialize("job",Me)
+	Dim params As String
+	params="&from="&sourceLang&"&to="&targetLang
+	
+	job.PostString("https://api.cognitive.microsofttranslator.com/translate?api-version=3.0"&params,source)
+	
+	job.GetRequest.SetHeader("Ocp-Apim-Subscription-Key",key)
+	job.GetRequest.SetHeader("X-ClientTraceId",UUID)
+	job.GetRequest.SetHeader("Content-Type","application/json")
+	wait For (job) JobDone(job As HttpJob)
+	If job.Success Then
+		Try
+			Dim json As JSONParser
+			json.Initialize(job.GetString)
+			Dim result As List
+			result=json.NextArray
+			Dim innerMap As Map
+			innerMap=result.Get(0)
+			Dim translations As List
+			translations=innerMap.Get("translations")
+			Dim map1 As Map
+			map1=translations.Get(0)
+			target=map1.Get("text")
+		Catch
+			target=""
+			Log(LastException)
+		End Try
+	Else
+		target=""
+	End If
+	job.Release
+	Return target
+End Sub
 
 Sub googleMT(source As String,sourceLang As String,targetLang As String) As ResumableSub
 	Dim target As String
@@ -185,5 +232,10 @@ Sub youdaoMT(source As String,sourceLang As String,targetLang As String,lookup A
 	Else
 		Return target
 	End If
+End Sub
+
+Sub UUID As String
+	Dim jo As JavaObject
+	Return jo.InitializeStatic("java.util.UUID").RunMethod("randomUUID", Null)
 End Sub
 
