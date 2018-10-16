@@ -174,32 +174,36 @@ Sub getGramsFromStringViaRe(text As String) As List
 		Loop
 	Next
 
-	gramsList.AddAll(getLongGrams(text,gramsList,"VP"))
-	gramsList.AddAll(getLongGrams(text,gramsList,"PP"))
+	getLongGrams(text,gramsList,"VP")
+	getLongGrams(text,gramsList,"PP")
 
 	Return duplicatedRemovedList(gramsList)
 End Sub
 
-Sub getLongGrams(text As String,gramsList As List,item As String) As List
+Sub getLongGrams(text As String,gramsList As List,item As String)
 	Dim matcher As Matcher
 
 	matcher=Regex.Matcher("\("&item&" .*\){2,}",text)
 		
 	Do While matcher.Find
 		Log(matcher.Match)
-		gramsList.Add(Regex.Replace("\(.*? |\)",matcher.Match,""))
+		Dim text As String
+		Dim removeBracketPattern As String
+		removeBracketPattern="\(.*? |\)"
+		text=Regex.Replace(removeBracketPattern,matcher.Match,"")
+
+		gramsList.Add(text)
 		
 		Dim matcher2 As Matcher
-		matcher2=Regex.Matcher("\("&item&" .*\){2,}",matcher.Match)
+		matcher2=Regex.Matcher("\("&item&" .*?\){2,}",matcher.Match)
 		Do While matcher2.Find
-
+            
 			'all.Add(matcher2.Match)
-			gramsList.Add(Regex.Replace("\(.*? |\)",matcher2.Match,""))
+			gramsList.Add(Regex.Replace(removeBracketPattern,matcher2.Match,""))
 			getLongGrams(matcher.Match.Replace(matcher2.Match,""),gramsList,item)
 		Loop
 		
 	Loop
-	Return gramsList
 End Sub
 
 Sub duplicatedRemovedList(list1 As List) As List
