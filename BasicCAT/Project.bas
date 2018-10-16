@@ -859,7 +859,7 @@ Sub showMT(source As String,targetTextArea As TextArea)
 	Else
 		Return
 	End If
-	For Each engine As String In Array As String("yandex","baidu","youdao")
+	For Each engine As String In Array As String("yandex","baidu","youdao","google")
 		If Utils.get_isEnabled(engine&"_isEnabled",mtPreferences)=True Then
 			wait for (MT.getMT(source,projectFile.Get("source"),projectFile.Get("target"),engine)) Complete (Result As String)
 			If Result<>"" Then
@@ -1105,6 +1105,9 @@ Sub preTranslate(options As Map)
 End Sub
 
 Public Sub fillVisibleTargetTextArea
+	Log("fill")
+	Log(Main.editorLV.FirstVisibleIndex)
+	Log(Main.editorLV.LastVisibleIndex)
 	For i=Max(0,Main.editorLV.FirstVisibleIndex-15) To Min(Main.editorLV.Size-1,Main.editorLV.LastVisibleIndex+14)
 		Dim p As Pane
 		p=Main.editorLV.GetPanel(i)

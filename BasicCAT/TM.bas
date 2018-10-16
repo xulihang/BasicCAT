@@ -8,6 +8,7 @@ Sub Class_Globals
 	Private fx As JFX
 	Public translationMemory As KeyValueStore
 	Private externalTranslationMemory As KeyValueStore
+	Private similarityStore As Map
 	Public currentSource As String
 End Sub
 
@@ -15,6 +16,7 @@ End Sub
 Public Sub Initialize(projectPath As String)
 	translationMemory.Initialize(File.Combine(projectPath,"TM"),"TM.db")
     externalTranslationMemory.Initialize(File.Combine(projectPath,"TM"),"externalTM.db")
+	similarityStore.Initialize
 End Sub
 
 public Sub close
@@ -124,9 +126,6 @@ End Sub
 
 
 Sub getOneUseMemory(source As String,rate As Int) As ResumableSub
-	
-	Dim similarityStore As Map
-	similarityStore.Initialize
 	
 	Dim matchList As List
 	matchList.Initialize

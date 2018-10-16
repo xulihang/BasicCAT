@@ -22,6 +22,9 @@ Sub getMT(source As String,sourceLang As String,targetLang As String,MTEngine As
 		Case "youdao"
 			wait for (youdaoMT(source,sourceLang,targetLang,False)) Complete (result As String)
 			Return result
+		Case "google"
+			wait for (googleMT(source,sourceLang,targetLang)) Complete (result As String)
+			Return result
 	End Select
 End Sub
 
@@ -91,6 +94,41 @@ Sub yandexMT(source As String,sourceLang As String,targetLang As String) As Resu
 		Else
 			target=""
 		End If
+	Else
+		target=""
+	End If
+	job.Release
+	Return target
+End Sub
+
+
+Sub googleMT(source As String,sourceLang As String,targetLang As String) As ResumableSub
+	Dim target As String
+	Dim su As StringUtils
+	Dim job As HttpJob
+	job.Initialize("job",Me)
+	Dim params As String
+	params="?key="&Utils.getMap("google",Utils.getMap("mt",Main.preferencesMap)).Get("key")& _ 
+	"&q="&su.EncodeUrl(source,"UTF-8")&"&format=text&source="&sourceLang&"&target="&targetLang
+	
+	job.Download("https://translation.googleapis.com/language/translate/v2"&params)
+	wait For (job) JobDone(job As HttpJob)
+	If job.Success Then
+		Try
+			Dim result,data As Map
+			Dim json As JSONParser
+			json.Initialize(job.GetString)
+			result=json.NextObject
+			data=result.Get("data")
+			Dim translations As List
+			translations=data.Get("translations")
+			Dim map1 As Map
+			map1=translations.Get(0)
+			target=map1.Get("translatedText")
+		Catch
+			target=""
+			Log(LastException)
+		End Try
 	Else
 		target=""
 	End If
