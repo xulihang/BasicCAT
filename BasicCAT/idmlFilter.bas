@@ -393,9 +393,6 @@ Sub taggedTextToXml(taggedText As String,storypath As String) As String
 			Loop
 			'Log(styleIndex)
 			Log(pureText)
-			If pureText.StartsWith("Z") Then
-				Log(pureText.Contains(CRLF))
-			End If
 
 
 			Dim list1 As List
@@ -447,8 +444,22 @@ Sub generateFile(filename As String,path As String,projectFile As Map)
 			If target="" Then
 				translation=fullsource
 			Else
-				translation=fullsource.Replace(source,target)
-				If projectFile.Get("source")="en" Then
+				If fullsource.Contains(C0TagAddedText(source)) Then
+					translation=fullsource.Replace(C0TagAddedText(source),C0TagAddedText(target))
+				Else
+					Dim singleTagReplaceMatcher As Matcher
+					singleTagReplaceMatcher=Regex.Matcher("<.*?>",source)
+					Do While singleTagReplaceMatcher.Find
+						source=source.Replace(singleTagReplaceMatcher.Match,"")
+						target=target.Replace(singleTagReplaceMatcher.Match,"")
+						fullsource=Regex.Replace(singleTagReplaceMatcher.Match,fullsource,"")
+						fullsource=Regex.Replace("</c0>\n",fullsource,"")
+						fullsource=Regex.Replace("\n<c0>",fullsource,"")
+					Loop
+					translation=fullsource.Replace(source,target)
+				End If
+
+				If projectFile.Get("source")="en" And Utils.isChinese(translation)=True Then
 					translation=translation.Replace(" ","")
 				End If
 			End If
@@ -464,6 +475,50 @@ Sub generateFile(filename As String,path As String,projectFile As Map)
 
 End Sub
 
+Sub C0TagAddedText(translation As String) As String
+	Dim matcher As Matcher
+	matcher=Regex.Matcher("</*c[1-9]>",translation)
+	Do While matcher.Find
+		Dim before,mid,after As String
+		before=translation.SubString2(translation.IndexOf(matcher.Match),translation.IndexOf(matcher.Match)+matcher.Match.Length)
+		mid="</c0>"&CRLF&matcher.Match&CRLF&"<c0>"
+		after=translation.SubString2(translation.IndexOf(matcher.Match)+matcher.Match.Length,translation.Length)
+		translation=before&mid&after
+	Loop
+	Return translation
+End Sub
+
+Sub isTagMissing(translation As String,source As String) As Boolean
+	Dim su As ApacheSU
+	Dim matcher As Matcher
+	matcher=Regex.Matcher("</*c[1-9]>",translation)
+	Do While matcher.Find
+		source=su.RemoveFirst(source,matcher.Match)
+	Loop
+	Dim matcher2 As Matcher
+	matcher2=Regex.Matcher("</*c[1-9]>",source)
+	If matcher2.Find Then
+		Return True
+	Else
+		Return False
+	End If
+End Sub
+
+Sub MissingTagAddedText(translation As String,source As String) As String
+
+	Dim su As ApacheSU
+	Dim matcher As Matcher
+	matcher=Regex.Matcher("</*c[1-9]>",translation)
+	Do While matcher.Find
+		source=su.RemoveFirst(source,matcher.Match)
+	Loop
+	Dim matcher2 As Matcher
+	matcher2=Regex.Matcher("</*c[1-9]>",source)
+	Do While matcher2.Find
+		translation=translation&matcher2.Match
+	Loop
+	Return translation
+End Sub
 
 Sub textToListInOrder(pureText As String) As List
 
