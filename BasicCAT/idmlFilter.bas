@@ -368,13 +368,18 @@ Sub taggedTextToXml(taggedText As String,storypath As String) As String
 		paragraphMap.Initialize
 		paragraphMap=ParagraphStyleRanges.Get(index)
 		index=index+1
+		Dim originalCharacterStyleRanges As List
+		originalCharacterStyleRanges.Initialize
+		originalCharacterStyleRanges=GetElements(paragraphMap,"CharacterStyleRange")
+		
 		Do While paragraphMap.ContainsKey("CharacterStyleRange")
 			paragraphMap.Remove("CharacterStyleRange")
 		Loop
 		Dim matcher2 As Matcher
-		matcher2=Regex.Matcher("(?s)<c\d+>.*?</c\d+>",paragraphText)
+		matcher2=Regex.Matcher("(?s)<c\d+.*?>.*?</c\d+>",paragraphText)
 		Dim characterMapsList As List
 		characterMapsList.Initialize
+
 		Dim characterTextList As List
 		characterTextList.Initialize
 		Do While matcher2.Find
@@ -397,7 +402,23 @@ Sub taggedTextToXml(taggedText As String,storypath As String) As String
 
 			Dim list1 As List
 			list1=textToListInOrder(pureText)
-			characterMapsList.Add(CreateMap("Attributes":CreateMap("AppliedCharacterStyle":characterStyles.Get(styleIndex)),"Content":list1))
+			
+			Dim characterMap As Map
+			
+			Dim styleRankMatcher As Matcher
+			styleRankMatcher=Regex.Matcher($"id="(\d+)""$,characterText)
+			If styleRankMatcher.Find Then
+				Log("originalCharacterStyleRanges"&originalCharacterStyleRanges)
+				
+				characterMap=originalCharacterStyleRanges.Get(styleRankMatcher.Group(1))
+				characterMap.Put("Content",list1)
+				
+			Else
+				characterMap=CreateMap("Attributes":CreateMap("AppliedCharacterStyle":characterStyles.Get(styleIndex)),"Content":list1)
+			End If
+			
+			characterMapsList.Add(characterMap)
+			
 		Next
 		paragraphMap.Put("CharacterStyleRange",characterMapsList)
 		If paragraphMap.ContainsKey("Text")  Then
@@ -573,17 +594,16 @@ Sub getStyleIndex(text As String,styleType As String) As Int
 	Dim pattern As String
 	Select styleType
 		Case "character"
-			pattern="<c\d+?>"
+			pattern="<c(\d+?).*?>"
 		Case "paragraph"
-			pattern="<p\d+?>"
+			pattern="<p(\d+?).*?>"
 	End Select
 	Log(text)
 	Dim styleIndex As String
 	Dim indexMatcher As Matcher
 	indexMatcher=Regex.Matcher(pattern,text)
 	indexMatcher.Find
-	styleIndex=indexMatcher.Match
-	styleIndex=styleIndex.SubString2(2,styleIndex.Length-1)
+	styleIndex=indexMatcher.Group(1)
 	Log("styleindex:"&styleIndex)
 	Return styleIndex
 End Sub
@@ -678,7 +698,9 @@ Sub getStoryContent(ParsedData As Map) As String
 		Dim CharacterStyleRanges As List
 		CharacterStyleRanges=GetElements(ParagraphStyleRange,"CharacterStyleRange")
 		
+		Dim characterStyleRank As Int=-1
 		For Each CharacterStyleRange As Map In CharacterStyleRanges
+			characterStyleRank=characterStyleRank+1
 			Dim characterStyleRangeContent As String
 			
 			Dim brcontentInOrder As List
@@ -736,7 +758,12 @@ Sub getStoryContent(ParsedData As Map) As String
 				End If
 			Next
 			characterStyleRangeContent=characterStyleRangeContent.Replace(" ","") 'replace LSEP
-			characterStyleRangeContent="<c"&characterStyleIndex&">"&characterStyleRangeContent&"</c"&characterStyleIndex&">"&CRLF
+			If attributes.Size>1 Then
+				characterStyleRangeContent="<c"&characterStyleIndex&" id="&Chr(34)&characterStyleRank&Chr(34)&">"&characterStyleRangeContent&"</c"&characterStyleIndex&">"&CRLF
+			Else
+				characterStyleRangeContent="<c"&characterStyleIndex&">"&characterStyleRangeContent&"</c"&characterStyleIndex&">"&CRLF
+			End If
+			
 			paragraphStyleRangeContent=paragraphStyleRangeContent&characterStyleRangeContent&CRLF
 		Next
 		paragraphStyleRangeContent="<p"&paragraphStyleIndex&">"&paragraphStyleRangeContent&"</p"&paragraphStyleIndex&">"&CRLF
