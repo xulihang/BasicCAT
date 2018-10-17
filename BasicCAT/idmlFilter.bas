@@ -410,7 +410,12 @@ Sub taggedTextToXml(taggedText As String,storypath As String) As String
 			If styleRankMatcher.Find Then
 				Log("originalCharacterStyleRanges"&originalCharacterStyleRanges)
 				
-				characterMap=originalCharacterStyleRanges.Get(styleRankMatcher.Group(1))
+				Try
+					characterMap=originalCharacterStyleRanges.Get(styleRankMatcher.Group(1))
+				Catch
+					characterMap=CreateMap("Attributes":CreateMap("AppliedCharacterStyle":characterStyles.Get(styleIndex)),"Content":list1)
+					Log(LastException)
+				End Try
 				characterMap.Put("Content",list1)
 				
 			Else

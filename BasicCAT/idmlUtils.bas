@@ -112,7 +112,7 @@ Sub mergeInWordPartForparaStyleRange(paragraphText As String) As String
 	Do While matcher2.Find
 		characterTextList.Add(matcher2.Match)
 	Loop
-	removeBrInContentList(characterTextList)
+
 	Dim num As Int=0
 	Log("start")
 	Do While containsMergableParts(characterTextList)
@@ -147,26 +147,18 @@ Sub mergeInWordPartForparaStyleRange(paragraphText As String) As String
 				tagMatcher2=Regex.Matcher("<c(\d+) id=",nextCharacterText)
 				If tagMatcher2.Find Then
 					If tagMatcher2.Group(1)=id Then
-						Dim innerText1,innerText2,new As String
+						Dim innerText1,innerText2,new,tagBefore,tagAfter As String
+						Dim singleTagMatcher As Matcher
+						singleTagMatcher=Regex.Matcher("<.*?>",characterText)
+						singleTagMatcher.Find
+						tagBefore=singleTagMatcher.Match
+						singleTagMatcher.Find
+						tagAfter=singleTagMatcher.Match
 						innerText1=removeTags(characterText)
 						innerText2=removeTags(nextCharacterText)
-						If innerText1.Trim="" Then
-							Continue
-						End If
-						If countMatches(innerText1," ")<=1 And countMatches(innerText2," ")<=1 Then
-							new=innerText1&innerText2
-							Log(characterText)
-							Log(nextCharacterText)
-							Log(innerText1)
-							Log(innerText2)
-							Log("new"&new)
-							added=True
-							characterText=characterText.Replace(innerText1,new)
-						Else if innerText1.EndsWith(" ") Then
-							new=innerText1&" "&innerText2
-							characterText=characterText.Replace(innerText1,new)
-							added=True
-						End If
+						added=True
+						new=innerText1&innerText2
+						characterText=tagBefore&new&tagAfter
 					End If
 				End If
 			End If
@@ -200,6 +192,7 @@ Sub containsMergableParts(characterTextList As List) As Boolean
 			If index=characterTextList.Size-1 Then
 				Continue
 			End If
+			
 			Dim id As Int
 			id=tagMatcher.Group(1)
 			Dim nextCharacterText As String
@@ -209,20 +202,10 @@ Sub containsMergableParts(characterTextList As List) As Boolean
 			tagMatcher2=Regex.Matcher("<c(\d+) id=",nextCharacterText)
 			If tagMatcher2.Find Then
 				If tagMatcher2.Group(1)=id Then
-					Dim innerText1,innerText2 As String
-					innerText1=removeTags(characterText)
-					innerText2=removeTags(nextCharacterText)
-					If innerText1.Trim="" Then
-						Continue
-					End If
-					If countMatches(innerText1," ")<=1 And countMatches(innerText2," ")<=1 Then
-						result=True
-					Else if innerText1.EndsWith(" ") Then
-						result =True
-					End If
+					result=True
 				End If
-
 			End If
+			
 		End If
 	Next
 	Return result
@@ -256,7 +239,7 @@ Sub removeBrInContentList(ContentList As List)
 		Dim content As String
 		content=ContentList.Get(i)
 		If content.Trim<>"" Then
-			newlist.Add(content)
+			newlist.Add(content.Replace(CRLF,""))
 		End If
 	Next
 	ContentList.Clear
