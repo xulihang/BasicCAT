@@ -527,7 +527,7 @@ Sub replaceStyleAndFontFileForZh(unzipedDirPath As String)
 	stylexml=File.ReadString(File.Combine(unzipedDirPath,"Resources"),"Styles.xml")
 	Dim styleMap As Map
 	styleMap=getXmlMap(stylexml)
-	idmlResourcesUtils.changeFontsFromEnToZhOfStyleFile(styleMap)
+	idmlUtils.changeFontsFromEnToZhOfStyleFile(styleMap)
 	stylexml=getXmlFromMap(styleMap)
 	File.WriteString(File.Combine(unzipedDirPath,"Resources"),"Styles.xml",stylexml)
 	File.Copy(File.DirAssets,"Fonts.xml",File.Combine(unzipedDirPath,"Resources"),"Fonts.xml")
@@ -766,6 +766,8 @@ Sub getStoryContent(ParsedData As Map) As String
 			
 			paragraphStyleRangeContent=paragraphStyleRangeContent&characterStyleRangeContent&CRLF
 		Next
+		paragraphStyleRangeContent=idmlUtils.mergeInWordPartForparaStyleRange(paragraphStyleRangeContent)
+		
 		paragraphStyleRangeContent="<p"&paragraphStyleIndex&">"&paragraphStyleRangeContent&"</p"&paragraphStyleIndex&">"&CRLF
 		paragraphStyleRangeContent=mergeSameTags(paragraphStyleRangeContent)
 		content=content&paragraphStyleRangeContent
