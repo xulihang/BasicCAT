@@ -32,7 +32,7 @@ Sub creatWorkFile(filename As String,path As String,sourceLang As String)
 	wait for (unzipAndLoadIDML(path,filename)) Complete (spreadsList As List)
 	
 	loadStyles(unzipedDirPath)
-	
+	'--------------------------
 	Dim storiesList As List
 	storiesList.Initialize
 	For Each map1 As Map In spreadsList
@@ -61,8 +61,9 @@ Sub creatWorkFile(filename As String,path As String,sourceLang As String)
 		storiesList.AddALL(leftPageStoriesForSpreadList)
 		storiesList.AddALL(rightPageStoriesForSpreadList)
 	Next
-
 	Log(storiesList)
+    '--------------------------
+	
 	
 	Dim workfile As Map
 	workfile.Initialize
@@ -93,6 +94,8 @@ Sub creatWorkFile(filename As String,path As String,sourceLang As String)
 		Dim segmentedText As List
 		segmentedText=segmentation.segmentedTxt(storyContent,False,sourceLang,"idml")
 		For Each source As String In segmentedText
+			source=Regex.Replace("(</.*?>)\n{1,}",source,"$1")
+			source=Regex.Replace("\n{1,}(<.*?>)",source,"$1") ' remove unnecessary tags \n
 			index=index+1
 			Dim bitext As List
 			bitext.Initialize
@@ -412,6 +415,9 @@ Sub taggedTextToXml(taggedText As String,storypath As String) As String
 				
 				Try
 					characterMap=originalCharacterStyleRanges.Get(styleRankMatcher.Group(1))
+					If characterMap.ContainsKey("Br") Then
+						characterMap.Remove("Br")
+					End If
 				Catch
 					characterMap=CreateMap("Attributes":CreateMap("AppliedCharacterStyle":characterStyles.Get(styleIndex)),"Content":list1)
 					Log(LastException)
