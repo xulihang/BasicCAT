@@ -350,7 +350,7 @@ Sub taggedTextToXml(taggedText As String,storypath As String) As String
 	Dim story As Map = root.Get("Story")
 	Dim ParagraphStyleRanges As List
 	ParagraphStyleRanges=GetElements(story,"ParagraphStyleRange")
-	ParagraphStyleRanges.Clear
+
 	Dim matcher As Matcher
 	matcher=Regex.Matcher("(?s)<p\d+>.*?</p\d+>",taggedText)
 	Dim paragraphsTextList As List
@@ -360,11 +360,17 @@ Sub taggedTextToXml(taggedText As String,storypath As String) As String
 		paragraphsTextList.Add(matcher.Match)
 	Loop
 	Log(paragraphsTextList)
+	
+	Dim index As Int=0
 	For Each paragraphText As String In paragraphsTextList
 		Log(paragraphText)
 		Dim paragraphMap As Map
 		paragraphMap.Initialize
-		paragraphMap=CreateMap("Attributes":CreateMap("AppliedParagraphStyle":paragraphStyles.Get(getStyleIndex(paragraphText,"paragraph"))))
+		paragraphMap=ParagraphStyleRanges.Get(index)
+		index=index+1
+		Do While paragraphMap.ContainsKey("CharacterStyleRange")
+			paragraphMap.Remove("CharacterStyleRange")
+		Loop
 		Dim matcher2 As Matcher
 		matcher2=Regex.Matcher("(?s)<c\d+>.*?</c\d+>",paragraphText)
 		Dim characterMapsList As List
@@ -398,7 +404,6 @@ Sub taggedTextToXml(taggedText As String,storypath As String) As String
 		Next
 		paragraphMap.Put("CharacterStyleRange",characterMapsList)
 		Log(paragraphMap)
-		ParagraphStyleRanges.Add(paragraphMap)
 	Next
 	story.Put("ParagraphStyleRange",ParagraphStyleRanges)
 	Dim result As String
