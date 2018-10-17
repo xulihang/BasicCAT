@@ -359,7 +359,7 @@ Sub taggedTextToXml(taggedText As String,storypath As String) As String
 	Do While matcher.Find
 		paragraphsTextList.Add(matcher.Match)
 	Loop
-	Log(paragraphsTextList)
+	Log("paragraphsTextList"&paragraphsTextList)
 	
 	Dim index As Int=0
 	For Each paragraphText As String In paragraphsTextList
@@ -400,9 +400,18 @@ Sub taggedTextToXml(taggedText As String,storypath As String) As String
 			characterMapsList.Add(CreateMap("Attributes":CreateMap("AppliedCharacterStyle":characterStyles.Get(styleIndex)),"Content":list1))
 		Next
 		paragraphMap.Put("CharacterStyleRange",characterMapsList)
+		If paragraphMap.ContainsKey("Text")  Then
+			If paragraphMap.Get("Text")="" Then
+				paragraphMap.Remove("Text")
+			End If
+			
+		End If
+		
 		Log(paragraphMap)
 	Next
+
 	story.Put("ParagraphStyleRange",ParagraphStyleRanges)
+
 	Dim result As String
 	result=getXmlFromMap(storyMap)
 	result=result.Replace("<Content>"&Chr(13) & Chr(10) &"</Content>","<Br />")
@@ -413,10 +422,13 @@ End Sub
 
 
 Sub generateFile(filename As String,path As String,projectFile As Map)
+	Dim unzipedDirPath As String
+	unzipedDirPath=File.Combine(File.Combine(path,"source"),filename.Replace(".idml",""))
 	If paragraphStyles.IsInitialized=False Then
-		Dim unzipedDirPath As String
-		unzipedDirPath=File.Combine(File.Combine(path,"source"),filename.Replace(".idml",""))
 		loadStyles(unzipedDirPath)
+	End If
+	If projectFile.Get("source")="en" Then
+		replaceStyleAndFontFileForZh(unzipedDirPath)
 	End If
     Log(filename)
 	Log(path)
@@ -452,9 +464,7 @@ Sub generateFile(filename As String,path As String,projectFile As Map)
 					Do While singleTagReplaceMatcher.Find
 						source=source.Replace(singleTagReplaceMatcher.Match,"")
 						target=target.Replace(singleTagReplaceMatcher.Match,"")
-						fullsource=Regex.Replace(singleTagReplaceMatcher.Match,fullsource,"")
-						fullsource=Regex.Replace("</c0>\n",fullsource,"")
-						fullsource=Regex.Replace("\n<c0>",fullsource,"")
+						fullsource=Regex.Replace("</c0>\n"&singleTagReplaceMatcher.Match&"(.*?)</c[1-9]>\n<c0>",fullsource,"$1")
 					Loop
 					translation=fullsource.Replace(source,target)
 				End If
@@ -462,9 +472,12 @@ Sub generateFile(filename As String,path As String,projectFile As Map)
 				If projectFile.Get("source")="en" And Utils.isChinese(translation)=True Then
 					translation=translation.Replace(" ","")
 				End If
+
+
 			End If
 			innerfileContent=innerfileContent&translation
 		Next
+
 		Dim storypath As String
 		storypath=File.Combine(File.Combine(path,"source"),filename.Replace(".idml",""))
 		storypath=File.Combine(File.Combine(storypath,"Stories"),innerfilename)
@@ -486,6 +499,17 @@ Sub C0TagAddedText(translation As String) As String
 		translation=before&mid&after
 	Loop
 	Return translation
+End Sub
+
+Sub replaceStyleAndFontFileForZh(unzipedDirPath As String)
+	Dim stylexml As String
+	stylexml=File.ReadString(File.Combine(unzipedDirPath,"Resources"),"Styles.xml")
+	Dim styleMap As Map
+	styleMap=getXmlMap(stylexml)
+	idmlResourcesUtils.changeFontsFromEnToZhOfStyleFile(styleMap)
+	stylexml=getXmlFromMap(styleMap)
+	File.WriteString(File.Combine(unzipedDirPath,"Resources"),"Styles.xml",stylexml)
+	File.Copy(File.DirAssets,"Fonts.xml",File.Combine(unzipedDirPath,"Resources"),"Fonts.xml")
 End Sub
 
 Sub isTagMissing(translation As String,source As String) As Boolean
@@ -877,3 +901,4 @@ Sub readFileAndGetAlltheSegments(filename As String,path As String) As List
 	Next
 	Return segments
 End Sub
+
