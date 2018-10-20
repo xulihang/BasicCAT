@@ -113,22 +113,22 @@ Library8=jsql
 Library9=jrandomaccessfile
 Module1=FileChooserUtils
 Module10=preTranslateDialog
-Module11=idmlFilter
-Module12=Utils
-Module13=idmlUtils
-Module14=Map2Xml
-Module15=ITP
-Module16=MT
-Module17=MTParamsFiller
-Module18=Preferences
-Module19=statistics
+Module11=idmlUtils
+Module12=idmlFilter
+Module13=Utils
+Module14=Previewer
+Module15=Map2Xml
+Module16=ITP
+Module17=MT
+Module18=MTParamsFiller
+Module19=Preferences
 Module2=Project
-Module20=coordinate
-Module21=Xml2Map
-Module22=git
-Module23=LanguageTool
-Module24=searchAndReplaceDialog
-Module25=Previewer
+Module20=statistics
+Module21=coordinate
+Module22=Xml2Map
+Module23=git
+Module24=LanguageTool
+Module25=searchAndReplaceDialog
 Module26=TextFlow
 Module27=editDistance
 Module28=progressDialog
@@ -678,6 +678,9 @@ Sub tmTableView_SelectedRowChanged(Index As Int, Row() As Object)
 	If Row<>Null And Row.Length<>0 Then
 		Dim pane As Pane
 		pane=editorLV.GetPanel(currentProject.lastEntry)
+		If pane.NumberOfNodes=0 Then
+			Return
+		End If
 		Dim sourceTextArea As TextArea
 		sourceTextArea=pane.GetNode(0)
 		If Row(1)="" Then

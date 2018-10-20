@@ -95,7 +95,7 @@ Sub creatWorkFile(filename As String,path As String,sourceLang As String)
 		segmentedText=segmentation.segmentedTxt(storyContent,False,sourceLang,"idml")
 		For Each source As String In segmentedText
 			source=Regex.Replace("(</.*?>)\n{1,}",source,"$1")
-			source=Regex.Replace("\n{1,}(<.*?>)",source,"$1") ' remove unnecessary tags \n
+			source=Regex.Replace("\n{1,}(<(?!/).*?>)",source,"$1") ' remove unnecessary \n between tags
 			index=index+1
 			Dim bitext As List
 			bitext.Initialize
@@ -110,7 +110,7 @@ Sub creatWorkFile(filename As String,path As String,sourceLang As String)
 				Continue
 			Else
                 Dim sourceShown As String
-				sourceShown=Utils.getPureText(source)
+				sourceShown=idmlUtils.getPureText(source)
 				
 				Log("sourceShown"&sourceShown)
 				bitext.add(sourceShown.Trim)
@@ -139,9 +139,10 @@ Sub creatWorkFile(filename As String,path As String,sourceLang As String)
 			
 		Next
 		Log(segmentsList)
-		Do While containsSingleTagContent(segmentsList)
+		mergeSpecialTaggedContentAtBeginning(segmentsList)
+		Do While containsInbetweenSpecialTaggedContent(segmentsList)
 			'Log(segmentsList)
-			mergeSubsentences(segmentsList)
+			mergeInbetweenSpecialTaggedContent(segmentsList)
 		Loop
 		If segmentsList.Size<>0 Then
 			sourceFileMap.Put(innerFilename,segmentsList)
@@ -156,7 +157,55 @@ Sub creatWorkFile(filename As String,path As String,sourceLang As String)
 	File.WriteString(File.Combine(path,"work"),filename&".json",json.ToPrettyString(4))
 End Sub
 
-Sub mergeSubsentences(segmentsList As List)
+Sub mergeSpecialTaggedContentAtBeginning(segmentsList As List)
+	If segmentsList.Size<2 Then
+		Return
+	End If
+	Dim fullsource,nextSource As String
+	Dim bitext,nextSegment As List
+	bitext=segmentsList.Get(0)
+	nextSegment=segmentsList.Get(1)
+	fullsource=bitext.Get(2)
+	fullsource=Regex.Replace("<p.*?>",fullsource,"")
+	nextSource=nextSegment.Get(2)
+
+
+	If Regex.IsMatch("(?s)<.*?>",fullsource.Trim) Then
+		If idmlUtils.containsUnshownSpecialTaggedContent(bitext.Get(0),fullsource) Then
+			Dim tagMatcher As Matcher
+			tagMatcher=Regex.Matcher("<.*?>",nextSource)
+			If tagMatcher.Find Then
+				Log(tagMatcher.Match)
+				If tagMatcher.Match="<c0>" Then
+					fullsource=bitext.Get(2)
+					bitext.Clear
+					Dim sourceShown As String
+					If Main.currentproject.projectFile.Get("source")="en" Then
+						sourceShown=fullsource.Trim&" "&nextSegment.Get(0)
+					Else
+						sourceShown=fullsource.Trim&nextSegment.Get(0)
+					End If
+					sourceShown=idmlUtils.getPureText(sourceShown)
+					bitext.Add(sourceShown)
+					bitext.Add("")
+					bitext.Add(fullsource.Trim&nextSegment.Get(2))
+					bitext.Add(nextSegment.Get(3))
+					segmentsList.RemoveAt(1)
+
+				End If
+			End If
+			
+		End If
+	End If
+	If fullsource.Contains("Prostheses</c4>") Then
+		Log(Regex.IsMatch("(?s)<.*?>",fullsource.Trim))
+		Log(idmlUtils.containsUnshownSpecialTaggedContent(bitext.Get(0),fullsource))
+
+	End If
+End Sub
+
+
+Sub mergeInbetweenSpecialTaggedContent(segmentsList As List)
 	If segmentsList.Size<3 Then
 		Return
 	End If
@@ -181,23 +230,27 @@ Sub mergeSubsentences(segmentsList As List)
 			nextSource=nextSegment.Get(2)
 
 			If merged=False Or index-previousMergedIndex>=3 Then
-				If Regex.IsMatch("<.*?>",fullsource.Trim) And Utils.isEndOfSentence(fullsource.Trim)=False And Utils.isEndOfSentence(nextSource) And previousSource.Contains("</p")=False And nextSource.Contains("<p")=False Then
-					Dim newSegment As List
-					newSegment.Initialize
-					If Main.currentproject.projectFile.Get("source")="en" Then
-						newSegment.Add(previousSegment.Get(0)&" "&fullsource.Trim&" "&nextSegment.Get(0))
-					Else
-						newSegment.Add(previousSegment.Get(0)&fullsource.Trim&nextSegment.Get(0))
-					End If
+				If Regex.IsMatch("(?s)<.*?>",fullsource.Trim) Then
+					If idmlUtils.containsUnshownSpecialTaggedContent(bitext.Get(0),fullsource) Then
+						If previousSource.Trim.EndsWith("</c0>") And nextSource.Trim.StartsWith("<c0>") Then
+							Dim newSegment As List
+							newSegment.Initialize
+							If Main.currentproject.projectFile.Get("source")="en" Then
+								newSegment.Add(previousSegment.Get(0)&" "&fullsource.Trim&" "&nextSegment.Get(0))
+							Else
+								newSegment.Add(previousSegment.Get(0)&fullsource.Trim&nextSegment.Get(0))
+							End If
 					
-					newSegment.Add("")
-					newSegment.Add(previousSegment.Get(2)&fullsource.Trim&nextSegment.Get(2))
-					newSegment.Add(previousSegment.Get(3))
+							newSegment.Add("")
+							newSegment.Add(previousSegment.Get(2)&fullsource.Trim&nextSegment.Get(2))
+							newSegment.Add(previousSegment.Get(3))
 
-					previousMergedIndex=index
-					newList.RemoveAt(newList.Size-1)
-					newList.Add(newSegment)
-					merged=True
+							previousMergedIndex=index
+							newList.RemoveAt(newList.Size-1)
+							newList.Add(newSegment)
+							merged=True
+						End If
+					End If
 				End If
 			End If
 		End If
@@ -210,7 +263,7 @@ Sub mergeSubsentences(segmentsList As List)
 	segmentsList.AddAll(newList)
 End Sub
 
-Sub containsSingleTagContent(segmentsList As List) As Boolean
+Sub containsInbetweenSpecialTaggedContent(segmentsList As List) As Boolean
 	If segmentsList.Size<3 Then
 		Return False
 	End If
@@ -226,9 +279,12 @@ Sub containsSingleTagContent(segmentsList As List) As Boolean
 			nextSource=nextSegment.Get(2)
 			Dim fullsource As String
 			fullsource=bitext.Get(2)
-			If Regex.IsMatch("<.*?>",fullsource.Trim) And Utils.isEndOfSentence(fullsource.Trim)=False  And Utils.isEndOfSentence(nextSource) And previousSource.Contains("</p")=False And nextSource.Contains("<p")=False Then
-				Log(fullsource)
-				Return True
+			If Regex.IsMatch("(?s)<.*?>",fullsource.Trim) Then
+				If idmlUtils.containsUnshownSpecialTaggedContent(bitext.Get(0),fullsource) Then
+					If previousSource.Trim.EndsWith("</c0>") And nextSource.Trim.StartsWith("<c0>") Then
+						Return True
+					End If
+				End If
 			End If
 		End If
 	Next

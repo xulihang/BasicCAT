@@ -104,6 +104,9 @@ End Sub
 
 
 Sub mergeInWordPartForparaStyleRange(paragraphText As String) As String
+	'Merge parts like:
+	'<c1 id="3">Th</c1>
+	'<c1 id="4">e</c1>
 	Log("paragraphText"&paragraphText)
 	Dim matcher2 As Matcher
 	matcher2=Regex.Matcher("(?s)<c\d+.*?>.*?</c\d+>",paragraphText)
@@ -232,6 +235,29 @@ Sub countMatches(str As String,substr As String) As Int
 End Sub
 
 
+Sub containsUnshownSpecialTaggedContent(source As String,fullsource As String) As Boolean
+	Dim result As Boolean=False
+	Dim count1, count2 As Int
+	Dim tagMatcher As Matcher
+	tagMatcher=Regex.Matcher("<c[1-9].*?>|<c0 id=.*?>",source)
+	Do While tagMatcher.Find
+		count1=count1+1
+	Loop
+	Dim tagMatcher2 As Matcher
+	tagMatcher2=Regex.Matcher("<c[1-9].*?>|<c0 id=.*?>",fullsource)
+	Do While tagMatcher2.Find
+		count2=count2+1
+	Loop
+	Log("count"&CRLF)
+	Log(count1)
+	Log(count2)
+	If count2>count1 Then
+		result=True
+	End If
+	Return result
+End Sub
+
+
 Sub removeBrInContentList(ContentList As List)
 	Dim newlist As List
 	newlist.Initialize
@@ -244,4 +270,45 @@ Sub removeBrInContentList(ContentList As List)
 	Next
 	ContentList.Clear
 	ContentList.AddAll(newlist)
+End Sub
+
+
+Sub getPureText(tag As String) As String
+	Dim sourceShown As String
+	sourceShown=tag.Trim
+	sourceShown=Regex.Replace("<p\d+>",sourceShown,"")
+	sourceShown=Regex.Replace("</p\d+>",sourceShown,"")
+	sourceShown=sourceShown.Replace("<c0>","")
+	sourceShown=sourceShown.Replace("</c0>","")
+	If Regex.IsMatch("<.*?>",sourceShown) Then
+		sourceShown=Regex.Replace("<.*?>",sourceShown,"")
+	End If
+	Dim singleTagMatcher As Matcher
+	singleTagMatcher=Regex.Matcher("<.*?>",sourceShown)
+	Dim match As String
+	If singleTagMatcher.Find Then
+		match=singleTagMatcher.Match
+		If singleTagMatcher.Find=False Then
+			sourceShown=sourceShown.Replace(match,"")
+		End If
+	End If
+	Return sourceShown
+End Sub
+
+
+Sub isEndOfSentence(Sentence As String) As Boolean
+	Sentence=Sentence.Trim
+	Dim firstChar As String
+	firstChar=getPureText(Sentence).CharAt(0)
+	If firstChar=CRLF Then
+		Return False
+	End If
+	
+	Dim matcher As Matcher
+	matcher=Regex.Matcher("\.|\!|\?",Sentence)
+	If matcher.Find Then
+		Return True
+	Else
+		Return False
+	End If
 End Sub
