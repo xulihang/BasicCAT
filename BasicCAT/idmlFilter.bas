@@ -147,11 +147,15 @@ Sub creatWorkFile(filename As String,path As String,sourceLang As String)
 			'Log(segmentsList)
 			mergeInbetweenSpecialTaggedContent(segmentsList)
 		Loop
+		mergeSpecialTaggedContentInTheEnd(segmentsList)
+		replaceNewlinetoHtmlTag(segmentsList)
+		
 		If segmentsList.Size<>0 Then
 			sourceFileMap.Put(innerFilename,segmentsList)
 			sourceFiles.Add(sourceFileMap)
 		End If
-		mergeSpecialTaggedContentInTheEnd(segmentsList)
+
+		
 	Next
 	
 	workfile.Put("files",sourceFiles)
@@ -159,6 +163,17 @@ Sub creatWorkFile(filename As String,path As String,sourceLang As String)
 	Dim json As JSONGenerator
 	json.Initialize(workfile)
 	File.WriteString(File.Combine(path,"work"),filename&".json",json.ToPrettyString(4))
+End Sub
+
+Sub replaceNewlinetoHtmlTag(segmentsList As List)
+	For Each bitext As List In segmentsList
+		Dim source As String
+		source=bitext.Get(0)
+		If source.Contains(CRLF) Then
+			source=source.Replace(CRLF,"<br />")
+			bitext.Set(0,source)
+		End If
+	Next
 End Sub
 
 Sub mergeSpecialTaggedContentAtBeginning(segmentsList As List)
@@ -184,10 +199,12 @@ Sub mergeSpecialTaggedContentAtBeginning(segmentsList As List)
 					fullsource=bitext.Get(2)
 					bitext.Clear
 					Dim sourceShown As String
-					If Main.currentproject.projectFile.Get("source")="en" Then
-						sourceShown=fullsource.Trim&" "&nextSegment.Get(0)
+					Dim nextSourceShown As String
+					nextSourceShown=nextSegment.Get(0)
+					If Main.currentproject.projectFile.Get("source")="en" And Regex.Matcher("\w",nextSourceShown.Trim.CharAt(0)).Find Then
+						sourceShown=fullsource.Trim&" "&nextSourceShown
 					Else
-						sourceShown=fullsource.Trim&nextSegment.Get(0)
+						sourceShown=fullsource.Trim&nextSourceShown
 					End If
 					sourceShown=idmlUtils.getPureText(sourceShown)
 					bitext.Add(sourceShown)
@@ -233,7 +250,23 @@ Sub mergeInbetweenSpecialTaggedContent(segmentsList As List)
 							Dim newSegment As List
 							newSegment.Initialize
 							If Main.currentproject.projectFile.Get("source")="en" Then
-								newSegment.Add(previousSegment.Get(0)&" "&fullsource.Trim&" "&nextSegment.Get(0))
+								Dim new As String
+								Dim previousSourceShown,nextSourceShown As String
+								previousSourceShown=previousSegment.Get(0)
+								nextSourceShown=nextSegment.Get(0)
+								If Regex.Matcher("\w",previousSourceShown.Trim.CharAt(0)).Find Then
+									new=previousSourceShown&" "&fullsource.Trim
+								Else
+									new=previousSourceShown&fullsource.Trim
+								End If
+								
+								If Regex.Matcher("\w",nextSourceShown.Trim.CharAt(0)).Find Then
+									new=new&" "&nextSourceShown
+								Else
+									new=new&nextSourceShown
+								End If
+								
+								newSegment.Add(new)
 							Else
 								newSegment.Add(previousSegment.Get(0)&fullsource.Trim&nextSegment.Get(0))
 							End If
@@ -303,20 +336,22 @@ Sub mergeSpecialTaggedContentInTheEnd(segmentsList As List)
 	If Regex.IsMatch("(?s)<.*?>",fullsource.Trim) Then
 		If idmlUtils.containsUnshownSpecialTaggedContent(bitext.Get(0),fullsource) Then
 			If previousSource.Trim.EndsWith("</c0>") Then
-					fullsource=bitext.Get(2)
-					bitext.Clear
-					Dim sourceShown As String
-					If Main.currentproject.projectFile.Get("source")="en" Then
-					sourceShown=previousSegment.Get(0)&" "&fullsource.Trim
-					Else
-					sourceShown=previousSegment.Get(0)&fullsource.Trim
-					End If
-					sourceShown=idmlUtils.getPureText(sourceShown)
-					bitext.Add(sourceShown)
-					bitext.Add("")
-				    bitext.Add(previousSegment.Get(2)&fullsource.Trim)
-				    bitext.Add(previousSegment.Get(3))
-				    segmentsList.RemoveAt(segmentsList.Size-2)
+				fullsource=bitext.Get(2)
+				bitext.Clear
+				Dim sourceShown As String
+			    Dim previousSourceShown As String
+			    previousSourceShown=previousSegment.Get(0)
+				If Main.currentproject.projectFile.Get("source")="en" And Regex.Matcher("\w",previousSourceShown.Trim.CharAt(0)).Find Then
+					sourceShown=previousSourceShown&" "&fullsource.Trim
+				Else
+					sourceShown=previousSourceShown&fullsource.Trim
+				End If
+				sourceShown=idmlUtils.getPureText(sourceShown)
+				bitext.Add(sourceShown)
+				bitext.Add("")
+			    bitext.Add(previousSegment.Get(2)&fullsource.Trim)
+			    bitext.Add(previousSegment.Get(3))
+			    segmentsList.RemoveAt(segmentsList.Size-2)
 			End If
 		End If
 	End If
@@ -505,6 +540,9 @@ Sub taggedTextToXml(taggedText As String,storypath As String) As String
 					If characterMap.ContainsKey("Br") Then
 						characterMap.Remove("Br")
 					End If
+					If characterMap.ContainsKey("Text") Then
+						characterMap.Remove("Text")
+					End If
 				Catch
 					characterMap=CreateMap("Attributes":CreateMap("AppliedCharacterStyle":characterStyles.Get(styleIndex)),"Content":list1)
 					Log(LastException)
@@ -564,7 +602,18 @@ Sub generateFile(filename As String,path As String,projectFile As Map)
 		Dim innerfileContent As String
 		Dim segmentsList As List
 		segmentsList=sourceFileMap.Get(innerfilename)
+		Dim index As Int=-1
 		For Each bitext As List In segmentsList
+			index=index+1
+			Dim pos As String
+			pos="inbetween"
+			Select index
+				Case 0
+					pos="beginning"
+				Case segmentsList.Size-1
+					pos="end"
+			End Select
+			
 			Dim source,target,fullsource,translation As String
 			source=bitext.Get(0)
 			target=bitext.Get(1)
@@ -575,20 +624,43 @@ Sub generateFile(filename As String,path As String,projectFile As Map)
 			If target="" Then
 				translation=fullsource
 			Else
-				If fullsource.Contains(C0TagAddedText(source)) Then
-					translation=fullsource.Replace(C0TagAddedText(source),C0TagAddedText(target))
+				Dim pp As String
+				pp=source
+				source=source.Replace("<br />",CRLF)
+				target=target.Replace("<br />",CRLF)
+				If fullsource.Contains(C0TagAddedText(source,fullsource)) And idmlUtils.containsUnshownSpecialTaggedContent(target,source)=False Then
+					translation=fullsource.Replace(C0TagAddedText(source,fullsource),C0TagAddedText(target,fullsource))
+
 				Else
-					Dim singleTagReplaceMatcher As Matcher
-					singleTagReplaceMatcher=Regex.Matcher("<.*?>",source)
-					Do While singleTagReplaceMatcher.Find
-						source=source.Replace(singleTagReplaceMatcher.Match,"")
-						target=target.Replace(singleTagReplaceMatcher.Match,"")
-						fullsource=Regex.Replace("</c0>\n"&singleTagReplaceMatcher.Match&"(.*?)</c[1-9]>\n<c0>",fullsource,"$1")
+					'tags not match, remove tags
+					source=C0TagAddedText(source,fullsource)
+					Dim tagReplaceMatcher As Matcher
+					tagReplaceMatcher=Regex.Matcher2("<.*?>",32,source)
+					Do While tagReplaceMatcher.Find
+						target=target.Replace(tagReplaceMatcher.Match,"")
 					Loop
+					
+
+					
+					If Regex.Matcher2("</c0><c\d+",32,fullsource).Find And Regex.Matcher2("</c\d+><c0>",32,fullsource).Find Then
+						
+					Else
+						target=addNecessaryTags(target,source)
+					End If
+					
+                    
 					translation=fullsource.Replace(source,target)
+
 				End If
 
-				If projectFile.Get("source")="en" And Utils.isChinese(translation)=True Then
+				If pp.StartsWith("Just like Violet’s") Then
+					Log(source)
+					Log(target)
+					Log(fullsource)
+					Log(translation)
+					ExitApplication
+				End If
+				If projectFile.Get("source")="en" And Regex.Matcher("\w",translation).Find=False Then
 					translation=translation.Replace(" ","")
 				End If
 
@@ -607,17 +679,44 @@ Sub generateFile(filename As String,path As String,projectFile As Map)
 
 End Sub
 
-Sub C0TagAddedText(translation As String) As String
+Sub C0TagAddedText(text As String,fullsource As String) As String
 	Dim matcher As Matcher
-	matcher=Regex.Matcher("</*c[1-9]>",translation)
+	matcher=Regex.Matcher2("<c[1-9].*?>.*?</c[1-9].*?>|<c0 id=.*?>.*?</c0>",32,text)
 	Do While matcher.Find
 		Dim before,mid,after As String
-		before=translation.SubString2(translation.IndexOf(matcher.Match),translation.IndexOf(matcher.Match)+matcher.Match.Length)
-		mid="</c0>"&CRLF&matcher.Match&CRLF&"<c0>"
-		after=translation.SubString2(translation.IndexOf(matcher.Match)+matcher.Match.Length,translation.Length)
-		translation=before&mid&after
+		before=text.SubString2(0,text.IndexOf(matcher.Match))
+		mid=matcher.Match
+		If Regex.Matcher("</c0><c\d+",fullsource).Find Then
+			mid="</c0>"&mid
+		End If
+		If Regex.Matcher("</c\d+><c0>",fullsource).Find Then
+			mid=mid&"<c0>"
+		End If
+		after=text.SubString2(text.IndexOf(matcher.Match)+matcher.Match.Length,text.Length)
+		text=before&mid&after
 	Loop
-	Return translation
+	Return text
+End Sub
+
+Sub addNecessaryTags(target As String,source As String) As String
+	source=Regex.Replace2("<c[1-9].*?>.*?</c[1-9].*?>|<c0 id=.*?>.*?</c0>",32,source,"")
+	
+	target="<c0>"&target&"</c0>"
+	Dim matcher1 As Matcher
+	matcher1=Regex.Matcher2(".*?(</c\d+>)",32,source)
+	If matcher1.Find Then
+		target=matcher1.Group(1)&target
+	End If
+	
+	Dim matcher2 As Matcher
+	matcher2=Regex.Matcher2("(<c\d+>).*?",32,source)
+	If matcher2.Find Then
+		target=target&matcher2.Group(1)
+	Else
+		
+	End If
+
+	Return target
 End Sub
 
 Sub replaceStyleAndFontFileForZh(unzipedDirPath As String)

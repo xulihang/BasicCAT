@@ -248,9 +248,6 @@ Sub containsUnshownSpecialTaggedContent(source As String,fullsource As String) A
 	Do While tagMatcher2.Find
 		count2=count2+1
 	Loop
-	Log("count"&CRLF)
-	Log(count1)
-	Log(count2)
 	If count2>count1 Then
 		result=True
 	End If
@@ -278,8 +275,8 @@ Sub getPureText(tag As String) As String
 	sourceShown=tag.Trim
 	sourceShown=Regex.Replace("<p\d+>",sourceShown,"")
 	sourceShown=Regex.Replace("</p\d+>",sourceShown,"")
-	sourceShown=sourceShown.Replace("<c0>","")
-	sourceShown=sourceShown.Replace("</c0>","")
+	sourceShown=Regex.Replace("<c0>(.*?)</c0>",sourceShown,"$1")
+	sourceShown=Regex.Replace("<c\d+ .*?></c\d+>",sourceShown,"")
 	If Regex.IsMatch("<.*?>",sourceShown) Then
 		sourceShown=Regex.Replace("<.*?>",sourceShown,"")
 	End If
