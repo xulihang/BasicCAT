@@ -254,12 +254,7 @@ Sub mergeInbetweenSpecialTaggedContent(segmentsList As List)
 								Dim previousSourceShown,nextSourceShown As String
 								previousSourceShown=previousSegment.Get(0)
 								nextSourceShown=nextSegment.Get(0)
-								If Regex.Matcher("\w",previousSourceShown.Trim.CharAt(0)).Find Then
-									new=previousSourceShown&" "&fullsource.Trim
-								Else
-									new=previousSourceShown&fullsource.Trim
-								End If
-								
+								new=previousSourceShown&" "&fullsource.Trim
 								If Regex.Matcher("\w",nextSourceShown.Trim.CharAt(0)).Find Then
 									new=new&" "&nextSourceShown
 								Else
@@ -341,7 +336,7 @@ Sub mergeSpecialTaggedContentInTheEnd(segmentsList As List)
 				Dim sourceShown As String
 			    Dim previousSourceShown As String
 			    previousSourceShown=previousSegment.Get(0)
-				If Main.currentproject.projectFile.Get("source")="en" And Regex.Matcher("\w",previousSourceShown.Trim.CharAt(0)).Find Then
+				If Main.currentproject.projectFile.Get("source")="en" Then
 					sourceShown=previousSourceShown&" "&fullsource.Trim
 				Else
 					sourceShown=previousSourceShown&fullsource.Trim
@@ -653,13 +648,13 @@ Sub generateFile(filename As String,path As String,projectFile As Map)
 
 				End If
 
-				If pp.StartsWith("Just like Violet’s") Then
-					Log(source)
-					Log(target)
-					Log(fullsource)
-					Log(translation)
-					ExitApplication
-				End If
+				'If pp.StartsWith("Three of the most") Then
+				'	Log(source)
+				'	Log(target)
+				'	Log(fullsource)
+				'	Log(translation)
+				'	ExitApplication
+				'End If
 				If projectFile.Get("source")="en" And Regex.Matcher("\w",translation).Find=False Then
 					translation=translation.Replace(" ","")
 				End If
