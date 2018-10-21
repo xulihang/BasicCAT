@@ -9,6 +9,38 @@ Sub Process_Globals
 	Private fx As JFX
 End Sub
 
+Sub changeFontsFromEnToZh(characterMap As Map)
+	Dim attributes As Map
+	attributes=characterMap.Get("Attributes")
+	Dim name As String
+	name=attributes.Get("Name")
+	If attributes.ContainsKey("FontStyle") Then
+		Dim FontStyle As String
+		FontStyle=attributes.Get("FontStyle")
+		If Regex.Matcher("[0-9]",FontStyle).Find Then
+			Dim weight As String
+			Dim matcher As Matcher
+			matcher=Regex.Matcher("[0-9]",FontStyle)
+			Do While matcher.Find
+				weight=weight&matcher.Match
+			Loop
+			FontStyle=FontWeightNumToNameForSourceHS(weight)	
+		End If
+		FontStyle=FontWeightNameToNameForSourceHS(FontStyle)
+		attributes.Put("FontStyle",FontStyle)
+	End If
+	If characterMap.ContainsKey("Properties") Then
+		Dim Properties,AppliedFont As Map
+		Properties=characterMap.Get("Properties")
+		If Properties.ContainsKey("AppliedFont") Then
+			AppliedFont=Properties.get("AppliedFont")
+			Log("font "&AppliedFont.Get("Text"))
+			AppliedFont.Put("Text","思源宋体")
+			'Properties.Put("AppliedFont",AppliedFont)
+			'characterStyle.Put("Properties",Properties)
+		End If
+	End If
+End Sub
 
 Sub changeFontsFromEnToZhOfStyleFile(ParsedData As Map)
 	Dim GroupName,styleName As String
@@ -26,41 +58,7 @@ Sub changeFontsFromEnToZhOfStyleFile(ParsedData As Map)
 		Dim styles As List
 		styles=Utils.GetElements(styleGroup,styleName)
 		For Each style As Map In styles
-			Dim attributes As Map
-			attributes=style.Get("Attributes")
-			Dim name As String
-			name=attributes.Get("Name")
-
-			If attributes.ContainsKey("FontStyle") Then
-				Dim FontStyle As String
-				FontStyle=attributes.Get("FontStyle")
-
-				If Regex.Matcher("[0-9]",FontStyle).Find Then
-					Dim weight As String
-					Dim matcher As Matcher
-					matcher=Regex.Matcher("[0-9]",FontStyle)
-					Do While matcher.Find
-						weight=weight&matcher.Match
-					Loop
-					FontStyle=FontWeightNumToNameForSourceHS(weight)
-					
-				End If
-				FontStyle=FontWeightNameToNameForSourceHS(FontStyle)
-				attributes.Put("FontStyle",FontStyle)
-			End If
-			
-
-			If style.ContainsKey("Properties") Then
-				Dim Properties,AppliedFont As Map
-				Properties=style.Get("Properties")
-				If Properties.ContainsKey("AppliedFont") Then
-					AppliedFont=Properties.get("AppliedFont")
-					Log("font "&AppliedFont.Get("Text"))
-					AppliedFont.Put("Text","思源宋体")
-					'Properties.Put("AppliedFont",AppliedFont)
-					'characterStyle.Put("Properties",Properties)
-				End If
-			End If
+			changeFontsFromEnToZh(style)
 		Next
 	Next
 
