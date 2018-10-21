@@ -661,7 +661,9 @@ Sub generateFile(filename As String,path As String,projectFile As Map)
 
 				Else
 					'tags not match, remove tags
-					source=C0TagAddedText(source,fullsource)
+					If idmlUtils.containsUnshownSpecialTaggedContent(source,fullsource) Then
+						source=C0TagAddedText(source,fullsource)
+					End If
 					Dim tagReplaceMatcher As Matcher
 					tagReplaceMatcher=Regex.Matcher2("<.*?>",32,source)
 					Do While tagReplaceMatcher.Find
@@ -681,11 +683,11 @@ Sub generateFile(filename As String,path As String,projectFile As Map)
 
 				End If
 
-				'If pp.StartsWith("Three of the most") Then
-				'	'Log(source)
-				'	'Log(target)
-				'	'Log(fullsource)
-				'	'Log(translation)
+				'If pp.StartsWith(" Knowledge is a s") Then
+				'	Log(source)
+				'	Log(target)
+				'	Log(fullsource)
+				'	Log(translation)
 				'	ExitApplication
 				'End If
 				If projectFile.Get("source")="en" And Regex.Matcher("\w",translation).Find=False Then
