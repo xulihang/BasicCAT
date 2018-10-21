@@ -398,7 +398,7 @@ Public Sub creatEmptyPane As Pane
 	Return segmentPane
 End Sub
 
-Sub addTextAreaToSegmentPane(segmentpane As Pane,source As String,target As String)
+Public Sub addTextAreaToSegmentPane(segmentpane As Pane,source As String,target As String)
 	segmentpane.LoadLayout("segment")
 	segmentpane.SetSize(Main.editorLV.AsView.Width,50dip)
 	Dim sourceTextArea As TextArea
@@ -568,81 +568,23 @@ End Sub
 Sub sourceTextArea_KeyPressed_Event (MethodName As String, Args() As Object) As Object
 	Dim sourceTextArea As TextArea
 	sourceTextArea=Sender
-	Dim index As Int
-    index=Main.editorLV.GetItemFromView(sourceTextArea.Parent)
+
 	Dim KEvt As JavaObject = Args(0)
 	Dim result As String
 	result=KEvt.RunMethod("getCode",Null)
 	Log(result)
-	If result="ENTER" Then
-		
-		Dim source As String
-		Dim newSegmentPane As Pane
-		newSegmentPane.Initialize("segmentPane")
-		source=sourceTextArea.Text.SubString2(sourceTextArea.SelectionEnd,sourceTextArea.Text.Length)
-		If source.Trim="" Then
-			Return Null
+    If result="ENTER" Then
+		If currentFilename.EndsWith(".txt") Then
+			txtFilter.splitSegment(sourceTextArea)
+		Else if currentFilename.EndsWith(".idml") Then
+			idmlFilter.splitSegment(sourceTextArea)
 		End If
-		sourceTextArea.Text=sourceTextArea.Text.SubString2(0,sourceTextArea.SelectionEnd)
-		sourceTextArea.Text=sourceTextArea.Text.Replace(CRLF,"")
-		sourceTextArea.Tag=sourceTextArea.Text
-		addTextAreaToSegmentPane(newSegmentPane,source,"")
-		Dim bitext,newBiText As List
-		bitext=segments.Get(index)
-		bitext.Set(0,sourceTextArea.Text)
-		newBiText.Initialize
-		newBiText.Add(source)
-		newBiText.Add("")
-		newBiText.Add("")
-		newBiText.Add(bitext.Get(3))
-		segments.set(index,bitext)
-		segments.InsertAt(index+1,newBiText)
-
-
-		Main.editorLV.InsertAt(Main.editorLV.GetItemFromView(sourceTextArea.Parent)+1,newSegmentPane,"")
 	Else if result="DELETE" Then
-		Dim bitext,nextBiText As List
-		bitext=segments.Get(index)
-		nextBiText=segments.Get(index+1)
-		
-		If bitext.Get(3)<>nextBiText.Get(3) Then
-			fx.Msgbox(Main.MainForm,"Cannot merge segments as these two belong to different files.","")
-			Return Null
+		If currentFilename.EndsWith(".txt") Then
+			txtFilter.mergeSegment(sourceTextArea)
+		Else if currentFilename.EndsWith(".idml") Then
+			idmlFilter.mergeSegment(sourceTextArea)
 		End If
-		
-		Dim pane,nextPane As Pane
-		Dim index As Int
-		index=Main.editorLV.GetItemFromView(sourceTextArea.Parent)
-		pane=Main.editorLV.GetPanel(index)
-		nextPane=Main.editorLV.GetPanel(index+1)
-		Dim targetTa,nextSourceTa,nextTargetTa As TextArea
-		nextSourceTa=nextPane.GetNode(0)
-		nextTargetTa=nextPane.GetNode(1)
-		
-		Dim sourceWhitespace,targetWhitespace As String
-		sourceWhitespace=""
-		targetWhitespace=""
-		If projectFile.Get("source")="en" Then
-			sourceWhitespace=" "
-		else if projectFile.Get("target")="en" Then
-			targetWhitespace=" "
-		End If
-		
-		sourceTextArea.Text=sourceTextArea.Text.Trim&sourceWhitespace&nextSourceTa.Text.Trim
-		sourceTextArea.Tag=sourceTextArea.Text
-		
-		targetTa=pane.GetNode(1)
-		targetTa.Text=targetTa.Text&targetWhitespace&nextTargetTa.Text
-
-
-		bitext.Set(0,sourceTextArea.Text)
-		bitext.Set(1,targetTa.Text)
-
-		bitext.Set(2,bitext.Get(2)&sourceWhitespace&nextBiText.Get(0)) 'ignore next segment newline and spaces
-
-		
-		segments.RemoveAt(index+1)
-		Main.editorLV.RemoveAt(Main.editorLV.GetItemFromView(sourceTextArea.Parent)+1)
 	End If
 End Sub
 

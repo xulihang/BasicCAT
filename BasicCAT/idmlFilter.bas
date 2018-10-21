@@ -1120,3 +1120,110 @@ Sub readFileAndGetAlltheSegments(filename As String,path As String) As List
 	Return segments
 End Sub
 
+Sub mergeSegment(sourceTextArea As TextArea)
+	Dim index As Int
+	index=Main.editorLV.GetItemFromView(sourceTextArea.Parent)
+	
+	Dim bitext,nextBiText As List
+	bitext=Main.currentProject.segments.Get(index)
+	nextBiText=Main.currentProject.segments.Get(index+1)
+		
+	If bitext.Get(3)<>nextBiText.Get(3) Then
+		fx.Msgbox(Main.MainForm,"Cannot merge segments as these two belong to different files.","")
+		Return
+	End If
+	
+	Dim source,nextSource As String
+	source=bitext.Get(0)
+	nextSource=nextBiText.Get(0)
+	
+	Dim fullsource,nextFullsource As String
+	fullsource=bitext.Get(2)
+	nextFullsource=nextBiText.Get(2)
+	
+	If fullsource.Trim.EndsWith(">")=True Or nextFullsource.trim.StartsWith("<")=True Then
+		fx.Msgbox(Main.MainForm,"Cannot merge segments because of tags.","")
+		Return
+	End If
+		
+	Dim pane,nextPane As Pane
+
+	pane=Main.editorLV.GetPanel(index)
+	nextPane=Main.editorLV.GetPanel(index+1)
+	Dim targetTa,nextSourceTa,nextTargetTa As TextArea
+	nextSourceTa=nextPane.GetNode(0)
+	nextTargetTa=nextPane.GetNode(1)
+		
+	Dim sourceWhitespace,targetWhitespace As String
+	sourceWhitespace=""
+	targetWhitespace=""
+	If Main.currentProject.projectFile.Get("source")="en" Then
+		If Regex.IsMatch("\w",sourceTextArea.Text.CharAt(sourceTextArea.Text.Length-1)) Or Regex.IsMatch("\w",nextSourceTa.Text.CharAt(0)) Then
+			sourceWhitespace=" "
+		Else
+			sourceWhitespace=""
+		End If
+	else if Main.currentProject.projectFile.Get("target")="en" Then
+		targetWhitespace=" "
+	End If
+		
+	sourceTextArea.Text=sourceTextArea.Text.Trim&sourceWhitespace&nextSourceTa.Text.Trim
+	sourceTextArea.Tag=sourceTextArea.Text
+		
+	targetTa=pane.GetNode(1)
+	targetTa.Text=targetTa.Text&targetWhitespace&nextTargetTa.Text
+
+
+	bitext.Set(0,sourceTextArea.Text)
+	bitext.Set(1,targetTa.Text)
+
+	sourceWhitespace=""
+	If Main.currentProject.projectFile.Get("source")="en" Then
+		If Regex.IsMatch("\w",fullsource.Trim.CharAt(fullsource.Trim.Length-1)) Or Regex.IsMatch("\w",nextFullsource.Trim.CharAt(0)) Then
+			sourceWhitespace=" "
+		End If
+	End If
+	
+	bitext.Set(2,fullsource.Trim&sourceWhitespace&nextFullsource.Trim)
+
+		
+	Main.currentProject.segments.RemoveAt(index+1)
+	Main.editorLV.RemoveAt(Main.editorLV.GetItemFromView(sourceTextArea.Parent)+1)
+End Sub
+
+
+Sub splitSegment(sourceTextArea As TextArea)
+	Dim index As Int
+	index=Main.editorLV.GetItemFromView(sourceTextArea.Parent)
+	Dim source As String
+	Dim newSegmentPane As Pane
+	newSegmentPane.Initialize("segmentPane")
+	source=sourceTextArea.Text.SubString2(sourceTextArea.SelectionEnd,sourceTextArea.Text.Length)
+	If source.Trim="" Then
+		Return
+	End If
+	sourceTextArea.Text=sourceTextArea.Text.SubString2(0,sourceTextArea.SelectionEnd)
+	sourceTextArea.Text=sourceTextArea.Text.Replace(CRLF,"")
+	sourceTextArea.Tag=sourceTextArea.Text
+	Main.currentProject.addTextAreaToSegmentPane(newSegmentPane,source,"")
+	Dim bitext,newBiText As List
+	bitext=Main.currentProject.segments.Get(index)
+	
+	Dim fullsource As String
+	fullsource=bitext.Get(2)
+	
+	bitext.Set(0,sourceTextArea.Text)
+	bitext.Set(2,fullsource.SubString2(0,fullsource.IndexOf(sourceTextArea.Text)+sourceTextArea.Text.Length))
+	
+	
+	newBiText.Initialize
+	newBiText.Add(source)
+	newBiText.Add("")
+	newBiText.Add(fullsource.SubString2(fullsource.IndexOf(sourceTextArea.Text)+sourceTextArea.Text.Length,fullsource.Length))
+	newBiText.Add(bitext.Get(3))
+	Main.currentProject.segments.set(index,bitext)
+	Main.currentProject.segments.InsertAt(index+1,newBiText)
+
+
+	Main.editorLV.InsertAt(Main.editorLV.GetItemFromView(sourceTextArea.Parent)+1,newSegmentPane,"")
+End Sub
