@@ -113,8 +113,8 @@ Sub creatWorkFile(filename As String,path As String,sourceLang As String)
 				sourceShown=idmlUtils.getPureText(source)
 				
 				inbetweenContent=inbetweenContent&source
-				inbetweenContent=Regex.Replace("(?s)(</.*?>)\n{1,}",inbetweenContent,"$1")
-				inbetweenContent=Regex.Replace("(?s)\n{1,}(<(?!/).*?>)",inbetweenContent,"$1") ' remove unnecessary \n between tags
+
+
 				'Log("sourceShown"&sourceShown)
 				bitext.add(sourceShown.Trim)
 				bitext.Add("")
@@ -141,6 +141,7 @@ Sub creatWorkFile(filename As String,path As String,sourceLang As String)
 			
 			
 		Next
+		replaceNewlinetoHtmlTagAndRemoveTags(segmentsList)
 		'Log(segmentsList)
 		mergeSpecialTaggedContentAtBeginning(segmentsList)
 		Do While containsInbetweenSpecialTaggedContent(segmentsList)
@@ -148,7 +149,7 @@ Sub creatWorkFile(filename As String,path As String,sourceLang As String)
 			mergeInbetweenSpecialTaggedContent(segmentsList)
 		Loop
 		mergeSpecialTaggedContentInTheEnd(segmentsList)
-		replaceNewlinetoHtmlTag(segmentsList)
+		'
 		
 		If segmentsList.Size<>0 Then
 			sourceFileMap.Put(innerFilename,segmentsList)
@@ -165,14 +166,19 @@ Sub creatWorkFile(filename As String,path As String,sourceLang As String)
 	File.WriteString(File.Combine(path,"work"),filename&".json",json.ToPrettyString(4))
 End Sub
 
-Sub replaceNewlinetoHtmlTag(segmentsList As List)
+Sub replaceNewlinetoHtmlTagAndRemoveTags(segmentsList As List)
 	For Each bitext As List In segmentsList
 		Dim source As String
 		source=bitext.Get(0)
 		If source.Contains(CRLF) Then
-			source=source.Replace(CRLF,"<br />")
+			source=source.Replace(CRLF,"<br/>")
 			bitext.Set(0,source)
 		End If
+		Dim fullSource As String
+		fullSource=bitext.Get(2)
+		fullSource=Regex.Replace("(?s)(</.*?>)\n{1,}",fullSource,"$1")
+		fullSource=Regex.Replace("(?s)\n{1,}(<(?!/).*?>)",fullSource,"$1") ' remove unnecessary \n between tags
+		bitext.Set(2,fullSource)
 	Next
 End Sub
 
@@ -180,19 +186,19 @@ Sub mergeSpecialTaggedContentAtBeginning(segmentsList As List)
 	If segmentsList.Size<2 Then
 		Return
 	End If
-	Dim fullsource,nextSource As String
+	Dim fullsource,nextFullSource As String
 	Dim bitext,nextSegment As List
 	bitext=segmentsList.Get(0)
 	nextSegment=segmentsList.Get(1)
 	fullsource=bitext.Get(2)
 	fullsource=Regex.Replace("<p.*?>",fullsource,"")
 	fullsource=Regex.Replace("<c\d+ .*?></c\d+>",fullsource,"")
-	nextSource=nextSegment.Get(2)
+	nextFullSource=nextSegment.Get(2)
 
 	If Regex.IsMatch("(?s)<.*?>",fullsource.Trim) Then
 		If idmlUtils.containsUnshownSpecialTaggedContent(bitext.Get(0),fullsource) Then
 			Dim tagMatcher As Matcher
-			tagMatcher=Regex.Matcher("<.*?>",nextSource)
+			tagMatcher=Regex.Matcher("<.*?>",nextFullSource)
 			If tagMatcher.Find Then
 				'Log(tagMatcher.Match)
 				If tagMatcher.Match="<c0>" Then
@@ -202,7 +208,15 @@ Sub mergeSpecialTaggedContentAtBeginning(segmentsList As List)
 					Dim nextSourceShown As String
 					nextSourceShown=nextSegment.Get(0)
 					If Main.currentproject.projectFile.Get("source")="en" And Regex.Matcher("\w",nextSourceShown.Trim.CharAt(0)).Find Then
-						sourceShown=fullsource.Trim&" "&nextSourceShown
+						Dim pureText,nextPureText As String
+						pureText=idmlUtils.getPureTextwithouttrim(fullsource)
+						nextPureText=idmlUtils.getPureTextwithouttrim(nextFullSource)
+						If Regex.IsMatch("\s",pureText.CharAt(pureText.Length-1)) Or Regex.IsMatch("\s",nextPureText.CharAt(0)) Then
+							sourceShown=fullsource.Trim&" "&nextSourceShown
+						Else
+							sourceShown=fullsource.Trim&nextSourceShown
+						End If
+						
 					Else
 						sourceShown=fullsource.Trim&nextSourceShown
 					End If
@@ -234,19 +248,19 @@ Sub mergeInbetweenSpecialTaggedContent(segmentsList As List)
 	For index=0 To segmentsList.Size-1
 		Dim previousSegment,bitext,nextSegment As List
 		bitext=duplicatedList.Get(index)
-		Dim previousSource,fullsource,nextSource As String
+		Dim previousFullSource,fullsource,nextFullSource As String
 
 		If index-1>=0 And index+1<=duplicatedList.Size-1 Then
 			previousSegment=duplicatedList.Get(index-1)
 			nextSegment=duplicatedList.Get(index+1)
-			previousSource=previousSegment.Get(2)
+			previousFullSource=previousSegment.Get(2)
 			fullsource=bitext.Get(2)
-			nextSource=nextSegment.Get(2)
+			nextFullSource=nextSegment.Get(2)
 
 			If merged=False Or index-previousMergedIndex>=3 Then
 				If Regex.IsMatch("(?s)<.*?>",fullsource.Trim) Then
 					If idmlUtils.containsUnshownSpecialTaggedContent(bitext.Get(0),fullsource) Then
-						If previousSource.Trim.EndsWith("</c0>") And nextSource.Trim.StartsWith("<c0>") Then
+						If previousFullSource.Trim.EndsWith("</c0>") And nextFullSource.Trim.StartsWith("<c0>") Then
 							Dim newSegment As List
 							newSegment.Initialize
 							If Main.currentproject.projectFile.Get("source")="en" Then
@@ -254,7 +268,18 @@ Sub mergeInbetweenSpecialTaggedContent(segmentsList As List)
 								Dim previousSourceShown,nextSourceShown As String
 								previousSourceShown=previousSegment.Get(0)
 								nextSourceShown=nextSegment.Get(0)
-								new=previousSourceShown&" "&fullsource.Trim
+								
+								Dim previousPureText,pureText,nextPureText As String
+								previousPureText=idmlUtils.getPureTextwithouttrim(previousFullSource)
+								pureText=idmlUtils.getPureTextwithouttrim(fullsource)
+								nextPureText=idmlUtils.getPureTextwithouttrim(nextFullSource)
+								
+								If Regex.IsMatch("\s",previousPureText.CharAt(previousPureText.Length-1)) Or Regex.IsMatch("\s",pureText.CharAt(0)) Then
+									new=previousSourceShown&" "&fullsource.Trim
+								Else
+									new=previousSourceShown&fullsource.Trim
+								End If
+								
 								If Regex.Matcher("\w",nextSourceShown.Trim.CharAt(0)).Find Then
 									new=new&" "&nextSourceShown
 								Else
@@ -279,6 +304,8 @@ Sub mergeInbetweenSpecialTaggedContent(segmentsList As List)
 				End If
 			End If
 		End If
+		
+
 		
 		If merged=False Or index-previousMergedIndex>=2 Then
 			newList.Add(bitext)
@@ -320,24 +347,33 @@ Sub mergeSpecialTaggedContentInTheEnd(segmentsList As List)
 	If segmentsList.Size<2 Then
 		Return
 	End If
-	Dim fullsource,previousSource As String
+	Dim fullsource,previousFullSource As String
 	Dim bitext,previousSegment As List
 	bitext=segmentsList.Get(segmentsList.Size-1)
 	previousSegment=segmentsList.Get(segmentsList.Size-2)
 	fullsource=bitext.Get(2)
-	previousSource=previousSegment.Get(2)
+	previousFullSource=previousSegment.Get(2)
 	fullsource=Regex.Replace("<p.*?>",fullsource,"")
 	fullsource=Regex.Replace("<c\d+ .*?></c\d+>",fullsource,"")
 	If Regex.IsMatch("(?s)<.*?>",fullsource.Trim) Then
 		If idmlUtils.containsUnshownSpecialTaggedContent(bitext.Get(0),fullsource) Then
-			If previousSource.Trim.EndsWith("</c0>") Then
+			If previousFullSource.Trim.EndsWith("</c0>") Then
 				fullsource=bitext.Get(2)
 				bitext.Clear
 				Dim sourceShown As String
 			    Dim previousSourceShown As String
 			    previousSourceShown=previousSegment.Get(0)
 				If Main.currentproject.projectFile.Get("source")="en" Then
-					sourceShown=previousSourceShown&" "&fullsource.Trim
+					Dim previousPureText,pureText As String
+					previousPureText=idmlUtils.getPureTextwithouttrim(previousFullSource)
+					pureText=idmlUtils.getPureTextwithouttrim(fullsource)
+
+					If Regex.IsMatch("\s",previousPureText.CharAt(previousPureText.Length-1)) Or Regex.IsMatch("\s",pureText.CharAt(0)) Then
+						sourceShown=previousSourceShown&" "&fullsource.Trim
+					Else
+						sourceShown=previousSourceShown&fullsource.Trim
+					End If
+					
 				Else
 					sourceShown=previousSourceShown&fullsource.Trim
 				End If
@@ -618,8 +654,8 @@ Sub generateFile(filename As String,path As String,projectFile As Map)
 			Else
 				'Dim pp As String
 				'pp=source
-				source=source.Replace("<br />",CRLF)
-				target=target.Replace("<br />",CRLF)
+				source=source.Replace("<br/>",CRLF)
+				target=target.Replace("<br/>",CRLF)
 				If fullsource.Contains(C0TagAddedText(source,fullsource)) And idmlUtils.containsUnshownSpecialTaggedContent(target,source)=False Then
 					translation=fullsource.Replace(C0TagAddedText(source,fullsource),C0TagAddedText(target,fullsource))
 
@@ -1141,9 +1177,21 @@ Sub mergeSegment(sourceTextArea As TextArea)
 	fullsource=bitext.Get(2)
 	nextFullsource=nextBiText.Get(2)
 	
+	Dim showTag As Boolean=False
 	If fullsource.Trim.EndsWith(">")=True Or nextFullsource.trim.StartsWith("<")=True Then
-		fx.Msgbox(Main.MainForm,"Cannot merge segments because of tags.","")
-		Return
+		Dim result As Int
+		result=fx.Msgbox2(Main.MainForm,"Segments contain unshown tags, continue?","","Yes","Cancel","No",fx.MSGBOX_CONFIRMATION)
+		Log(result)
+		'yes -1, no -2, cancel -3
+		Select result
+			Case -1
+				showTag=True
+			Case -2
+				Return
+			Case -3
+				Return
+		End Select
+
 	End If
 		
 	Dim pane,nextPane As Pane
@@ -1154,9 +1202,10 @@ Sub mergeSegment(sourceTextArea As TextArea)
 	nextSourceTa=nextPane.GetNode(0)
 	nextTargetTa=nextPane.GetNode(1)
 		
-	Dim sourceWhitespace,targetWhitespace As String
+	Dim sourceWhitespace,targetWhitespace,fullsourceWhitespace As String
 	sourceWhitespace=""
 	targetWhitespace=""
+	fullsourceWhitespace=""
 	If Main.currentProject.projectFile.Get("source")="en" Then
 		If Regex.IsMatch("\w",sourceTextArea.Text.CharAt(sourceTextArea.Text.Length-1)) Or Regex.IsMatch("\w",nextSourceTa.Text.CharAt(0)) Then
 			sourceWhitespace=" "
@@ -1166,25 +1215,33 @@ Sub mergeSegment(sourceTextArea As TextArea)
 	else if Main.currentProject.projectFile.Get("target")="en" Then
 		targetWhitespace=" "
 	End If
-		
-	sourceTextArea.Text=sourceTextArea.Text.Trim&sourceWhitespace&nextSourceTa.Text.Trim
-	sourceTextArea.Tag=sourceTextArea.Text
+	If Main.currentProject.projectFile.Get("source")="en" Then
+		If Regex.IsMatch("\w",fullsource.Trim.CharAt(fullsource.Trim.Length-1)) Or Regex.IsMatch("\w",nextFullsource.Trim.CharAt(0)) Then
+			fullsourceWhitespace=" "
+		End If
+	End If
+	
+	If showTag Then
+		source=fullsource&nextFullsource
+		source=source.Replace(CRLF,"<br/>")
+		source=Regex.Replace("</*p\d+>",source,"")
+		fullsource=fullsource&nextFullsource
+	Else
+		source=sourceTextArea.Text.Trim&sourceWhitespace&nextSourceTa.Text.Trim
+		fullsource=fullsource.Trim&fullsourceWhitespace&nextFullsource.Trim
+	End If
+	
+	sourceTextArea.Text=source
+	sourceTextArea.Tag=source
 		
 	targetTa=pane.GetNode(1)
 	targetTa.Text=targetTa.Text&targetWhitespace&nextTargetTa.Text
 
 
-	bitext.Set(0,sourceTextArea.Text)
+	bitext.Set(0,source)
 	bitext.Set(1,targetTa.Text)
-
-	sourceWhitespace=""
-	If Main.currentProject.projectFile.Get("source")="en" Then
-		If Regex.IsMatch("\w",fullsource.Trim.CharAt(fullsource.Trim.Length-1)) Or Regex.IsMatch("\w",nextFullsource.Trim.CharAt(0)) Then
-			sourceWhitespace=" "
-		End If
-	End If
 	
-	bitext.Set(2,fullsource.Trim&sourceWhitespace&nextFullsource.Trim)
+	bitext.Set(2,fullsource)
 
 		
 	Main.currentProject.segments.RemoveAt(index+1)

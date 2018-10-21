@@ -290,6 +290,14 @@ Sub getPureText(tag As String) As String
 	Return sourceShown
 End Sub
 
+Sub getPureTextWithoutTrim(tag As String) As String
+	Dim sourceShown As String
+	sourceShown=tag
+	sourceShown=sourceShown.Replace("<br/>",CRLF)
+	sourceShown=Regex.Replace("<.*?>",sourceShown,"")
+	Return sourceShown
+End Sub
+
 
 Sub isEndOfSentence(Sentence As String) As Boolean
 	Sentence=Sentence.Trim
