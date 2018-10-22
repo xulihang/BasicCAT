@@ -280,11 +280,17 @@ Sub mergeInbetweenSpecialTaggedContent(segmentsList As List)
 									new=previousSourceShown&fullsource.Trim
 								End If
 								
-								If Regex.Matcher("\w",nextSourceShown.Trim.CharAt(0)).Find Then
+								If Regex.IsMatch("\s",nextPureText.CharAt(0)) Or Regex.IsMatch("\s",pureText.CharAt(pureText.Length-1)) Then
 									new=new&" "&nextSourceShown
 								Else
 									new=new&nextSourceShown
 								End If
+								
+								'If Regex.Matcher("\w",nextSourceShown.Trim.CharAt(0)).Find Then
+								'	new=new&" "&nextSourceShown
+								'Else
+							    '	new=new&nextSourceShown
+								'End If
 								
 								newSegment.Add(new)
 							Else
@@ -661,11 +667,11 @@ Sub generateFile(filename As String,path As String,projectFile As Map)
 
 				Else
 					'tags not match, remove tags
-					If idmlUtils.containsUnshownSpecialTaggedContent(source,fullsource) Then
+					If idmlUtils.containsUnshownC0Tag(source,fullsource) Then
 						source=C0TagAddedText(source,fullsource)
 					End If
 					Dim tagReplaceMatcher As Matcher
-					tagReplaceMatcher=Regex.Matcher2("<.*?>",32,source)
+					tagReplaceMatcher=Regex.Matcher2("<.*?>",32,target)
 					Do While tagReplaceMatcher.Find
 						target=target.Replace(tagReplaceMatcher.Match,"")
 					Loop
@@ -1208,17 +1214,26 @@ Sub mergeSegment(sourceTextArea As TextArea)
 	sourceWhitespace=""
 	targetWhitespace=""
 	fullsourceWhitespace=""
+	
+	Dim pureText,nextPureText As String
+	pureText=idmlUtils.getPureTextWithoutTrim(fullsource)
+	nextPureText=idmlUtils.getPureTextWithoutTrim(nextFullsource)
 	If Main.currentProject.projectFile.Get("source")="en" Then
-		If Regex.IsMatch("\w",sourceTextArea.Text.CharAt(sourceTextArea.Text.Length-1)) Or Regex.IsMatch("\w",nextSourceTa.Text.CharAt(0)) Then
+		If Regex.IsMatch("\s",pureText.CharAt(pureText.Length-1)) Or Regex.IsMatch("\s",nextPureText.CharAt(0)) Then
 			sourceWhitespace=" "
 		Else
 			sourceWhitespace=""
 		End If
+		'If Regex.IsMatch("\w",sourceTextArea.Text.CharAt(sourceTextArea.Text.Length-1)) Or Regex.IsMatch("\w",nextSourceTa.Text.CharAt(0)) Then
+		'	sourceWhitespace=" "
+		'Else
+		'	sourceWhitespace=""
+		'End If
 	else if Main.currentProject.projectFile.Get("target")="en" Then
 		targetWhitespace=" "
 	End If
 	If Main.currentProject.projectFile.Get("source")="en" Then
-		If Regex.IsMatch("\w",fullsource.Trim.CharAt(fullsource.Trim.Length-1)) Or Regex.IsMatch("\w",nextFullsource.Trim.CharAt(0)) Then
+		If Regex.IsMatch("\s",pureText.CharAt(pureText.Length-1)) Or Regex.IsMatch("\s",nextPureText.CharAt(0)) Then
 			fullsourceWhitespace=" "
 		End If
 	End If

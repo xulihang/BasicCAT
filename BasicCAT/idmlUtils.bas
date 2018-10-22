@@ -252,6 +252,25 @@ Sub containsUnshownSpecialTaggedContent(source As String,fullsource As String) A
 	Return result
 End Sub
 
+Sub containsUnshownC0Tag(source As String,fullsource As String) As Boolean
+	Dim result As Boolean=False
+	Dim count1, count2 As Int
+	Dim tagMatcher As Matcher
+	tagMatcher=Regex.Matcher("</*c0>",source)
+	Do While tagMatcher.Find
+		count1=count1+1
+	Loop
+	Dim tagMatcher2 As Matcher
+	tagMatcher2=Regex.Matcher("</*c0>",fullsource)
+	Do While tagMatcher2.Find
+		count2=count2+1
+	Loop
+	If count2>count1 Then
+		result=True
+	End If
+	Return result
+End Sub
+
 
 Sub removeBrInContentList(ContentList As List)
 	Dim newlist As List
