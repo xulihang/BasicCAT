@@ -712,7 +712,7 @@ Sub generateFile(filename As String,path As String,projectFile As Map)
 
 				End If
 
-				'If pp.StartsWith(" Knowledge is a s") Then
+				'If pp.StartsWith("<c0><br/></c0><c4>") Then
 				'	Log(source)
 				'	Log(target)
 				'	Log(fullsource)
@@ -765,11 +765,17 @@ Sub C0TagAddedText(text As String,fullsource As String) As String
 		Dim before,mid,after As String
 		before=text.SubString2(0,text.IndexOf(matcher.Match))
 		mid=matcher.Match
-		If Regex.Matcher("</c0><c\d+",fullsource).Find Then
-			mid="</c0>"&mid
+		If Regex.Matcher("</c0>"&mid,fullsource).Find Then
+			If Regex.Matcher("</c0>"&mid,text).Find=False Then
+				mid="</c0>"&mid
+			End If
+			
 		End If
-		If Regex.Matcher("</c\d+><c0>",fullsource).Find Then
-			mid=mid&"<c0>"
+		If Regex.Matcher(mid&"<c0>",fullsource).Find Then
+			If Regex.Matcher(mid&"<c0>",text).Find=False Then
+				mid=mid&"<c0>"
+			End If
+			
 		End If
 		after=text.SubString2(text.IndexOf(matcher.Match)+matcher.Match.Length,text.Length)
 		text=before&mid&after
