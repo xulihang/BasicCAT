@@ -715,7 +715,7 @@ Sub generateFile(filename As String,path As String,projectFile As Map)
 
 				End If
 
-				'If pp.StartsWith("<c0><br/></c0><c4>") Then
+				'If pp.StartsWith("<c4><br/>Prostheses</c4>") Then
 				'	Log(source)
 				'	Log(target)
 				'	Log(fullsource)
@@ -768,14 +768,16 @@ Sub C0TagAddedText(text As String,fullsource As String) As String
 		Dim before,mid,after As String
 		before=text.SubString2(0,text.IndexOf(matcher.Match))
 		mid=matcher.Match
-		If Regex.Matcher("</c0>"&mid,fullsource).Find Then
-			If Regex.Matcher("</c0>"&mid,text).Find=False Then
+		Log("mid"&mid)
+		Log(fullsource.Contains(mid&"<c0>"))
+		Log(text.Contains(mid&"<c0>"))
+	    If Regex.Matcher("</c0><c\d+",fullsource).Find Then
+		    If Regex.Matcher("</c0><c\d+",text).Find=False Then
 				mid="</c0>"&mid
 			End If
-			
 		End If
-		If Regex.Matcher(mid&"<c0>",fullsource).Find Then
-			If Regex.Matcher(mid&"<c0>",text).Find=False Then
+		If Regex.Matcher("</c\d+><c0>",fullsource).Find Then
+		    If Regex.Matcher("</c\d+><c0>",text).Find=False Then
 				mid=mid&"<c0>"
 			End If
 			
