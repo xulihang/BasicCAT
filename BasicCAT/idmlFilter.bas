@@ -141,15 +141,15 @@ Sub creatWorkFile(filename As String,path As String,sourceLang As String)
 			
 			
 		Next
-		replaceNewlinetoHtmlTagAndRemoveTags(segmentsList)
-		'Log(segmentsList)
+		
+		removeNewLinesBetweenTags(segmentsList)
 		mergeSpecialTaggedContentAtBeginning(segmentsList)
 		Do While containsInbetweenSpecialTaggedContent(segmentsList)
 			''Log(segmentsList)
 			mergeInbetweenSpecialTaggedContent(segmentsList)
 		Loop
 		mergeSpecialTaggedContentInTheEnd(segmentsList)
-		'
+		replaceNewlinestoHtmlTag(segmentsList)
 		
 		If segmentsList.Size<>0 Then
 			sourceFileMap.Put(innerFilename,segmentsList)
@@ -166,7 +166,7 @@ Sub creatWorkFile(filename As String,path As String,sourceLang As String)
 	File.WriteString(File.Combine(path,"work"),filename&".json",json.ToPrettyString(4))
 End Sub
 
-Sub replaceNewlinetoHtmlTagAndRemoveTags(segmentsList As List)
+Sub replaceNewlinestoHtmlTag(segmentsList As List)
 	For Each bitext As List In segmentsList
 		Dim source As String
 		source=bitext.Get(0)
@@ -174,6 +174,11 @@ Sub replaceNewlinetoHtmlTagAndRemoveTags(segmentsList As List)
 			source=source.Replace(CRLF,"<br/>")
 			bitext.Set(0,source)
 		End If
+	Next
+End Sub
+
+Sub removeNewLinesBetweenTags(segmentsList As List)
+	For Each bitext As List In segmentsList
 		Dim fullSource As String
 		fullSource=bitext.Get(2)
 		fullSource=Regex.Replace("(?s)(</.*?>)\n{1,}",fullSource,"$1")
@@ -191,12 +196,16 @@ Sub mergeSpecialTaggedContentAtBeginning(segmentsList As List)
 	bitext=segmentsList.Get(0)
 	nextSegment=segmentsList.Get(1)
 	fullsource=bitext.Get(2)
-	fullsource=Regex.Replace("<p.*?>",fullsource,"")
-	fullsource=Regex.Replace("<c\d+ .*?></c\d+>",fullsource,"")
+	'fullsource=Regex.Replace("<p.*?>",fullsource,"")
+	'fullsource=Regex.Replace("<c\d+ .*?></c\d+>",fullsource,"")
 	nextFullSource=nextSegment.Get(2)
 
+    Dim nextPureText As String
+	nextPureText=idmlUtils.getPureTextWithoutTrim(nextFullSource)
+	
+
 	If Regex.IsMatch("(?s)<.*?>",fullsource.Trim) Then
-		If idmlUtils.containsUnshownSpecialTaggedContent(bitext.Get(0),fullsource) Then
+		If idmlUtils.containsUnshownSpecialTaggedContent(bitext.Get(0),fullsource) And nextPureText.StartsWith(CRLF)=False Then
 			Dim tagMatcher As Matcher
 			tagMatcher=Regex.Matcher("<.*?>",nextFullSource)
 			If tagMatcher.Find Then
@@ -359,8 +368,8 @@ Sub mergeSpecialTaggedContentInTheEnd(segmentsList As List)
 	previousSegment=segmentsList.Get(segmentsList.Size-2)
 	fullsource=bitext.Get(2)
 	previousFullSource=previousSegment.Get(2)
-	fullsource=Regex.Replace("<p.*?>",fullsource,"")
-	fullsource=Regex.Replace("<c\d+ .*?></c\d+>",fullsource,"")
+	'fullsource=Regex.Replace("<p.*?>",fullsource,"")
+	'fullsource=Regex.Replace("<c\d+ .*?></c\d+>",fullsource,"")
 	If Regex.IsMatch("(?s)<.*?>",fullsource.Trim) Then
 		If idmlUtils.containsUnshownSpecialTaggedContent(bitext.Get(0),fullsource) Then
 			If previousFullSource.Trim.EndsWith("</c0>") Then
@@ -1002,7 +1011,7 @@ Sub getStoryContent(ParsedData As Map) As String
 		paragraphStyleRangeContent=idmlUtils.mergeInWordPartForparaStyleRange(paragraphStyleRangeContent)
 		
 		paragraphStyleRangeContent="<p"&paragraphStyleIndex&">"&paragraphStyleRangeContent&"</p"&paragraphStyleIndex&">"&CRLF
-		paragraphStyleRangeContent=mergeSameTags(paragraphStyleRangeContent)
+		'paragraphStyleRangeContent=mergeSameTags(paragraphStyleRangeContent)
 		content=content&paragraphStyleRangeContent
 	Next
 	''Log(content)

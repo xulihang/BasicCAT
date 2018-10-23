@@ -113,7 +113,7 @@ Sub getMatchList(source As String) As ResumableSub
 					Dim targetList As List
 					targetList=kvs.Get(key)
 					tmPairList.Add(targetList.Get(0))
-					tmPairList.Add(targetList.Get(1))
+					tmPairList.Add(targetList.Get(1)) ' external tm name
 				End If
 				Log(tmPairList)
 				matchList.Add(tmPairList)

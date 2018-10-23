@@ -522,13 +522,16 @@ Sub onSelectionChanged(new As Object,ta As TextArea,isSource As Boolean)
 		result.Initialize
 		
 		For i=0 To segments.Size-1
-			Dim segment As List
-			segment=segments.Get(i)
+			Dim segment1 As List
+			segment1=segments.Get(i) 
+			Dim newsegment As List 'avoid affecting segments
+			newsegment.Initialize
+			newsegment.AddAll(segment1)
 			Dim content As String
-			content=segment.Get(index)
-			segment.Add(i)
+			content=newsegment.Get(index)
+			newsegment.Add(i)
 			If content.Contains(selectedText) And content<>ta.Text Then
-				result.Add(segment)
+				result.Add(newsegment)
 			End If
 		Next
 		For Each segment As List In result
