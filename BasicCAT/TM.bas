@@ -48,7 +48,7 @@ Public Sub importExternalTranslationMemory(tmList As List)
 End Sub
 
 Sub importTxt(filename As String)
-	progressDialog.Show("Loading external memory")
+	progressDialog.Show("Loading external memory","loadtm")
 	Dim content As String
 	content=File.ReadString(File.Combine(Main.currentProject.path,"TM"),filename)
 	Dim segments As List

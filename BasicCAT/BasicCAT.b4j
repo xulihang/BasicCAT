@@ -104,6 +104,7 @@ Library18=jxmlsax
 Library19=xmlbuilder
 Library2=jfx
 Library20=jhttputils2
+Library21=jsd_ziplibray
 Library3=javaobject
 Library4=archiver
 Library5=json
@@ -137,6 +138,7 @@ Module3=segmentation
 Module30=TMManager
 Module31=viewSegment
 Module32=TermManager
+Module33=zip4j
 Module4=CustomListView
 Module5=txtFilter
 Module6=TM
@@ -144,8 +146,8 @@ Module7=Term
 Module8=KeyValueStore
 Module9=ProjectSettings
 NumberOfFiles=45
-NumberOfLibraries=20
-NumberOfModules=32
+NumberOfLibraries=21
+NumberOfModules=33
 Version=6.51
 @EndOfDesignText@
 #Region Project Attributes 
@@ -157,6 +159,7 @@ Version=6.51
 #AdditionalJar: sqlite-jdbc-3.23.1
 #AdditionalJar: bcprov-jdk15on-154
 #AdditionalJar: fuzzywuzzy-1.1.10
+#AdditionalJar: zip4j-1.3.2
 
 '-------- for jgit
 #AdditionalJar: org.eclipse.jgit-5.1.1.201809181055-r
@@ -828,6 +831,10 @@ End Sub
 
 Public Sub updateSavedTime
 	operationLabel.Text="Project saved at "&DateTime.Time(DateTime.Now)
+End Sub
+
+Public Sub updateOperation(info As String)
+	operationLabel.Text=info
 End Sub
 
 Sub checkLV_MouseClicked (EventData As MouseEvent)

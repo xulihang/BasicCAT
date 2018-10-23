@@ -154,11 +154,13 @@ End Sub
 Sub CopyFolder(Source As String, targetFolder As String)
 	If File.Exists(targetFolder, "") = False Then File.MakeDir(targetFolder, "")
 	For Each f As String In File.ListFiles(Source)
+		Log(targetFolder)
+		Log("f"&f)
 		If File.IsDirectory(Source, f) Then
 			CopyFolder(File.Combine(Source, f), File.Combine(targetFolder, f))
 			Continue
 		End If
-		wait for (File.CopyAsync(Source, f, targetFolder, f)) Complete (Success As Boolean)
+		File.Copy(Source, f, targetFolder, f)
 	Next
 End Sub
 
@@ -182,7 +184,6 @@ Sub isChinese(text As String) As Boolean
 End Sub
 
 #If JAVA
-
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import javafx.scene.text.Font;

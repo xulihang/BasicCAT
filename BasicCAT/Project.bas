@@ -990,7 +990,7 @@ Sub preTranslate(options As Map)
 	If options.Get("type")<>"" Then
 		completed=0
 		Dim index As Int=-1
-		progressDialog.Show("Pretranslating...")
+		progressDialog.Show("Pretranslating...","pretranslate")
 		For Each bitext As List In segments
 			Sleep(0)
 			index=index+1

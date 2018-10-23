@@ -27,14 +27,18 @@ Sub creatWorkFile(filename As String,path As String,sourceLang As String)
 		parser.Initialize
 		order.Initialize
 	End If
+	progressDialog.ShowWithoutProgressBar("Loading idml file...","loadfile")
+	progressDialog.update2("Unzipping...")
 	Dim unzipedDirPath As String
 	unzipedDirPath=File.Combine(File.Combine(path,"source"),filename.Replace(".idml",""))
 	wait for (unzipAndLoadIDML(path,filename)) Complete (spreadsList As List)
 	
+	progressDialog.update2("Loading styles...")
 	loadStyles(unzipedDirPath)
 	'--------------------------
 	Dim storiesList As List
 	storiesList.Initialize
+	progressDialog.update2("Reading Spreads...")
 	For Each map1 As Map In spreadsList
 		Dim leftPageStoriesForSpreadList,rightPageStoriesForSpreadList As List
 		leftPageStoriesForSpreadList.Initialize
@@ -74,6 +78,7 @@ Sub creatWorkFile(filename As String,path As String,sourceLang As String)
 	
 
 	For Each storyID As String In storiesList
+		progressDialog.update2("Reading Story_"&storyID&".xml...")
 		Sleep(0)
 		'Log(storyID)
 		Dim sourceFileMap As Map
@@ -164,6 +169,8 @@ Sub creatWorkFile(filename As String,path As String,sourceLang As String)
 	Dim json As JSONGenerator
 	json.Initialize(workfile)
 	File.WriteString(File.Combine(path,"work"),filename&".json",json.ToPrettyString(4))
+	progressDialog.close
+	fx.Msgbox(Main.MainForm,"idml file imported","")
 End Sub
 
 Sub replaceNewlinestoHtmlTag(segmentsList As List)
@@ -631,6 +638,8 @@ End Sub
 
 
 Sub generateFile(filename As String,path As String,projectFile As Map)
+	progressDialog.ShowWithoutProgressBar("Building idml file...","buildidml")
+	
 	Dim unzipedDirPath As String
 	unzipedDirPath=File.Combine(File.Combine(path,"source"),filename.Replace(".idml",""))
 	If paragraphStyles.IsInitialized=False Then
@@ -639,8 +648,12 @@ Sub generateFile(filename As String,path As String,projectFile As Map)
 	If projectFile.Get("source")="en" Then
 		replaceStyleAndFontFileForZh(unzipedDirPath)
 	End If
-    'Log(filename)
-	'Log(path)
+
+	If File.Exists(File.Combine(path,"target"),"Stories")=False Then
+		File.MakeDir(File.Combine(path,"target"),"Stories")
+	End If
+
+
 	Dim workfile As Map
 	Dim json As JSONParser
 	json.Initialize(File.ReadString(File.Combine(path,"work"),filename&".json"))
@@ -651,6 +664,9 @@ Sub generateFile(filename As String,path As String,projectFile As Map)
 		Sleep(0)
 		Dim innerfilename As String
 		innerfilename=sourceFileMap.GetKeyAt(0)
+		
+		progressDialog.update2("Generating "&innerfilename&"...")
+		
 		Dim innerfileContent As String
 		Dim segmentsList As List
 		segmentsList=sourceFileMap.Get(innerfilename)
@@ -684,9 +700,7 @@ Sub generateFile(filename As String,path As String,projectFile As Map)
 					Do While tagReplaceMatcher.Find
 						target=target.Replace(tagReplaceMatcher.Match,"")
 					Loop
-					
-
-					
+						
 					If Regex.Matcher2("</c0><c\d+",32,fullsource).Find And Regex.Matcher2("</c\d+><c0>",32,fullsource).Find Then
 						
 					Else
@@ -719,9 +733,29 @@ Sub generateFile(filename As String,path As String,projectFile As Map)
 		storypath=File.Combine(File.Combine(storypath,"Stories"),innerfilename)
 		'Log("storypath"&storypath)
 		''Log(innerfileContent)
-		File.WriteString(File.Combine(path,"target"),innerfilename,taggedTextToXml(innerfileContent,storypath))
+		File.WriteString(File.Combine(File.Combine(path,"target"),"Stories"),innerfilename,taggedTextToXml(innerfileContent,storypath))
 	Next
+	progressDialog.update2("Zipping...")
+	zipIDML(unzipedDirPath,filename,path)
+End Sub
 
+Sub zipIDML(unzipedDirPath As String,filename As String,path As String)
+    If File.Exists(File.Combine(path,"target"),filename) Then
+		File.Delete(File.Combine(path,"target"),filename)
+	End If
+	Dim zipDirPath As String
+	zipDirPath=File.Combine(File.Combine(path,"target"),filename.Replace(".idml",""))
+	Utils.CopyFolder(unzipedDirPath,zipDirPath)
+	
+	Utils.CopyFolder(File.Combine(File.Combine(path,"target"),"Stories"),File.Combine(zipDirPath,"Stories"))
+	
+    Dim zip As zip4j
+	zip.Initialize
+	wait for (zip.zipFiles(zipDirPath,File.Combine(path,"target"),filename)) complete (result As Object)
+	File.Delete(File.Combine(path,"target"),"Stories")
+	File.Delete(File.Combine(path,"target"),filename.Replace(".idml",""))
+	progressDialog.close
+	Main.updateOperation(filename&" generated!")
 End Sub
 
 Sub C0TagAddedText(text As String,fullsource As String) As String
