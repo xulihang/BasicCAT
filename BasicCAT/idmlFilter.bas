@@ -1026,12 +1026,13 @@ Sub getStoryContent(ParsedData As Map) As String
 						Next
 					Loop
 
-					For Each item As String In brcontentInOrder
-						characterStyleRangeContent=characterStyleRangeContent&item
-					Next
+
 
 					
 				End If
+			Next
+			For Each item As String In brcontentInOrder
+				characterStyleRangeContent=characterStyleRangeContent&item
 			Next
 			characterStyleRangeContent=characterStyleRangeContent.Replace(" ","") 'replace LSEP
 			If attributes.Size>1 Then

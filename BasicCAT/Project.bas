@@ -1013,6 +1013,11 @@ Sub preTranslate(options As Map)
 	            Dim resultList As List
 				Wait For (projectTM.getOneUseMemory(bitext.Get(0),options.Get("rate"))) Complete (Result As List)
 				resultList=Result
+				If resultList.Size=0 Then
+					completed=completed+1
+					progressDialog.update(completed,segments.Size)
+					Continue
+				End If
 				Dim similarity,matchrate As Double
 				similarity=resultList.Get(0)
 				matchrate=options.Get("rate")
