@@ -602,6 +602,9 @@ Sub taggedTextToXml(taggedText As String,storypath As String) As String
 					If characterMap.ContainsKey("Text") Then
 						characterMap.Remove("Text")
 					End If
+					If characterMap.ContainsKey("Content") Then
+						characterMap.Remove("Content")
+					End If
 				Catch
 					characterMap=CreateMap("Attributes":CreateMap("AppliedCharacterStyle":characterStyles.Get(styleIndex)),"Content":list1)
 					'Log(LastException)
