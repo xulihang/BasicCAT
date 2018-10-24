@@ -686,8 +686,8 @@ Sub generateFile(filename As String,path As String,projectFile As Map)
 			If target="" Then
 				translation=fullsource
 			Else
-				'Dim pp As String
-				'pp=source
+				Dim pp As String
+				pp=source
 				source=source.Replace("<br/>",CRLF)
 				target=target.Replace("<br/>",CRLF)
 				If fullsource.Contains(C0TagAddedText(source,fullsource)) And idmlUtils.containsUnshownSpecialTaggedContent(target,source)=False Then
@@ -704,24 +704,24 @@ Sub generateFile(filename As String,path As String,projectFile As Map)
 						target=target.Replace(tagReplaceMatcher.Match,"")
 					Loop
 						
-					If Regex.Matcher2("</c0><c\d+",32,fullsource).Find And Regex.Matcher2("</c\d+><c0>",32,fullsource).Find Then
+					'If Regex.Matcher2("</c0><c\d+",32,fullsource).Find And Regex.Matcher2("</c\d+><c0>",32,fullsource).Find Then
 						
-					Else
-						target=addNecessaryTags(target,source)
-					End If
+					'Else
+					target=addNecessaryTags(target,fullsource)
+					'End If
 					
                     
 					translation=fullsource.Replace(source,target)
 
 				End If
 
-				'If pp.StartsWith("<c4><br/>Prostheses</c4>") Then
-				'	Log(source)
-				'	Log(target)
-				'	Log(fullsource)
-				'	Log(translation)
-				'	ExitApplication
-				'End If
+				If pp.StartsWith("<c0><br/></c0><c4>Humidity") Then
+					Log(source)
+					Log(target)
+					Log(fullsource)
+					Log(translation)
+					'ExitApplication
+				End If
 				If projectFile.Get("source")="en" And Regex.Matcher("\w",translation).Find=False Then
 					translation=translation.Replace(" ","")
 				End If
@@ -788,23 +788,44 @@ Sub C0TagAddedText(text As String,fullsource As String) As String
 	Return text
 End Sub
 
-Sub addNecessaryTags(target As String,source As String) As String
-	source=Regex.Replace2("<c[1-9].*?>.*?</c[1-9].*?>|<c0 id=.*?>.*?</c0>",32,source,"")
+Sub addNecessaryTags(target As String,fullsource As String) As String
+	'source=Regex.Replace2("<c[1-9].*?>.*?</c[1-9].*?>|<c0 id=.*?>.*?</c0>",32,source,"")
 	
 	target="<c0>"&target&"</c0>"
-	Dim matcher1 As Matcher
-	matcher1=Regex.Matcher2(".*?(</c\d+>)",32,source)
-	If matcher1.Find Then
-		target=matcher1.Group(1)&target
+	
+	
+	Dim tagMatcher As Matcher
+	tagMatcher=Regex.Matcher2("</*c.*?>",32,fullsource)
+	Dim tagList As List
+	tagList.Initialize
+	Do While tagMatcher.Find
+		tagList.Add(tagMatcher.Match)
+	Loop
+	
+    If tagList.Size=0 Then
+		Return target
+    End If
+	
+	If Regex.IsMatch("</c.*?>",tagList.Get(0)) Then
+		target=tagList.Get(0)&target
 	End If
 	
-	Dim matcher2 As Matcher
-	matcher2=Regex.Matcher2("(<c\d+>).*?",32,source)
-	If matcher2.Find Then
-		target=target&matcher2.Group(1)
-	Else
-		
+	If Regex.IsMatch("<c.*?>",tagList.Get(tagList.Size-1)) Then
+		target=target&tagList.Get(tagList.Size-1)
 	End If
+	
+	'Dim matcher1 As Matcher
+	'matcher1=Regex.Matcher2(".*?(</c\d+>)",32,source)
+	'If matcher1.Find Then
+	'	target=matcher1.Group(1)&target
+	'End If
+	
+	'Dim matcher2 As Matcher
+	'matcher2=Regex.Matcher2("(<c\d+>).*?",32,source)
+	'If matcher2.Find Then
+	'	target=target&matcher2.Group(1)
+	'Else
+	'End If
 
 	Return target
 End Sub
@@ -881,9 +902,9 @@ Sub getStyleIndex(text As String,styleType As String) As Int
 	Dim pattern As String
 	Select styleType
 		Case "character"
-			pattern="<c(\d+?).*?>"
+			pattern="<c(\d+).*?>"
 		Case "paragraph"
-			pattern="<p(\d+?).*?>"
+			pattern="<p(\d+).*?>"
 	End Select
 	'Log(text)
 	Dim styleIndex As String
