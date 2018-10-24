@@ -1316,6 +1316,7 @@ Sub mergeSegment(sourceTextArea As TextArea)
 		End If
 	End If
 	
+
 	If showTag Then
 		source=fullsource&nextFullsource
 		source=source.Replace(CRLF,"<br/>")
@@ -1323,7 +1324,7 @@ Sub mergeSegment(sourceTextArea As TextArea)
 		fullsource=fullsource&nextFullsource
 	Else
 		source=sourceTextArea.Text.Trim&sourceWhitespace&nextSourceTa.Text.Trim
-		fullsource=fullsource.Trim&fullsourceWhitespace&nextFullsource.Trim
+		fullsource=utils.rightTrim(fullsource)&fullsourceWhitespace&utils.leftTrim(nextFullsource)
 	End If
 	
 	sourceTextArea.Text=source

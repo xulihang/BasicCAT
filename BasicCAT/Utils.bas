@@ -164,6 +164,32 @@ Sub CopyFolder(Source As String, targetFolder As String)
 	Next
 End Sub
 
+Sub leftTrim(text As String) As String
+	For i=0 To text.Length-1
+		Dim character As String
+		character=text.CharAt(i)
+		If Regex.IsMatch("\s",character) Then
+			text=text.SubString(1)
+		Else
+			Return text
+		End If
+	Next
+	Return text
+End Sub
+
+Sub rightTrim(text As String) As String
+	For i=text.Length-1 To 0 Step -1
+		Dim character As String
+		character=text.CharAt(i)
+		If Regex.IsMatch("\s",character) Then
+			text=text.SubString2(0,i)
+		Else
+			Return text
+		End If
+	Next
+	Return text
+End Sub
+
 Sub MeasureMultilineTextHeight (Font As Font, Width As Double, Text As String) As Double
 	Dim jo As JavaObject = Me
 	Return jo.RunMethod("MeasureMultilineTextHeight", Array(Font, Text, Width))
