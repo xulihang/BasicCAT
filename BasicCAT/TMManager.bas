@@ -7,8 +7,6 @@ Version=6.51
 Sub Class_Globals
 	Private fx As JFX
 	Private frm As Form
-	Private DelButton As Button
-	Private EditButton As Button
 	Private TMListView As CustomListView
 End Sub
 
@@ -36,15 +34,6 @@ Sub LoadTM
 	CallSubDelayed2(Utils,"ListViewParent_Resize",TMListView)
 End Sub
 
-Sub EditButton_MouseClicked (EventData As MouseEvent)
-	
-End Sub
-
-Sub DelButton_MouseClicked (EventData As MouseEvent)
-	
-End Sub
-
-
 Public Sub CreatSegmentPane(source As String,target As String) As Pane
 	Dim SegmentPane As Pane
 	SegmentPane.Initialize("SegmentPane")
@@ -53,9 +42,34 @@ Public Sub CreatSegmentPane(source As String,target As String) As Pane
 	Dim SourceLabel As Label
 	SourceLabel=SegmentPane.GetNode(0)
 	SourceLabel.Text=source
+	addMenu(SourceLabel)
 	Log(source)
 	Dim TargetLabel As Label
 	TargetLabel=SegmentPane.GetNode(1)
 	TargetLabel.Text=target
 	Return SegmentPane
+End Sub
+
+Sub addMenu(lbl As Label)
+	Dim cm As ContextMenu
+	cm.Initialize("cm")
+	Dim mi As MenuItem
+	mi.Initialize("Remove","lblmenu")
+	mi.Tag=lbl
+	cm.MenuItems.Add(mi)
+	lbl.ContextMenu=cm
+End Sub
+
+Sub lblmenu_Action
+	Dim mi As MenuItem
+	mi=Sender
+	Dim lbl As Label
+	lbl=mi.Tag
+	Log(lbl.Text)
+	Select mi.Text
+		Case "Remove"
+			Dim tmMap As KeyValueStore = Main.currentProject.projectTM.translationMemory
+			tmMap.Remove(lbl.Text)
+			TMListView.RemoveAt(TMListView.GetItemFromView(lbl.Parent))
+	End Select
 End Sub

@@ -18,7 +18,27 @@ Public Sub Initialize(projectPath As String,source As String)
 	sourceLanguage=source
 End Sub
 
-Sub termsInASentence(sentence As String) As List
+
+Public Sub termsInASentence(sentence As String) As List
+	Dim result As List
+	result.Initialize
+	For Each source As String In terminology.ListKeys
+		If Regex.Matcher("\b"&source&"\b",sentence).Find Then
+			Dim targetMap As Map
+			targetMap=terminology.Get(source)
+			For Each target As String In targetMap.Keys
+				Dim oneterm As List
+				oneterm.Initialize
+				oneterm.Add(source)
+				oneterm.Add(target)
+				result.Add(oneterm)
+			Next
+		End If
+	Next
+	Return result
+End Sub
+
+Sub termsInASentenceOld(sentence As String) As List
 	Dim result As List
 	result.Initialize
 	If sourceLanguage="en" Then
@@ -44,5 +64,13 @@ Sub termsInASentence(sentence As String) As List
 End Sub
 
 Sub addTerm(source As String,target As String)
-	terminology.Put(source,target)
+	Dim targetMap As Map
+	targetMap.Initialize
+	If terminology.ContainsKey(source) Then
+		targetMap=terminology.Get(source)
+	End If
+	Dim termInfo As Map
+	termInfo.Initialize
+	targetMap.Put(target,termInfo)
+	terminology.Put(source,targetMap)
 End Sub

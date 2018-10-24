@@ -7,8 +7,6 @@ Version=6.51
 Sub Class_Globals
 	Private fx As JFX
 	Private frm As Form
-	Private DelButton As Button
-	Private EditButton As Button
 	Private TermListView As CustomListView
 End Sub
 
@@ -28,20 +26,15 @@ Sub frm_Resize (Width As Double, Height As Double)
 End Sub
 
 Sub LoadTerm
-	Dim tmMap As KeyValueStore = Main.currentProject.projectTerm.terminology
-	For Each key As String In tmMap.ListKeys
-		TermListView.Add(CreatSegmentPane(key,tmMap.Get(key)),"")
-		Log(key)
+	Dim termMap As KeyValueStore = Main.currentProject.projectTerm.terminology
+	For Each source As String In termMap.ListKeys
+		Dim targetMap As Map
+		targetMap=termMap.Get(source)
+		For Each target As String In targetMap.Keys
+			TermListView.Add(CreatSegmentPane(source,target),"")
+		Next
 	Next
 	CallSubDelayed2(Utils,"ListViewParent_Resize",TermListView)
-End Sub
-
-Sub EditButton_MouseClicked (EventData As MouseEvent)
-	
-End Sub
-
-Sub DelButton_MouseClicked (EventData As MouseEvent)
-	
 End Sub
 
 
@@ -53,9 +46,38 @@ Public Sub CreatSegmentPane(source As String,target As String) As Pane
 	Dim SourceLabel As Label
 	SourceLabel=SegmentPane.GetNode(0)
 	SourceLabel.Text=source
+	SourceLabel.Tag=target
+	addMenu(SourceLabel)
 	Log(source)
 	Dim TargetLabel As Label
 	TargetLabel=SegmentPane.GetNode(1)
 	TargetLabel.Text=target
 	Return SegmentPane
+End Sub
+
+Sub addMenu(lbl As Label)
+	Dim cm As ContextMenu
+	cm.Initialize("cm")
+	Dim mi As MenuItem
+	mi.Initialize("Remove","lblmenu")
+	mi.Tag=lbl
+	cm.MenuItems.Add(mi)
+	lbl.ContextMenu=cm
+End Sub
+
+Sub lblmenu_Action
+	Dim mi As MenuItem
+	mi=Sender
+	Dim lbl As Label
+	lbl=mi.Tag
+	Log(lbl.Text)
+	Select mi.Text
+		Case "Remove"
+			Dim termMap As KeyValueStore = Main.currentProject.projectTerm.terminology
+			Dim targetMap As Map
+			targetMap=termMap.Get(lbl.Text)
+			targetMap.Remove(lbl.Tag)
+			termMap.Put(lbl.Text,targetMap)
+			TermListView.RemoveAt(TermListView.GetItemFromView(lbl.Parent))
+	End Select
 End Sub
