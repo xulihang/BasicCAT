@@ -715,12 +715,12 @@ Sub generateFile(filename As String,path As String,projectFile As Map)
 
 				End If
 
-				If pp.StartsWith("<c0><br/></c0><c4>Humidity") Then
+				If pp.StartsWith("Two types, the ") Then
 					Log(source)
 					Log(target)
 					Log(fullsource)
 					Log(translation)
-					'ExitApplication
+					ExitApplication
 				End If
 				If projectFile.Get("source")="en" And Regex.Matcher("\w",translation).Find=False Then
 					translation=translation.Replace(" ","")
@@ -761,32 +761,39 @@ Sub zipIDML(unzipedDirPath As String,filename As String,path As String)
 	Main.updateOperation(filename&" generated!")
 End Sub
 
+
 Sub C0TagAddedText(text As String,fullsource As String) As String
 	Dim matcher As Matcher
 	matcher=Regex.Matcher2("<c[1-9].*?>.*?</c[1-9].*?>|<c0 id=.*?>.*?</c0>",32,text)
+
+	Dim textForMatch As String
+	
 	Do While matcher.Find
+		Log("match"&matcher.Match)
 		Dim before,mid,after As String
 		before=text.SubString2(0,text.IndexOf(matcher.Match))
 		mid=matcher.Match
 		Log("mid"&mid)
-		Log(fullsource.Contains(mid&"<c0>"))
-		Log(text.Contains(mid&"<c0>"))
+
 	    If Regex.Matcher("</c0><c\d+",fullsource).Find Then
-		    If Regex.Matcher("</c0><c\d+",text).Find=False Then
+			If Regex.Matcher("</c0><c\d+",textForMatch).Find=False Then
 				mid="</c0>"&mid
 			End If
 		End If
 		If Regex.Matcher("</c\d+><c0>",fullsource).Find Then
-		    If Regex.Matcher("</c\d+><c0>",text).Find=False Then
+			If Regex.Matcher("</c\d+><c0>",textForMatch).Find=False Then
 				mid=mid&"<c0>"
 			End If
 			
 		End If
 		after=text.SubString2(text.IndexOf(matcher.Match)+matcher.Match.Length,text.Length)
 		text=before&mid&after
+		textForMatch=after
+		Log("text"&text)
 	Loop
 	Return text
 End Sub
+
 
 Sub addNecessaryTags(target As String,fullsource As String) As String
 	'source=Regex.Replace2("<c[1-9].*?>.*?</c[1-9].*?>|<c0 id=.*?>.*?</c0>",32,source,"")
