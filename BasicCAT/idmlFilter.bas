@@ -715,12 +715,12 @@ Sub generateFile(filename As String,path As String,projectFile As Map)
 
 				End If
 
-				If pp.StartsWith("Two types, the ") Then
+				If pp.StartsWith("<c0><br/></c0><c4>Ca") Then
 					Log(source)
 					Log(target)
 					Log(fullsource)
 					Log(translation)
-					ExitApplication
+					'ExitApplication
 				End If
 				If projectFile.Get("source")="en" And Regex.Matcher("\w",translation).Find=False Then
 					translation=translation.Replace(" ","")
@@ -767,21 +767,21 @@ Sub C0TagAddedText(text As String,fullsource As String) As String
 	matcher=Regex.Matcher2("<c[1-9].*?>.*?</c[1-9].*?>|<c0 id=.*?>.*?</c0>",32,text)
 
 	Dim textForMatch As String
-	
+	textForMatch=text
 	Do While matcher.Find
 		Log("match"&matcher.Match)
 		Dim before,mid,after As String
 		before=text.SubString2(0,text.IndexOf(matcher.Match))
 		mid=matcher.Match
 		Log("mid"&mid)
-
-	    If Regex.Matcher("</c0><c\d+",fullsource).Find Then
-			If Regex.Matcher("</c0><c\d+",textForMatch).Find=False Then
+		
+	    If Regex.Matcher2("</c0><c\d+",32,fullsource).Find Then
+			If Regex.Matcher2("</c0><c\d+",32,textForMatch).Find=False Then
 				mid="</c0>"&mid
 			End If
 		End If
-		If Regex.Matcher("</c\d+><c0>",fullsource).Find Then
-			If Regex.Matcher("</c\d+><c0>",textForMatch).Find=False Then
+		If Regex.Matcher2("</c\d+><c0>",32,fullsource).Find Then
+			If Regex.Matcher2("</c\d+><c0>",32,textForMatch).Find=False Then
 				mid=mid&"<c0>"
 			End If
 			
