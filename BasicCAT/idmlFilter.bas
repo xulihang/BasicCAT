@@ -894,7 +894,9 @@ Sub textToListInOrder(pureText As String) As List
 			result.Add(CRLF)
 		End If
 	Next
-
+	If result.Size=0 And Regex.IsMatch("\s",pureText) Then
+		result.Add(pureText)
+	End If
 	Return result
 End Sub
 
