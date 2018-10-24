@@ -1331,7 +1331,7 @@ Sub mergeSegment(sourceTextArea As TextArea)
 		fullsource=fullsource&nextFullsource
 	Else
 		source=sourceTextArea.Text.Trim&sourceWhitespace&nextSourceTa.Text.Trim
-		fullsource=utils.rightTrim(fullsource)&fullsourceWhitespace&utils.leftTrim(nextFullsource)
+		fullsource=Utils.rightTrim(fullsource)&fullsourceWhitespace&Utils.leftTrim(nextFullsource)
 	End If
 	
 	sourceTextArea.Text=source
@@ -1386,4 +1386,63 @@ Sub splitSegment(sourceTextArea As TextArea)
 
 
 	Main.editorLV.InsertAt(Main.editorLV.GetItemFromView(sourceTextArea.Parent)+1,newSegmentPane,"")
+End Sub
+
+
+Sub previewText As String
+	Dim text As String
+	If Main.editorLV.Size<>Main.currentProject.segments.Size Then
+		Return ""
+	End If
+	For i=Max(0,Main.currentProject.lastEntry-3) To Min(Main.currentProject.lastEntry+7,Main.currentProject.segments.Size-1)
+
+
+		
+		Dim p As Pane
+		p=Main.editorLV.GetPanel(i)
+		Dim sourceTextArea As TextArea
+		Dim targetTextArea As TextArea
+		sourceTextArea=p.GetNode(0)
+		targetTextArea=p.GetNode(1)
+		Dim bitext As List
+		bitext=Main.currentProject.segments.Get(i)
+		
+		Dim source,target,fullsource,translation As String
+		source=sourceTextArea.Text
+		target=targetTextArea.Text
+		fullsource=bitext.Get(2)
+
+		If target="" Then
+			translation=fullsource
+		Else
+			source=source.Replace("<br/>",CRLF)
+			target=target.Replace("<br/>",CRLF)
+			If fullsource.Contains(C0TagAddedText(source,fullsource)) And idmlUtils.containsUnshownSpecialTaggedContent(target,source)=False Then
+				translation=fullsource.Replace(C0TagAddedText(source,fullsource),C0TagAddedText(target,fullsource))
+			Else
+				'tags not match, remove tags
+				If idmlUtils.containsUnshownC0Tag(source,fullsource) Then
+					source=C0TagAddedText(source,fullsource)
+				End If
+				Dim tagReplaceMatcher As Matcher
+				tagReplaceMatcher=Regex.Matcher2("<.*?>",32,target)
+				Do While tagReplaceMatcher.Find
+					target=target.Replace(tagReplaceMatcher.Match,"")
+				Loop
+				target=addNecessaryTags(target,fullsource)
+				translation=fullsource.Replace(source,target)
+			End If
+
+
+			If Main.currentProject.projectFile.Get("source")="en" And Regex.Matcher("\w",translation).Find=False Then
+				translation=translation.Replace(" ","")
+			End If
+		End If
+		
+		If i=Main.currentProject.lastEntry Then
+			translation=$"<span id="current" name="current" >${translation}</span>"$
+		End If
+		text=text&translation
+	Next
+	Return text
 End Sub

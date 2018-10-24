@@ -275,3 +275,38 @@ Sub splitSegment(sourceTextArea As TextArea)
 
 	Main.editorLV.InsertAt(Main.editorLV.GetItemFromView(sourceTextArea.Parent)+1,newSegmentPane,"")
 End Sub
+
+Sub previewText As String
+	Dim text As String
+	If Main.editorLV.Size<>Main.currentProject.segments.Size Then
+		Return ""
+	End If
+	For i=Max(0,Main.currentProject.lastEntry-3) To Min(Main.currentProject.lastEntry+7,Main.currentProject.segments.Size-1)
+
+		Dim p As Pane
+		p=Main.editorLV.GetPanel(i)
+		Dim sourceTextArea As TextArea
+		Dim targetTextArea As TextArea
+		sourceTextArea=p.GetNode(0)
+		targetTextArea=p.GetNode(1)
+		Dim bitext As List
+		bitext=Main.currentProject.segments.Get(i)
+		Dim source,target,fullsource,translation As String
+		source=sourceTextArea.Text
+		target=targetTextArea.Text
+		fullsource=bitext.Get(2)
+		If target="" Then
+			translation=fullsource
+		Else
+			translation=fullsource.Replace(source,target)
+			If Main.currentProject.projectFile.Get("source")="en" Then
+				translation=translation.Replace(" ","")
+			End If
+		End If
+		If i=Main.currentProject.lastEntry Then
+			translation=$"<span id="current" name="current" >${translation}</span>"$
+		End If
+		text=text&translation
+	Next
+	Return text
+End Sub
