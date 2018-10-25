@@ -23,6 +23,7 @@ Sub Class_Globals
 	Private cm As ContextMenu
 	Private cursorReachEnd As Boolean=False
 	Private projectGit As git
+	Private contentChanged As Boolean=False
 End Sub
 
 'Initializes the object. You can add parameters to this method if needed.
@@ -142,13 +143,19 @@ public Sub save
 	Dim json As JSONGenerator
 	json.Initialize(projectFile)
 	File.WriteString(path,"project.json",json.ToPrettyString(4))
-	saveFileAccordingToExtenstion(currentFilename)
 	
-	If Main.preferencesMap.ContainsKey("vcsEnabled") Then
-		If Main.preferencesMap.Get("vcsEnabled")=True Then
-			gitcommit
+	If contentChanged Then
+		saveFileAccordingToExtenstion(currentFilename)
+		If Main.preferencesMap.ContainsKey("vcsEnabled") Then
+			If Main.preferencesMap.Get("vcsEnabled")=True Then
+				gitcommit
+			End If
 		End If
+		
 	End If
+	
+	
+
 	
 	Main.updateSavedTime
 End Sub
@@ -309,6 +316,15 @@ Sub addFilesToTreeTable(filename As String)
 End Sub
 
 Sub targetTextArea_TextChanged (Old As String, New As String)
+	If Old<>New  Then
+		If Old="" And New.Length<=1 Then
+			contentIsChanged
+		End If
+		If Old<>"" Then
+			contentIsChanged
+		End If
+	End If
+	
 	Log(Old)
 	Log(New)
 	If Old="" And New.Length>1 Then
@@ -581,12 +597,14 @@ Sub sourceTextArea_KeyPressed_Event (MethodName As String, Args() As Object) As 
 	result=KEvt.RunMethod("getCode",Null)
 	Log(result)
     If result="ENTER" Then
+		contentIsChanged
 		If currentFilename.EndsWith(".txt") Then
 			txtFilter.splitSegment(sourceTextArea)
 		Else if currentFilename.EndsWith(".idml") Then
 			idmlFilter.splitSegment(sourceTextArea)
 		End If
 	Else if result="DELETE" Then
+		contentIsChanged
 		If currentFilename.EndsWith(".txt") Then
 			txtFilter.mergeSegment(sourceTextArea)
 		Else if currentFilename.EndsWith(".idml") Then
@@ -877,8 +895,13 @@ Sub showTerm(targetTextArea As TextArea)
 End Sub
 
 
+Public Sub saveAlltheTranslationToTM
+	For Each bitext As List In segments
+		projectTM.addPair(bitext.Get(0),bitext.Get(1))
+    Next
+End Sub
 
-Public Sub saveAlltheTranslation(FirstIndex As Int, LastIndex As Int)
+Public Sub saveAlltheTranslationToSegmentsInVisibleArea(FirstIndex As Int, LastIndex As Int)
 	For i=Max(0,FirstIndex) To Min(LastIndex,Main.editorLV.Size-1)
 		Dim bitext As List
 		bitext=segments.Get(i)
@@ -890,7 +913,7 @@ Public Sub saveAlltheTranslation(FirstIndex As Int, LastIndex As Int)
 		End If
 		targetTextArea=p.GetNode(1)
 		bitext.Set(1,targetTextArea.Text)
-		projectTM.addPair(bitext.Get(0),bitext.Get(1))
+		'projectTM.addPair(bitext.Get(0),bitext.Get(1))
 	Next
 End Sub
 
@@ -962,36 +985,9 @@ Public Sub fillPaneAsync(FirstIndex As Int, LastIndex As Int) As ResumableSub
 	Return Null
 End Sub
 
-Sub seperatedSegments(targetSegments As List) As List
-	Dim seperated As List
-	seperated.Initialize
-	Dim eachsize As Int
-	eachsize=targetSegments.Size/4
-	If targetSegments.Size<20 Then
-		seperated.Add(targetSegments)
-	Else
-		Dim indexToBeAdded As Int=0
-		For i=0 To 3
-			Dim oneSeperatedSegments As List
-			oneSeperatedSegments.Initialize
-			Dim endIndex As Int
-			If i=3 Then
-				endIndex=targetSegments.Size-1
-			Else
-				endIndex=eachsize+indexToBeAdded
-			End If
-			For j=indexToBeAdded To endIndex
-				oneSeperatedSegments.Add(targetSegments.Get(indexToBeAdded))
-				indexToBeAdded=indexToBeAdded+1
-			Next
-			seperated.Add(oneSeperatedSegments)
-		Next
-	End If
-	Return seperated
-End Sub
-
 Sub preTranslate(options As Map)
 	If options.Get("type")<>"" Then
+		contentIsChanged
 		completed=0
 		Dim index As Int=-1
 		progressDialog.Show("Pretranslating...","pretranslate")
@@ -1096,13 +1092,18 @@ End Sub
 
 
 Sub saveFileAccordingToExtenstion(filename As String)
+	If filename="" Then
+		Return
+	End If
 	If filename.EndsWith(".txt") Then
-		saveAlltheTranslation(Main.editorLV.FirstVisibleIndex,Main.editorLV.LastVisibleIndex)
 		txtFilter.saveWorkFile(filename,segments,path)
 	else if filename.EndsWith(".idml") Then
-		saveAlltheTranslation(Main.editorLV.FirstVisibleIndex,Main.editorLV.LastVisibleIndex)
 		idmlFilter.saveWorkFile(filename,segments,path)
 	End If
+	saveAlltheTranslationToSegmentsInVisibleArea(Main.editorLV.FirstVisibleIndex,Main.editorLV.LastVisibleIndex)
+	saveAlltheTranslationToTM
+	contentChanged=False
+	Main.MainForm.Title=Main.MainForm.Title.Replace("*","")
 End Sub
 
 Public Sub getSegmentsAccordingToExtenstion(filename As String) As List
@@ -1121,4 +1122,11 @@ Public Sub generateTargetFiles
 			idmlFilter.generateFile(filename,path,projectFile)
 		End If
 	Next
+End Sub
+
+Sub contentIsChanged
+	If contentChanged=False Then
+		contentChanged=True
+		Main.MainForm.Title=Main.MainForm.Title&"*"
+	End If
 End Sub

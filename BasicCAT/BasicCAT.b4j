@@ -455,6 +455,7 @@ Sub exportTMXMi_Action
 		Dim path As String
 		Dim fc As FileChooser
 		fc.Initialize
+		fc.SetExtensionFilter("tmx",Array As String("*.tmx"))
 		path=fc.ShowSave(MainForm)
 		If path="" Then
 			Return
@@ -610,7 +611,7 @@ Sub editorLV_VisibleRangeChanged (FirstIndex As Int, LastIndex As Int)
 	End If
 	currentProject.fillPane(FirstIndex,LastIndex)
 	CallSubDelayed(Me,"ListViewParent_Resize")
-	currentProject.saveAlltheTranslation(FirstIndex,LastIndex)
+	currentProject.saveAlltheTranslationToSegmentsInVisibleArea(FirstIndex,LastIndex)
 End Sub
 
 
