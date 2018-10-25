@@ -65,6 +65,8 @@ Sub initializeTerm(projectPath As String)
 	projectTerm.Initialize(projectPath,projectFile.Get("source"))
 End Sub
 
+
+
 Public Sub open(jsonPath As String)
 	Main.addProjectTreeTableItem
 	path=getProjectPath(jsonPath)
@@ -80,6 +82,7 @@ Public Sub open(jsonPath As String)
 	Next
 	initializeTM(path,True)
 	initializeTerm(path)
+	Main.initializeNLP(projectFile.Get("source"))
 	'jumpToLastEntry
 End Sub
 
@@ -93,6 +96,7 @@ End Sub
 Public Sub newProjectSetting(source As String,target As String)
 	projectFile.Put("source",source)
 	projectFile.Put("target",target)
+	Main.initializeNLP(source)
 	Dim tmList As List
 	tmList.Initialize
 	settings.Put("tmList",tmList)

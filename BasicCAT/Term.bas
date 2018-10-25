@@ -23,17 +23,25 @@ Public Sub termsInASentence(sentence As String) As List
 	Dim result As List
 	result.Initialize
 	For Each source As String In terminology.ListKeys
-		If Regex.Matcher("\b"&source&"\b",sentence).Find Then
-			Dim targetMap As Map
-			targetMap=terminology.Get(source)
-			For Each target As String In targetMap.Keys
-				Dim oneterm As List
-				oneterm.Initialize
-				oneterm.Add(source)
-				oneterm.Add(target)
-				result.Add(oneterm)
-			Next
+		If sentence.Contains(source)=False Then
+            If Main.nlp.IsInitialized And sourceLanguage="en" Then
+				Dim lemmatized As String
+				lemmatized=Main.nlp.lemmatizedSentence(source)
+				If sentence.Contains(lemmatized)=False And sentence<>lemmatized Then
+					Continue
+			    End If
+			End If
 		End If
+
+		Dim targetMap As Map
+		targetMap=terminology.Get(source)
+		For Each target As String In targetMap.Keys
+			Dim oneterm As List
+			oneterm.Initialize
+			oneterm.Add(source)
+			oneterm.Add(target)
+			result.Add(oneterm)
+		Next
 	Next
 	Return result
 End Sub
