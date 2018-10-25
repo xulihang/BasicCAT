@@ -23,11 +23,11 @@ Public Sub termsInASentence(sentence As String) As List
 	Dim result As List
 	result.Initialize
 	For Each source As String In terminology.ListKeys
-		If sentence.Contains(source)=False Then
+		If Regex.Matcher("\b"&source&"\b",sentence).Find=False Then
             If Main.nlp.IsInitialized And sourceLanguage="en" Then
 				Dim lemmatized As String
 				lemmatized=Main.nlp.lemmatizedSentence(source)
-				If sentence.Contains(lemmatized)=False And sentence<>lemmatized Then
+				If Regex.Matcher("\b"&lemmatized&"\b",sentence).Find=False Then
 					Continue
 			    End If
 			End If
