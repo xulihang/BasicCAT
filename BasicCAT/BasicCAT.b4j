@@ -114,32 +114,33 @@ Library8=jsql
 Library9=jrandomaccessfile
 Module1=FileChooserUtils
 Module10=preTranslateDialog
-Module11=Previewer
-Module12=idmlFilter
-Module13=TMManager
-Module14=TermManager
-Module15=Utils
-Module16=progressDialog
-Module17=git
-Module18=zip4j
-Module19=idmlUtils
+Module11=opennlp
+Module12=Previewer
+Module13=idmlFilter
+Module14=TMManager
+Module15=TermManager
+Module16=Utils
+Module17=progressDialog
+Module18=git
+Module19=zip4j
 Module2=Project
-Module20=Xml2Map
-Module21=Map2Xml
-Module22=ITP
-Module23=MT
-Module24=MTParamsFiller
-Module25=Preferences
-Module26=statistics
-Module27=coordinate
-Module28=LanguageTool
-Module29=searchAndReplaceDialog
+Module20=idmlUtils
+Module21=Xml2Map
+Module22=Map2Xml
+Module23=ITP
+Module24=MT
+Module25=MTParamsFiller
+Module26=Preferences
+Module27=statistics
+Module28=coordinate
+Module29=LanguageTool
 Module3=segmentation
-Module30=TextFlow
-Module31=editDistance
-Module32=InputBox
-Module33=viewSegment
-Module34=opennlp
+Module30=searchAndReplaceDialog
+Module31=TextFlow
+Module32=editDistance
+Module33=InputBox
+Module34=viewSegment
+Module35=TMX
 Module4=CustomListView
 Module5=txtFilter
 Module6=TM
@@ -148,7 +149,7 @@ Module8=KeyValueStore
 Module9=ProjectSettings
 NumberOfFiles=45
 NumberOfLibraries=21
-NumberOfModules=34
+NumberOfModules=35
 Version=6.51
 @EndOfDesignText@
 #Region Project Attributes 
@@ -299,6 +300,14 @@ Public Sub addProjectTreeTableItem
 			cm.MenuItems.Add(mi)
 			lbl.ContextMenu=cm
 		End If
+		If item="Translation Memory" Then
+			Dim cm As ContextMenu
+			cm.Initialize("cm")
+			Dim mi As MenuItem
+			mi.Initialize("Export to TMX","exportTMXMi")
+			cm.MenuItems.Add(mi)
+			lbl.ContextMenu=cm
+		End If
 		Dim tti As TreeTableItem
 		tti.Initialize("tti",Array As Object(lbl))
 		
@@ -441,6 +450,31 @@ Sub MenuBar1_Action
 	End Select
 End Sub
 
+Sub exportTMXMi_Action
+	If currentProject.projectTM.IsInitialized Then
+		Dim path As String
+		Dim fc As FileChooser
+		fc.Initialize
+		path=fc.ShowSave(MainForm)
+		If path="" Then
+			Return
+		End If
+		Dim segments As List
+		segments.Initialize
+		Dim tmKVS As KeyValueStore
+		tmKVS=currentProject.projectTM.translationMemory
+		For Each key As String In tmKVS.ListKeys
+			Dim bitext As List
+			bitext.Initialize
+			bitext.Add(key)
+			bitext.Add(tmKVS.Get(key))
+			segments.Add(bitext)
+		Next
+		TMX.export(segments,currentProject.projectFile.Get("source"),currentProject.projectFile.Get("target"),path)
+		fx.Msgbox(MainForm,"exported","")
+	End If
+End Sub
+
 Sub addFileMi_Action
 	Dim mi As MenuItem
 	mi=Sender
@@ -477,42 +511,6 @@ Sub addFileMi_Action
 	End If
 	currentProject.addFile(path)
 	Log(path)
-End Sub
-
-Sub projectTreeTableView_SelectedItemChanged (SelectedItem As TreeTableItem)
-	If SelectedItem<>Null And SelectedItem.IsInitialized Then
-		Dim lbl As Label
-		lbl=SelectedItem.GetValue(0)
-		Log(lbl.Text)
-		Select lbl.Text
-			
-			Case "Project Files"
-
-			Case "Translation Memory"
-                projectTreeTableView.ClearSelection
-				Dim tmm As TMManager
-				tmm.Initialize
-				tmm.ShowAndWait
-			Case "Terminology"
-				projectTreeTableView.ClearSelection
-				Dim termm As TermManager
-				termm.Initialize
-				termm.ShowAndWait
-			Case "Preview"
-				projectTreeTableView.ClearSelection
-				If pre.IsInitialized=False Then
-					pre.Initialize
-				End If
-				If pre.isShowing=False Then
-					pre.Show
-				End If
-			Case "Statistics"
-				projectTreeTableView.ClearSelection
-				Dim st As statistics
-				st.Initialize
-				st.Show
-		End Select
-	End If
 End Sub
 
 Public Sub getFilename(path As String) As String
@@ -899,4 +897,36 @@ End Sub
 
 Sub dividerPosition_changed(old As Object, new As Object)
 	CallSubDelayed(Me,"ListViewParent_Resize")
+End Sub
+
+Sub lbl_MouseClicked (EventData As MouseEvent)
+	If EventData.PrimaryButtonPressed Then
+		Dim lbl As Label
+		lbl=Sender
+		Log(lbl.Text)
+		Select lbl.Text
+		
+			Case "Project Files"
+
+			Case "Translation Memory"
+				Dim tmm As TMManager
+				tmm.Initialize
+				tmm.ShowAndWait
+			Case "Terminology"
+				Dim termm As TermManager
+				termm.Initialize
+				termm.ShowAndWait
+			Case "Preview"
+				If pre.IsInitialized=False Then
+					pre.Initialize
+				End If
+				If pre.isShowing=False Then
+					pre.Show
+				End If
+			Case "Statistics"
+				Dim st As statistics
+				st.Initialize
+				st.Show
+		End Select
+	End If
 End Sub

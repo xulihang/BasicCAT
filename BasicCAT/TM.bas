@@ -38,39 +38,59 @@ Public Sub deleteExternalTranslationMemory
 End Sub
 
 Public Sub importExternalTranslationMemory(tmList As List)
+	progressDialog.Show("Loading external memory","loadtm")
+	Dim segments As List
+	segments.Initialize
 	For Each tmfile As String In tmList
 		If tmfile.EndsWith(".txt") Then
-			importTxt(tmfile)
-		Else
-			
+			segments.AddAll(importedTxt(tmfile))
+		Else if tmfile.EndsWith(".tmx") Then
+			segments.AddAll(TMX.importedList(File.Combine(Main.currentProject.path,"TM"),tmfile))
 		End If
 	Next
+	Log(segments)
+	If segments.Size<>0 Then
+		Dim index As Int=0
+		For Each bitext As List In segments
+			index=index+1
+			Sleep(0)
+			progressDialog.update(index,segments.Size)
+			Dim source,target,filename As String
+			Dim targetList As List
+			targetList.Initialize
+			source=bitext.get(0)
+			target=bitext.Get(1)
+			filename=bitext.Get(2)
+			targetList.Add(target)
+			targetList.Add(filename)
+			externalTranslationMemory.put(source,targetList)
+		Next
+	End If
+	Log(externalTranslationMemory.ListKeys.Size)
+	progressDialog.close
 End Sub
 
-Sub importTxt(filename As String)
-	progressDialog.Show("Loading external memory","loadtm")
+Sub importedTxt(filename As String) As List
 	Dim content As String
 	content=File.ReadString(File.Combine(Main.currentProject.path,"TM"),filename)
 	Dim segments As List
 	segments=Regex.Split(CRLF,content)
-	Dim index As Int=0
+	Dim result As List
+	result.Initialize
 	For Each line As String In segments
-		Sleep(0)
-		index=index+1
-		progressDialog.update(index,segments.Size)
+
+        Dim bitext As List
+		bitext.Initialize
 		Dim source,target As String
-		Dim targetList As List
-		targetList.Initialize
+
 		source=Regex.Split("	",line)(0)
-        If externalTranslationMemory.ContainsKey(source) Then
-			Continue
-        End If
 		target=Regex.Split("	",line)(1)
-		targetList.Add(target)
-		targetList.Add(filename)
-		externalTranslationMemory.put(source,targetList)
+		bitext.Add(source)
+		bitext.Add(target)
+		bitext.Add(filename)
+		result.Add(bitext)
 	Next
-	progressDialog.close
+	Return result
 End Sub
 
 
