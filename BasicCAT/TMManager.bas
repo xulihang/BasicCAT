@@ -28,13 +28,13 @@ End Sub
 Sub LoadTM
 	Dim tmMap As KeyValueStore = Main.currentProject.projectTM.translationMemory
 	For Each key As String In tmMap.ListKeys
-		TMListView.Add(CreatSegmentPane(key,tmMap.Get(key)),"")
+		TMListView.Add(CreateSegmentPane(key,tmMap.Get(key)),"")
 		Log(key)
 	Next
 	CallSubDelayed2(Utils,"ListViewParent_Resize",TMListView)
 End Sub
 
-Public Sub CreatSegmentPane(source As String,target As String) As Pane
+Public Sub CreateSegmentPane(source As String,target As String) As Pane
 	Dim SegmentPane As Pane
 	SegmentPane.Initialize("SegmentPane")
 	SegmentPane.LoadLayout("TMsegment")

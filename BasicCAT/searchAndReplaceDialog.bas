@@ -148,7 +148,7 @@ Sub showRegexResult
 			tagList.Add(tf.getText)
 			Dim pane As Pane = tf.CreateTextFlow
 			pane.Tag=tagList
-			pane.SetSize(resultListView.Width,utils.MeasureMultilineTextHeight(fx.DefaultFont(15),resultListView.Width,tagList.Get(1)))
+			pane.SetSize(resultListView.Width,Utils.MeasureMultilineTextHeight(fx.DefaultFont(15),resultListView.Width,tagList.Get(1)))
 			resultListView.Items.Add(pane)
 		End If
 

@@ -31,14 +31,14 @@ Sub LoadTerm
 		Dim targetMap As Map
 		targetMap=termMap.Get(source)
 		For Each target As String In targetMap.Keys
-			TermListView.Add(CreatSegmentPane(source,target),"")
+			TermListView.Add(CreateSegmentPane(source,target),"")
 		Next
 	Next
 	CallSubDelayed2(Utils,"ListViewParent_Resize",TermListView)
 End Sub
 
 
-Public Sub CreatSegmentPane(source As String,target As String) As Pane
+Public Sub CreateSegmentPane(source As String,target As String) As Pane
 	Dim SegmentPane As Pane
 	SegmentPane.Initialize("SegmentPane")
 	SegmentPane.LoadLayout("TMsegment")

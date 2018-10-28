@@ -22,7 +22,7 @@ End Sub
 
 
 
-Sub creatWorkFile(filename As String,path As String,sourceLang As String)
+Sub createWorkFile(filename As String,path As String,sourceLang As String)
 	If order.IsInitialized=False Then
 		parser.Initialize
 		order.Initialize
@@ -506,14 +506,14 @@ Sub readFile(filename As String,segments As List,path As String)
 		segments.AddAll(segmentsList)
 		Dim index As Int=0
 		For Each bitext As List In segmentsList
-			'Sleep(0) should not use coroutine as when change file, it will be a problem.
+			'Sleep(0) 'should not use coroutine as when change file, it will be a problem.
 
 			If index<=20 Then
-				Main.editorLV.Add(Main.currentProject.creatSegmentPane(bitext),"")
+				Main.currentProject.createSegmentPane(bitext)
 				
 				index=index+1
 			Else
-				Main.editorLV.Add(Main.currentProject.creatEmptyPane,"")
+				Main.currentProject.createEmptyPane
 				index=index+1
 			End If
 		Next

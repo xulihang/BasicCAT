@@ -112,7 +112,7 @@ Public Sub addFile(filepath As String)
 	Log("Success: " & Success)
 	files.Add(filename)
 	addFilesToTreeTable(filename)
-	creatWorkFileAccordingExtension(filename)
+	createWorkFileAccordingExtension(filename)
 	save
 End Sub
 
@@ -127,7 +127,7 @@ End Sub
 
 public Sub save
 	If File.Exists(path,"")=False Then
-		creatProjectFiles
+		createProjectFiles
 	End If
 	If projectTM.IsInitialized=False Then
 		initializeTM(path,False)
@@ -192,7 +192,7 @@ Sub showPreView
 	End If
 End Sub
 
-Sub creatProjectFiles
+Sub createProjectFiles
 	File.MakeDir(path,"")
 	File.MakeDir(path,"source")
 	File.MakeDir(path,"work")
@@ -404,18 +404,18 @@ Sub sourceTextArea_TextChanged (Old As String, New As String)
 	CallSubDelayed(Main, "ListViewParent_Resize")
 End Sub
 
-Public Sub creatSegmentPane(bitext As List) As Pane
+Public Sub createSegmentPane(bitext As List)
 	Dim segmentPane As Pane
 	segmentPane.Initialize("segmentPane")
 	addTextAreaToSegmentPane(segmentPane,bitext.Get(0),bitext.Get(1))
-	Return segmentPane
+	Main.editorLV.Add(segmentPane,"")
 End Sub
 
-Public Sub creatEmptyPane As Pane
+Public Sub createEmptyPane
 	Dim segmentPane As Pane
 	segmentPane.Initialize("segmentPane")
 	segmentPane.SetSize(Main.editorLV.AsView.Width,50dip)
-	Return segmentPane
+	Main.editorLV.Add(segmentPane,"")
 End Sub
 
 Public Sub addTextAreaToSegmentPane(segmentpane As Pane,source As String,target As String)
@@ -1072,11 +1072,11 @@ Public Sub fillVisibleTargetTextArea
 	Next
 End Sub
 
-Sub creatWorkFileAccordingExtension(filename As String)
+Sub createWorkFileAccordingExtension(filename As String)
 	If filename.EndsWith(".txt") Then
-		txtFilter.creatWorkFile(filename,path,projectFile.Get("source"))
+		txtFilter.createWorkFile(filename,path,projectFile.Get("source"))
 	Else if filename.EndsWith(".idml") Then
-		idmlFilter.creatWorkFile(filename,path,projectFile.Get("source"))
+		idmlFilter.createWorkFile(filename,path,projectFile.Get("source"))
 	Else
 		
 	End If
