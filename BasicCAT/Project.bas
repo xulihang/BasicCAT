@@ -145,7 +145,7 @@ public Sub save
 	File.WriteString(path,"project.json",json.ToPrettyString(4))
 	
 	If contentChanged Then
-		saveFileAccordingToExtenstion(currentFilename)
+		saveFile(currentFilename)
 		If Main.preferencesMap.ContainsKey("vcsEnabled") Then
 			If Main.preferencesMap.Get("vcsEnabled")=True Then
 				gitcommit
@@ -278,7 +278,7 @@ Sub openFile(filename As String,onOpeningProject As Boolean)
 	segments.Clear
 	currentFilename=filename
 
-	readFileAccordingToExtenstion(currentFilename)
+	readWorkFile(currentFilename)
 
 	Log("currentFilename:"&currentFilename)
 	If lastFilename=currentFilename Then
@@ -1082,26 +1082,86 @@ Sub createWorkFileAccordingExtension(filename As String)
 	End If
 End Sub
 
-Sub readFileAccordingToExtenstion(filename As String)
-	If filename.EndsWith(".txt") Then
-		txtFilter.readFile(filename,segments,path)
-	else if filename.EndsWith(".idml") Then
-		idmlFilter.readFile(filename,segments,path)
-	End If
+Sub readWorkFile(filename As String)
+	Dim workfile As Map
+	Dim json As JSONParser
+	json.Initialize(File.ReadString(File.Combine(path,"work"),filename&".json"))
+	workfile=json.NextObject
+	Dim sourceFiles As List
+	sourceFiles=workfile.Get("files")
+	For Each sourceFileMap As Map In sourceFiles
+	    Dim innerFilename As String
+	    innerFilename=sourceFileMap.GetKeyAt(0)
+		Dim segmentsList As List
+		segmentsList=sourceFileMap.Get(innerFilename)
+		segments.AddAll(segmentsList)
+		Dim index As Int=0
+		For Each bitext As List In segmentsList
+			'Sleep(0) 'should not use coroutine as when change file, it will be a problem.
+			If index<=20 Then
+				Main.currentProject.createSegmentPane(bitext)
+				
+				index=index+1
+			Else
+				Main.currentProject.createEmptyPane
+				index=index+1
+			End If
+		Next
+	Next
 End Sub
 
+Sub saveWorkFile(filename As String)
+	Dim workfile As Map
+	workfile.Initialize
+	workfile.Put("filename",filename)
+	Dim sourceFiles As List
+	sourceFiles.Initialize
+	
+	Dim segmentsForEachFile As List
+	segmentsForEachFile.Initialize
+	
+	Dim previousInnerFilename As String
+	Dim firstBitext As List
+	firstBitext=segments.Get(0)
+	previousInnerFilename= firstBitext.Get(3)
+	For Each bitext As List In segments
+		If previousInnerFilename=bitext.Get(3) Then
+			segmentsForEachFile.Add(bitext)
+		Else
+			Dim newsegments As List
+			newsegments.Initialize
+			newsegments.AddAll(segmentsForEachFile)
+			Dim sourceFileMap As Map
+			sourceFileMap.Initialize
+			sourceFileMap.Put(previousInnerFilename,newsegments)
+			sourceFiles.Add(sourceFileMap)
+			previousInnerFilename=bitext.Get(3)
+			segmentsForEachFile.Clear
+			segmentsForEachFile.Add(bitext)
+		End If
+	Next
+	'repeat as for the last file, filename will not change
+	Dim newsegments As List
+	newsegments.Initialize
+	newsegments.AddAll(segmentsForEachFile)
+	Dim sourceFileMap As Map
+	sourceFileMap.Initialize
+	sourceFileMap.Put(previousInnerFilename,newsegments)
+	sourceFiles.Add(sourceFileMap)
+	
+	workfile.Put("files",sourceFiles)
+	Dim json As JSONGenerator
+	json.Initialize(workfile)
+	File.WriteString(File.Combine(path,"work"),filename&".json",json.ToPrettyString(4))
+End Sub
 
-Sub saveFileAccordingToExtenstion(filename As String)
+Sub saveFile(filename As String)
 	If filename="" Then
 		Return
 	End If
-	If filename.EndsWith(".txt") Then
-		txtFilter.saveWorkFile(filename,segments,path)
-	else if filename.EndsWith(".idml") Then
-		idmlFilter.saveWorkFile(filename,segments,path)
-	End If
 	saveAlltheTranslationToSegmentsInVisibleArea(Main.editorLV.FirstVisibleIndex,Main.editorLV.LastVisibleIndex)
 	saveAlltheTranslationToTM
+	saveWorkFile(filename)
 	contentChanged=False
 	Main.MainForm.Title=Main.MainForm.Title.Replace("*","")
 End Sub
