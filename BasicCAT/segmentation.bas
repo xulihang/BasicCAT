@@ -15,13 +15,40 @@ Sub segmentedTxt(text As String,Trim As Boolean,sourceLang As String,filetype As
 		rules.Initialize
 		rules=SRX.readRules("",sourceLang)
 	End If
-	
+
+	Dim segments As List
+	segments.Initialize
+
+	Dim splitted As List
+	splitted.Initialize
+	splitted.AddAll(Regex.Split(CRLF,text))
+	Dim index As Int=-1
+	For Each para As String In splitted
+		index=index+1
+	    segments.AddAll(paragraphInSegments(para))
+	    Dim last As String
+	    last=segments.Get(segments.Size-1)
+
+		If index<>splitted.Size-1 Then
+			last=last&CRLF
+		Else if text.EndsWith(CRLF)=True Then
+			last=last&CRLF
+	    End If
+	    segments.set(segments.Size-1,last)
+	Next
+
+	Return segments
+End Sub
+
+
+Sub paragraphInSegments(text As String) As List
+
 	Dim breakRules,nonbreakRules As List
 	breakRules=rules.Get("breakRules")
 	nonbreakRules=rules.Get("nonbreakRules")
-
+	Log(breakRules)
+	Log(nonbreakRules)
 	Dim previousText As String
-
 	Dim segments As List
 	segments.Initialize
 	
@@ -55,8 +82,6 @@ Sub segmentedTxt(text As String,Trim As Boolean,sourceLang As String,filetype As
 	If previousText.Length<>text.Length Then
 		segments.Add(text.SubString2(previousText.Length,text.Length))
 	End If
-
-
 	Return segments
 End Sub
 
@@ -75,38 +100,47 @@ End Sub
 Sub getPositions(rulesList As List,text As String) As List
 	Dim breakPositions As List
 	breakPositions.Initialize
+	Dim textLeft As String
 	For Each rule As Map In rulesList
 		Log(rule)
-
+		textLeft=text
 		Dim beforeBreak,afterBreak As String
 		beforeBreak=rule.Get("beforebreak")
 		afterBreak=rule.Get("afterbreak")
 
 		Dim bbm As Matcher
-		bbm=Regex.Matcher2(beforeBreak,32,text)
+		bbm=Regex.Matcher2(beforeBreak,32,textLeft)
 
 		If beforeBreak<>"null" Then
-			
 			Do While bbm.Find
 				Log(bbm.Match)
 				If afterBreak="null" Then
-					breakPositions.Add(bbm.GetEnd(0))
+					breakPositions.Add(bbm.GetEnd(0)+text.Length-textLeft.Length)
+					textLeft=textLeft.SubString2(bbm.GetEnd(0),textLeft.Length)
+					bbm=Regex.Matcher2(beforeBreak,32,textLeft)
+
 				End If
 			
 				Dim abm As Matcher
-				abm=Regex.Matcher2(afterBreak,32,text)
+				abm=Regex.Matcher2(afterBreak,32,textLeft)
 				Do While abm.Find
 					If bbm.GetEnd(0)=abm.GetStart(0) Then
-						breakPositions.Add(abm.GetEnd(0))
+						breakPositions.Add(abm.GetEnd(0)+text.Length-textLeft.Length)
+						textLeft=textLeft.SubString2(abm.GetEnd(0),textLeft.Length)
+						abm=Regex.Matcher2(afterBreak,32,textLeft)
+						bbm=Regex.Matcher2(beforeBreak,32,textLeft)
+
 						Exit
 					End If
 				Loop
 			Loop
 		Else if afterBreak<>"null" Then
 			Dim abm As Matcher
-			abm=Regex.Matcher2(afterBreak,32,text)
+			abm=Regex.Matcher2(afterBreak,32,textLeft)
 			Do While abm.Find
-				breakPositions.Add(abm.GetEnd(0))
+				breakPositions.Add(abm.GetEnd(0)+text.Length-textLeft.Length)
+				textLeft=textLeft.SubString2(abm.GetEnd(0),textLeft.Length)
+				abm=Regex.Matcher2(afterBreak,32,textLeft)
 			Loop
 		End If
 	Next
