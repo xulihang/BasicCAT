@@ -64,11 +64,17 @@ Sub applyButton_MouseClicked (EventData As MouseEvent)
 End Sub
 
 Sub DeleteTMButton_MouseClicked (EventData As MouseEvent)
-	TMListView.Items.RemoveAt(TMListView.SelectedIndex)
+	If TMListView.SelectedIndex<>-1 Then
+		TMListView.Items.RemoveAt(TMListView.SelectedIndex)
+	End If
+	
 End Sub
 
 Sub DeleteTermButton_MouseClicked (EventData As MouseEvent)
-	TermListView.Items.RemoveAt(TMListView.SelectedIndex)
+	If TermListView.SelectedIndex<>-1 Then
+		TermListView.Items.RemoveAt(TMListView.SelectedIndex)
+	End If
+	
 End Sub
 
 Sub AddTermButton_MouseClicked (EventData As MouseEvent)

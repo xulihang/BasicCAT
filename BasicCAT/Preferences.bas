@@ -26,6 +26,8 @@ Sub Class_Globals
 	Private emailTextField As TextField
 	Private usernameTextField As TextField
 	Private vcsEnabledCheckBox As CheckBox
+	Private sourceFontLbl As Label
+	Private targetFontLbl As Label
 End Sub
 
 'Initializes the object. You can add parameters to this method if needed.
@@ -90,6 +92,7 @@ Sub categoryListView_SelectedIndexChanged(Index As Int)
 			'appearance
 			SettingPane.RemoveAllNodes
 			SettingPane.LoadLayout("appearance")
+			loadFont
 		Case 2
 			'mt
 			SettingPane.RemoveAllNodes
@@ -242,4 +245,43 @@ End Sub
 Sub saveVCSSettingButton_MouseClicked (EventData As MouseEvent)
 	unsavedPreferences.Put("vcs_username",usernameTextField.Text)
 	unsavedPreferences.Put("vcs_email",emailTextField.Text)
+End Sub
+
+Sub targetFontLbl_MouseClicked (EventData As MouseEvent)
+	setFont(targetFontLbl,"targetFont")
+End Sub
+
+Sub sourceFontLbl_MouseClicked (EventData As MouseEvent)
+	setFont(sourceFontLbl,"sourceFont")
+End Sub
+
+Sub setFont(lbl As Label,name As String)
+	Dim fp As FontPicker
+	fp.Initialize (lbl.Font)
+	Dim f As Font = fp.ShowAndWait
+	If f <> Null And f.IsInitialized Then
+		lbl.Font = f
+		Log(f.FamilyName)
+		Log(f.Size)
+	End If
+	Log(lbl.Font.FamilyName)
+	Log(lbl.Font.Size)
+	Dim fontPreference As Map
+	fontPreference.Initialize
+	fontPreference.Put("FamilyName",lbl.Font.FamilyName)
+	fontPreference.Put("Size",lbl.Font.Size)
+	unsavedPreferences.Put(name,fontPreference)
+End Sub
+
+Sub loadFont
+	If unsavedPreferences.ContainsKey("sourceFont") Then
+		Dim fontPreference As Map
+		fontPreference=unsavedPreferences.Get("sourceFont")
+		sourceFontLbl.Font=fx.CreateFont(fontPreference.get("FamilyName"),fontPreference.get("Size"),False,False)
+	End If
+	If unsavedPreferences.ContainsKey("targetFont") Then
+		Dim fontPreference As Map
+		fontPreference=unsavedPreferences.Get("targetFont")
+		targetFontLbl.Font=fx.CreateFont(fontPreference.get("FamilyName"),fontPreference.get("Size"),False,False)
+	End If
 End Sub

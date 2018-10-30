@@ -57,6 +57,8 @@ Sub importedTxt(filename As String,termsMap As Map)
 	result.Initialize
 	For Each line As String In segments
 
+		Dim terminfo As Map
+		terminfo.Initialize
 		Dim targetMap As Map
 		targetMap.Initialize
 		Dim source,target,descrip As String
@@ -64,7 +66,8 @@ Sub importedTxt(filename As String,termsMap As Map)
 		source=Regex.Split("	",line)(0)
 		target=Regex.Split("	",line)(1)
 		descrip=Regex.Split("	",line)(2)
-		targetMap.Put(target,descrip)
+		terminfo.Put("description",descrip)
+		targetMap.Put(target,terminfo)
 		termsMap.Put(source,targetMap)
 	Next
 End Sub

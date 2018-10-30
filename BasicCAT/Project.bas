@@ -431,13 +431,16 @@ Public Sub addTextAreaToSegmentPane(segmentpane As Pane,source As String,target 
 	sourceTextArea.Text=source
 
 	'sourceTextArea.Style = "-fx-font-family: Tahoma;"
+	Main.setTextAreaFont(sourceTextArea,"sourceFont")
 	addKeyEvent(sourceTextArea,"sourceTextArea")
 	addSelectionChangedEvent(sourceTextArea,"sourceTextAreaSelection")
 	Dim targetTextArea As TextArea
 	targetTextArea=segmentpane.GetNode(1)
 	targetTextArea.Text=target
 
+
 	'targetTextArea.Style = "-fx-font-family: Arial Unicode MS;"
+	Main.setTextAreaFont(targetTextArea,"targetFont")
 	addKeyEvent(targetTextArea,"targetTextArea")
 	addSelectionChangedEvent(targetTextArea,"targetTextAreaSelection")
 	
