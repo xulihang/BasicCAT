@@ -15,6 +15,7 @@ Sub Class_Globals
 	Private DeleteTMButton As Button
 	Private TMListView As ListView
 	Private resultList As List
+	Private TermListView As ListView
 End Sub
 
 'Initializes the object. You can add parameters to this method if needed.
@@ -24,7 +25,15 @@ Public Sub Initialize
 	settings.Initialize
 	settings=Main.currentProject.settings
 	settingTabPane.LoadLayout("tmSetting","TM")
-	TMListView.Items.AddAll(settings.Get("tmList"))
+	settingTabPane.LoadLayout("termSetting","Term")
+	If settings.ContainsKey("tmList") Then
+		TMListView.Items.AddAll(settings.Get("tmList"))
+	End If
+	If settings.ContainsKey("termList") Then
+		TermListView.Items.AddAll(settings.Get("termList"))
+	End If
+	
+	
 	resultList.Initialize
 End Sub
 
@@ -49,12 +58,43 @@ End Sub
 Sub applyButton_MouseClicked (EventData As MouseEvent)
 	resultList.Add("changed")
 	settings.Put("tmList",TMListView.Items)
+	settings.Put("termList",TermListView.Items)
 	resultList.Add(settings)
 	frm.Close
 End Sub
 
 Sub DeleteTMButton_MouseClicked (EventData As MouseEvent)
 	TMListView.Items.RemoveAt(TMListView.SelectedIndex)
+End Sub
+
+Sub DeleteTermButton_MouseClicked (EventData As MouseEvent)
+	TermListView.Items.RemoveAt(TMListView.SelectedIndex)
+End Sub
+
+Sub AddTermButton_MouseClicked (EventData As MouseEvent)
+	Dim fc As FileChooser
+	fc.Initialize
+	
+	Dim descriptionList,filterList As List
+	descriptionList.Initialize
+	filterList.Initialize
+
+	descriptionList.Add("TAB-delimited Files")
+	filterList.add("*.txt")
+	descriptionList.Add("TBX Files")
+	filterList.add("*.tbx")
+	FileChooserUtils.AddExtensionFilters4(fc,descriptionList,filterList,False,"",True)
+	Dim path As String
+	path=fc.ShowOpen(frm)
+	If path="" Then
+		Return
+	Else
+		Dim filename As String
+		filename=Main.getFilename(path)
+		Wait For (File.CopyAsync(path,"",File.Combine(Main.currentProject.path,"Term"), filename)) Complete (Success As Boolean)
+		Log("Success: " & Success)
+		TermListView.Items.Add(filename)
+	End If
 End Sub
 
 Sub AddTMButton_MouseClicked (EventData As MouseEvent)
@@ -82,3 +122,4 @@ Sub AddTMButton_MouseClicked (EventData As MouseEvent)
 		TMListView.Items.Add(filename)
 	End If
 End Sub
+

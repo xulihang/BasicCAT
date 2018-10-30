@@ -100,7 +100,10 @@ Public Sub newProjectSetting(source As String,target As String)
 	Main.initializeNLP(source)
 	Dim tmList As List
 	tmList.Initialize
+	Dim termList As List
+	termList.Initialize
 	settings.Put("tmList",tmList)
+	settings.Put("termList",termList)
 End Sub
 
 Public Sub addFile(filepath As String)
@@ -123,6 +126,8 @@ Public Sub saveSettings(newsettings As Map)
 	save
 	projectTM.deleteExternalTranslationMemory
 	projectTM.importExternalTranslationMemory(settings.Get("tmList"))
+	projectTerm.deleteExternalTerminology
+	projectTerm.importExternalTerminology(settings.Get("termList"))
 End Sub
 
 public Sub save
@@ -887,9 +892,19 @@ Sub showTerm(targetTextArea As TextArea)
 		Dim lbl1 As Label
 		lbl1=p.GetNode(0)
 		lbl1.Text=termList.Get(0)
+		
 		Dim lbl2 As Label
 		lbl2=p.GetNode(1)
 		lbl2.Text=termList.Get(1)
+		Dim termInfo As Map
+		termInfo=termList.Get(2)
+		If termInfo.ContainsKey("description") Then 'description
+			If termInfo.Get("description")<>"" Then
+				lbl1.TooltipText=termInfo.Get("description")
+				lbl2.TooltipText=termInfo.Get("description")
+			End If
+
+		End If
 		Main.termLV.Items.Add(p)
 	Next
 End Sub

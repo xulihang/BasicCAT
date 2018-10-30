@@ -34,13 +34,14 @@ File37=tabpane.bjl
 File38=term.bjl
 File39=TermManager.bjl
 File4=checkList.bjl
-File40=tmList.bjl
-File41=TMManager.bjl
-File42=TMsegment.bjl
-File43=tmSetting.bjl
-File44=upperRight.bjl
-File45=viewSegment.bjl
-File46=wordLookupSetting.bjl
+File40=termSetting.bjl
+File41=tmList.bjl
+File42=TMManager.bjl
+File43=TMsegment.bjl
+File44=tmSetting.bjl
+File45=upperRight.bjl
+File46=viewSegment.bjl
+File47=wordLookupSetting.bjl
 File5=default_rules.srx
 File6=editor.bjl
 File7=Fonts.xml
@@ -87,6 +88,7 @@ FileGroup43=Default Group
 FileGroup44=Default Group
 FileGroup45=Default Group
 FileGroup46=Default Group
+FileGroup47=Default Group
 FileGroup5=Default Group
 FileGroup6=Default Group
 FileGroup7=Default Group
@@ -144,15 +146,16 @@ Module33=LanguageTool
 Module34=editDistance
 Module35=InputBox
 Module36=viewSegment
+Module37=TBX
 Module4=CustomListView
 Module5=txtFilter
 Module6=TM
 Module7=Term
 Module8=KeyValueStore
 Module9=ProjectSettings
-NumberOfFiles=46
+NumberOfFiles=47
 NumberOfLibraries=21
-NumberOfModules=36
+NumberOfModules=37
 Version=6.51
 @EndOfDesignText@
 #Region Project Attributes 
@@ -675,7 +678,7 @@ Sub addTermButton_MouseClicked (EventData As MouseEvent)
 End Sub
 
 Sub termLV_MouseClicked (EventData As MouseEvent)
-	If termLV.SelectedItem<>Null Then
+	If termLV.SelectedItem<>Null And EventData.PrimaryButtonPressed Then
 		Dim p As Pane
 		p=termLV.SelectedItem
 		Dim lbl As Label
@@ -934,3 +937,4 @@ Sub lbl_MouseClicked (EventData As MouseEvent)
 		End Select
 	End If
 End Sub
+

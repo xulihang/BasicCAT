@@ -13,8 +13,8 @@ End Sub
 Sub segmentedTxt(text As String,Trim As Boolean,sourceLang As String,filetype As String) As List
 	If rules.IsInitialized=False Then
 		rules.Initialize
-		rules=SRX.readRules("",sourceLang)
 	End If
+	rules=SRX.readRules("","en")
 
 	Dim segments As List
 	segments.Initialize
@@ -33,21 +33,139 @@ Sub segmentedTxt(text As String,Trim As Boolean,sourceLang As String,filetype As
 			last=last&CRLF
 		Else if text.EndsWith(CRLF)=True Then
 			last=last&CRLF
-	    End If
-	    segments.set(segments.Size-1,last)
+		End If
+		segments.set(segments.Size-1,last)
 	Next
 
 	Return segments
 End Sub
 
 
+
+Sub paragraphInSegmentsCas(text As String) As List
+	Dim breakRules,nonbreakRules As List
+	breakRules=rules.Get("breakRules")
+	nonbreakRules=rules.Get("nonbreakRules")
+	
+	Dim allRulesList As List
+	allRulesList.Initialize
+	allRulesList.Addall(nonbreakRules)
+	allRulesList.Addall(breakRules)
+
+	Dim previousText As String
+	Dim segments As List
+	segments.Initialize
+	For i=0 To text.Length-1
+		previousText=""
+		'Log(i)
+
+		For Each seg As String In segments
+
+			previousText=previousText&seg
+		Next
+		Dim currentText As String
+		currentText=text.SubString2(previousText.Length,i)
+		'Log("ct"&currentText)
+		'Log("pt"&previousText)
+		'Log(currentText.Length+previousText.Length)
+		'Log(text.Length)
+		Dim matched As Boolean=False
+		For Each rule As Map In allRulesList
+
+			If matched Then
+				Exit
+			End If
+			
+			Dim beforeBreak,afterBreak As String
+			beforeBreak=rule.Get("beforebreak")
+			afterBreak=rule.Get("afterbreak")
+			Dim bbm As Matcher
+			bbm=Regex.Matcher2(beforeBreak,32,currentText)
+			If beforeBreak<>"null" Then
+				Do While bbm.find
+					Log(i)
+					Log(bbm.Match)
+					'Log("end"&bbm.GetEnd(0))
+					'Log("i"&i)
+					If matched Then
+						Exit
+					End If
+					If bbm.GetEnd(0)+previousText.Length<>i Then
+						Continue
+					End If
+					'Log("bbmfind")
+					'Log(bbm.Match)
+					'Log(beforeBreak)
+
+					If afterBreak="null" Then
+						If rule.Get("break")="yes" Then
+							segments.Add(currentText)
+							'Log(currentText)
+							'Log(rule)
+						End If
+						
+						matched=True
+						Exit
+					End If
+					
+					Dim abm As Matcher
+					abm=Regex.Matcher2(afterBreak,32,text.SubString2(previousText.Length,text.Length))
+					'Log("at"&text.SubString2(previousText.Length,text.Length))
+					Do While abm.Find
+						Log("ab"&abm.Match)
+						If abm.GetStart(0)=bbm.GetEnd(0) Then
+							Log("abm")
+							If rule.Get("break")="yes" Then
+								segments.Add(currentText)
+								'Log(currentText)
+								'Log(rule)
+							End If
+							matched=True
+							Exit
+						End If
+						If abm.GetStart(0)>currentText.Length Then
+							Exit
+						End If
+					Loop
+				Loop
+			Else if afterBreak<>"null" Then
+				Dim abm As Matcher
+				abm=Regex.Matcher2(afterBreak,32,text.SubString2(previousText.Length,text.Length))
+				Do While abm.Find
+					If abm.GetStart(0)=bbm.GetEnd(0) Then
+						If rule.Get("break")="yes" Then
+							segments.Add(currentText)
+							'Log(currentText)
+							'Log(rule)
+						End If
+						matched=True
+						Exit
+					End If
+                    If abm.GetStart(0)>currentText.Length Then
+						Exit
+                    End If
+				Loop
+			End If
+		Next
+	Next
+	
+	'Log(segments)
+	previousText=""
+	For Each seg As String In segments
+		previousText=previousText&seg
+	Next
+	If previousText.Length<>text.Length Then
+		segments.Add(text.SubString2(previousText.Length,text.Length))
+	End If
+	'Log(segments)
+	Return segments
+End Sub
+
 Sub paragraphInSegments(text As String) As List
 
 	Dim breakRules,nonbreakRules As List
 	breakRules=rules.Get("breakRules")
 	nonbreakRules=rules.Get("nonbreakRules")
-	Log(breakRules)
-	Log(nonbreakRules)
 	Dim previousText As String
 	Dim segments As List
 	segments.Initialize
@@ -113,7 +231,6 @@ Sub getPositions(rulesList As List,text As String) As List
 
 		If beforeBreak<>"null" Then
 			Do While bbm.Find
-				Log(bbm.Match)
 				If afterBreak="null" Then
 					breakPositions.Add(bbm.GetEnd(0)+text.Length-textLeft.Length)
 					textLeft=textLeft.SubString2(bbm.GetEnd(0),textLeft.Length)
