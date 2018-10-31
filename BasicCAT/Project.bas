@@ -52,7 +52,7 @@ Sub initializeTM(projectPath As String,isExistingProject As Boolean)
 	Next
 	If isExistingProject Then
 		If Main.preferencesMap.ContainsKey("checkExternalTMOnOpening") Then
-			If Main.preferencesMap.Get("checkExternalTMOnOpening")=True Then
+			If Main.preferencesMap.Get("checkExternalTMOnOpening")=False Then
 			    Return
 			End If
 		End If
@@ -610,6 +610,8 @@ Sub sourceTextArea_KeyPressed_Event (MethodName As String, Args() As Object) As 
 			txtFilter.splitSegment(sourceTextArea)
 		Else if currentFilename.EndsWith(".idml") Then
 			idmlFilter.splitSegment(sourceTextArea)
+		Else if currentFilename.EndsWith(".xliff") Then
+			idmlFilter.splitSegment(sourceTextArea)
 		End If
 	Else if result="DELETE" Then
 		contentIsChanged
@@ -1095,7 +1097,8 @@ Sub createWorkFileAccordingExtension(filename As String)
 		txtFilter.createWorkFile(filename,path,projectFile.Get("source"))
 	Else if filename.EndsWith(".idml") Then
 		idmlFilter.createWorkFile(filename,path,projectFile.Get("source"))
-	Else
+	Else if filename.EndsWith(".xlf") Then
+		xliffFilter.createWorkFile(filename,path,projectFile.Get("source"))
 		
 	End If
 End Sub
@@ -1184,12 +1187,24 @@ Sub saveFile(filename As String)
 	Main.MainForm.Title=Main.MainForm.Title.Replace("*","")
 End Sub
 
-Public Sub getSegmentsAccordingToExtenstion(filename As String) As List
-	If filename.EndsWith(".txt") Then
-		Return txtFilter.readFileAndGetAlltheSegments(filename,path)
-	Else
-		Return idmlFilter.readFileAndGetAlltheSegments(filename,path)
-	End If
+
+Sub getSegmentsAccordingToExtenstion(filename As String) As List
+	Dim allSegments As List
+	allSegments.Initialize
+	Dim workfile As Map
+	Dim json As JSONParser
+	json.Initialize(File.ReadString(File.Combine(path,"work"),filename&".json"))
+	workfile=json.NextObject
+	Dim sourceFiles As List
+	sourceFiles=workfile.Get("files")
+	For Each sourceFileMap As Map In sourceFiles
+		Dim innerFilename As String
+		innerFilename=sourceFileMap.GetKeyAt(0)
+		Dim segmentsList As List
+		segmentsList=sourceFileMap.Get(innerFilename)
+		allSegments.AddAll(segmentsList)
+	Next
+	Return allSegments
 End Sub
 
 Public Sub generateTargetFiles
@@ -1198,6 +1213,8 @@ Public Sub generateTargetFiles
 			txtFilter.generateFile(filename,path,projectFile)
 		Else if filename.EndsWith(".idml") Then
 			idmlFilter.generateFile(filename,path,projectFile)
+		Else if filename.EndsWith(".xlf") Then
+			xliffFilter.generateFile(filename,path,projectFile)
 		End If
 	Next
 End Sub
