@@ -36,6 +36,13 @@ Public Sub loadText
 		text=idmlFilter.previewText
 	else if currentFilename.EndsWith(".xlf") Then
 		text=xliffFilter.previewText
+	Else
+		Dim params As Map
+		params.Initialize
+		params.Put("editorLV",Main.editorLV)
+		params.Put("segments",Main.currentProject.segments)
+		params.Put("lastEntry",Main.currentProject.lastEntry)
+		text=Main.currentProject.runFilterPluginAccordingToExtension(currentFilename,"previewText",params)
 	End If
 	loadHtml(text)
 End Sub

@@ -24,6 +24,7 @@ Sub Class_Globals
 	Private cursorReachEnd As Boolean=False
 	Private projectGit As git
 	Private contentChanged As Boolean=False
+	Private plugin As ABPlugin
 End Sub
 
 'Initializes the object. You can add parameters to this method if needed.
@@ -32,7 +33,16 @@ Public Sub Initialize
 	projectFile.Initialize
 	segments.Initialize
 	settings.Initialize
+	plugin.Initialize("plugin",File.Combine(File.DirApp, "plugins"), "MyKey")
+	plugin.Start(1)
+	Log(plugin.GetAvailablePlugins)
 	cm.Initialize("cm")
+End Sub
+
+Sub plugin_PluginsChanged()
+	Log("plugins have changed!")
+	Log(plugin.GetAvailablePlugins)
+	plugin.Stop
 End Sub
 
 Sub initializeTM(projectPath As String,isExistingProject As Boolean)
@@ -115,7 +125,7 @@ Public Sub addFile(filepath As String)
 	Log("Success: " & Success)
 	files.Add(filename)
 	addFilesToTreeTable(filename)
-	createWorkFileAccordingExtension(filename)
+	createWorkFileAccordingToExtension(filename)
 	save
 End Sub
 
@@ -612,6 +622,15 @@ Sub sourceTextArea_KeyPressed_Event (MethodName As String, Args() As Object) As 
 			idmlFilter.splitSegment(sourceTextArea)
 		Else if currentFilename.EndsWith(".xlf") Then
 			xliffFilter.splitSegment(sourceTextArea)
+		Else
+			Dim params As Map
+			params.Initialize
+			params.Put("main",Main)
+			params.Put("sourceTextArea",sourceTextArea)
+			params.Put("editorLV",Main.editorLV)
+			params.Put("segments",segments)
+			params.Put("projectFile",projectFile)
+			runFilterPluginAccordingToExtension(currentFilename,"splitSegment",params)
 		End If
 	Else if result="DELETE" Then
 		contentIsChanged
@@ -621,6 +640,15 @@ Sub sourceTextArea_KeyPressed_Event (MethodName As String, Args() As Object) As 
 			idmlFilter.mergeSegment(sourceTextArea)
 		Else if currentFilename.EndsWith(".xlf") Then
 			xliffFilter.mergeSegment(sourceTextArea)
+		Else
+			Dim params As Map
+			params.Initialize
+			params.Put("MainForm",Main.MainForm)
+			params.Put("sourceTextArea",sourceTextArea)
+			params.Put("editorLV",Main.editorLV)
+			params.Put("segments",segments)
+			params.Put("projectFile",projectFile)
+			runFilterPluginAccordingToExtension(currentFilename,"mergeSegment",params)
 		End If
 	End If
 End Sub
@@ -1096,14 +1124,35 @@ Public Sub fillVisibleTargetTextArea
 	Next
 End Sub
 
-Sub createWorkFileAccordingExtension(filename As String)
+Sub runFilterPluginAccordingToExtension(filename As String,task As String,params As Map) As Object
+	Log(plugin.GetAvailablePlugins)
+	For Each pluginName As String In plugin.GetAvailablePlugins
+		If pluginName.EndsWith("Filter") Then
+			Dim extension As String
+			extension=pluginName.Replace("Filter","")
+			If filename.EndsWith(extension) Then
+				Return plugin.RunPlugin(pluginName,task,params)
+			End If
+		End If
+	Next
+	Return ""
+End Sub
+
+Sub createWorkFileAccordingToExtension(filename As String)
 	If filename.EndsWith(".txt") Then
 		txtFilter.createWorkFile(filename,path,projectFile.Get("source"))
 	Else if filename.EndsWith(".idml") Then
 		idmlFilter.createWorkFile(filename,path,projectFile.Get("source"))
 	Else if filename.EndsWith(".xlf") Then
 		xliffFilter.createWorkFile(filename,path,projectFile.Get("source"))
-		
+	Else
+		Dim params As Map
+		params.Initialize
+		params.Put("filename",filename)
+		params.Put("path",path)
+		params.Put("sourceLang",projectFile.Get("source"))
+		runFilterPluginAccordingToExtension(filename,"createWorkFile",params)
+
 	End If
 End Sub
 
@@ -1219,11 +1268,18 @@ Public Sub generateTargetFiles
 			idmlFilter.generateFile(filename,path,projectFile)
 		Else if filename.EndsWith(".xlf") Then
 			xliffFilter.generateFile(filename,path,projectFile)
+		Else
+			Dim params As Map
+			params.Initialize
+			params.Put("filename",filename)
+			params.Put("path",path)
+			params.Put("projectFile",projectFile)
+			runFilterPluginAccordingToExtension(filename,"generateFile",params)
 		End If
 	Next
 End Sub
 
-Sub contentIsChanged
+Public Sub contentIsChanged
 	If contentChanged=False Then
 		contentChanged=True
 		Main.MainForm.Title=Main.MainForm.Title&"*"

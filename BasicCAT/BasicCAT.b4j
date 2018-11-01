@@ -1,5 +1,5 @@
 ﻿AppType=JavaFX
-Build1=Default,b4j.example
+Build1=Default,org.xulihang.basiccat
 File1=.gitignore
 File10=inputbox.bjl
 File11=leftProject.bjl
@@ -111,6 +111,7 @@ Library19=xmlbuilder
 Library2=jfx
 Library20=jhttputils2
 Library21=jsd_ziplibray
+Library22=abplugin
 Library3=javaobject
 Library4=archiver
 Library5=json
@@ -158,7 +159,7 @@ Module7=Term
 Module8=KeyValueStore
 Module9=ProjectSettings
 NumberOfFiles=48
-NumberOfLibraries=21
+NumberOfLibraries=22
 NumberOfModules=39
 Version=6.51
 @EndOfDesignText@
@@ -672,6 +673,7 @@ Sub fillWithTM
 			Dim targetTextArea As TextArea
 			targetTextArea=pane.GetNode(1)
 			targetTextArea.Text=tmTableView.SelectedRowValues(2)
+			currentProject.contentIsChanged
 		End If
 	End If
 
@@ -970,5 +972,13 @@ Public Sub setTextAreaFont(ta As TextArea,name As String)
 		size=fontPreference.get("Size")
 		ta.Style = $"-fx-font-family: ${familyName};
 		             -fx-font-size: ${size}px;"$
-    End If
+	End If
+End Sub
+
+
+Public Sub addTextAreaToSegmentPane(segmentpane As Pane,source As String)
+	log("add")
+	If currentProject.IsInitialized Then
+		currentProject.addTextAreaToSegmentPane(segmentpane,source,"")
+	End If
 End Sub
