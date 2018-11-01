@@ -132,7 +132,7 @@ Sub escapedText(xmlstring As String) As String
 	Return new
 End Sub
 
-Sub unescapedText(xmlstring As String,tagName) As String
+Sub unescapedText(xmlstring As String,tagName As String) As String
 	Dim pattern As String
 	pattern="<"&tagName&".*?>(.*?)</"&tagName&">"
 	Dim new As String
@@ -207,6 +207,7 @@ Sub generateFile(filename As String,path As String,projectFile As Map)
 			If target="" Then
 				translation=fullsource
 			Else
+				target=addNecessaryTags(target,source)
 				translation=fullsource.Replace(source,target)
 			End If
 			Dim extra As Map
@@ -283,6 +284,27 @@ Sub insertTranslation(translationMap As Map,filename As String,path As String) A
 	Return xmlMap
 End Sub
 
+Sub addNecessaryTags(target As String,source As String) As String
+	Dim tagMatcher As Matcher
+	tagMatcher=Regex.Matcher2("<.*?>",32,source)
+	Dim tagsList As List
+	tagsList.Initialize
+	Do While tagMatcher.Find
+		tagsList.Add(tagMatcher.Match)
+	Loop
+	Dim tagMatcher As Matcher
+	tagMatcher=Regex.Matcher2("<.*?>",32,target)
+	Do While tagMatcher.Find
+		If tagsList.IndexOf(tagMatcher.Match)<>-1 Then
+			tagsList.RemoveAt(tagsList.IndexOf(tagMatcher.Match))
+		End If
+	Loop
+	For Each tag As String In tagsList
+		target=target&tag
+	Next
+	Return target
+End Sub
+
 Sub mergeSegment(sourceTextArea As TextArea)
 	Dim index As Int
 	index=Main.editorLV.GetItemFromView(sourceTextArea.Parent)
@@ -293,6 +315,14 @@ Sub mergeSegment(sourceTextArea As TextArea)
 		
 	If bitext.Get(3)<>nextBiText.Get(3) Then
 		fx.Msgbox(Main.MainForm,"Cannot merge segments as these two belong to different files.","")
+		Return
+	End If
+	Dim extra As Map
+	extra=bitext.Get(4)
+	Dim nextExtra As Map
+	nextExtra=nextBiText.Get(4)
+	If extra.Get("id")<>nextExtra.Get("id") Then
+		fx.Msgbox(Main.MainForm,"Cannot merge segments as these two belong to different trans-units.","")
 		Return
 	End If
 		
@@ -367,7 +397,7 @@ Sub splitSegment(sourceTextArea As TextArea)
 	fullsource=bitext.Get(2)
 	
 	bitext.Set(0,sourceTextArea.Text)
-	bitext.Set(2,fullsource.Replace(source,"").Trim)
+	bitext.Set(2,sourceTextArea.Text)
 	
 	
 	newBiText.Initialize
@@ -375,6 +405,7 @@ Sub splitSegment(sourceTextArea As TextArea)
 	newBiText.Add("")
 	newBiText.Add(fullsource.Replace(sourceTextArea.Text,""))
 	newBiText.Add(bitext.Get(3))
+	newBiText.Add(bitext.Get(4))
 	Main.currentProject.segments.set(index,bitext)
 	Main.currentProject.segments.InsertAt(index+1,newBiText)
 
@@ -405,9 +436,6 @@ Sub previewText As String
 			translation=fullsource
 		Else
 			translation=fullsource.Replace(source,target)
-			If Main.currentProject.projectFile.Get("source")="en" Then
-				translation=translation.Replace(" ","")
-			End If
 		End If
 		If i=Main.currentProject.lastEntry Then
 			translation=$"<span id="current" name="current" >${translation}</span>"$

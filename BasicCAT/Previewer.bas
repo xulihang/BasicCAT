@@ -34,6 +34,8 @@ Public Sub loadText
 		text=txtFilter.previewText
 	else if currentFilename.EndsWith(".idml") Then
 		text=idmlFilter.previewText
+	else if currentFilename.EndsWith(".xlf") Then
+		text=xliffFilter.previewText
 	End If
 	loadHtml(text)
 End Sub

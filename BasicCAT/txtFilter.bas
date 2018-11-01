@@ -164,7 +164,7 @@ Sub splitSegment(sourceTextArea As TextArea)
 	fullsource=bitext.Get(2)
 	
 	bitext.Set(0,sourceTextArea.Text)
-	bitext.Set(2,fullsource.Replace(source,"").Trim)
+	bitext.Set(2,sourceTextArea.Text)
 	
 	
 	newBiText.Initialize

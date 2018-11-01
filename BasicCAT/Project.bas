@@ -258,7 +258,7 @@ Sub removeFileMi_Action
 		currentFilename=""
 	End If
 	If result=-1 Then
-		For Each bitext As List In getSegmentsAccordingToExtenstion(filename)
+		For Each bitext As List In getAllSegments(filename)
 			projectTM.translationMemory.Remove(bitext.Get(0))
 		Next
 	End If
@@ -610,8 +610,8 @@ Sub sourceTextArea_KeyPressed_Event (MethodName As String, Args() As Object) As 
 			txtFilter.splitSegment(sourceTextArea)
 		Else if currentFilename.EndsWith(".idml") Then
 			idmlFilter.splitSegment(sourceTextArea)
-		Else if currentFilename.EndsWith(".xliff") Then
-			idmlFilter.splitSegment(sourceTextArea)
+		Else if currentFilename.EndsWith(".xlf") Then
+			xliffFilter.splitSegment(sourceTextArea)
 		End If
 	Else if result="DELETE" Then
 		contentIsChanged
@@ -619,6 +619,8 @@ Sub sourceTextArea_KeyPressed_Event (MethodName As String, Args() As Object) As 
 			txtFilter.mergeSegment(sourceTextArea)
 		Else if currentFilename.EndsWith(".idml") Then
 			idmlFilter.mergeSegment(sourceTextArea)
+		Else if currentFilename.EndsWith(".xlf") Then
+			xliffFilter.mergeSegment(sourceTextArea)
 		End If
 	End If
 End Sub
@@ -800,6 +802,8 @@ Sub showTM(targetTextArea As TextArea)
 	pane=targetTextArea.Parent
 	Dim sourceTA As TextArea
 	sourceTA=pane.GetNode(0)
+	Dim targetTA As TextArea
+	targetTA=pane.GetNode(1)
 	Log(sourceTA.Text)
 	If projectTM.currentSource=sourceTA.Text Then
 		Return
@@ -813,7 +817,7 @@ Sub showTM(targetTextArea As TextArea)
 
 	For Each matchList As List In Result
 
-		If matchList.Get(1)=sourceTA.Text And matchList.Get(3)="" Then
+		If matchList.Get(1)=sourceTA.Text And matchList.Get(3)="" And targetTA.Text=matchList.Get(2) Then
 			Continue 'itself
 		End If
 		Dim row()  As Object = Array As String(matchList.Get(0),matchList.Get(1),matchList.Get(2),matchList.Get(3))
@@ -1188,7 +1192,7 @@ Sub saveFile(filename As String)
 End Sub
 
 
-Sub getSegmentsAccordingToExtenstion(filename As String) As List
+Sub getAllSegments(filename As String) As List
 	Dim allSegments As List
 	allSegments.Initialize
 	Dim workfile As Map
