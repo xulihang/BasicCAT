@@ -290,3 +290,7 @@ Sub getExternalMemorySize As Int
 	Return externalTranslationMemory.ListKeys.Size
 End Sub
 
+Sub getProjectMemorySize As Int
+	Return externalTranslationMemory.ListKeys.Size+translationMemory.ListKeys.Size
+End Sub
+

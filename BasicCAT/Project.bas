@@ -1030,7 +1030,7 @@ Sub preTranslate(options As Map)
 			bitext=segments.Get(index)
 			
 			If options.Get("type")="TM" Then
-				If projectTM.ExternalMemorySize=0 Then
+				If projectTM.ProjectMemorySize=0 Then
 					progressDialog.close
 					Return
 				End If
@@ -1068,13 +1068,13 @@ Sub preTranslate(options As Map)
 			progressDialog.update(completed,segments.Size)
 			If completed>=segments.Size Then
 				progressDialog.close
-				CallSubDelayed(Me,"fillVisibleTargetTextArea")
+				fillVisibleTargetTextArea
 				Return
 			End If
 		Next
 
 		progressDialog.close
-		CallSubDelayed(Me,"fillVisibleTargetTextArea")
+		fillVisibleTargetTextArea
 	End If
 End Sub
 
