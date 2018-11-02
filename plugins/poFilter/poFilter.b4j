@@ -1,0 +1,46 @@
+﻿AppType=JavaFX
+Build1=Default,org.xulihang.basiccat
+File1=default_rules.srx
+FileGroup1=Default Group
+Group=Default Group
+Library1=jcore
+Library2=jfx
+Library3=json
+Library4=jxmlsax
+Library5=xmlbuilder
+Library6=jxui
+Library7=javaobject
+Module1=poFilterPlugin
+Module2=Xml2Map
+Module3=SRX
+Module4=CustomListView
+Module5=Map2Xml
+Module6=Utils
+Module7=segmentation
+NumberOfFiles=1
+NumberOfLibraries=7
+NumberOfModules=7
+Version=6.51
+@EndOfDesignText@
+#Region Project Attributes 
+	#MainFormWidth: 600
+	#MainFormHeight: 600 
+#End Region
+
+Sub Process_Globals
+	Private fx As JFX
+	Public MainForm As Form
+
+End Sub
+
+Sub AppStart (Form1 As Form, Args() As String)
+	MainForm = Form1
+	'MainForm.RootPane.LoadLayout("Layout1") 'Load the layout file.
+	MainForm.Show
+
+End Sub
+
+'Return true to allow the default exceptions handler to handle the uncaught exception.
+Sub Application_Error (Error As Exception, StackTrace As String) As Boolean
+	Return True
+End Sub
