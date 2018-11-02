@@ -104,6 +104,7 @@ End Sub
 Sub getFilesList(xmlstring As String) As List
 	Dim xmlMap As Map
 	xmlMap=Utils.getXmlMap(xmlstring)
+	Log(xmlMap)
 	Dim xliffMap As Map
 	xliffMap=xmlMap.Get("xliff")
 	Return Utils.GetElements(xliffMap,"file")
@@ -114,9 +115,18 @@ Sub escapedText(xmlstring As String) As String
 	new=xmlstring
 	Dim sourceMatcher As Matcher
 	sourceMatcher=Regex.Matcher2("<source.*?>(.*?)</source>",32,new)
+	Dim times As Int=0
 	Do While sourceMatcher.Find
-		'Log(sourceMatcher.Group(1))
-		If containsTag(sourceMatcher.Group(1))= False Then
+		times=times+1
+	Loop
+	Dim replacedTimes As Int=0
+	Dim sourceMatcher As Matcher
+	sourceMatcher=Regex.Matcher2("<source.*?>(.*?)</source>",32,new)
+
+    Dim oldText As String=new
+	Do While sourceMatcher.find
+		'Log("match"&sourceMatcher.Group(1))
+		If replacedTimes>=times Then
 			Exit
 		End If
 		Dim before As String
@@ -126,9 +136,16 @@ Sub escapedText(xmlstring As String) As String
 		Dim after As String
 		after=new.SubString2(sourceMatcher.GetEnd(1),new.Length)
 		new=before&mid&after
-		'Log(new)
-		sourceMatcher=Regex.Matcher2("<source.*?>(.*?)</source>",32,new)
-	Loop
+		If oldText<>new Then
+			sourceMatcher=Regex.Matcher2("<source.*?>(.*?)</source>",32,new)
+			replacedTimes=0
+			oldText=new
+		Else
+			replacedTimes=replacedTimes+1
+		End If
+		
+		
+    Loop
 	Return new
 End Sub
 
@@ -145,12 +162,14 @@ Sub unescapedText(xmlstring As String,tagName As String) As String
 	Loop
 	Dim sourceMatcher As Matcher
 	sourceMatcher=Regex.Matcher2(pattern,32,new)
-    Dim searchedTimes As Int=0
+    Dim replacedTimes As Int=0
+    Dim oldText As String=new
 	Do While sourceMatcher.Find
-		searchedTimes=searchedTimes+1
-		If searchedTimes>times Then
+
+		If replacedTimes>=times Then
 			Exit
 		End If
+
 		Dim before As String
 		before=new.SubString2(0,sourceMatcher.GetStart(1))
 		Dim mid As String
@@ -158,28 +177,32 @@ Sub unescapedText(xmlstring As String,tagName As String) As String
 		Dim after As String
 		after=new.SubString2(sourceMatcher.GetEnd(1),new.Length)
 		new=before&mid&after
-		sourceMatcher=Regex.Matcher2(pattern,32,new)
+		If oldText<>new Then
+			sourceMatcher=Regex.Matcher2(pattern,32,new)
+			replacedTimes=0
+			oldText=new
+		Else
+		    replacedTimes=replacedTimes+1
+		End If
 	Loop
-	
+
 	Return new
 End Sub
 
 Sub escapeInlineTag(text As String) As String
+	Dim tags As String
+	tags="(bpt|ept|it|ph|g|bx|ex|x|sub)"
+	text=Regex.Replace2("<(.*?"&tags&".*?)>",32,text,"&lt;$1&gt;")
 	text=text.Replace($"""$,"&quot;")
-	text=text.Replace("<","&lt;")
-	text=text.Replace(">","&gt;")
 	Return text
 End Sub
 
 Sub unescapeInlineTag(text As String) As String
+	Dim tags As String
+	tags="(bpt|ept|it|ph|g|bx|ex|x|sub)"
 	text=text.Replace("&quot;",$"""$)
-	text=text.Replace("&lt;","<")
-	text=text.Replace("&gt;",">")
+	text=Regex.Replace2("&lt;(.*?"&tags&".*?)&gt;",32,text,"<$1>")
 	Return text
-End Sub
-
-Sub containsTag(text As String) As Boolean
-	Return Regex.Matcher($"["<>]"$,text).Find
 End Sub
 
 Sub generateFile(filename As String,path As String,projectFile As Map)

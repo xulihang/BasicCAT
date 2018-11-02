@@ -14,7 +14,7 @@ Sub segmentedTxt(text As String,Trim As Boolean,sourceLang As String,filetype As
 	If rules.IsInitialized=False Then
 		rules.Initialize
 	End If
-	rules=SRX.readRules("","en")
+	rules=SRX.readRules("",sourceLang)
 
 	Dim segments As List
 	segments.Initialize
@@ -220,7 +220,7 @@ Sub getPositions(rulesList As List,text As String) As List
 	breakPositions.Initialize
 	Dim textLeft As String
 	For Each rule As Map In rulesList
-		Log(rule)
+		'Log(rule)
 		textLeft=text
 		Dim beforeBreak,afterBreak As String
 		beforeBreak=rule.Get("beforebreak")
