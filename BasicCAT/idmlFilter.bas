@@ -104,8 +104,8 @@ Sub createWorkFile(filename As String,path As String,sourceLang As String)
 			index=index+1
 			Dim bitext As List
 			bitext.Initialize
-			If source.Trim="" And index<segmentedText.Size-1 Then 'newline
-				inbetweenContent=inbetweenContent&CRLF
+			If source.Trim="" And index<segmentedText.Size-1 Then 'newline or empty space
+				inbetweenContent=inbetweenContent&source
 				Continue
 			Else if Regex.Replace("<.*?>",source,"").Trim="" And index<segmentedText.Size-1 Then ' pure tag maybe with \t \n
 				'Log("totalmatch"&source)

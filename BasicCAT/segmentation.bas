@@ -11,6 +11,7 @@ Sub Process_Globals
 End Sub
 
 Sub segmentedTxt(text As String,Trim As Boolean,sourceLang As String,filetype As String) As List
+	Log("text"&text)
 	If rules.IsInitialized=False Then
 		rules.Initialize
 	End If
@@ -36,7 +37,7 @@ Sub segmentedTxt(text As String,Trim As Boolean,sourceLang As String,filetype As
 		End If
 		segments.set(segments.Size-1,last)
 	Next
-
+    Log(segments)
 	Return segments
 End Sub
 
@@ -194,12 +195,20 @@ Sub paragraphInSegments(text As String) As List
 	Log(nonbreakPositions)
 	Log(finalBreakPositions)
 	For Each index As Int In finalBreakPositions
-		segments.Add(text.SubString2(previousText.Length,index))
+		Dim textTobeAdded As String
+		textTobeAdded=text.SubString2(previousText.Length,index)
+		segments.Add(textTobeAdded)
 		previousText=text.SubString2(0,index)
 	Next
 	If previousText.Length<>text.Length Then
 		segments.Add(text.SubString2(previousText.Length,text.Length))
 	End If
+	Dim all As String
+	For Each segment As String In segments
+		all=all&segment
+	Next
+	Log(all)
+	Log(segments)
 	Return segments
 End Sub
 

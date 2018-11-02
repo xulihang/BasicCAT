@@ -42,10 +42,11 @@ Sub createWorkFile(filename As String,path As String,sourceLang As String)
 			Dim id As String
 			id=tu.Get(1)
 			For Each source As String In segmentation.segmentedTxt(text,False,sourceLang,"xliff")
+
 				Dim bitext As List
 				bitext.Initialize
-				If source.Trim="" Then 'newline
-					inbetweenContent=inbetweenContent&CRLF
+				If source.Trim="" Then 'newline or empty space
+					inbetweenContent=inbetweenContent&source
 					Continue
 				Else if source.Trim<>"" Then
 					bitext.add(source.Trim)
@@ -192,7 +193,7 @@ End Sub
 Sub escapeInlineTag(text As String) As String
 	Dim tags As String
 	tags="(bpt|ept|it|ph|g|bx|ex|x|sub)"
-	text=Regex.Replace2("<(.*?"&tags&".*?)>",32,text,"&lt;$1&gt;")
+	text=Regex.Replace2("<(/?\b"&tags&"\b.*?)>",32,text,"&lt;$1&gt;")
 	text=text.Replace($"""$,"&quot;")
 	Return text
 End Sub
@@ -201,7 +202,7 @@ Sub unescapeInlineTag(text As String) As String
 	Dim tags As String
 	tags="(bpt|ept|it|ph|g|bx|ex|x|sub)"
 	text=text.Replace("&quot;",$"""$)
-	text=Regex.Replace2("&lt;(.*?"&tags&".*?)&gt;",32,text,"<$1>")
+	text=Regex.Replace2("&lt;(/?\b"&tags&"\b.*?)&gt;",32,text,"<$1>")
 	Return text
 End Sub
 
