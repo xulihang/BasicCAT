@@ -244,6 +244,49 @@ Sub lbl_MouseClicked (EventData As MouseEvent)
 	End If
 End Sub
 
+
+Sub exportReviewMi_Action
+	Dim mi As MenuItem
+	mi=Sender
+	Dim filename As String
+	filename=mi.Tag
+	Dim rows As List
+	rows.Initialize
+	For Each bitext As List In getAllSegments(filename)
+		rows.Add(Array As String(bitext.Get(0),bitext.Get(1)))
+	Next
+	Dim poiw As POIWord
+	poiw.Initialize("","write")
+	poiw.createTable(rows,File.Combine(path,filename&".docx"))
+	fx.Msgbox(Main.MainForm,"Done. File has been exported to the project folder.","")
+End Sub
+
+Sub importReviewMi_Action
+	Dim mi As MenuItem
+	mi=Sender
+	Dim filename As String
+	filename=mi.Tag
+	If currentFilename<>filename Then
+		fx.Msgbox(Main.MainForm,"Please first open this file.","")
+		Return
+	End If
+	Dim rows As List
+	Dim reviewFilePath As String
+	Dim fc As FileChooser
+	fc.Initialize
+	fc.SetExtensionFilter("Word Files",Array As String("*.docx"))
+	reviewFilePath=fc.ShowOpen(Main.MainForm)
+	If reviewFilePath<>"" Then
+		Dim poiw As POIWord
+		poiw.Initialize(reviewFilePath,"read")
+		rows=poiw.readTable
+		Dim crDialog As confirmReviewDialog
+		crDialog.Initialize(rows,segments)
+		crDialog.ShowAndWait
+	End If
+
+End Sub
+
 Sub removeFileMi_Action
 	Dim mi As MenuItem
 	mi=Sender
@@ -285,7 +328,10 @@ Sub openFile(filename As String,onOpeningProject As Boolean)
 	If onOpeningProject=False Then
 		save
 	End If
-	
+	If File.Exists(File.Combine(path,"work"),filename&".json")=False Then
+	    fx.Msgbox(Main.MainForm,"The workfile does not exist."&CRLF&"Maybe it's still in building.","")
+		Return
+	End If
 	Main.editorLV.Clear
 	Main.tmTableView.Items.Clear
 	Main.LogWebView.LoadHtml("")
@@ -321,12 +367,20 @@ Sub addFilesToTreeTable(filename As String)
 	cm.Initialize("cm")
 	Dim mi As MenuItem
 	mi.Initialize("Remove","removeFileMi")
+	Dim mi2 As MenuItem
+	mi2.Initialize("Export to docx for review","exportReviewMi")
+	Dim mi3 As MenuItem
+	mi3.Initialize("Import from review","importReviewMi")
 	cm.MenuItems.Add(mi)
+	cm.MenuItems.Add(mi2)
+	cm.MenuItems.Add(mi3)
 
 	lbl.ContextMenu=cm
 	
 	tti.Initialize("tti",Array As Object(lbl))
 	mi.Tag=tti
+	mi2.Tag=filename
+	mi3.Tag=filename
 	subTreeTableItem.Children.Add(tti)
 End Sub
 
@@ -1082,12 +1136,14 @@ Sub preTranslate(options As Map)
 				If similarity>=matchrate Then
 					bitext.Set(1,resultList.Get(2))
 					segments.Set(index,bitext)
+					fillOne(index,resultList.Get(2))
 				End If
 			Else if options.Get("type")="MT" Then
 				wait for (MT.getMT(bitext.Get(0),projectFile.Get("source"),projectFile.Get("target"),options.Get("engine"))) Complete (translation As String)
 				If translation<>"" Then
 					bitext.Set(1,translation)
 					segments.Set(index,bitext)
+					fillOne(index,translation)
 				End If
 			End If
 				
@@ -1104,6 +1160,18 @@ Sub preTranslate(options As Map)
 		progressDialog.close
 		fillVisibleTargetTextArea
 	End If
+End Sub
+
+Sub fillOne(index As Int,translation As String)
+	Dim p As Pane
+	p=Main.editorLV.GetPanel(index)
+	If p.NumberOfNodes=0 Then
+		Return
+	End If
+	Dim targetTextArea As TextArea
+	targetTextArea=p.GetNode(1)
+	targetTextArea.Text=translation
+	contentIsChanged
 End Sub
 
 Public Sub fillVisibleTargetTextArea

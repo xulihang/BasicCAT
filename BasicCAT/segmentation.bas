@@ -21,7 +21,7 @@ Sub segmentedTxt(text As String,Trim As Boolean,sourceLang As String,filetype As
 	segments.Initialize
     If text.Trim="" Then
 		segments.Add(text)
-		return segments
+		Return segments
     End If
 	Dim splitted As List
 	splitted.Initialize

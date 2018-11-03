@@ -1,53 +1,54 @@
 ﻿AppType=JavaFX
 Build1=Default,org.xulihang.basiccat
 File1=.gitignore
-File10=inputbox.bjl
-File11=leftProject.bjl
-File12=Log.bjl
-File13=lowerRight.bjl
-File14=main.bjl
-File15=menuText.txt
-File16=mtparamfiller.bjl
-File17=mtSetting.bjl
-File18=oneterm.bjl
-File19=preferences.bjl
+File10=generalSetting.bjl
+File11=inputbox.bjl
+File12=leftProject.bjl
+File13=Log.bjl
+File14=lowerRight.bjl
+File15=main.bjl
+File16=menuText.txt
+File17=mtparamfiller.bjl
+File18=mtSetting.bjl
+File19=oneterm.bjl
 File2=appearance.bjl
-File20=pretranslate.bjl
-File21=preview.bjl
-File22=progress.bjl
-File23=projectSetting.bjl
-File24=right.bjl
-File25=searchandreplace.bjl
-File26=searchTableView.bjl
-File27=segment.bjl
-File28=segmentation_en.conf
-File29=segmentation_en_exception.conf
+File20=preferences.bjl
+File21=pretranslate.bjl
+File22=preview.bjl
+File23=progress.bjl
+File24=projectSetting.bjl
+File25=right.bjl
+File26=searchandreplace.bjl
+File27=searchTableView.bjl
+File28=segment.bjl
+File29=segmentation_en.conf
 File3=autocomplete.bjl
-File30=segmentation_en_idml.conf
-File31=segmentation_zh.conf
-File32=segmentation_zh_exception.conf
-File33=settingLanguagecheck.bjl
-File34=settingVersionControl.bjl
-File35=statistics.bjl
-File36=supportedFiles.txt
-File37=tableview.bjl
-File38=tabpane.bjl
-File39=term.bjl
+File30=segmentation_en_exception.conf
+File31=segmentation_en_idml.conf
+File32=segmentation_zh.conf
+File33=segmentation_zh_exception.conf
+File34=settingLanguagecheck.bjl
+File35=settingVersionControl.bjl
+File36=statistics.bjl
+File37=supportedFiles.txt
+File38=tableview.bjl
+File39=tabpane.bjl
 File4=checkList.bjl
-File40=TermManager.bjl
-File41=termSetting.bjl
-File42=tmList.bjl
-File43=TMManager.bjl
-File44=TMsegment.bjl
-File45=tmSetting.bjl
-File46=upperRight.bjl
-File47=viewSegment.bjl
-File48=wordLookupSetting.bjl
-File5=default_rules.srx
-File6=editor.bjl
-File7=FontPicker.bjl
-File8=Fonts.xml
-File9=generalSetting.bjl
+File40=term.bjl
+File41=TermManager.bjl
+File42=termSetting.bjl
+File43=tmList.bjl
+File44=TMManager.bjl
+File45=TMsegment.bjl
+File46=tmSetting.bjl
+File47=upperRight.bjl
+File48=viewSegment.bjl
+File49=wordLookupSetting.bjl
+File5=confirmReview.bjl
+File6=default_rules.srx
+File7=editor.bjl
+File8=FontPicker.bjl
+File9=Fonts.xml
 FileGroup1=Default Group
 FileGroup10=Default Group
 FileGroup11=Default Group
@@ -91,6 +92,7 @@ FileGroup45=Default Group
 FileGroup46=Default Group
 FileGroup47=Default Group
 FileGroup48=Default Group
+FileGroup49=Default Group
 FileGroup5=Default Group
 FileGroup6=Default Group
 FileGroup7=Default Group
@@ -153,14 +155,16 @@ Module37=editDistance
 Module38=InputBox
 Module39=viewSegment
 Module4=CustomListView
+Module40=POIWord
+Module41=confirmReviewDialog
 Module5=txtFilter
 Module6=TM
 Module7=Term
 Module8=KeyValueStore
 Module9=ProjectSettings
-NumberOfFiles=48
+NumberOfFiles=49
 NumberOfLibraries=22
-NumberOfModules=39
+NumberOfModules=41
 Version=6.51
 @EndOfDesignText@
 #Region Project Attributes 
@@ -182,6 +186,14 @@ Version=6.51
 #AdditionalJar: JavaEWAH-1.1.6
 #AdditionalJar: slf4j-api-1.7.2
 #AdditionalJar: slf4j-simple-1.7.25
+
+'-------- for Apache POI
+#AdditionalJar: poi-4.0.0
+#AdditionalJar: poi-ooxml-schemas-4.0.0
+#AdditionalJar: poi-ooxml-4.0.0
+#AdditionalJar: xmlbeans-3.0.1
+#AdditionalJar: commons-collections4-4.2
+#AdditionalJar: commons-compress-1.18
 
 Sub Process_Globals
 	Private fx As JFX
@@ -977,7 +989,7 @@ End Sub
 
 
 Public Sub addTextAreaToSegmentPane(segmentpane As Pane,source As String)
-	log("add")
+	Log("add")
 	If currentProject.IsInitialized Then
 		currentProject.addTextAreaToSegmentPane(segmentpane,source,"")
 	End If
