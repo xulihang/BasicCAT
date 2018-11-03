@@ -473,6 +473,10 @@ Sub sourceTextArea_TextChanged (Old As String, New As String)
 	CallSubDelayed(Main, "ListViewParent_Resize")
 End Sub
 
+Sub segmentPane_MouseClicked (EventData As MouseEvent)
+	lastEntry=Main.editorLV.GetItemFromView(Sender)
+End Sub
+
 Public Sub createSegmentPane(bitext As List)
 	Dim segmentPane As Pane
 	segmentPane.Initialize("segmentPane")

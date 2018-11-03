@@ -3,48 +3,49 @@ Build1=Default,org.xulihang.basiccat
 File1=.gitignore
 File10=generalSetting.bjl
 File11=inputbox.bjl
-File12=leftProject.bjl
-File13=Log.bjl
-File14=lowerRight.bjl
-File15=main.bjl
-File16=menuText.txt
-File17=mtparamfiller.bjl
-File18=mtSetting.bjl
-File19=oneterm.bjl
+File12=inputTextArea.bjl
+File13=leftProject.bjl
+File14=Log.bjl
+File15=lowerRight.bjl
+File16=main.bjl
+File17=menuText.txt
+File18=mtparamfiller.bjl
+File19=mtSetting.bjl
 File2=appearance.bjl
-File20=preferences.bjl
-File21=pretranslate.bjl
-File22=preview.bjl
-File23=progress.bjl
-File24=projectSetting.bjl
-File25=right.bjl
-File26=searchandreplace.bjl
-File27=searchTableView.bjl
-File28=segment.bjl
-File29=segmentation_en.conf
+File20=oneterm.bjl
+File21=preferences.bjl
+File22=pretranslate.bjl
+File23=preview.bjl
+File24=progress.bjl
+File25=projectSetting.bjl
+File26=right.bjl
+File27=searchandreplace.bjl
+File28=searchTableView.bjl
+File29=segment.bjl
 File3=autocomplete.bjl
-File30=segmentation_en_exception.conf
-File31=segmentation_en_idml.conf
-File32=segmentation_zh.conf
-File33=segmentation_zh_exception.conf
-File34=settingLanguagecheck.bjl
-File35=settingVersionControl.bjl
-File36=statistics.bjl
-File37=supportedFiles.txt
-File38=tableview.bjl
-File39=tabpane.bjl
+File30=segmentation_en.conf
+File31=segmentation_en_exception.conf
+File32=segmentation_en_idml.conf
+File33=segmentation_zh.conf
+File34=segmentation_zh_exception.conf
+File35=settingLanguagecheck.bjl
+File36=settingVersionControl.bjl
+File37=statistics.bjl
+File38=supportedFiles.txt
+File39=tableview.bjl
 File4=checkList.bjl
-File40=term.bjl
-File41=TermManager.bjl
-File42=termSetting.bjl
-File43=tmList.bjl
-File44=TMManager.bjl
-File45=TMsegment.bjl
-File46=tmSetting.bjl
-File47=upperRight.bjl
-File48=viewSegment.bjl
-File49=wordLookupSetting.bjl
+File40=tabpane.bjl
+File41=term.bjl
+File42=TermManager.bjl
+File43=termSetting.bjl
+File44=tmList.bjl
+File45=TMManager.bjl
+File46=TMsegment.bjl
+File47=tmSetting.bjl
+File48=upperRight.bjl
+File49=viewSegment.bjl
 File5=confirmReview.bjl
+File50=wordLookupSetting.bjl
 File6=default_rules.srx
 File7=editor.bjl
 File8=FontPicker.bjl
@@ -94,6 +95,7 @@ FileGroup47=Default Group
 FileGroup48=Default Group
 FileGroup49=Default Group
 FileGroup5=Default Group
+FileGroup50=Default Group
 FileGroup6=Default Group
 FileGroup7=Default Group
 FileGroup8=Default Group
@@ -157,14 +159,15 @@ Module39=viewSegment
 Module4=CustomListView
 Module40=POIWord
 Module41=confirmReviewDialog
+Module42=InputTextAreaBox
 Module5=txtFilter
 Module6=TM
 Module7=Term
 Module8=KeyValueStore
 Module9=ProjectSettings
-NumberOfFiles=49
+NumberOfFiles=50
 NumberOfLibraries=22
-NumberOfModules=41
+NumberOfModules=42
 Version=6.51
 @EndOfDesignText@
 #Region Project Attributes 
@@ -253,6 +256,18 @@ End Sub
 
 Sub MainForm_CloseRequest (EventData As Event)
 	closeServer
+	If currentProject.contentIsChanged Then
+		Dim result As Int
+		result=fx.Msgbox2(MainForm,"Project is changed, save before exit?","","Yes","Cancel","Exit without saving",fx.MSGBOX_CONFIRMATION)
+		Select result
+			'yes -1, no -2, cancel -3
+			Case -1
+				currentProject.save
+			Case -3
+				Return
+		End Select
+	End If
+	
 End Sub
 
 Sub init
@@ -419,6 +434,9 @@ Sub MenuBar1_Action
 			For i=currentProject.lastEntry To editorLV.Size-1
 				Dim p As Pane
 				p=editorLV.GetPanel(i)
+				If p.NumberOfNodes=0 Then
+					Return
+				End If
 				If Utils.getTextFromPane(1,p)="" Then
 					editorLV.JumpToItem(i)
 					Return
@@ -430,6 +448,16 @@ Sub MenuBar1_Action
 			Dim sap As searchAndReplaceDialog
 			sap.Initialize
 			sap.show
+		Case "Show/Edit notes of the current segmnet"
+			If currentProject.segments.Size<>0 Then
+				Dim inp As InputTextAreaBox
+				inp.Initialize
+				inp.showAndWait
+			End If
+		Case "Mark the current segment as non-translatable"
+			changeTranslatable("no")
+		Case "Mark the current segment as translatable"
+			changeTranslatable("yes")
 		Case "Project Settings"
 			If currentProject.IsInitialized=False Then
 				fx.Msgbox(MainForm,"Please open a project first.","")
@@ -471,6 +499,24 @@ Sub MenuBar1_Action
 		Case "_About"
 			fx.Msgbox(MainForm,"BasicCAT 1.0"&CRLF&"@xulihang 2018","BasicCAT")
 	End Select
+End Sub
+
+Sub changeTranslatable(isTranslatable As String)
+	If currentProject.segments.Size<>0 Then
+		Dim segment As List
+		segment=currentProject.segments.Get(currentProject.lastEntry)
+		Dim extra As Map
+		extra=segment.Get(4)
+		extra.Put("translate",isTranslatable)
+		Dim p As Pane
+		p=editorLV.GetPanel(currentProject.lastEntry)
+		Select isTranslatable
+			Case "yes"
+				p.Enabled=True
+			Case "no"
+				p.Enabled=False
+		End Select
+	End If
 End Sub
 
 Sub exportTMXMi_Action

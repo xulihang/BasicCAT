@@ -19,7 +19,7 @@ End Sub
 
 Public Sub showAndWait As String
     frm.ShowAndWait
-	return TextField1.Text
+	Return TextField1.Text
 End Sub
 
 Sub Button1_MouseClicked (EventData As MouseEvent)
