@@ -244,6 +244,9 @@ Sub mergeSpecialTaggedContentAtBeginning(segmentsList As List)
 					bitext.Add("")
 					bitext.Add(fullsource.Trim&nextSegment.Get(2))
 					bitext.Add(nextSegment.Get(3))
+					Dim extra As Map
+					extra.Initialize
+					bitext.Add(extra)
 					segmentsList.RemoveAt(1)
 				End If
 			End If
@@ -319,6 +322,9 @@ Sub mergeInbetweenSpecialTaggedContent(segmentsList As List)
 							newSegment.Add("")
 							newSegment.Add(previousSegment.Get(2)&fullsource.Trim&nextSegment.Get(2))
 							newSegment.Add(previousSegment.Get(3))
+							Dim extra As Map
+							extra.Initialize
+							newSegment.Add(extra)
 
 							previousMergedIndex=index
 							newList.RemoveAt(newList.Size-1)
@@ -407,6 +413,9 @@ Sub mergeSpecialTaggedContentInTheEnd(segmentsList As List)
 				bitext.Add("")
 			    bitext.Add(previousSegment.Get(2)&fullsource.Trim)
 			    bitext.Add(previousSegment.Get(3))
+				Dim extra As Map
+				extra.Initialize
+				bitext.Add(extra)
 			    segmentsList.RemoveAt(segmentsList.Size-2)
 			End If
 		End If
@@ -606,6 +615,7 @@ Sub generateFile(filename As String,path As String,projectFile As Map)
 			source=bitext.Get(0)
 			target=bitext.Get(1)
 			fullsource=bitext.Get(2)
+
 			'Log(source)
 			'Log(target)
 			'Log(fullsource)
@@ -654,6 +664,15 @@ Sub generateFile(filename As String,path As String,projectFile As Map)
 
 
 			End If
+			
+			Dim extra As Map
+			extra=bitext.Get(4)
+			If extra.ContainsKey("translate") Then
+				If extra.get("translate")="no" Then
+					translation=fullsource.Replace(C0TagAddedText(source,fullsource),"")
+				End If
+			End If
+			
 			innerfileContent=innerfileContent&translation
 		Next
 

@@ -225,9 +225,9 @@ Sub generateFile(filename As String,path As String,projectFile As Map)
 			source=bitext.Get(0)
 			target=bitext.Get(1)
 			fullsource=bitext.Get(2)
-			Log(source)
-			Log(target)
-			Log(fullsource)
+			'Log(source)
+			'Log(target)
+			'Log(fullsource)
 			If target="" Then
 				translation=fullsource
 			Else
@@ -236,6 +236,11 @@ Sub generateFile(filename As String,path As String,projectFile As Map)
 			End If
 			Dim extra As Map
 			extra=bitext.Get(4)
+			If extra.ContainsKey("translate") Then
+				If extra.get("translate")="no" Then
+					translation=fullsource.Replace(source,"")
+				End If
+			End If
 			If translationMap.ContainsKey(extra.Get("id")) Then
 				Dim dataMap As Map
 				dataMap=translationMap.Get(extra.Get("id"))

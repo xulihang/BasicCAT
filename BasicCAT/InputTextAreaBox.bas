@@ -32,5 +32,6 @@ Sub Button1_MouseClicked (EventData As MouseEvent)
 	Dim extra As Map
 	extra=segment.Get(4)
 	extra.Put("note",TextArea1.Text)
+	Main.currentProject.contentIsChanged
 	frm.Close
 End Sub

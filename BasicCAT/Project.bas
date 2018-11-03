@@ -23,7 +23,7 @@ Sub Class_Globals
 	Private cm As ContextMenu
 	Private cursorReachEnd As Boolean=False
 	Private projectGit As git
-	Private contentChanged As Boolean=False
+	Public contentChanged As Boolean=False
 	Private plugin As ABPlugin
 End Sub
 
@@ -478,17 +478,35 @@ Sub segmentPane_MouseClicked (EventData As MouseEvent)
 End Sub
 
 Public Sub createSegmentPane(bitext As List)
+	Dim extra As Map
+	extra=bitext.Get(4)
 	Dim segmentPane As Pane
 	segmentPane.Initialize("segmentPane")
 	addTextAreaToSegmentPane(segmentPane,bitext.Get(0),bitext.Get(1))
 	Main.editorLV.Add(segmentPane,"")
+	If extra.ContainsKey("translate") Then
+		If extra.Get("translate")="no" Then
+			Log("disabled")
+			Log(bitext.Get(0))
+			segmentPane.Enabled=False
+		End If
+	End If
 End Sub
 
-Public Sub createEmptyPane
+Public Sub createEmptyPane(bitext As List)
+	Dim extra As Map
+	extra=bitext.Get(4)
 	Dim segmentPane As Pane
 	segmentPane.Initialize("segmentPane")
 	segmentPane.SetSize(Main.editorLV.AsView.Width,50dip)
 	Main.editorLV.Add(segmentPane,"")
+	If extra.ContainsKey("translate") Then
+		If extra.Get("translate")="no" Then
+			Log("disabled")
+			Log(bitext.Get(0))
+			segmentPane.Enabled=False
+		End If
+	End If
 End Sub
 
 Public Sub addTextAreaToSegmentPane(segmentpane As Pane,source As String,target As String)
@@ -1054,6 +1072,13 @@ Public Sub fillPane(FirstIndex As Int, LastIndex As Int)
 					Dim h As Int=Main.calculatedHeight.Get(bitext.Get(0)&"	"&bitext.Get(1))
 					Main.setLayout(segmentPane,i,h)
 				End If
+				Dim extra As Map
+				extra=bitext.Get(4)
+				If extra.ContainsKey("translate") Then
+					If extra.Get("translate")="no" Then
+						segmentPane.Enabled=false
+					End If
+				End If
 				
 			End If
 		Else
@@ -1249,7 +1274,7 @@ Sub readWorkFile(filename As String)
 				
 				index=index+1
 			Else
-				Main.currentProject.createEmptyPane
+				Main.currentProject.createEmptyPane(bitext)
 				index=index+1
 			End If
 		Next

@@ -256,18 +256,19 @@ End Sub
 
 Sub MainForm_CloseRequest (EventData As Event)
 	closeServer
-	If currentProject.contentIsChanged Then
-		Dim result As Int
-		result=fx.Msgbox2(MainForm,"Project is changed, save before exit?","","Yes","Cancel","Exit without saving",fx.MSGBOX_CONFIRMATION)
-		Select result
-			'yes -1, no -2, cancel -3
-			Case -1
-				currentProject.save
-			Case -3
-				Return
-		End Select
+	If currentProject.IsInitialized Then
+		If currentProject.contentChanged Then
+			Dim result As Int
+			result=fx.Msgbox2(MainForm,"Project is changed, save before exit?","","Yes","Cancel","Exit without saving",fx.MSGBOX_CONFIRMATION)
+			Select result
+				'yes -1, no -2, cancel -3
+				Case -1
+					currentProject.save
+				Case -3
+					EventData.Consume
+			End Select
+		End If
 	End If
-	
 End Sub
 
 Sub init
@@ -516,6 +517,7 @@ Sub changeTranslatable(isTranslatable As String)
 			Case "no"
 				p.Enabled=False
 		End Select
+		currentProject.contentIsChanged
 	End If
 End Sub
 
