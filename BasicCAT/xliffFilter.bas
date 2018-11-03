@@ -336,6 +336,8 @@ Sub mergeSegment(sourceTextArea As TextArea)
 	Dim bitext,nextBiText As List
 	bitext=Main.currentProject.segments.Get(index)
 	nextBiText=Main.currentProject.segments.Get(index+1)
+	Dim source As String
+	source=bitext.Get(0)
 		
 	If bitext.Get(3)<>nextBiText.Get(3) Then
 		fx.Msgbox(Main.MainForm,"Cannot merge segments as these two belong to different files.","")
@@ -358,18 +360,32 @@ Sub mergeSegment(sourceTextArea As TextArea)
 	nextSourceTa=nextPane.GetNode(0)
 	nextTargetTa=nextPane.GetNode(1)
 		
-	Dim sourceWhitespace,targetWhitespace As String
+	Dim fullsource,nextFullSource As String
+	fullsource=bitext.Get(2)
+	nextFullSource=nextBiText.Get(2)
+		
+	Dim sourceWhitespace,targetWhitespace,fullsourceWhitespace As String
 	sourceWhitespace=""
 	targetWhitespace=""
+	fullsourceWhitespace=""
+	
 	If Main.currentProject.projectFile.Get("source")="en" Then
-		If Regex.IsMatch("\w",sourceTextArea.Text.CharAt(sourceTextArea.Text.Length-1)) Or Regex.IsMatch("\w",nextSourceTa.Text.CharAt(0)) Then
+		If Regex.IsMatch("\s",fullsource.CharAt(fullsource.Length-1)) Or Regex.IsMatch("\s",nextFullSource.CharAt(0)) Then
 			sourceWhitespace=" "
+		Else
+			sourceWhitespace=""
 		End If
 	else if Main.currentProject.projectFile.Get("target")="en" Then
 		targetWhitespace=" "
 	End If
+	
+	If Main.currentProject.projectFile.Get("source")="en" Then
+		If Regex.IsMatch("\s",fullsource.CharAt(fullsource.Length-1)) Or Regex.IsMatch("\s",nextFullSource.CharAt(0)) Then
+			fullsourceWhitespace=" "
+		End If
+	End If
 		
-	sourceTextArea.Text=sourceTextArea.Text.Trim&sourceWhitespace&nextSourceTa.Text.Trim
+	sourceTextArea.Text=source.Trim&sourceWhitespace&nextSourceTa.Text.Trim
 	sourceTextArea.Tag=sourceTextArea.Text
 		
 	targetTa=pane.GetNode(1)
@@ -379,21 +395,8 @@ Sub mergeSegment(sourceTextArea As TextArea)
 	bitext.Set(0,sourceTextArea.Text)
 	bitext.Set(1,targetTa.Text)
 
-	Dim fullsource,nextFullSource As String
-	fullsource=bitext.Get(2)
-	nextFullSource=nextBiText.Get(2)
-	If Main.currentProject.projectFile.Get("source")="en" Then
-		If fullsource.EndsWith(" ")=False And nextFullSource.StartsWith(" ")=False Then
-			If Regex.IsMatch("\w",fullsource.CharAt(fullsource.Length-1)) Or Regex.IsMatch("\w",nextFullSource.CharAt(0)) Then
-				sourceWhitespace=" "
-			Else
-				sourceWhitespace=""
-			End If
-		Else
-			sourceWhitespace=""
-		End If
-	End If
-	bitext.Set(2,fullsource&sourceWhitespace&nextFullSource)
+
+	bitext.Set(2,Utils.rightTrim(fullsource)&fullsourceWhitespace&Utils.leftTrim(nextFullSource))
 
 		
 	Main.currentProject.segments.RemoveAt(index+1)

@@ -16,10 +16,6 @@
 					<afterbreak>\s</afterbreak>
 				</rule>
 				<rule break="yes">
-					<beforebreak>\S:+["'”\)]?</beforebreak>
-					<afterbreak>\s</afterbreak>
-				</rule>
-				<rule break="yes">
 					<beforebreak>\u2029</beforebreak>
 					<afterbreak/>
 				</rule>
@@ -137,7 +133,7 @@
             
 <languagerule languagerulename="zh">
 				<rule break="yes">
-					<beforebreak>[。！？：……；\t.!?:]</beforebreak>
+					<beforebreak>[。！？……；\t.!?]</beforebreak>
 					<afterbreak/>
 				</rule>
 				<rule break="no">

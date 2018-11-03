@@ -178,29 +178,33 @@ Sub CopyFolder(Source As String, targetFolder As String)
 End Sub
 
 Sub leftTrim(text As String) As String
+	Dim new As String
+	new=text
 	For i=0 To text.Length-1
 		Dim character As String
 		character=text.CharAt(i)
 		If Regex.IsMatch("\s",character) Then
-			text=text.SubString(1)
+			new=new.SubString(1)
 		Else
-			Return text
+			Return new
 		End If
 	Next
-	Return text
+	Return new
 End Sub
 
 Sub rightTrim(text As String) As String
+	Dim new As String
+	new=text
 	For i=text.Length-1 To 0 Step -1
 		Dim character As String
 		character=text.CharAt(i)
 		If Regex.IsMatch("\s",character) Then
-			text=text.SubString2(0,i)
+			new=new.SubString2(0,i)
 		Else
-			Return text
+			Return new
 		End If
 	Next
-	Return text
+	Return new
 End Sub
 
 Sub MeasureMultilineTextHeight (Font As Font, Width As Double, Text As String) As Double

@@ -33,6 +33,9 @@ Sub createWorkFile(filename As String,path As String,sourceLang As String)
 			bitext.Add("")
 			bitext.Add(inbetweenContent&source) 'inbetweenContent contains crlf and spaces between sentences
 			bitext.Add(innerFilename)
+			Dim extra As Map
+			extra.Initialize
+			bitext.Add(extra)
 			inbetweenContent=""
 		End If
 		segmentsList.Add(bitext)
@@ -87,6 +90,8 @@ Sub mergeSegment(sourceTextArea As TextArea)
 	Dim bitext,nextBiText As List
 	bitext=Main.currentProject.segments.Get(index)
 	nextBiText=Main.currentProject.segments.Get(index+1)
+	Dim source As String
+	source=bitext.Get(0)
 		
 	If bitext.Get(3)<>nextBiText.Get(3) Then
 		fx.Msgbox(Main.MainForm,"Cannot merge segments as these two belong to different files.","")
@@ -100,19 +105,32 @@ Sub mergeSegment(sourceTextArea As TextArea)
 	Dim targetTa,nextSourceTa,nextTargetTa As TextArea
 	nextSourceTa=nextPane.GetNode(0)
 	nextTargetTa=nextPane.GetNode(1)
+	Dim fullsource,nextFullSource As String
+	fullsource=bitext.Get(2)
+	nextFullSource=nextBiText.Get(2)
 		
-	Dim sourceWhitespace,targetWhitespace As String
+	Dim sourceWhitespace,targetWhitespace,fullsourceWhitespace As String
 	sourceWhitespace=""
 	targetWhitespace=""
+	fullsourceWhitespace=""
+	
 	If Main.currentProject.projectFile.Get("source")="en" Then
-		If Regex.IsMatch("\w",sourceTextArea.Text.CharAt(sourceTextArea.Text.Length-1)) Or Regex.IsMatch("\w",nextSourceTa.Text.CharAt(0)) Then
+		If Regex.IsMatch("\s",fullsource.CharAt(fullsource.Length-1)) Or Regex.IsMatch("\s",nextFullSource.CharAt(0)) Then
 			sourceWhitespace=" "
+		Else
+			sourceWhitespace=""
 		End If
 	else if Main.currentProject.projectFile.Get("target")="en" Then
 		targetWhitespace=" "
 	End If
+	
+	If Main.currentProject.projectFile.Get("source")="en" Then
+		If Regex.IsMatch("\s",fullsource.CharAt(fullsource.Length-1)) Or Regex.IsMatch("\s",nextFullSource.CharAt(0)) Then
+			fullsourceWhitespace=" "
+		End If
+	End If
 		
-	sourceTextArea.Text=sourceTextArea.Text.Trim&sourceWhitespace&nextSourceTa.Text.Trim
+	sourceTextArea.Text=source.Trim&sourceWhitespace&nextSourceTa.Text.Trim
 	sourceTextArea.Tag=sourceTextArea.Text
 		
 	targetTa=pane.GetNode(1)
@@ -122,21 +140,9 @@ Sub mergeSegment(sourceTextArea As TextArea)
 	bitext.Set(0,sourceTextArea.Text)
 	bitext.Set(1,targetTa.Text)
 
-    Dim fullsource,nextFullSource As String
-	fullsource=bitext.Get(2)
-	nextFullSource=nextBiText.Get(2)
-	If Main.currentProject.projectFile.Get("source")="en" Then
-		If fullsource.EndsWith(" ")=False And nextFullSource.StartsWith(" ")=False Then
-			If Regex.IsMatch("\w",fullsource.CharAt(fullsource.Length-1)) Or Regex.IsMatch("\w",nextFullSource.CharAt(0)) Then
-				sourceWhitespace=" "
-			Else
-				sourceWhitespace=""
-			End If
-		Else
-			sourceWhitespace=""
-		End If
-	End If
-	bitext.Set(2,fullsource&sourceWhitespace&nextFullSource)
+
+
+	bitext.Set(2,Utils.rightTrim(fullsource)&fullsourceWhitespace&Utils.leftTrim(nextFullSource))
 
 		
 	Main.currentProject.segments.RemoveAt(index+1)
@@ -172,6 +178,7 @@ Sub splitSegment(sourceTextArea As TextArea)
 	newBiText.Add("")
 	newBiText.Add(fullsource.Replace(sourceTextArea.Text,""))
 	newBiText.Add(bitext.Get(3))
+	newBiText.Add(bitext.Get(4))
 	Main.currentProject.segments.set(index,bitext)
 	Main.currentProject.segments.InsertAt(index+1,newBiText)
 

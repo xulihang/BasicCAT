@@ -125,6 +125,9 @@ Sub createWorkFile(filename As String,path As String,sourceLang As String)
 				bitext.Add("")
 				bitext.Add(inbetweenContent) 'inbetweenContent contains crlf and spaces between sentences
 				bitext.Add(innerFilename)
+				Dim extra As Map
+				extra.Initialize
+				bitext.Add(extra)
 				inbetweenContent=""
 			End If
 			'Log(index)
@@ -1234,7 +1237,7 @@ Sub mergeSegment(sourceTextArea As TextArea)
 		source=Regex.Replace("</*p\d+>",source,"")
 		fullsource=fullsource&nextFullsource
 	Else
-		source=sourceTextArea.Text.Trim&sourceWhitespace&nextSourceTa.Text.Trim
+		source=source.Trim&sourceWhitespace&nextSourceTa.Text.Trim
 		fullsource=Utils.rightTrim(fullsource)&fullsourceWhitespace&Utils.leftTrim(nextFullsource)
 	End If
 	
@@ -1285,6 +1288,7 @@ Sub splitSegment(sourceTextArea As TextArea)
 	newBiText.Add("")
 	newBiText.Add(fullsource.SubString2(fullsource.IndexOf(sourceTextArea.Text)+sourceTextArea.Text.Length,fullsource.Length))
 	newBiText.Add(bitext.Get(3))
+	newBiText.Add(bitext.Get(4))
 	Main.currentProject.segments.set(index,bitext)
 	Main.currentProject.segments.InsertAt(index+1,newBiText)
 
