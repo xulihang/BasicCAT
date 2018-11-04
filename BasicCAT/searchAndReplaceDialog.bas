@@ -283,7 +283,7 @@ Sub resultListView_Resize (Width As Double, Height As Double)
 	For Each p As Pane In resultListView.Items
 		Dim tagList As List
 		tagList=p.Tag
-		p.SetSize(Width,utils.MeasureMultilineTextHeight(fx.DefaultFont(15),Width,tagList.Get(1)))
+		p.SetSize(Width,Utils.MeasureMultilineTextHeight(fx.DefaultFont(15),Width,tagList.Get(1)))
 	Next
 End Sub
 
@@ -307,6 +307,7 @@ Sub replaceSelectedButton_MouseClicked (EventData As MouseEvent)
 		Main.currentProject.segments.Set(tagList.Get(0),bitext)
 		Main.currentProject.fillVisibleTargetTextArea
 		resultListView.Items.RemoveAt(resultListView.SelectedIndex)
+		Main.currentProject.contentIsChanged
 	End If
 End Sub
 
@@ -337,6 +338,7 @@ Sub replaceAllButton_MouseClicked (EventData As MouseEvent)
 			count=count+1
 		Next
         fx.Msgbox(frm,count&" matches are replaced.","")
+		Main.currentProject.contentIsChanged
 	End If
 	
 
