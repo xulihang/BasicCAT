@@ -10,6 +10,13 @@ Sub Process_Globals
 	Private menus As Map
 End Sub
 
+Sub disableTextArea(p As Pane)
+	Dim sourceTa As TextArea=p.GetNode(0)
+	Dim targetTa As TextArea=p.GetNode(1)
+	sourceTa.Enabled=False
+	targetTa.Enabled=False
+End Sub
+
 Sub getXmlMap(xmlstring As String) As Map
 	Dim ParsedData As Map
 	Dim xm As Xml2Map

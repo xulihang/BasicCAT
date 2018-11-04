@@ -115,19 +115,19 @@ FileGroup9=Default Group
 Group=Default Group
 Library1=jcore
 Library10=jb4xencryption
-Library11=jhttp
-Library12=jshell
-Library13=jreflection
-Library14=encryption
-Library15=byteconverter
-Library16=jstringutils
-Library17=jawtrobot
-Library18=jxmlsax
-Library19=xmlbuilder
+Library11=jshell
+Library12=jreflection
+Library13=encryption
+Library14=byteconverter
+Library15=jstringutils
+Library16=jawtrobot
+Library17=jxmlsax
+Library18=xmlbuilder
+Library19=okhttp
 Library2=jfx
-Library20=jhttputils2
-Library21=jsd_ziplibray
-Library22=abplugin
+Library20=jsd_ziplibray
+Library21=abplugin
+Library22=jokhttputils2
 Library3=javaobject
 Library4=archiver
 Library5=json
@@ -137,37 +137,37 @@ Library8=jsql
 Library9=jrandomaccessfile
 Module1=FileChooserUtils
 Module10=preTranslateDialog
-Module11=idmlFilter
-Module12=MT
-Module13=serverLauncher
-Module14=ITP
-Module15=Preferences
-Module16=MTParamsFiller
-Module17=PDF2TXT
-Module18=pdfbox
-Module19=languageChooser
+Module11=serverLauncher
+Module12=progressDialog
+Module13=Preferences
+Module14=opennlp
+Module15=idmlFilter
+Module16=MT
+Module17=ITP
+Module18=MTParamsFiller
+Module19=PDF2TXT
 Module2=Project
-Module20=Utils
-Module21=xliffFilter
-Module22=POIWord
-Module23=confirmReviewDialog
-Module24=Previewer
-Module25=FontPicker
-Module26=InputBox
-Module27=InputTextAreaBox
-Module28=SRX
-Module29=Xml2Map
+Module20=pdfbox
+Module21=languageChooser
+Module22=Utils
+Module23=xliffFilter
+Module24=POIWord
+Module25=confirmReviewDialog
+Module26=Previewer
+Module27=FontPicker
+Module28=InputBox
+Module29=InputTextAreaBox
 Module3=segmentation
-Module30=statistics
-Module31=Map2Xml
-Module32=TBX
-Module33=TMManager
-Module34=TermManager
-Module35=searchAndReplaceDialog
-Module36=TextFlow
-Module37=TMX
-Module38=opennlp
-Module39=progressDialog
+Module30=SRX
+Module31=Xml2Map
+Module32=statistics
+Module33=Map2Xml
+Module34=TBX
+Module35=TMManager
+Module36=TermManager
+Module37=searchAndReplaceDialog
+Module38=TextFlow
+Module39=TMX
 Module4=CustomListView
 Module40=git
 Module41=zip4j
@@ -317,13 +317,13 @@ Sub init
 	adjustDividerPositions
 	preferencesMap.Initialize
 
-	If File.Exists(File.DirData("BasicCAT"),"preferences.conf") Then
-		Dim json As JSONParser
-		json.Initialize(File.ReadString(File.DirData("BasicCAT"),"preferences.conf"))
-		preferencesMap=json.NextObject
-	Else
+	If File.Exists(File.DirData("BasicCAT"),"preferences.conf")=false Then
 		File.Copy(File.DirAssets,"preferences.conf",File.DirData("BasicCAT"),"preferences.conf")
 	End If
+	Dim json As JSONParser
+	json.Initialize(File.ReadString(File.DirData("BasicCAT"),"preferences.conf"))
+	preferencesMap=json.NextObject
+	
 	tmTableView.SetColumnWidth(1,200)
 	tmTableView.SetColumnWidth(2,200)
 	Utils.disableMenuItems(MenuBar1,Array As String("_Save","_Close"))
@@ -535,11 +535,15 @@ Sub changeTranslatable(isTranslatable As String)
 		extra.Put("translate",isTranslatable)
 		Dim p As Pane
 		p=editorLV.GetPanel(currentProject.lastEntry)
+		Dim sourceTa As TextArea=p.GetNode(0)
+		Dim targetTa As TextArea=p.GetNode(1)
 		Select isTranslatable
 			Case "yes"
-				p.Enabled=True
+				sourceTa.Enabled=True
+				targetTa.Enabled=True
 			Case "no"
-				p.Enabled=False
+				sourceTa.Enabled=False
+				targetTa.Enabled=False
 		End Select
 		currentProject.contentIsChanged
 	End If

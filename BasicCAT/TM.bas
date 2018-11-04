@@ -30,6 +30,11 @@ Sub addPair(source As String,target As String)
 	If target="" Then
 		Return
 	End If
+	If translationMemory.ContainsKey(source) Then
+		If translationMemory.Get(source)=target Then
+			Return
+		End If
+	End If
 	translationMemory.Put(source,target)
 End Sub
 
@@ -37,7 +42,7 @@ Public Sub deleteExternalTranslationMemory
 	externalTranslationMemory.DeleteAll
 End Sub
 
-Public Sub importExternalTranslationMemory(tmList As List)
+Public Sub importExternalTranslationMemory(tmList As List) As ResumableSub
 	progressDialog.Show("Loading external memory","loadtm")
 	Dim segments As List
 	segments.Initialize
@@ -53,8 +58,8 @@ Public Sub importExternalTranslationMemory(tmList As List)
 		Dim index As Int=0
 		For Each bitext As List In segments
 			index=index+1
-			Sleep(0)
 			progressDialog.update(index,segments.Size)
+			Sleep(0)
 			Dim source,target,filename As String
 			Dim targetList As List
 			targetList.Initialize
@@ -68,6 +73,7 @@ Public Sub importExternalTranslationMemory(tmList As List)
 	End If
 	Log(externalTranslationMemory.ListKeys.Size)
 	progressDialog.close
+	Return True
 End Sub
 
 Sub importedTxt(filename As String) As List

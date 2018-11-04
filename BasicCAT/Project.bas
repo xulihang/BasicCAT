@@ -145,7 +145,7 @@ Public Sub saveSettings(newsettings As Map)
 	Log(newsettings)
 	save
 	projectTM.deleteExternalTranslationMemory
-	projectTM.importExternalTranslationMemory(settings.Get("tmList"))
+	wait for (projectTM.importExternalTranslationMemory(settings.Get("tmList"))) complete (result As Boolean)
 	projectTerm.deleteExternalTerminology
 	projectTerm.importExternalTerminology(settings.Get("termList"))
 End Sub
@@ -485,6 +485,7 @@ End Sub
 
 Sub segmentPane_MouseClicked (EventData As MouseEvent)
 	lastEntry=Main.editorLV.GetItemFromView(Sender)
+	Log(lastEntry)
 End Sub
 
 Public Sub createSegmentPane(bitext As List)
@@ -496,27 +497,18 @@ Public Sub createSegmentPane(bitext As List)
 	Main.editorLV.Add(segmentPane,"")
 	If extra.ContainsKey("translate") Then
 		If extra.Get("translate")="no" Then
-			Log("disabled")
-			Log(bitext.Get(0))
-			segmentPane.Enabled=False
+			Utils.disableTextArea(segmentPane)
 		End If
 	End If
 End Sub
 
 Public Sub createEmptyPane(bitext As List)
-	Dim extra As Map
-	extra=bitext.Get(4)
+
 	Dim segmentPane As Pane
 	segmentPane.Initialize("segmentPane")
 	segmentPane.SetSize(Main.editorLV.AsView.Width,50dip)
 	Main.editorLV.Add(segmentPane,"")
-	If extra.ContainsKey("translate") Then
-		If extra.Get("translate")="no" Then
-			Log("disabled")
-			Log(bitext.Get(0))
-			segmentPane.Enabled=False
-		End If
-	End If
+
 End Sub
 
 Public Sub addTextAreaToSegmentPane(segmentpane As Pane,source As String,target As String)
@@ -1078,16 +1070,16 @@ Public Sub fillPane(FirstIndex As Int, LastIndex As Int)
 				Dim bitext As List
 				bitext=segments.Get(i)
 				addTextAreaToSegmentPane(segmentPane,bitext.Get(0),bitext.Get(1))
-				If Main.calculatedHeight.ContainsKey(bitext.Get(0)&"	"&bitext.Get(1)) Then
-					Dim h As Int=Main.calculatedHeight.Get(bitext.Get(0)&"	"&bitext.Get(1))
-					Main.setLayout(segmentPane,i,h)
-				End If
 				Dim extra As Map
 				extra=bitext.Get(4)
 				If extra.ContainsKey("translate") Then
 					If extra.Get("translate")="no" Then
-						segmentPane.Enabled=false
+						Utils.disableTextArea(segmentPane)
 					End If
+				End If
+				If Main.calculatedHeight.ContainsKey(bitext.Get(0)&"	"&bitext.Get(1)) Then
+					Dim h As Int=Main.calculatedHeight.Get(bitext.Get(0)&"	"&bitext.Get(1))
+					Main.setLayout(segmentPane,i,h)
 				End If
 				
 			End If
