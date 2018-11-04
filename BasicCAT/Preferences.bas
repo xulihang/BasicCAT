@@ -29,11 +29,12 @@ Sub Class_Globals
 	Private targetFontLbl As Label
 	Private pluginDirLabel As Label
 	Private pluginsLV As ListView
+	Private AutoSaveTextField As TextField
 End Sub
 
 'Initializes the object. You can add parameters to this method if needed.
 Public Sub Initialize
-	frm.Initialize("frm",600,500)
+	frm.Initialize("frm",700,500)
 	frm.RootPane.LoadLayout("preferences")
 	preferencesMap.Initialize
 	mtPreferences.Initialize
@@ -88,6 +89,9 @@ Sub categoryListView_SelectedIndexChanged(Index As Int)
 			SettingPane.LoadLayout("generalSetting")
 			If unsavedPreferences.ContainsKey("checkExternalTMOnOpening") Then
 				ExternalTMCheckBox.Checked=unsavedPreferences.get("checkExternalTMOnOpening")
+			End If
+			If unsavedPreferences.ContainsKey("autosaveInterval") Then
+				AutoSaveTextField.Text=unsavedPreferences.Get("autosaveInterval")
 			End If
 		Case 1
 			'appearance
@@ -349,4 +353,9 @@ Sub pluginsLV_Action
 		File.Delete(dir,filename.Replace(".jar",".xml"))
 		pluginsLV.Items.RemoveAt(pluginsLV.Items.IndexOf(pluginsLV.SelectedItem))
 	End If
+End Sub
+
+Sub SaveGeneralButton_MouseClicked (EventData As MouseEvent)
+	Main.changeAutoSaveInterval(AutoSaveTextField.Text)
+	unsavedPreferences.Put("autosaveInterval",AutoSaveTextField.Text)
 End Sub

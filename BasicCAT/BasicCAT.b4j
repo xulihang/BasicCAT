@@ -292,9 +292,7 @@ Sub MainForm_CloseRequest (EventData As Event)
 End Sub
 
 Sub init
-	
-	autosaveTimer.Initialize("autosaveTimer",60000)
-	autosaveTimer.Enabled=False
+
 	mainSplitPane.LoadLayout("leftProject")
 	mainSplitPane.LoadLayout("right")
 
@@ -317,7 +315,7 @@ Sub init
 	adjustDividerPositions
 	preferencesMap.Initialize
 
-	If File.Exists(File.DirData("BasicCAT"),"preferences.conf")=false Then
+	If File.Exists(File.DirData("BasicCAT"),"preferences.conf")=False Then
 		File.Copy(File.DirAssets,"preferences.conf",File.DirData("BasicCAT"),"preferences.conf")
 	End If
 	Dim json As JSONParser
@@ -328,6 +326,14 @@ Sub init
 	tmTableView.SetColumnWidth(2,200)
 	Utils.disableMenuItems(MenuBar1,Array As String("_Save","_Close"))
 	Utils.disableMenuItems(MenuBar1,File.ReadList(File.DirAssets,"menuText.txt"))
+	If preferencesMap.ContainsKey("autosaveInterval") Then
+		Dim mseconds As Int
+		mseconds=preferencesMap.Get("autosaveInterval")*1000
+		autosaveTimer.Initialize("autosaveTimer",mseconds)
+	Else
+		autosaveTimer.Initialize("autosaveTimer",60000)
+	End If
+	autosaveTimer.Enabled=False
 End Sub
 
 Public Sub initializeNLP(sourcelang As String)
@@ -1069,4 +1075,8 @@ Public Sub addTextAreaToSegmentPane(segmentpane As Pane,source As String)
 	If currentProject.IsInitialized Then
 		currentProject.addTextAreaToSegmentPane(segmentpane,source,"")
 	End If
+End Sub
+
+Public Sub changeAutoSaveInterval(seconds As Int)
+	autosaveTimer.Interval=seconds*1000
 End Sub
