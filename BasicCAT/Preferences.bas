@@ -27,6 +27,8 @@ Sub Class_Globals
 	Private vcsEnabledCheckBox As CheckBox
 	Private sourceFontLbl As Label
 	Private targetFontLbl As Label
+	Private pluginDirLabel As Label
+	Private pluginsLV As ListView
 End Sub
 
 'Initializes the object. You can add parameters to this method if needed.
@@ -37,9 +39,9 @@ Public Sub Initialize
 	mtPreferences.Initialize
 	unsavedPreferences.Initialize
 	initList
-    If File.Exists(File.DirApp,"preferences.conf") Then
+    If File.Exists(File.DirData("BasicCAT"),"preferences.conf") Then
 	    Dim json As JSONParser
-		json.Initialize(File.ReadString(File.DirApp,"preferences.conf"))
+		json.Initialize(File.ReadString(File.DirData("BasicCAT"),"preferences.conf"))
 		preferencesMap=json.NextObject
 		If preferencesMap.ContainsKey("mt") Then
 			mtPreferences=preferencesMap.Get("mt")
@@ -52,7 +54,7 @@ End Sub
 
 
 Sub initList
-	categoryListView.Items.AddAll(Array As String("General","Appearance","Machine Translation","Word Lookup","Autocomplete","Language Check","Version Control"))
+	categoryListView.Items.AddAll(Array As String("General","Appearance","Machine Translation","Word Lookup","Autocomplete","Language Check","Version Control","Plugins"))
 End Sub
 
 Public Sub ShowAndWait
@@ -71,7 +73,7 @@ Sub applyButton_MouseClicked (EventData As MouseEvent)
 	Next
 	Dim json As JSONGenerator
 	json.Initialize(preferencesMap)
-	File.WriteString(File.DirApp,"preferences.conf",json.ToString)
+	File.WriteString(File.DirData("BasicCAT"),"preferences.conf",json.ToString)
 	Main.preferencesMap=preferencesMap
 	frm.Close
 End Sub
@@ -138,6 +140,16 @@ Sub categoryListView_SelectedIndexChanged(Index As Int)
 			If unsavedPreferences.ContainsKey("vcs_username") Then
 				usernameTextField.Text=unsavedPreferences.get("vcs_username")
 			End If
+		Case 7
+			'Plugins
+			SettingPane.RemoveAllNodes
+			SettingPane.LoadLayout("pluginsSetting")
+			If unsavedPreferences.ContainsKey("pluginDir") Then
+				pluginDirLabel.Text=unsavedPreferences.get("pluginDir")
+			Else
+				pluginDirLabel.Text=File.Combine(File.DirApp,"plugins")
+			End If
+			loadPluginsList
 	End Select
 End Sub
 
@@ -279,5 +291,62 @@ Sub loadFont
 		Dim fontPreference As Map
 		fontPreference=unsavedPreferences.Get("targetFont")
 		targetFontLbl.Font=fx.CreateFont(fontPreference.get("FamilyName"),fontPreference.get("Size"),False,False)
+	End If
+End Sub
+
+Sub changePluginPathButton_MouseClicked (EventData As MouseEvent)
+	Dim dc As DirectoryChooser
+	dc.Initialize
+	pluginDirLabel.Text=dc.Show(frm)
+	unsavedPreferences.Put("pluginDir",pluginDirLabel.Text)
+	loadPluginsList
+End Sub
+
+Sub AddPluginButton_MouseClicked (EventData As MouseEvent)
+	Dim path As String
+	Dim fc As FileChooser
+	fc.Initialize
+	fc.SetExtensionFilter("plugins",Array As String("*.jar"))
+	path=fc.ShowOpen(frm)
+	If path<>"" Then
+		Dim filename As String
+		filename=File.GetName(path)
+		Log(filename)
+		Dim dir As String
+		dir=File.GetFileParent(path)
+		Log(dir)
+		Dim pluginDir As String
+		pluginDir=pluginDirLabel.Text
+		Log(pluginDir)
+		File.Copy(path,"",pluginDir,filename)
+		File.Copy(dir,filename.Replace(".jar",".xml"),pluginDir,filename.Replace(".jar",".xml"))
+		loadPluginsList
+	End If
+End Sub
+
+Sub loadPluginsList
+	Try
+		pluginsLV.Items.Clear
+		For Each filename As String In File.ListFiles(pluginDirLabel.Text)
+			If filename.EndsWith(".jar") Then
+				pluginsLV.Items.Add(filename)
+			End If
+		Next
+	Catch
+		Log(LastException)
+	End Try
+End Sub
+
+Sub pluginsLV_Action
+	If pluginsLV.SelectedItem<>Null Then
+		Dim filename As String
+		filename=pluginsLV.SelectedItem
+		Dim dir As String
+		dir=pluginDirLabel.Text
+		Log(filename)
+		Log(dir)
+		File.Delete(dir,filename)
+		File.Delete(dir,filename.Replace(".jar",".xml"))
+		pluginsLV.Items.RemoveAt(pluginsLV.Items.IndexOf(pluginsLV.SelectedItem))
 	End If
 End Sub

@@ -33,10 +33,20 @@ Public Sub Initialize
 	projectFile.Initialize
 	segments.Initialize
 	settings.Initialize
-	plugin.Initialize("plugin",File.Combine(File.DirApp, "plugins"), "MyKey")
+	cm.Initialize("cm")
+	loadPlugins
+End Sub
+
+Sub loadPlugins
+	Dim dir As String
+	If Main.preferencesMap.ContainsKey("pluginDir") Then
+		dir=Main.preferencesMap.Get("pluginDir")
+	Else
+		dir=File.Combine(File.DirApp,"plugins")
+	End If
+	plugin.Initialize("plugin",dir, "MyKey")
 	plugin.Start(1)
 	Log(plugin.GetAvailablePlugins)
-	cm.Initialize("cm")
 End Sub
 
 Sub plugin_PluginsChanged()
