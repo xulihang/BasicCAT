@@ -568,8 +568,8 @@ Sub taggedTextToXml(taggedText As String,storypath As String) As String
 
 	Dim result As String
 	result=getXmlFromMap(storyMap)
-	result=result.Replace("<Content>"&Chr(13) & Chr(10) &"</Content>","<Br />")
-
+	result=result.Replace("<Content>"&Chr(13) & Chr(10) &"</Content>","<Br />") ' for windows
+	result=result.Replace("<Content>"&CRLF&"</Content>","<Br />") ' for mac/linux
 	Return result
 End Sub
 
