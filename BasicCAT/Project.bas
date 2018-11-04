@@ -157,7 +157,7 @@ public Sub save
 	projectFile.Put("settings",settings)
 	Dim json As JSONGenerator
 	json.Initialize(projectFile)
-	File.WriteString(path,"project.json",json.ToPrettyString(4))
+	File.WriteString(path,"project.bcp",json.ToPrettyString(4))
 	
 	If contentChanged Then
 		saveFile(currentFilename)

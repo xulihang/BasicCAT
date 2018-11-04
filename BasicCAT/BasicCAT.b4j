@@ -133,45 +133,45 @@ Library8=jsql
 Library9=jrandomaccessfile
 Module1=FileChooserUtils
 Module10=preTranslateDialog
-Module11=MTParamsFiller
-Module12=PDF2TXT
-Module13=pdfbox
-Module14=languageChooser
-Module15=idmlFilter
-Module16=Utils
-Module17=xliffFilter
-Module18=POIWord
-Module19=confirmReviewDialog
+Module11=serverLauncher
+Module12=ITP
+Module13=Preferences
+Module14=MTParamsFiller
+Module15=PDF2TXT
+Module16=pdfbox
+Module17=languageChooser
+Module18=idmlFilter
+Module19=Utils
 Module2=Project
-Module20=Previewer
-Module21=Preferences
-Module22=FontPicker
-Module23=InputBox
-Module24=InputTextAreaBox
-Module25=SRX
-Module26=Xml2Map
-Module27=statistics
-Module28=Map2Xml
-Module29=TBX
+Module20=xliffFilter
+Module21=POIWord
+Module22=confirmReviewDialog
+Module23=Previewer
+Module24=FontPicker
+Module25=InputBox
+Module26=InputTextAreaBox
+Module27=SRX
+Module28=Xml2Map
+Module29=statistics
 Module3=segmentation
-Module30=TMManager
-Module31=TermManager
-Module32=searchAndReplaceDialog
-Module33=MT
-Module34=TextFlow
-Module35=TMX
-Module36=opennlp
-Module37=progressDialog
-Module38=git
-Module39=zip4j
+Module30=Map2Xml
+Module31=TBX
+Module32=TMManager
+Module33=TermManager
+Module34=searchAndReplaceDialog
+Module35=MT
+Module36=TextFlow
+Module37=TMX
+Module38=opennlp
+Module39=progressDialog
 Module4=CustomListView
-Module40=idmlUtils
-Module41=ITP
-Module42=coordinate
-Module43=LanguageTool
-Module44=editDistance
-Module45=viewSegment
-Module46=serverLauncher
+Module40=git
+Module41=zip4j
+Module42=idmlUtils
+Module43=coordinate
+Module44=LanguageTool
+Module45=editDistance
+Module46=viewSegment
 Module5=txtFilter
 Module6=TM
 Module7=Term
@@ -376,7 +376,7 @@ Sub MenuBar1_Action
 			End If
 			Dim fc As FileChooser
 			fc.Initialize
-			fc.SetExtensionFilter("project files",Array As String("*.json"))
+			fc.SetExtensionFilter("project files",Array As String("*.bcp"))
 			Dim path As String
 			path=fc.ShowOpen(MainForm)
 			If path="" Then
@@ -588,7 +588,7 @@ Sub addFileMi_Action
 		descriptionList.Add(Regex.Split("	",filetype)(0))
 		filterList.add(Regex.Split("	",filetype)(1))
 	Next
-	FileChooserUtils.AddExtensionFilters4(fc,descriptionList,filterList,False,"",True)
+	FileChooserUtils.AddExtensionFilters4(fc,descriptionList,filterList,True,"All",False)
 	Dim path As String
 	path=fc.ShowOpen(MainForm)
 	Log(path)
@@ -926,7 +926,7 @@ Sub createBakupFiles
 		File.MakeDir(currentProject.path,"bak")
     End If
 	Utils.CopyFolder(File.Combine(currentProject.path, "work"),File.Combine(currentProject.path, "bak"))
-	File.Copy(currentProject.path,"project.json",File.Combine(currentProject.path,"bak"),"project.json")
+	File.Copy(currentProject.path,"project.bcp",File.Combine(currentProject.path,"bak"),"project.bcp")
 End Sub
 
 Public Sub updateSavedTime
