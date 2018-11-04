@@ -4,48 +4,51 @@ File1=.gitignore
 File10=generalSetting.bjl
 File11=inputbox.bjl
 File12=inputTextArea.bjl
-File13=leftProject.bjl
-File14=Log.bjl
-File15=lowerRight.bjl
-File16=main.bjl
-File17=menuText.txt
-File18=mtparamfiller.bjl
-File19=mtSetting.bjl
+File13=lang.conf
+File14=languageChooser.bjl
+File15=leftProject.bjl
+File16=Log.bjl
+File17=lowerRight.bjl
+File18=main.bjl
+File19=menuText.txt
 File2=appearance.bjl
-File20=oneterm.bjl
-File21=preferences.bjl
-File22=pretranslate.bjl
-File23=preview.bjl
-File24=progress.bjl
-File25=projectSetting.bjl
-File26=right.bjl
-File27=searchandreplace.bjl
-File28=searchTableView.bjl
-File29=segment.bjl
+File20=mtparamfiller.bjl
+File21=mtSetting.bjl
+File22=oneterm.bjl
+File23=pdf2txt.bjl
+File24=preferences.bjl
+File25=pretranslate.bjl
+File26=preview.bjl
+File27=progress.bjl
+File28=projectSetting.bjl
+File29=right.bjl
 File3=autocomplete.bjl
-File30=segmentation_en.conf
-File31=segmentation_en_exception.conf
-File32=segmentation_en_idml.conf
-File33=segmentation_zh.conf
-File34=segmentation_zh_exception.conf
-File35=settingLanguagecheck.bjl
-File36=settingVersionControl.bjl
-File37=statistics.bjl
-File38=supportedFiles.txt
-File39=tableview.bjl
+File30=searchandreplace.bjl
+File31=searchTableView.bjl
+File32=segment.bjl
+File33=segmentation_en.conf
+File34=segmentation_en_exception.conf
+File35=segmentation_en_idml.conf
+File36=segmentation_zh.conf
+File37=segmentation_zh_exception.conf
+File38=settingLanguagecheck.bjl
+File39=settingVersionControl.bjl
 File4=checkList.bjl
-File40=tabpane.bjl
-File41=term.bjl
-File42=TermManager.bjl
-File43=termSetting.bjl
-File44=tmList.bjl
-File45=TMManager.bjl
-File46=TMsegment.bjl
-File47=tmSetting.bjl
-File48=upperRight.bjl
-File49=viewSegment.bjl
+File40=statistics.bjl
+File41=supportedFiles.txt
+File42=tableview.bjl
+File43=tabpane.bjl
+File44=term.bjl
+File45=TermManager.bjl
+File46=termSetting.bjl
+File47=tmList.bjl
+File48=TMManager.bjl
+File49=TMsegment.bjl
 File5=confirmReview.bjl
-File50=wordLookupSetting.bjl
+File50=tmSetting.bjl
+File51=upperRight.bjl
+File52=viewSegment.bjl
+File53=wordLookupSetting.bjl
 File6=default_rules.srx
 File7=editor.bjl
 File8=FontPicker.bjl
@@ -96,6 +99,9 @@ FileGroup48=Default Group
 FileGroup49=Default Group
 FileGroup5=Default Group
 FileGroup50=Default Group
+FileGroup51=Default Group
+FileGroup52=Default Group
+FileGroup53=Default Group
 FileGroup6=Default Group
 FileGroup7=Default Group
 FileGroup8=Default Group
@@ -125,49 +131,52 @@ Library8=jsql
 Library9=jrandomaccessfile
 Module1=FileChooserUtils
 Module10=preTranslateDialog
-Module11=idmlFilter
-Module12=xliffFilter
-Module13=SRX
-Module14=Xml2Map
-Module15=Previewer
-Module16=statistics
-Module17=Utils
-Module18=Preferences
-Module19=Map2Xml
+Module11=MTParamsFiller
+Module12=PDF2TXT
+Module13=pdfbox
+Module14=languageChooser
+Module15=idmlFilter
+Module16=Utils
+Module17=xliffFilter
+Module18=POIWord
+Module19=confirmReviewDialog
 Module2=Project
-Module20=TBX
-Module21=FontPicker
-Module22=TMManager
-Module23=TermManager
-Module24=searchAndReplaceDialog
-Module25=MT
-Module26=TextFlow
-Module27=TMX
-Module28=opennlp
-Module29=progressDialog
+Module20=Previewer
+Module21=Preferences
+Module22=FontPicker
+Module23=InputBox
+Module24=InputTextAreaBox
+Module25=SRX
+Module26=Xml2Map
+Module27=statistics
+Module28=Map2Xml
+Module29=TBX
 Module3=segmentation
-Module30=git
-Module31=zip4j
-Module32=idmlUtils
-Module33=ITP
-Module34=MTParamsFiller
-Module35=coordinate
-Module36=LanguageTool
-Module37=editDistance
-Module38=InputBox
-Module39=viewSegment
+Module30=TMManager
+Module31=TermManager
+Module32=searchAndReplaceDialog
+Module33=MT
+Module34=TextFlow
+Module35=TMX
+Module36=opennlp
+Module37=progressDialog
+Module38=git
+Module39=zip4j
 Module4=CustomListView
-Module40=POIWord
-Module41=confirmReviewDialog
-Module42=InputTextAreaBox
+Module40=idmlUtils
+Module41=ITP
+Module42=coordinate
+Module43=LanguageTool
+Module44=editDistance
+Module45=viewSegment
 Module5=txtFilter
 Module6=TM
 Module7=Term
 Module8=KeyValueStore
 Module9=ProjectSettings
-NumberOfFiles=50
+NumberOfFiles=53
 NumberOfLibraries=22
-NumberOfModules=42
+NumberOfModules=45
 Version=6.51
 @EndOfDesignText@
 #Region Project Attributes 
@@ -197,6 +206,11 @@ Version=6.51
 #AdditionalJar: xmlbeans-3.0.1
 #AdditionalJar: commons-collections4-4.2
 #AdditionalJar: commons-compress-1.18
+
+'-------- for pdfbox
+#AdditionalJar: pdfbox-2.0.12
+#AdditionalJar: fontbox-2.0.12
+#AdditionalJar: commons-logging-1.2
 
 Sub Process_Globals
 	Private fx As JFX
@@ -497,6 +511,10 @@ Sub MenuBar1_Action
 			Dim pref As Preferences
 			pref.Initialize
 			pref.ShowAndWait
+		Case "PDF2TXT"
+			Dim p2t As PDF2TXT
+			p2t.Initialize
+			p2t.Show
 		Case "_About"
 			fx.Msgbox(MainForm,"BasicCAT 1.0"&CRLF&"@xulihang 2018","BasicCAT")
 	End Select
