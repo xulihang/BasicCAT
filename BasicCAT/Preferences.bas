@@ -20,7 +20,6 @@ Sub Class_Globals
     Private unsavedPreferences As Map
 	Private autocompleteEnabledCheckBox As CheckBox
 	Private corenlpAddressTextField As TextField
-	Private corenlpPathTextField As TextField
 	Private languagetoolAddressTextField As TextField
 	Private languagetoolEnabledCheckBox As CheckBox
 	Private emailTextField As TextField
@@ -115,9 +114,7 @@ Sub categoryListView_SelectedIndexChanged(Index As Int)
 			If unsavedPreferences.ContainsKey("corenlp_address") Then
 				corenlpAddressTextField.Text=unsavedPreferences.get("corenlp_address")
 			End If
-			If unsavedPreferences.ContainsKey("corenlp_path") Then
-				corenlpPathTextField.Text=unsavedPreferences.get("corenlp_path")
-			End If
+
 		Case 5
 			'Language Check
 			SettingPane.RemoveAllNodes
@@ -227,7 +224,6 @@ End Sub
 
 Sub saveAddressButton_MouseClicked (EventData As MouseEvent)
 	unsavedPreferences.Put("corenlp_address",corenlpAddressTextField.Text)
-	unsavedPreferences.Put("corenlp_path",corenlpPathTextField.Text)
 End Sub
 
 Sub saveLanguageToolAddressButton_MouseClicked (EventData As MouseEvent)

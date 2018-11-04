@@ -31,24 +31,25 @@ File34=segmentation_en_exception.conf
 File35=segmentation_en_idml.conf
 File36=segmentation_zh.conf
 File37=segmentation_zh_exception.conf
-File38=settingLanguagecheck.bjl
-File39=settingVersionControl.bjl
+File38=serverLanucher.bjl
+File39=settingLanguagecheck.bjl
 File4=checkList.bjl
-File40=statistics.bjl
-File41=supportedFiles.txt
-File42=tableview.bjl
-File43=tabpane.bjl
-File44=term.bjl
-File45=TermManager.bjl
-File46=termSetting.bjl
-File47=tmList.bjl
-File48=TMManager.bjl
-File49=TMsegment.bjl
+File40=settingVersionControl.bjl
+File41=statistics.bjl
+File42=supportedFiles.txt
+File43=tableview.bjl
+File44=tabpane.bjl
+File45=term.bjl
+File46=TermManager.bjl
+File47=termSetting.bjl
+File48=tmList.bjl
+File49=TMManager.bjl
 File5=confirmReview.bjl
-File50=tmSetting.bjl
-File51=upperRight.bjl
-File52=viewSegment.bjl
-File53=wordLookupSetting.bjl
+File50=TMsegment.bjl
+File51=tmSetting.bjl
+File52=upperRight.bjl
+File53=viewSegment.bjl
+File54=wordLookupSetting.bjl
 File6=default_rules.srx
 File7=editor.bjl
 File8=FontPicker.bjl
@@ -102,6 +103,7 @@ FileGroup50=Default Group
 FileGroup51=Default Group
 FileGroup52=Default Group
 FileGroup53=Default Group
+FileGroup54=Default Group
 FileGroup6=Default Group
 FileGroup7=Default Group
 FileGroup8=Default Group
@@ -169,14 +171,15 @@ Module42=coordinate
 Module43=LanguageTool
 Module44=editDistance
 Module45=viewSegment
+Module46=serverLauncher
 Module5=txtFilter
 Module6=TM
 Module7=Term
 Module8=KeyValueStore
 Module9=ProjectSettings
-NumberOfFiles=53
+NumberOfFiles=54
 NumberOfLibraries=22
-NumberOfModules=45
+NumberOfModules=46
 Version=6.51
 @EndOfDesignText@
 #Region Project Attributes 
@@ -269,7 +272,6 @@ Sub MainForm_Resize (Width As Double, Height As Double)
 End Sub
 
 Sub MainForm_CloseRequest (EventData As Event)
-	closeServer
 	If currentProject.IsInitialized Then
 		If currentProject.contentChanged Then
 			Dim result As Int
@@ -324,12 +326,6 @@ End Sub
 
 Public Sub initializeNLP(sourcelang As String)
 	nlp.Initialize(sourcelang)
-End Sub
-
-Sub closeServer
-	If ITP.sh.IsInitialized Then
-		ITP.sh.KillProcess
-	End If
 End Sub
 
 Sub adjustDividerPositions
@@ -504,7 +500,7 @@ Sub MenuBar1_Action
 				currentProject.projectTM.close
 				
 			End If
-			closeServer
+			
 
 			ExitApplication
 		Case "Preferences"
@@ -515,6 +511,10 @@ Sub MenuBar1_Action
 			Dim p2t As PDF2TXT
 			p2t.Initialize
 			p2t.Show
+		Case "Server Launcher"
+			Dim sl As serverLauncher
+			sl.Initialize
+			sl.show
 		Case "_About"
 			fx.Msgbox(MainForm,"BasicCAT 1.0"&CRLF&"@xulihang 2018","BasicCAT")
 	End Select

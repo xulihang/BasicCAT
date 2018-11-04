@@ -7,17 +7,6 @@ Version=6.51
 'Static code module
 Sub Process_Globals
 	Private fx As JFX
-	Public sh As Shell
-End Sub
-
-Sub runCorenlpServer(sourcelang As String)
-
-	If sh.IsInitialized=False Then
-		sh.Initialize("sh","java",Array As String("-mx4g","-cp",$"*"$,"edu.stanford.nlp.pipeline.StanfordCoreNLPServer","-port","9000","-timeout","15000"))
-	End If
-	Log(Main.preferencesMap.Get("corenlp_path"))
-	sh.WorkingDirectory=Main.preferencesMap.Get("corenlp_path")
-	sh.RunWithOutputEvents(-1)
 End Sub
 
 Sub getAllSegmentTranslation(text As String,engine As String) As ResumableSub
@@ -29,12 +18,6 @@ Sub getAllSegmentTranslation(text As String,engine As String) As ResumableSub
 	'Log("text:"&text)
 	Dim translationList As List
 	translationList.Initialize
-	
-	If Main.preferencesMap.ContainsKey("corenlp_path") Then
-		If File.Exists(Main.preferencesMap.Get("corenlp_path"),"")=True Then
-			runCorenlpServer(sourceLang)
-		End If
-	End If
 	
 	Dim address As String=""
 	If Main.preferencesMap.ContainsKey("corenlp_address") Then
