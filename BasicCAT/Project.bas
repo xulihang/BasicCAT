@@ -254,6 +254,22 @@ Sub exportReviewMi_Action
 	fx.Msgbox(Main.MainForm,"Done. File has been exported to the project folder.","")
 End Sub
 
+Sub exportBiParagraphMi_Action
+	Dim mi As MenuItem
+	mi=Sender
+	Dim filename As String
+	filename=mi.Tag
+	If currentFilename<>filename Then
+		fx.Msgbox(Main.MainForm,"Please first open this file.","")
+		Return
+	End If
+	Dim fc As FileChooser
+	fc.Initialize
+	fc.SetExtensionFilter("TXT",Array As String("*.txt"))
+	Utils.exportToBiParagraph(segments,fc.ShowSave(Main.MainForm))
+	fx.Msgbox(Main.MainForm,"Done.","")
+End Sub
+
 Sub importReviewMi_Action
 	Dim mi As MenuItem
 	mi=Sender
@@ -364,9 +380,12 @@ Sub addFilesToTreeTable(filename As String)
 	mi2.Initialize("Export to docx for review","exportReviewMi")
 	Dim mi3 As MenuItem
 	mi3.Initialize("Import from review","importReviewMi")
+	Dim mi4 As MenuItem
+	mi4.Initialize("Export to bi-paragraphs","exportBiParagraphMi")
 	cm.MenuItems.Add(mi)
 	cm.MenuItems.Add(mi2)
 	cm.MenuItems.Add(mi3)
+	cm.MenuItems.Add(mi4)
 
 	lbl.ContextMenu=cm
 	
@@ -374,6 +393,7 @@ Sub addFilesToTreeTable(filename As String)
 	mi.Tag=tti
 	mi2.Tag=filename
 	mi3.Tag=filename
+	mi4.Tag=filename
 	subTreeTableItem.Children.Add(tti)
 End Sub
 

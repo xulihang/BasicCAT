@@ -10,6 +10,36 @@ Sub Process_Globals
 	Private menus As Map
 End Sub
 
+Sub exportToBiParagraph(segments As List,path As String)
+	Dim text As StringBuilder
+	text.Initialize
+	Dim sourceText As String
+	Dim targetText As String
+	For Each segment As List In segments
+		Dim source,target,fullsource As String
+		Dim translation As String
+		source=segment.Get(0)
+		target=segment.Get(1)
+		fullsource=segment.Get(2)
+		source=Regex.Replace2("<.*?>",32,source,"")
+		target=Regex.Replace2("<.*?>",32,target,"")
+		fullsource=Regex.Replace2("<.*?>",32,fullsource,"")
+		translation=fullsource.Replace(source,target)
+		sourceText=sourceText&fullsource
+		targetText=targetText&translation
+	Next
+	Dim sourceList,targetList As List
+	sourceList.Initialize
+	targetList.Initialize
+	sourceList.AddAll(Regex.Split(CRLF,sourceText))
+	targetList.AddAll(Regex.Split(CRLF,targetText))
+	For i=0 To Min(sourceList.Size,targetList.Size)-1
+		text.Append(sourceList.Get(i)).Append(CRLF)
+		text.Append(targetList.Get(i)).Append(CRLF).Append(CRLF)
+	Next
+    File.WriteString(path,"",text.ToString)
+End Sub
+
 Sub disableTextArea(p As Pane)
 	Dim sourceTa As TextArea=p.GetNode(0)
 	Dim targetTa As TextArea=p.GetNode(1)
