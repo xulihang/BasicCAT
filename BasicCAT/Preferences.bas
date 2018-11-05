@@ -174,7 +174,7 @@ Sub mtTableView_MouseClicked (EventData As MouseEvent)
 End Sub
 
 Sub loadMT
-	For Each item As String In Array As String("baidu","yandex","youdao","google","microsoft")
+	For Each item As String In Array As String("baidu","yandex","youdao","google","microsoft","mymemory")
 		Dim chkbox As CheckBox
 		chkbox.Initialize("chkbox")
 		chkbox.Text=""

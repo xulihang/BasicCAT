@@ -18,7 +18,7 @@ Public Sub Initialize
 	frm.RootPane.LoadLayout("pretranslate")
 	result.Initialize
 	result.Put("type","")
-	mtComboBox.Items.AddAll(Array As String("baidu","yandex","youdao","google","microsoft"))
+	mtComboBox.Items.AddAll(Array As String("baidu","yandex","youdao","google","microsoft","mymemory"))
 	mtComboBox.SelectedIndex=0
 End Sub
 

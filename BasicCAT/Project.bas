@@ -946,11 +946,11 @@ Sub showMT(source As String,targetTextArea As TextArea)
 	Else
 		Return
 	End If
-	For Each engine As String In Array As String("yandex","baidu","youdao","google","microsoft")
+	For Each engine As String In Array As String("yandex","baidu","youdao","google","microsoft","mymemory")
 		If Utils.get_isEnabled(engine&"_isEnabled",mtPreferences)=True Then
 			wait for (MT.getMT(source,projectFile.Get("source"),projectFile.Get("target"),engine)) Complete (Result As String)
 			If Result<>"" Then
-				Dim row()  As Object = Array As String("","",Result,engine&" MT")
+				Dim row()  As Object = Array As String("","",Result,engine)
 				Main.tmTableView.Items.InsertAt(Min(Main.tmTableView.Items.Size,1),row)
 				Main.changeWhenSegmentOrSelectionChanges
 			End If

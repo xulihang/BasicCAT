@@ -114,6 +114,17 @@ Sub init(engineName As String)
 			End If
 			paramsTableView.Items.Add(Row1)
 			params.Put(Row1(0),Row1(1))
+		Case "mymemory"
+			paramsTableView.SetColumns(Array As String("param","value"))
+			
+			Dim Row1() As Object
+			If params.ContainsKey("email") Then
+				Row1=Array ("email", params.Get("email"))
+			Else
+				Row1=Array ("email", "")
+			End If
+			paramsTableView.Items.Add(Row1)
+			params.Put(Row1(0),Row1(1))
 	End Select
 End Sub
 

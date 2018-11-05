@@ -28,6 +28,9 @@ Sub getMT(source As String,sourceLang As String,targetLang As String,MTEngine As
 		Case "microsoft"
 			wait for (microsoftMT(source,sourceLang,targetLang)) Complete (result As String)
 			Return result
+		Case "mymemory"
+			wait for (MyMemory(source,sourceLang,targetLang)) Complete (result As String)
+			Return result
 	End Select
 End Sub
 
@@ -203,7 +206,7 @@ Sub youdaoMT(source As String,sourceLang As String,targetLang As String,lookup A
 	param="?appKey="&appid&"&q="&source&"&from="&sourceLang&"&to="&targetLang&"&salt="&salt&"&sign="&sign
 	Dim job As HttpJob
 	job.Initialize("job",Me)
-	job.Download("http://openapi.youdao.com/api"&param)
+	job.Download("https://openapi.youdao.com/api"&param)
 	wait for (job) JobDone(job As HttpJob)
 	Dim target As String=""
 	Dim meansList As List
@@ -232,6 +235,42 @@ Sub youdaoMT(source As String,sourceLang As String,targetLang As String,lookup A
 	Else
 		Return target
 	End If
+End Sub
+
+Sub MyMemory(source As String,sourceLang As String,targetLang As String) As ResumableSub
+
+	Dim email As String
+	email=Utils.getMap("mymemory",Utils.getMap("mt",Main.preferencesMap)).Get("email")
+	Dim su As StringUtils
+	source=su.EncodeUrl(source,"UTF-8")
+	Dim job As HttpJob
+	job.Initialize("job",Me)
+	Dim langpair As String
+	langpair=sourceLang&"|"&targetLang
+	langpair=su.EncodeUrl(langpair,"UTF-8")
+	Dim param As String
+	param="?q="&source&"&langpair="&langpair
+	If email<>"" Then
+		param=param&"&de="&email
+	End If
+	
+	job.Download("https://api.mymemory.translated.net/get"&param)
+	Dim translatedText As String=""
+	wait for (job) JobDone(job As HttpJob)
+	If job.Success Then
+		Try
+			Log(job.GetString)
+			Dim json As JSONParser
+			json.Initialize(job.GetString)
+			Dim response As Map
+			response=json.NextObject.Get("responseData")
+			translatedText=response.Get("translatedText")
+		Catch
+			Log(LastException)
+		End Try
+	End If
+	job.Release
+	Return translatedText
 End Sub
 
 Sub UUID As String
