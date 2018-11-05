@@ -394,6 +394,14 @@ Public Sub addProjectTreeTableItem
 			cm.MenuItems.Add(mi)
 			lbl.ContextMenu=cm
 		End If
+		If item="Terminology" Then
+			Dim cm As ContextMenu
+			cm.Initialize("cm")
+			Dim mi As MenuItem
+			mi.Initialize("Export to TXT","exportTermToTXTMi")
+			cm.MenuItems.Add(mi)
+			lbl.ContextMenu=cm
+		End If
 		Dim tti As TreeTableItem
 		tti.Initialize("tti",Array As Object(lbl))
 		
@@ -577,6 +585,41 @@ Sub changeTranslatable(isTranslatable As String)
 				targetTa.Enabled=False
 		End Select
 		currentProject.contentIsChanged
+	End If
+End Sub
+
+Sub exportTermToTXTMi_Action
+	If currentProject.projectTerm.IsInitialized Then
+		Dim path As String
+		Dim fc As FileChooser
+		fc.Initialize
+		fc.SetExtensionFilter("txt",Array As String("*.txt"))
+		path=fc.ShowSave(MainForm)
+		If path="" Then
+			Return
+		End If
+		Dim segments As List
+		segments.Initialize
+		Dim termKVS As KeyValueStore
+		termKVS=currentProject.projectTerm.terminology
+		For Each key As String In termKVS.ListKeys
+			Dim bitext As List
+			bitext.Initialize
+			bitext.Add(key)
+			Dim targetMap As Map
+			targetMap=termKVS.Get(key)
+			bitext.Add(targetMap.GetKeyAt(0))
+			Dim terminfo As Map
+			terminfo=targetMap.Get(targetMap.GetKeyAt(0))
+			If terminfo.ContainsKey("description") Then
+				bitext.Add("")
+			Else
+				bitext.Add(terminfo.Get("description"))
+			End If
+			segments.Add(bitext)
+		Next
+		currentProject.projectTerm.exportToTXT(segments,path)
+		fx.Msgbox(MainForm,"exported","")
 	End If
 End Sub
 

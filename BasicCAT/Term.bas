@@ -149,3 +149,10 @@ Sub addTerm(source As String,target As String)
 	terminology.Put(source,targetMap)
 End Sub
 
+Sub exportToTXT(segments As List,path As String)
+	Dim content As String
+	For Each segment As List In segments
+		content=segment.Get(0)&"	"&segment.Get(1)&"	"&segment.Get(2)&CRLF
+	Next
+	File.WriteString(path,"",content)
+End Sub
