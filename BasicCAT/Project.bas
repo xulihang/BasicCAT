@@ -24,7 +24,7 @@ Sub Class_Globals
 	Private cursorReachEnd As Boolean=False
 	Private projectGit As git
 	Public contentChanged As Boolean=False
-	Private plugin As ABPlugin
+	
 End Sub
 
 'Initializes the object. You can add parameters to this method if needed.
@@ -34,26 +34,9 @@ Public Sub Initialize
 	segments.Initialize
 	settings.Initialize
 	cm.Initialize("cm")
-	loadPlugins
+
 End Sub
 
-Sub loadPlugins
-	Dim dir As String
-	If Main.preferencesMap.ContainsKey("pluginDir") Then
-		dir=Main.preferencesMap.Get("pluginDir")
-	Else
-		dir=File.Combine(File.DirApp,"plugins")
-	End If
-	plugin.Initialize("plugin",dir, "MyKey")
-	plugin.Start(1)
-	Log(plugin.GetAvailablePlugins)
-End Sub
-
-Sub plugin_PluginsChanged()
-	Log("plugins have changed!")
-	Log(plugin.GetAvailablePlugins)
-	plugin.Stop
-End Sub
 
 Sub initializeTM(projectPath As String,isExistingProject As Boolean)
 	projectTM.Initialize(projectPath)
@@ -946,7 +929,7 @@ Sub showMT(source As String,targetTextArea As TextArea)
 	Else
 		Return
 	End If
-	For Each engine As String In Array As String("yandex","baidu","youdao","google","microsoft","mymemory")
+	For Each engine As String In MT.getMTList
 		If Utils.get_isEnabled(engine&"_isEnabled",mtPreferences)=True Then
 			wait for (MT.getMT(source,projectFile.Get("source"),projectFile.Get("target"),engine)) Complete (Result As String)
 			If Result<>"" Then
@@ -1224,13 +1207,13 @@ Public Sub fillVisibleTargetTextArea
 End Sub
 
 Sub runFilterPluginAccordingToExtension(filename As String,task As String,params As Map) As Object
-	Log(plugin.GetAvailablePlugins)
-	For Each pluginName As String In plugin.GetAvailablePlugins
+	Log(Main.plugin.GetAvailablePlugins)
+	For Each pluginName As String In Main.plugin.GetAvailablePlugins
 		If pluginName.EndsWith("Filter") Then
 			Dim extension As String
 			extension=pluginName.Replace("Filter","")
 			If filename.EndsWith(extension) Then
-				Return plugin.RunPlugin(pluginName,task,params)
+				Return Main.plugin.RunPlugin(pluginName,task,params)
 			End If
 		End If
 	Next

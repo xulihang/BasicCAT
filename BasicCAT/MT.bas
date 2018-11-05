@@ -10,6 +10,28 @@ Sub Process_Globals
 	Private Bconv As ByteConverter
 End Sub
 
+Sub getMTPluginParams
+	
+End Sub
+
+Sub getMTList As List
+	Dim mtList As List
+	mtList.Initialize
+	mtList.AddAll(Array As String("baidu","yandex","youdao","google","microsoft","mymemory"))
+    mtList.AddAll(getMTPluginList)
+	Return mtList
+End Sub
+
+Sub getMTPluginList As List
+	Dim mtList As List
+	mtList.Initialize
+	For Each name As String In Main.plugin.GetAvailablePlugins
+		If name.EndsWith("MT") Then
+			mtList.Add(name.Replace("MT",""))
+		End If
+	Next
+	Return mtList
+End Sub
 
 Sub getMT(source As String,sourceLang As String,targetLang As String,MTEngine As String) As ResumableSub
 	Select MTEngine
@@ -32,6 +54,17 @@ Sub getMT(source As String,sourceLang As String,targetLang As String,MTEngine As
 			wait for (MyMemory(source,sourceLang,targetLang)) Complete (result As String)
 			Return result
 	End Select
+	If getMTPluginList.IndexOf(MTEngine)<>-1 Then
+		Dim params As Map
+		params.Initialize
+		params.Put("source",source)
+		params.Put("sourceLang",sourceLang)
+		params.Put("targetLang",targetLang)
+		params.Put("preferencesMap",Main.preferencesMap)
+		wait for (Main.plugin.RunPlugin(MTEngine&"MT","translate",params)) complete (result As String)
+		Log("pluginMT"&result)
+		Return result
+	End If
 End Sub
 
 Sub BaiduMT(source As String,sourceLang As String,targetLang As String) As ResumableSub

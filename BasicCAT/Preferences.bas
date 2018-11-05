@@ -174,7 +174,7 @@ Sub mtTableView_MouseClicked (EventData As MouseEvent)
 End Sub
 
 Sub loadMT
-	For Each item As String In Array As String("baidu","yandex","youdao","google","microsoft","mymemory")
+	For Each item As String In MT.getMTList
 		Dim chkbox As CheckBox
 		chkbox.Initialize("chkbox")
 		chkbox.Text=""
@@ -304,6 +304,7 @@ Sub changePluginPathButton_MouseClicked (EventData As MouseEvent)
 	pluginDirLabel.Text=dc.Show(frm)
 	unsavedPreferences.Put("pluginDir",pluginDirLabel.Text)
 	loadPluginsList
+	Main.loadPlugins
 End Sub
 
 Sub AddPluginButton_MouseClicked (EventData As MouseEvent)
@@ -325,6 +326,7 @@ Sub AddPluginButton_MouseClicked (EventData As MouseEvent)
 		File.Copy(path,"",pluginDir,filename)
 		File.Copy(dir,filename.Replace(".jar",".xml"),pluginDir,filename.Replace(".jar",".xml"))
 		loadPluginsList
+		Main.plugin.Start(1)
 	End If
 End Sub
 
@@ -352,6 +354,7 @@ Sub pluginsLV_Action
 		File.Delete(dir,filename)
 		File.Delete(dir,filename.Replace(".jar",".xml"))
 		pluginsLV.Items.RemoveAt(pluginsLV.Items.IndexOf(pluginsLV.SelectedItem))
+		Main.plugin.Start(1)
 	End If
 End Sub
 

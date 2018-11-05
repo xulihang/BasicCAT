@@ -251,6 +251,7 @@ Sub Process_Globals
 	Private operationLabel As Label
 	Private checkLV As CustomListView
 	Public nlp As opennlp
+	Public plugin As ABPlugin
 End Sub
 
 Sub AppStart (Form1 As Form, Args() As String)
@@ -334,10 +335,34 @@ Sub init
 		autosaveTimer.Initialize("autosaveTimer",60000)
 	End If
 	autosaveTimer.Enabled=False
+	loadPlugins
 End Sub
 
 Public Sub initializeNLP(sourcelang As String)
-	nlp.Initialize(sourcelang)
+	Try
+		nlp.Initialize(sourcelang)
+	Catch
+		Log(LastException)
+	End Try
+End Sub
+
+
+Public Sub loadPlugins
+	Dim dir As String
+	If preferencesMap.ContainsKey("pluginDir") Then
+		dir=preferencesMap.Get("pluginDir")
+	Else
+		dir=File.Combine(File.DirApp,"plugins")
+	End If
+	plugin.Initialize("plugin",dir, "MyKey")
+	plugin.Start(1)
+	Log(plugin.GetAvailablePlugins)
+End Sub
+
+Sub plugin_PluginsChanged()
+	Log("plugins have changed!")
+	Log(plugin.GetAvailablePlugins)
+	plugin.Stop
 End Sub
 
 Sub adjustDividerPositions

@@ -42,90 +42,36 @@ End Sub
 Sub init(engineName As String)
 	Select engineName
 		Case "baidu"
-			paramsTableView.SetColumns(Array As String("param","value"))
-			
-			Dim Row1() As Object
-			If params.ContainsKey("appid") Then
-				Row1=Array ("appid", params.Get("appid"))
-			Else
-				Row1=Array ("appid", "")
-			End If
-			paramsTableView.Items.Add(Row1)
-			params.Put(Row1(0),Row1(1))
-			
-			Dim Row2() As Object
-			If params.ContainsKey("key") Then
-				Row2=Array ("key", params.Get("key"))
-			Else
-				Row2=Array ("key", "")
-			End If
-			paramsTableView.Items.Add(Row2)
-			params.Put(Row2(0),Row2(1))
+			setTableView(Array As String("appid","key"))
 		Case "yandex"
-			paramsTableView.SetColumns(Array As String("param","value"))
-			
-			Dim Row1() As Object
-			If params.ContainsKey("key") Then
-				Row1=Array ("key", params.Get("key"))
-			Else
-				Row1=Array ("key", "")
-			End If
-			paramsTableView.Items.Add(Row1)
-			params.Put(Row1(0),Row1(1))
+			setTableView(Array As String("key"))
 		Case "youdao"
-			paramsTableView.SetColumns(Array As String("param","value"))
-			
-			Dim Row1() As Object
-			If params.ContainsKey("appid") Then
-				Row1=Array ("appid", params.Get("appid"))
-			Else
-				Row1=Array ("appid", "")
-			End If
-			paramsTableView.Items.Add(Row1)
-			params.Put(Row1(0),Row1(1))
-			
-			Dim Row2() As Object
-			If params.ContainsKey("key") Then
-				Row2=Array ("key", params.Get("key"))
-			Else
-				Row2=Array ("key", "")
-			End If
-			paramsTableView.Items.Add(Row2)
-			params.Put(Row2(0),Row2(1))
+			setTableView(Array As String("appid","key"))
 		Case "google"
-			paramsTableView.SetColumns(Array As String("param","value"))
-			
-			Dim Row1() As Object
-			If params.ContainsKey("key") Then
-				Row1=Array ("key", params.Get("key"))
-			Else
-				Row1=Array ("key", "")
-			End If
-			paramsTableView.Items.Add(Row1)
-			params.Put(Row1(0),Row1(1))
+			setTableView(Array As String("key"))
 		Case "microsoft"
-			paramsTableView.SetColumns(Array As String("param","value"))
-			
-			Dim Row1() As Object
-			If params.ContainsKey("key") Then
-				Row1=Array ("key", params.Get("key"))
-			Else
-				Row1=Array ("key", "")
-			End If
-			paramsTableView.Items.Add(Row1)
-			params.Put(Row1(0),Row1(1))
+			setTableView(Array As String("key"))
 		Case "mymemory"
-			paramsTableView.SetColumns(Array As String("param","value"))
-			
-			Dim Row1() As Object
-			If params.ContainsKey("email") Then
-				Row1=Array ("email", params.Get("email"))
-			Else
-				Row1=Array ("email", "")
-			End If
-			paramsTableView.Items.Add(Row1)
-			params.Put(Row1(0),Row1(1))
+			setTableView(Array As String("email"))
 	End Select
+	If MT.getMTPluginList.IndexOf(engineName)<>-1 Then
+		wait for (Main.plugin.RunPlugin(engineName&"MT","getParams",Null)) complete (result As List)
+		setTableView(result)
+	End If
+End Sub
+
+Sub setTableView(paramsList As List)
+	paramsTableView.SetColumns(Array As String("param","value"))
+	For Each item As String In paramsList
+		Dim Row1() As Object
+		If params.ContainsKey(item) Then
+			Row1=Array (item, params.Get(item))
+		Else
+			Row1=Array (item, "")
+		End If
+		paramsTableView.Items.Add(Row1)
+		params.Put(Row1(0),Row1(1))
+	Next
 End Sub
 
 Sub cancelButton_MouseClicked (EventData As MouseEvent)
