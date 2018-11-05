@@ -975,6 +975,7 @@ Sub getMeans(source As String) As ResumableSub
 End Sub
 
 Sub showTerm(targetTextArea As TextArea)
+	Main.termLV.Items.Clear
 	Dim pane As Pane
 	pane=targetTextArea.Parent
 	Dim sourceTA As TextArea

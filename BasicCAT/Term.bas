@@ -65,8 +65,12 @@ Sub importedTxt(filename As String,termsMap As Map)
 
 		source=Regex.Split("	",line)(0)
 		target=Regex.Split("	",line)(1)
-		descrip=Regex.Split("	",line)(2)
-		terminfo.Put("description",descrip)
+		Try
+			descrip=Regex.Split("	",line)(2)
+			terminfo.Put("description",descrip)
+		Catch
+			Log(LastException)
+		End Try
 		targetMap.Put(target,terminfo)
 		termsMap.Put(source,targetMap)
 	Next
@@ -86,15 +90,24 @@ Public Sub termsInASentence(sentence As String) As List
 		End Select
 		
 		For Each source As String In kvs.ListKeys
-			If Regex.Matcher("\b"&source&"\b",sentence).Find=False Then
-				If Main.nlp.IsInitialized And sourceLanguage="en" Then
-					Dim lemmatized As String
-					lemmatized=Main.nlp.lemmatizedSentence(source)
-					If Regex.Matcher("\b"&lemmatized&"\b",sentence).Find=False Then
+			If sourceLanguage="en" Then
+				If Regex.Matcher("\b"&source&"\b",sentence).Find=False Then
+					If Main.nlp.IsInitialized Then
+						Dim lemmatized As String
+						lemmatized=Main.nlp.lemmatizedSentence(source)
+						If Regex.Matcher("\b"&lemmatized&"\b",sentence).Find=False Then
+							Continue
+						End If
+					Else
 						Continue
 					End If
 				End If
+			Else
+				If sentence.Contains(source)=False Then
+					Continue
+				End If
 			End If
+
 
 			Dim targetMap As Map
 			targetMap=kvs.Get(source)
