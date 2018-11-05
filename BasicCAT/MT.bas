@@ -10,10 +10,6 @@ Sub Process_Globals
 	Private Bconv As ByteConverter
 End Sub
 
-Sub getMTPluginParams
-	
-End Sub
-
 Sub getMTList As List
 	Dim mtList As List
 	mtList.Initialize

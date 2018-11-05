@@ -78,7 +78,7 @@ Sub showRegexResult
 			End If
 		End If
 		
-		tf.AddText("Source: ")
+		tf.AddText("- Source: ")
 		If shouldShow Then
 
 			If searchSourceCheckBox.Checked Then
@@ -101,7 +101,7 @@ Sub showRegexResult
 			Else
 				tf.AddText(source)
 			End If
-			tf.AddText(CRLF&"Target: ")
+			tf.AddText(CRLF&"- Target: ")
 
 			If inTarget Then
 			    Do While targetMatcher.Find
@@ -119,7 +119,7 @@ Sub showRegexResult
 				Loop
 				tf.AddText(targetLeft)
 				textSegments.Add(targetLeft)
-				tf.AddText(CRLF&"After: ")
+				tf.AddText(CRLF&"- After: ")
 
 				For Each text As String In textSegments
 					Log("text"&text)
@@ -139,7 +139,7 @@ Sub showRegexResult
 				
 			Else
 				tf.AddText(target)
-				tf.AddText(CRLF&"After: ")
+				tf.AddText(CRLF&"- After: ")
 				tf.AddText(target)
 			End If
 			Dim tagList As List
@@ -183,7 +183,7 @@ Sub showResult
 		
 		
 		If shouldShow Then
-			tf.AddText("Source: ")
+			tf.AddText("- Source: ")
 			If searchSourceCheckBox.Checked Then
 				If source.Contains(find) Then
 					addText(tf,source,find,textSegments,False)
@@ -193,11 +193,11 @@ Sub showResult
 			Else
 				tf.AddText(source)
 			End If
-
-			tf.AddText(CRLF&"Target: ")
+            
+			tf.AddText(CRLF&"- Target: ")
 			If target.Contains(find) Then
 				addText(tf,target,find,textSegments,True)
-				tf.AddText(CRLF&"After: ")
+				tf.AddText(CRLF&"- After: ")
 
 				For Each text As String In textSegments
 					If text=find Then
@@ -213,10 +213,10 @@ Sub showResult
 				Next
 			Else
 				tf.AddText(target)
-				tf.AddText(CRLF&"After: ")
+				tf.AddText(CRLF&"- After: ")
 				tf.AddText(target)
 			End If
-			
+
 			Dim tagList As List
 			tagList.Initialize
 			tagList.Add(index)
@@ -294,10 +294,10 @@ Sub replaceSelectedButton_MouseClicked (EventData As MouseEvent)
 		Dim tagList As List
 		tagList=p.Tag
 		Dim target,after As String
-		Log(Regex.Split(CRLF,tagList.Get(1)))
-		target=Regex.Split(CRLF,tagList.Get(1))(1)
+		Log(Regex.Split(CRLF&"- ",tagList.Get(1)))
+		target=Regex.Split(CRLF&"- ",tagList.Get(1))(1)
 		target=target.SubString2("Target: ".Length,target.Length)
-		after=Regex.Split(CRLF,tagList.Get(1))(2)
+		after=Regex.Split(CRLF&"- ",tagList.Get(1))(2)
 		after=after.SubString2("After: ".Length,after.Length)
 		Dim bitext As List
 		bitext=Main.currentProject.segments.Get(tagList.Get(0))
@@ -322,10 +322,10 @@ Sub replaceAllButton_MouseClicked (EventData As MouseEvent)
 			Dim tagList As List
 			tagList=p.Tag
 			Dim target,after As String
-			Log(Regex.Split(CRLF,tagList.Get(1)))
-			target=Regex.Split(CRLF,tagList.Get(1))(1)
+			Log(Regex.Split(CRLF&"- ",tagList.Get(1)))
+			target=Regex.Split(CRLF&"- ",tagList.Get(1))(1)
 			target=target.SubString2("Target: ".Length,target.Length)
-			after=Regex.Split(CRLF,tagList.Get(1))(2)
+			after=Regex.Split(CRLF&"- ",tagList.Get(1))(2)
 			after=after.SubString2("After: ".Length,after.Length)
 			Dim bitext As List
 			bitext=Main.currentProject.segments.Get(tagList.Get(0))
