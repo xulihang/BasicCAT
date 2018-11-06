@@ -7,7 +7,7 @@ Version=6.51
 Sub Class_Globals
 	Private fx As JFX
 	Public translationMemory As KeyValueStore
-	Private externalTranslationMemory As KeyValueStore
+	Public externalTranslationMemory As KeyValueStore
 	Private similarityStore As Map
 	Public currentSource As String
 End Sub

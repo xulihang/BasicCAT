@@ -57,7 +57,28 @@ Public Sub SetStrikethrough(Strikethrough As Boolean) As TextFlow
 	Return Me
 End Sub
 
+Public Sub AddMonoText(text As String) As TextFlow
+	allText=allText&text
+	Dim lastItem As JavaObject
+	lastItem.InitializeNewInstance("javafx.scene.text.Text", Array(text))
+	CSSUtils.SetStyleProperty(lastItem," -fx-font-family","monospace")
+	texts.Add(lastItem)
+	Return Me
+End Sub
 
+Public Sub Reset As TextFlow
+	texts.Initialize
+	Return Me
+End Sub
+
+
+Public Sub CreateTextFlowWithWidth(width As Double) As Pane
+	Dim tf As JavaObject
+	tf.InitializeNewInstance("javafx.scene.text.TextFlow", Null)
+	tf.RunMethodJO("getChildren", Null).RunMethod("addAll", Array(texts))
+	tf.RunMethod("setMaxWidth",Array(width))
+	Return tf
+End Sub
 
 Public Sub CreateTextFlow As Pane
 	Dim tf As JavaObject

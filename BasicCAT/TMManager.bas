@@ -7,69 +7,173 @@ Version=6.51
 Sub Class_Globals
 	Private fx As JFX
 	Private frm As Form
-	Private TMListView As CustomListView
+	Private SearchView1 As SearchView
+	Private kvs As KeyValueStore
+	Private externalTMRadioButton As RadioButton
+	Private projectTMRadioButton As RadioButton
 End Sub
 
 'Initializes the object. You can add parameters to this method if needed.
 Public Sub Initialize
 	frm.Initialize("frm",600,200)
 	frm.RootPane.LoadLayout("TMManager")
-	LoadTM
+	init
 End Sub
 
-Sub ShowAndWait
-    frm.ShowAndWait	
+Public Sub Show
+	frm.Show
 End Sub
 
-Sub frm_Resize (Width As Double, Height As Double)
-	CallSubDelayed2(Utils,"ListViewParent_Resize",TMListView)
+Sub init
+	kvs=Main.currentProject.projectTM.translationMemory
+	setItems(False)
+	Sleep(0)
+	SearchView1.show
+	addContextMenuToLV
 End Sub
 
-Sub LoadTM
-	Dim tmMap As KeyValueStore = Main.currentProject.projectTM.translationMemory
-	For Each key As String In tmMap.ListKeys
-		TMListView.Add(CreateSegmentPane(key,tmMap.Get(key)),"")
-		Log(key)
+
+Sub setItems(isExternal As Boolean)
+	Dim items As List
+	items.Initialize
+	For Each key As String In kvs.ListKeys
+		'Log(key)
+		If isExternal Then
+			Dim list1 As List
+			list1=kvs.Get(key)
+			items.Add(buildItemText(key,list1.Get(0)))
+		Else
+			items.Add(buildItemText(key,kvs.Get(key)))
+		End If
+		
 	Next
-	CallSubDelayed2(Utils,"ListViewParent_Resize",TMListView)
+	SearchView1.SetItems(items)
 End Sub
 
-Public Sub CreateSegmentPane(source As String,target As String) As Pane
-	Dim SegmentPane As Pane
-	SegmentPane.Initialize("SegmentPane")
-	SegmentPane.LoadLayout("TMsegment")
-	SegmentPane.SetSize(TMListView.AsView.Width,50dip)
-	Dim SourceLabel As Label
-	SourceLabel=SegmentPane.GetNode(0)
-	SourceLabel.Text=source
-	addMenu(SourceLabel)
-	Log(source)
-	Dim TargetLabel As Label
-	TargetLabel=SegmentPane.GetNode(1)
-	TargetLabel.Text=target
-	Return SegmentPane
-End Sub
-
-Sub addMenu(lbl As Label)
+Sub addContextMenuToLV
 	Dim cm As ContextMenu
 	cm.Initialize("cm")
 	Dim mi As MenuItem
-	mi.Initialize("Remove","lblmenu")
-	mi.Tag=lbl
+	mi.Initialize("Edit","mi")
+	Dim mi2 As MenuItem
+	mi2.Initialize("Remove","mi")
 	cm.MenuItems.Add(mi)
-	lbl.ContextMenu=cm
+	cm.MenuItems.Add(mi2)
+	SearchView1.addContextMenuToLV(cm)
 End Sub
 
-Sub lblmenu_Action
+Sub buildItemText(source As String,target As String) As String
+	Dim sb As StringBuilder
+	sb.Initialize
+	sb.Append("- source: ").Append(source).Append(CRLF)
+	sb.Append("- target: ").Append(target)
+	Return sb.ToString
+End Sub
+
+Sub mi_Action
 	Dim mi As MenuItem
 	mi=Sender
-	Dim lbl As Label
-	lbl=mi.Tag
-	Log(lbl.Text)
 	Select mi.Text
+		Case "Edit"
+			Dim p As Pane
+			p=SearchView1.GetSelected
+			Dim text As String
+			text=p.Tag
+			Dim source,target As String
+			source=Regex.Split(CRLF&"- ",text)(0).Replace("- source: ","")
+			target=Regex.Split(CRLF&"- ",text)(1).Replace("target: ","")
+			Dim tmEd As TMEditor
+			tmEd.Initialize(source,target)
+			Dim bitext As List
+			bitext=tmEd.showAndWait
+			If externalTMRadioButton.Selected Then
+				Dim list1 As List
+				list1=kvs.Get(bitext.Get(0))
+				list1.Set(0,bitext.Get(1))
+				kvs.Put(bitext.Get(0),list1)
+			Else
+				kvs.Put(bitext.Get(0),bitext.Get(1))
+			End If
+			setItems(externalTMRadioButton.Selected)
+			SearchView1.replaceItem(buildItemText(bitext.Get(0),bitext.Get(1)),SearchView1.GetSelectedIndex)
 		Case "Remove"
-			Dim tmMap As KeyValueStore = Main.currentProject.projectTM.translationMemory
-			tmMap.Remove(lbl.Text)
-			TMListView.RemoveAt(TMListView.GetItemFromView(lbl.Parent))
+			Dim result As Int=fx.Msgbox2(frm,"Will delete this entry, continue?","","Yes","","Cancel",fx.MSGBOX_CONFIRMATION)
+			If result=fx.DialogResponse.POSITIVE Then
+				Dim p As Pane
+				p=SearchView1.GetSelected
+				Dim text As String
+				text=p.Tag
+				Dim source As String
+				source=Regex.Split(CRLF&"- ",text)(0).Replace("- source: ","")
+				kvs.Remove(source)
+				setItems(externalTMRadioButton.Selected)
+				SearchView1.GetItems.RemoveAt(SearchView1.GetSelectedIndex)
+			End If
 	End Select
+End Sub
+
+Sub projectTMRadioButton_SelectedChange(Selected As Boolean)
+	If Selected Then
+		kvs=Main.currentProject.projectTM.translationMemory
+		setItems(False)
+		SearchView1.show
+	End If
+End Sub
+
+Sub externalTMRadioButton_SelectedChange(Selected As Boolean)
+	If Selected Then
+		kvs=Main.currentProject.projectTM.externalTranslationMemory
+		setItems(True)
+		SearchView1.show
+	End If
+End Sub
+
+Sub ExportButton_MouseClicked (EventData As MouseEvent)
+	exportToFile
+End Sub
+
+Sub exportToFile
+	Dim path As String
+	Dim fc As FileChooser
+	fc.Initialize
+	fc.SetExtensionFilter("tmx or tab-delimitted text",Array As String("*.tmx","*.txt"))
+	path=fc.ShowSave(frm)
+	If path="" Then
+		Return
+	End If
+	If path.EndsWith(".tmx")=False And path.EndsWith(".txt")=False Then
+		path=path&".tmx"
+	End If
+	Dim segments As List
+	segments.Initialize
+
+	For Each key As String In kvs.ListKeys
+		Dim bitext As List
+		bitext.Initialize
+		bitext.Add(key)
+		Dim list1 As List
+		If externalTMRadioButton.Selected Then
+			list1=kvs.Get(key)
+			bitext.Add(list1.Get(0))
+		Else
+			bitext.Add(kvs.Get(key))
+		End If
+		segments.Add(bitext)
+	Next
+	If path.EndsWith(".tmx") Then
+		TMX.export(segments,Main.currentProject.projectFile.Get("source"),Main.currentProject.projectFile.Get("target"),path)
+	Else
+		exportToTXT(segments,path)
+	End If
+	
+	fx.Msgbox(frm,"exported","")
+End Sub
+
+Sub exportToTXT(segments As List,path As String)
+	Dim sb As StringBuilder
+	sb.Initialize
+	For Each bitext As List In segments
+		sb.Append(bitext.Get(0)&"	"&bitext.Get(1))
+	Next
+	File.WriteString(path,"",sb.ToString)
 End Sub
