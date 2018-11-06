@@ -43,17 +43,18 @@ File45=supportedFiles.txt
 File46=tableview.bjl
 File47=tabpane.bjl
 File48=term.bjl
-File49=TermManager.bjl
+File49=TermEditor.bjl
 File5=confirmReview.bjl
-File50=termSetting.bjl
-File51=TMEditor.bjl
-File52=tmList.bjl
-File53=TMManager.bjl
-File54=TMsegment.bjl
-File55=tmSetting.bjl
-File56=upperRight.bjl
-File57=viewSegment.bjl
-File58=wordLookupSetting.bjl
+File50=TermManager.bjl
+File51=termSetting.bjl
+File52=TMEditor.bjl
+File53=tmList.bjl
+File54=TMManager.bjl
+File55=TMsegment.bjl
+File56=tmSetting.bjl
+File57=upperRight.bjl
+File58=viewSegment.bjl
+File59=wordLookupSetting.bjl
 File6=default_rules.srx
 File7=editor.bjl
 File8=FontPicker.bjl
@@ -112,6 +113,7 @@ FileGroup55=Default Group
 FileGroup56=Default Group
 FileGroup57=Default Group
 FileGroup58=Default Group
+FileGroup59=Default Group
 FileGroup6=Default Group
 FileGroup7=Default Group
 FileGroup8=Default Group
@@ -183,14 +185,15 @@ Module45=editDistance
 Module46=viewSegment
 Module47=SearchView
 Module48=TMEditor
+Module49=TermEditor
 Module5=txtFilter
 Module6=TM
 Module7=Term
 Module8=KeyValueStore
 Module9=ProjectSettings
-NumberOfFiles=58
+NumberOfFiles=59
 NumberOfLibraries=23
-NumberOfModules=48
+NumberOfModules=49
 Version=6.51
 @EndOfDesignText@
 #Region Project Attributes 
@@ -549,8 +552,10 @@ Sub MenuBar1_Action
 		Case "_Exit"
 			'Dim currentProject as Project
 			If currentProject.IsInitialized Then
-				currentProject.projectTM.close
-				
+				If currentProject.projectTM.IsInitialized Then
+					currentProject.projectTM.close
+					Sleep(0)
+				End If
 			End If
 			
 
@@ -618,10 +623,10 @@ Sub exportTermToTXTMi_Action
 			bitext.Add(targetMap.GetKeyAt(0))
 			Dim terminfo As Map
 			terminfo=targetMap.Get(targetMap.GetKeyAt(0))
-			If terminfo.ContainsKey("description") Then
-				bitext.Add("")
+			If terminfo.ContainsKey("note") Then
+				bitext.Add(terminfo.Get("note"))
 			Else
-				bitext.Add(terminfo.Get("description"))
+				bitext.Add("")
 			End If
 			segments.Add(bitext)
 		Next
@@ -1100,7 +1105,7 @@ Sub lbl_MouseClicked (EventData As MouseEvent)
 			Case "Terminology"
 				Dim termm As TermManager
 				termm.Initialize
-				termm.ShowAndWait
+				termm.show
 			Case "Preview"
 				If pre.IsInitialized=False Then
 					pre.Initialize

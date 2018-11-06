@@ -56,11 +56,28 @@ Sub cancelButton_MouseClicked (EventData As MouseEvent)
 End Sub
 
 Sub applyButton_MouseClicked (EventData As MouseEvent)
-	resultList.Add("changed")
-	settings.Put("tmList",TMListView.Items)
-	settings.Put("termList",TermListView.Items)
-	resultList.Add(settings)
+	If ask="yes" Then
+		resultList.Add("changed")
+		settings.Put("tmList",TMListView.Items)
+		settings.Put("termList",TermListView.Items)
+		resultList.Add(settings)
+	Else
+		resultList.Add("canceled")
+	End If
 	frm.Close
+End Sub
+
+Sub ask As String
+	Dim tmList,termList As List
+	tmList=settings.Get("tmList")
+	termList=settings.Get("termList")
+	If tmList<>TMListView.Items Or termList<>TermListView.Items Then
+		Dim result As Int=fx.Msgbox2(frm,"Will reset external tm and term db, continue?","","Continue","","Cancel",fx.MSGBOX_CONFIRMATION)
+		If result=fx.DialogResponse.POSITIVE Then
+			Return "yes"
+		End If
+	End If
+	Return "no"
 End Sub
 
 Sub DeleteTMButton_MouseClicked (EventData As MouseEvent)
@@ -72,7 +89,7 @@ End Sub
 
 Sub DeleteTermButton_MouseClicked (EventData As MouseEvent)
 	If TermListView.SelectedIndex<>-1 Then
-		TermListView.Items.RemoveAt(TMListView.SelectedIndex)
+		TermListView.Items.RemoveAt(TermListView.SelectedIndex)
 	End If
 	
 End Sub

@@ -7,7 +7,7 @@ Version=6.51
 Sub Class_Globals
 	Private fx As JFX
 	Public terminology As KeyValueStore
-	Private externalTerminology As KeyValueStore
+	Public externalTerminology As KeyValueStore
 	Private sourceLanguage As String
 End Sub
 
@@ -61,16 +61,26 @@ Sub importedTxt(filename As String,termsMap As Map)
 		terminfo.Initialize
 		Dim targetMap As Map
 		targetMap.Initialize
-		Dim source,target,descrip As String
+		
+		Dim source,target,note,tag As String
 
 		source=Regex.Split("	",line)(0)
 		target=Regex.Split("	",line)(1)
 		Try
-			descrip=Regex.Split("	",line)(2)
-			terminfo.Put("description",descrip)
+			note=Regex.Split("	",line)(2)
+			terminfo.Put("note",note)
 		Catch
 			Log(LastException)
 		End Try
+		Try
+			tag=Regex.Split("	",line)(3)
+			terminfo.Put("tag",tag)
+		Catch
+			Log(LastException)
+		End Try
+		If termsMap.ContainsKey(source) Then
+			targetMap=termsMap.Get(source)
+		End If
 		targetMap.Put(target,terminfo)
 		termsMap.Put(source,targetMap)
 	Next
@@ -163,9 +173,10 @@ Sub addTerm(source As String,target As String)
 End Sub
 
 Sub exportToTXT(segments As List,path As String)
-	Dim content As String
+	Dim sb As StringBuilder
+	sb.Initialize
 	For Each segment As List In segments
-		content=segment.Get(0)&"	"&segment.Get(1)&"	"&segment.Get(2)&CRLF
+		sb.Append(segment.Get(0)).Append("	").Append(segment.Get(1)).Append("	").Append(segment.Get(2)).Append("	").Append(segment.Get(3)).Append(CRLF)
 	Next
-	File.WriteString(path,"",content)
+	File.WriteString(path,"",sb.ToString)
 End Sub

@@ -15,7 +15,7 @@ End Sub
 
 'Initializes the object. You can add parameters to this method if needed.
 Public Sub Initialize
-	frm.Initialize("frm",600,200)
+	frm.Initialize("frm",600,600)
 	frm.RootPane.LoadLayout("TMManager")
 	init
 End Sub
@@ -136,14 +136,13 @@ Sub exportToFile
 	Dim path As String
 	Dim fc As FileChooser
 	fc.Initialize
-	fc.SetExtensionFilter("tmx or tab-delimitted text",Array As String("*.tmx","*.txt"))
+	'fc.SetExtensionFilter("tmx or tab-delimitted text",Array As String("*.tmx","*.txt"))
+	FileChooserUtils.AddExtensionFilters4(fc,Array As String("TMX","tab-delimitted text"),Array As String("*.tmx","*.txt"),False,"All",False)
 	path=fc.ShowSave(frm)
 	If path="" Then
 		Return
 	End If
-	If path.EndsWith(".tmx")=False And path.EndsWith(".txt")=False Then
-		path=path&".tmx"
-	End If
+
 	Dim segments As List
 	segments.Initialize
 
@@ -173,7 +172,7 @@ Sub exportToTXT(segments As List,path As String)
 	Dim sb As StringBuilder
 	sb.Initialize
 	For Each bitext As List In segments
-		sb.Append(bitext.Get(0)&"	"&bitext.Get(1))
+		sb.Append(bitext.Get(0)).Append("	").Append(bitext.Get(1)).Append(CRLF)
 	Next
 	File.WriteString(path,"",sb.ToString)
 End Sub
