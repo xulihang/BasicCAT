@@ -97,7 +97,7 @@ Sub createWorkFile(filename As String,path As String,sourceLang As String)
 		'Log(storyContent)
 		Dim index As Int=-1
 		Dim segmentedText As List
-		segmentedText=segmentation.segmentedTxt(storyContent,False,sourceLang,"idml")
+		segmentedText=segmentation.segmentedTxt(storyContent,False,sourceLang,path)
 		For Each source As String In segmentedText
 			source=Regex.Replace(" {2,}",source," ")
 			

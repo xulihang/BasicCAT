@@ -16,6 +16,8 @@ Sub Class_Globals
 	Private TMListView As ListView
 	Private resultList As List
 	Private TermListView As ListView
+	Private MatchRateLabel As Label
+	Private MatchRateTextField As TextField
 End Sub
 
 'Initializes the object. You can add parameters to this method if needed.
@@ -24,6 +26,7 @@ Public Sub Initialize
 	frm.RootPane.LoadLayout("projectSetting")
 	settings.Initialize
 	settings=Main.currentProject.settings
+	settingTabPane.LoadLayout("generalProjectSetting","Term")
 	settingTabPane.LoadLayout("tmSetting","TM")
 	settingTabPane.LoadLayout("termSetting","Term")
 	If settings.ContainsKey("tmList") Then
@@ -31,6 +34,9 @@ Public Sub Initialize
 	End If
 	If settings.ContainsKey("termList") Then
 		TermListView.Items.AddAll(settings.Get("termList"))
+	End If
+	If settings.ContainsKey("matchrate") Then
+		MatchRateTextField.Text=(settings.Get("matchrate"))
 	End If
 	
 	
@@ -56,8 +62,15 @@ Sub cancelButton_MouseClicked (EventData As MouseEvent)
 End Sub
 
 Sub applyButton_MouseClicked (EventData As MouseEvent)
+	Dim num As Double
+	num=MatchRateTextField.Text
+	If num<0.5 Or num>1 Then
+		fx.Msgbox(frm,"Matchrate cannot be below 0.5 or over 1.0","")
+        Return
+	End If
 	If ask="yes" Then
 		resultList.Add("changed")
+		settings.Put("matchrate",num)
 		settings.Put("tmList",TMListView.Items)
 		settings.Put("termList",TermListView.Items)
 		resultList.Add(settings)
@@ -76,6 +89,8 @@ Sub ask As String
 		If result=fx.DialogResponse.POSITIVE Then
 			Return "yes"
 		End If
+	Else
+		return "yes"
 	End If
 	Return "no"
 End Sub
@@ -146,3 +161,14 @@ Sub AddTMButton_MouseClicked (EventData As MouseEvent)
 	End If
 End Sub
 
+
+
+Sub MatchRateTextField_TextChanged (Old As String, New As String)
+
+	If Regex.IsMatch("^([0-9]{1,}[.][0-9]*)$",New)=False Then
+		fx.Msgbox(frm,"The text must be like *.*","")
+		MatchRateTextField.Text=Old
+		Return
+	End If
+	
+End Sub

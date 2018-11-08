@@ -10,12 +10,17 @@ Sub Process_Globals
 	Private rules As Map
 End Sub
 
-Sub segmentedTxt(text As String,Trim As Boolean,sourceLang As String,filetype As String) As List
+Sub segmentedTxt(text As String,Trim As Boolean,sourceLang As String,path As String) As List
 	Log("text"&text)
 	If rules.IsInitialized=False Then
 		rules.Initialize
 	End If
-	rules=SRX.readRules("",sourceLang)
+	If File.Exists(path,"segmentationRules.srx") Then
+		rules=SRX.readRules(File.Combine(path,"segmentationRules.srx"),sourceLang)
+	Else
+	    rules=SRX.readRules("",sourceLang)
+	End If
+	
 
 	Dim segments As List
 	segments.Initialize

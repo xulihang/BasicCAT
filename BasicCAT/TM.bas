@@ -104,6 +104,12 @@ Sub getMatchList(source As String) As ResumableSub
 	Dim matchList As List
 	matchList.Initialize
 
+    Dim matchrate As Double
+	If Main.currentProject.settings.ContainsKey("matchrate") Then
+		matchrate=Main.currentProject.settings.Get("matchrate")
+	Else
+		matchrate=0.5
+	End If
 	For i=0 To 1
 		If i=0 Then
 			Dim kvs As KeyValueStore
@@ -126,7 +132,7 @@ Sub getMatchList(source As String) As ResumableSub
 			Dim similarity As Double
 			wait for (getSimilarityFuzzyWuzzy(source,key)) Complete (Result As Double)
 			similarity=Result
-			If similarity>0.5 Then
+			If similarity>matchrate Then
 				Dim tmPairList As List
 				tmPairList.Initialize
 				tmPairList.Add(similarity)

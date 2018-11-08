@@ -10,12 +10,17 @@ Sub Process_Globals
 	Private rules As Map
 End Sub
 
-Sub segmentedTxt(text As String,Trim As Boolean,sourceLang As String,filetype As String) As List
+Sub segmentedTxt(text As String,Trim As Boolean,sourceLang As String,path As String) As List
 	Log("text"&text)
 	If rules.IsInitialized=False Then
 		rules.Initialize
 	End If
-	rules=SRX.readRules("",sourceLang)
+	If File.Exists(path,"segmentationRules.srx") Then
+		rules=SRX.readRules(File.Combine(path,"segmentationRules.srx"),sourceLang)
+	Else
+	    rules=SRX.readRules("",sourceLang)
+	End If
+	
 
 	Dim segments As List
 	segments.Initialize
@@ -276,7 +281,7 @@ End Sub
 
 Public Sub segmentedTxtSimpleway(text As String,Trim As Boolean,sourceLang As String,filetype As String) As List
 	
-	File.WriteString(File.DirApp,"1-before",text)
+	'File.WriteString(File.DirApp,"1-before",text)
 	Dim segmentationRule As List
 	If filetype="idml" Then
 		segmentationRule=File.ReadList(File.DirAssets,"segmentation_"&sourceLang&"_idml.conf")
@@ -312,6 +317,6 @@ Public Sub segmentedTxtSimpleway(text As String,Trim As Boolean,sourceLang As St
 	For Each sentence As String In out
 		after=after&sentence
 	Next
-	File.WriteString(File.DirApp,"1-after",after)
+	'File.WriteString(File.DirApp,"1-after",after)
 	Return out
 End Sub

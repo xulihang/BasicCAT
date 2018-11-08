@@ -41,7 +41,7 @@ Sub createWorkFile(filename As String,path As String,sourceLang As String)
 			text=tu.Get(0)
 			Dim id As String
 			id=tu.Get(1)
-			For Each source As String In segmentation.segmentedTxt(text,False,sourceLang,"xliff")
+			For Each source As String In segmentation.segmentedTxt(text,False,sourceLang,path)
 
 				Dim bitext As List
 				bitext.Initialize

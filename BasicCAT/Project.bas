@@ -208,6 +208,7 @@ Sub createProjectFiles
 	File.MakeDir(path,"TM")
 	File.MakeDir(path,"Term")
 	File.MakeDir(path,"bak")
+	File.Copy(File.DirAssets,"default_rules.srx",path,"segmentationRules.srx")
 End Sub
 
 

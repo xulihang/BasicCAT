@@ -56,7 +56,7 @@ Sub createWorkFile(filename As String,path As String,sourceLang As String)
 	Dim id As Int=0
 	For Each msgid As String As List In readPO(path,filename)
 		id=id+1
-		For Each source As String In segmentation.segmentedTxt(msgid,False,sourceLang,"xliff")
+		For Each source As String In segmentation.segmentedTxt(msgid,False,sourceLang,path)
 			Dim bitext As List
 			bitext.Initialize
 			If source.Trim="" Then 'newline or empty space
