@@ -510,6 +510,11 @@ Public Sub createSegmentPane(bitext As List)
 			Utils.disableTextArea(segmentPane)
 		End If
 	End If
+	If extra.ContainsKey("note") Then
+		If extra.Get("note")<>"" Then
+			CSSUtils.SetStyleProperty(segmentPane.GetNode(1),"-fx-background-color","green")
+		End If
+	End If
 End Sub
 
 Public Sub createEmptyPane(bitext As List)
