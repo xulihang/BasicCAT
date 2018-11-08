@@ -26,7 +26,7 @@ Public Sub Initialize
 	frm.RootPane.LoadLayout("projectSetting")
 	settings.Initialize
 	settings=Main.currentProject.settings
-	settingTabPane.LoadLayout("generalProjectSetting","Term")
+	settingTabPane.LoadLayout("generalProjectSetting","General")
 	settingTabPane.LoadLayout("tmSetting","TM")
 	settingTabPane.LoadLayout("termSetting","Term")
 	If settings.ContainsKey("tmList") Then
@@ -90,7 +90,7 @@ Sub ask As String
 			Return "yes"
 		End If
 	Else
-		return "yes"
+		Return "yes"
 	End If
 	Return "no"
 End Sub

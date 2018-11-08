@@ -23,9 +23,10 @@ Public Sub Initialize(reviews As List,currentSegments As List)
 End Sub
 
 Sub loadNextOne
-	If thisReviews.Size=0 Then
+	If index+1>thisReviews.Size-1 Then
 		fx.Msgbox(frm,"There is no segments left for confirm.","")
 		frm.Close
+		Return
 	End If
 	index=index+1
 	Dim onerow() As String
@@ -33,11 +34,16 @@ Sub loadNextOne
 	Dim segment As List
 	segment=thisSegments.Get(index)
 	If onerow(0)=segment.Get(0) Then
+		Dim review As String
+		review=onerow(1)
+		If review.Contains("  --------note: ") Then
+			review=review.SubString2(0,review.IndexOf("  --------note: "))
+		End If
 		Dim sb As StringBuilder
 		sb.Initialize
 		sb.Append("<p>source:&nbsp;").Append(onerow(0)).Append("</p>")
 		sb.Append("<p>target:&nbsp;").Append(segment.Get(1)).Append("</p>")
-		sb.Append("<p>review:&nbsp;").Append(onerow(1)).Append("</p>")
+		sb.Append("<p>review:&nbsp;").Append(review).Append("</p>")
 		loadHtml(sb.ToString)
 	Else
 		loadNextOne
@@ -74,10 +80,15 @@ End Sub
 Sub confirmButton_MouseClicked (EventData As MouseEvent)
 	Dim onerow() As String
 	onerow=thisReviews.Get(index)
+	Dim target As String
+	target=onerow(1)
+	If target.Contains("  --------note: ") Then
+		target=target.SubString2(0,target.IndexOf("  --------note: "))
+	End If
 	Dim segment As List
 	segment=thisSegments.Get(index)
-	segment.Set(1,onerow(1))
-	fillOne(onerow(1))
+	segment.Set(1,target)
+	fillOne(target)
 	loadNextOne
 End Sub
 

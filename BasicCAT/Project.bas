@@ -247,7 +247,13 @@ Sub exportReviewMi_Action
 	Dim rows As List
 	rows.Initialize
 	For Each bitext As List In getAllSegments(filename)
-		rows.Add(Array As String(bitext.Get(0),bitext.Get(1)))
+		Dim target As String=bitext.Get(1)
+		Dim extra As Map
+		extra=bitext.Get(4)
+		If extra.ContainsKey("note") Then
+			target=target&"  --------note: "&extra.Get("note")
+		End If
+		rows.Add(Array As String(bitext.Get(0),target))
 	Next
 	Dim poiw As POIWord
 	poiw.Initialize("","write")
