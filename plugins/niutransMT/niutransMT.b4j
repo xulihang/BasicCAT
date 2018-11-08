@@ -1,5 +1,5 @@
 ﻿AppType=JavaFX
-Build1=Default,org.xulihang.basiccat
+Build1=Default,org.xulihang.basiccat.plugins
 Group=Default Group
 Library1=jcore
 Library2=jfx
