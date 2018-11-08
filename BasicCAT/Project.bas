@@ -362,6 +362,7 @@ Sub openFile(filename As String,onOpeningProject As Boolean)
 		Log("ddd"&True)
 		Log(lastEntry)
 		Main.editorLV.JumpToItem(lastEntry)
+		fillPane(Main.editorLV.FirstVisibleIndex,Main.editorLV.LastVisibleIndex)
 		'Wait For(fillPaneAsync(lastEntry,lastEntry+10)) Complete (Result As Object)
 		'Dim pane As Pane
 		'pane=Main.editorLV.GetPanel(lastEntry)
@@ -1081,6 +1082,7 @@ Public Sub fillPane(FirstIndex As Int, LastIndex As Int)
 		segmentPane=Main.editorLV.GetPanel(i)
 		If i > FirstIndex - ExtraSize And i < LastIndex + ExtraSize Then
 			'visible+
+
 			If segmentPane.NumberOfNodes = 0 Then
                 
 				Dim bitext As List
@@ -1091,6 +1093,11 @@ Public Sub fillPane(FirstIndex As Int, LastIndex As Int)
 				If extra.ContainsKey("translate") Then
 					If extra.Get("translate")="no" Then
 						Utils.disableTextArea(segmentPane)
+					End If
+				End If
+				If extra.ContainsKey("note") Then
+					If extra.Get("note")<>"" Then
+						CSSUtils.SetStyleProperty(segmentPane.GetNode(1),"-fx-background-color","green")
 					End If
 				End If
 				If Main.calculatedHeight.ContainsKey(bitext.Get(0)&"	"&bitext.Get(1)) Then

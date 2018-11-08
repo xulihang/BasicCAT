@@ -754,11 +754,11 @@ Sub ListViewParent_Resize
 			sourcelbl.Initialize("")
 			'sourcelbl.Font = fx.CreateFont("Tahoma",16,False,False)
 			setLabelFont(sourcelbl,"sourceFont")
-			p.AddNode(sourcelbl,0, 0, itemWidth/2, -1)
+			p.AddNode(sourcelbl,0, 0, itemWidth/2-15dip, -1)
 			targetlbl.Initialize("")
 			'targetlbl.Font = fx.CreateFont("Tahoma",16,False,False)
 			setLabelFont(targetlbl,"targetFont")
-			p.AddNode(targetlbl, 0, 0, itemWidth/2, -1)
+			p.AddNode(targetlbl, 0, 0, itemWidth/2-15dip, -1)
 
 			sourcelbl.Text = sourceTa.Text&CRLF&"extra"
 			sourcelbl.WrapText = True
@@ -789,8 +789,9 @@ Public Sub setLayout(p As Pane,index As Int,h As Int)
 	Dim targetTa As TextArea = p.GetNode(1)
 	sourceTa.Left=5dip
 	sourceTa.SetSize(itemwidth/2-15dip,h+5dip)
-	targetTa.Left=sourceTa.Left+sourceTa.Width
+	targetTa.Left=5dip+itemwidth/2-15dip
 	targetTa.SetSize(itemwidth/2-15dip,h+5dip)
+
 	editorLV.ResizeItem(index,h+10dip)
 End Sub
 
