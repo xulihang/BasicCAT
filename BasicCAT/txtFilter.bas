@@ -10,6 +10,7 @@ Sub Process_Globals
 End Sub
 
 Sub createWorkFile(filename As String,path As String,sourceLang As String)
+	icu4j.convert(File.Combine(path,"source"),filename)
 	Dim workfile As Map
 	workfile.Initialize
 	workfile.Put("filename",filename)
