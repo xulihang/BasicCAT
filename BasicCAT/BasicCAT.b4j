@@ -1,65 +1,67 @@
 ﻿AppType=JavaFX
 Build1=Default,org.xulihang.basiccat
 File1=.gitignore
-File10=generalProjectSetting.bjl
-File11=generalSetting.bjl
-File12=inputbox.bjl
-File13=inputTextArea.bjl
-File14=lang.conf
-File15=languageChooser.bjl
-File16=leftProject.bjl
-File17=Log.bjl
-File18=lowerRight.bjl
-File19=main.bjl
+File10=FontPicker.bjl
+File11=Fonts.xml
+File12=generalProjectSetting.bjl
+File13=generalSetting.bjl
+File14=inputbox.bjl
+File15=inputTextArea.bjl
+File16=lang.conf
+File17=languageChooser.bjl
+File18=leftProject.bjl
+File19=Log.bjl
 File2=appearance.bjl
-File20=menuText.txt
-File21=mtparamfiller.bjl
-File22=mtSetting.bjl
-File23=oneterm.bjl
-File24=pdf2txt.bjl
-File25=pluginsSetting.bjl
-File26=preferences.bjl
-File27=preferences.conf
-File28=pretranslate.bjl
-File29=preview.bjl
+File20=lowerRight.bjl
+File21=main.bjl
+File22=menuText.txt
+File23=mtparamfiller.bjl
+File24=mtSetting.bjl
+File25=oneterm.bjl
+File26=pdf2txt.bjl
+File27=pluginsSetting.bjl
+File28=preferences.bjl
+File29=preferences.conf
 File3=autocomplete.bjl
-File30=progress.bjl
-File31=projectSetting.bjl
-File32=right.bjl
-File33=searchandreplace.bjl
-File34=searchTableView.bjl
-File35=SearchView.bjl
-File36=segment.bjl
-File37=segmentation_en.conf
-File38=segmentation_en_exception.conf
-File39=segmentation_en_idml.conf
+File30=pretranslate.bjl
+File31=preview.bjl
+File32=progress.bjl
+File33=projectSetting.bjl
+File34=right.bjl
+File35=searchandreplace.bjl
+File36=searchTableView.bjl
+File37=SearchView.bjl
+File38=segment.bjl
+File39=segmentation_en.conf
 File4=checkList.bjl
-File40=segmentation_zh.conf
-File41=segmentation_zh_exception.conf
-File42=serverLanucher.bjl
-File43=settingLanguagecheck.bjl
-File44=settingVersionControl.bjl
-File45=statistics.bjl
-File46=supportedFiles.txt
-File47=tableview.bjl
-File48=tabpane.bjl
-File49=term.bjl
+File40=segmentation_en_exception.conf
+File41=segmentation_en_idml.conf
+File42=segmentation_zh.conf
+File43=segmentation_zh_exception.conf
+File44=serverLanucher.bjl
+File45=settingLanguagecheck.bjl
+File46=settingVersionControl.bjl
+File47=statistics.bjl
+File48=supportedFiles.txt
+File49=tableview.bjl
 File5=confirmReview.bjl
-File50=TermEditor.bjl
-File51=TermManager.bjl
-File52=termSetting.bjl
-File53=TMEditor.bjl
-File54=tmList.bjl
-File55=TMManager.bjl
-File56=TMsegment.bjl
-File57=tmSetting.bjl
-File58=upperRight.bjl
-File59=viewSegment.bjl
+File50=tabpane.bjl
+File51=term.bjl
+File52=TermEditor.bjl
+File53=TermManager.bjl
+File54=termSetting.bjl
+File55=TMEditor.bjl
+File56=tmList.bjl
+File57=TMManager.bjl
+File58=TMsegment.bjl
+File59=tmSetting.bjl
 File6=default_rules.srx
-File60=wordLookupSetting.bjl
-File7=editor.bjl
-File8=FontPicker.bjl
-File9=Fonts.xml
+File60=upperRight.bjl
+File61=viewSegment.bjl
+File62=wordLookupSetting.bjl
+File7=dictList.txt
+File8=dictWebview.bjl
+File9=editor.bjl
 FileGroup1=Default Group
 FileGroup10=Default Group
 FileGroup11=Default Group
@@ -117,6 +119,8 @@ FileGroup58=Default Group
 FileGroup59=Default Group
 FileGroup6=Default Group
 FileGroup60=Default Group
+FileGroup61=Default Group
+FileGroup62=Default Group
 FileGroup7=Default Group
 FileGroup8=Default Group
 FileGroup9=Default Group
@@ -146,37 +150,37 @@ Library8=jsql
 Library9=jrandomaccessfile
 Module1=FileChooserUtils
 Module10=preTranslateDialog
-Module11=progressDialog
-Module12=TMManager
-Module13=SearchView
-Module14=TMEditor
-Module15=TextFlow
-Module16=TermManager
-Module17=TermEditor
-Module18=TMX
-Module19=TBX
+Module11=ITP
+Module12=MT
+Module13=xliffFilter
+Module14=idmlFilter
+Module15=SRX
+Module16=POIWord
+Module17=confirmReviewDialog
+Module18=InputTextAreaBox
+Module19=progressDialog
 Module2=Project
-Module20=Utils
-Module21=searchAndReplaceDialog
-Module22=MT
-Module23=Preferences
-Module24=MTParamsFiller
-Module25=opennlp
-Module26=idmlFilter
-Module27=serverLauncher
-Module28=ITP
-Module29=PDF2TXT
+Module20=TMManager
+Module21=SearchView
+Module22=TMEditor
+Module23=TextFlow
+Module24=TermManager
+Module25=TermEditor
+Module26=TMX
+Module27=TBX
+Module28=Utils
+Module29=searchAndReplaceDialog
 Module3=segmentation
-Module30=pdfbox
-Module31=languageChooser
-Module32=xliffFilter
-Module33=POIWord
-Module34=confirmReviewDialog
-Module35=Previewer
-Module36=FontPicker
-Module37=InputBox
-Module38=InputTextAreaBox
-Module39=SRX
+Module30=Preferences
+Module31=MTParamsFiller
+Module32=opennlp
+Module33=serverLauncher
+Module34=PDF2TXT
+Module35=pdfbox
+Module36=languageChooser
+Module37=Previewer
+Module38=FontPicker
+Module39=InputBox
 Module4=CustomListView
 Module40=Xml2Map
 Module41=statistics
@@ -189,13 +193,14 @@ Module47=LanguageTool
 Module48=editDistance
 Module49=viewSegment
 Module5=txtFilter
+Module50=dictWebView
 Module6=TM
 Module7=Term
 Module8=KeyValueStore
 Module9=ProjectSettings
-NumberOfFiles=60
+NumberOfFiles=62
 NumberOfLibraries=23
-NumberOfModules=49
+NumberOfModules=50
 Version=6.51
 @EndOfDesignText@
 #Region Project Attributes 
@@ -264,6 +269,7 @@ Sub Process_Globals
 	Private checkLV As CustomListView
 	Public nlp As opennlp
 	Public plugin As ABPlugin
+	Private dw As dictWebView
 End Sub
 
 Sub AppStart (Form1 As Form, Args() As String)
@@ -516,6 +522,9 @@ Sub MenuBar1_Action
 			Dim sap As searchAndReplaceDialog
 			sap.Initialize
 			sap.show
+		Case "Show online dictionary dropdown"
+
+			showDictDropdown
 		Case "Show/Edit notes of the current segmnet"
 			If currentProject.segments.Size<>0 Then
 				Dim inp As InputTextAreaBox
@@ -577,6 +586,60 @@ Sub MenuBar1_Action
 		Case "_About"
 			fx.Msgbox(MainForm,"BasicCAT 1.0"&CRLF&"@xulihang 2018","BasicCAT")
 	End Select
+End Sub
+
+Sub showDictDropdown
+	If editorLV.Size=0 Then
+		Return
+	End If
+	Dim p As Pane
+	p=editorLV.GetPanel(currentProject.lastEntry)
+	If p.NumberOfNodes=0 Then
+		Return
+	End If
+	Dim ta As TextArea=p.GetNode(0)
+	Dim selected As String
+	selected=ta.Text.SubString2(ta.SelectionStart,ta.SelectionEnd)
+	If selected="" Then
+		Return
+	End If
+	Dim cm As ContextMenu
+	cm.Initialize("cm")
+	Dim dictMap As Map
+    dictMap.Initialize
+	For Each line As String In File.ReadList(File.DirAssets,"dictList.txt")
+		dictMap.Put(Regex.Split("	",line)(0),Regex.Split("	",line)(1))
+	Next
+	
+	For Each dictName As String In dictMap.Keys
+		Dim mi As MenuItem
+		mi.Initialize(dictName, "dictLookupMi")
+        Dim url As String
+		url=dictMap.Get(dictName)
+		url=url.Replace("*",selected)
+		mi.Tag=url
+		cm.MenuItems.Add(mi)
+	Next
+	Sleep(100)
+
+	Dim map1 As Map
+	map1=Utils.GetScreenPosition(ta)
+	Log(map1)
+	Dim jo As JavaObject = cm
+	jo.RunMethod("show", Array(ta, map1.Get("x")+ta.Width/10, map1.Get("y")+ta.Height))
+End Sub
+
+Sub dictLookupMi_Action
+	Dim mi As MenuItem
+	mi=Sender
+	Log(Sender)
+
+	If dw.IsInitialized=False Then
+		dw.Initialize
+	End If
+	dw.show
+	dw.loadUrl(mi.Tag)
+	
 End Sub
 
 Sub changeTranslatable(isTranslatable As String)
@@ -1153,7 +1216,6 @@ Public Sub setTextAreaFont(ta As TextArea,name As String)
 	End If
 End Sub
 
-
 Public Sub addTextAreaToSegmentPane(segmentpane As Pane,source As String)
 	Log("add")
 	If currentProject.IsInitialized Then
@@ -1164,3 +1226,4 @@ End Sub
 Public Sub changeAutoSaveInterval(seconds As Int)
 	autosaveTimer.Interval=seconds*1000
 End Sub
+

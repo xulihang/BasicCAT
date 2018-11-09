@@ -2,6 +2,8 @@ _Generate target files
 Go to the next untranslated segment
 Fill with the first matched TM
 Search and Replace
+Show quickfill dropdown
+Show online dictionary dropdown
 Show/Edit notes of the current segmnet
 Mark the current segment as non-translatable
 Mark the current segment as translatable

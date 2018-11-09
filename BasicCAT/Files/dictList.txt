@@ -1,0 +1,11 @@
+bing	https://cn.bing.com/dict/search?q=*
+iciba	http://www.iciba.com/*
+youdao	http://dict.youdao.com/w/*
+baidu baike	https://baike.baidu.com/item/*
+wikipedia-en	https://en.wikipedia.org/wiki/*
+wikipedia-zh	https://zh.wikipedia.org/wiki/*
+macmillan	https://www.macmillandictionary.com/us/dictionary/american/*
+collins en-zh	https://www.collinsdictionary.com/dictionary/english-chinese/*
+collins zh-en	https://www.collinsdictionary.com/dictionary/chinese-english/*
+merriam-webster	https://www.merriam-webster.com/dictionary/*
+cambridge	https://dictionary.cambridge.org/dictionary/english-chinese-simplified/*
