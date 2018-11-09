@@ -30,6 +30,7 @@ Sub Class_Globals
 	Private pluginDirLabel As Label
 	Private pluginsLV As ListView
 	Private AutoSaveTextField As TextField
+	Private lookupUsingMTCheckBox As CheckBox
 End Sub
 
 'Initializes the object. You can add parameters to this method if needed.
@@ -109,6 +110,9 @@ Sub categoryListView_SelectedIndexChanged(Index As Int)
 			SettingPane.LoadLayout("wordLookupSetting")
 			If unsavedPreferences.ContainsKey("lookupWord") Then
 				lookupCheckBox.Checked=unsavedPreferences.get("lookupWord")
+			End If
+			If unsavedPreferences.ContainsKey("lookupWordUsingMT") Then
+				lookupUsingMTCheckBox.Checked=unsavedPreferences.get("lookupWordUsingMT")
 			End If
 		Case 4
 			'autocomplete
@@ -228,6 +232,10 @@ End Sub
 
 Sub lookupCheckBox_CheckedChange(Checked As Boolean)
 	unsavedPreferences.Put("lookupWord",Checked)
+End Sub
+
+Sub lookupUsingMTCheckBox_CheckedChange(Checked As Boolean)
+	unsavedPreferences.Put("lookupWordUsingMT",Checked)
 End Sub
 
 Sub ExternalTMCheckBox_CheckedChange(Checked As Boolean)
@@ -362,3 +370,4 @@ Sub SaveGeneralButton_MouseClicked (EventData As MouseEvent)
 	Main.changeAutoSaveInterval(AutoSaveTextField.Text)
 	unsavedPreferences.Put("autosaveInterval",AutoSaveTextField.Text)
 End Sub
+

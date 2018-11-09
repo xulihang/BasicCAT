@@ -24,7 +24,6 @@ Sub Class_Globals
 	Private cursorReachEnd As Boolean=False
 	Private projectGit As git
 	Public contentChanged As Boolean=False
-	
 End Sub
 
 'Initializes the object. You can add parameters to this method if needed.
@@ -689,7 +688,6 @@ Sub mi_Action
 End Sub
 
 Sub sourceTextArea_MouseClicked (EventData As MouseEvent)
-
 	Dim ta As TextArea
 	ta=Sender
 	lastEntry=Main.editorLV.GetItemFromView(ta.Parent)
@@ -976,35 +974,56 @@ Sub showMT(source As String,targetTextArea As TextArea)
 End Sub
 
 Sub getMeans(source As String) As ResumableSub
-	Dim emptyList As List
-	emptyList.Initialize
+	Dim resultList As List
+	resultList.Initialize
 	Dim mtPreferences As Map
 	If Main.preferencesMap.ContainsKey("mt") Then
 		mtPreferences=Main.preferencesMap.get("mt")
 	Else
-		Return emptyList
+		Return resultList
 	End If
 	
-	Dim youdaoSetuped As Boolean=True
-	If mtPreferences.ContainsKey("youdao") Then
-		For Each param As String In Utils.getMap("youdao",mtPreferences).Values
-			If param="" Then
+	
+
+	
+	If Main.preferencesMap.ContainsKey("lookupWord") Then
+		If Main.preferencesMap.Get("lookupWord")=True Then
+			Dim youdaoSetuped As Boolean=True
+			If mtPreferences.ContainsKey("youdao") Then
+				For Each param As String In Utils.getMap("youdao",mtPreferences).Values
+					If param="" Then
+						youdaoSetuped=False
+					End If
+				Next
+			Else
 				youdaoSetuped=False
 			End If
-		Next
-	Else
-		youdaoSetuped=False
-	End If
-
-	If youdaoSetuped=True Then
-		If Main.preferencesMap.ContainsKey("lookupWord") Then
-			If Main.preferencesMap.Get("lookupWord")=True Then
+			If youdaoSetuped=True Then
 				wait for (MT.youdaoMT(source,projectFile.Get("source"),projectFile.Get("target"),True)) Complete (Result As List)
-				Return Result
+				resultList.AddAll(Result)
 			End If
 		End If
 	End If
-	Return emptyList
+
+	If Main.preferencesMap.ContainsKey("lookupWordUsingMT") Then
+		If Main.preferencesMap.Get("lookupWordUsingMT")=True Then
+			For Each engine As String In MT.getMTList
+				If engine="youdao" Then
+					Continue
+				End If
+				If Utils.get_isEnabled(engine&"_isEnabled",mtPreferences)=True Then
+					wait for (MT.getMT(source,projectFile.Get("source"),projectFile.Get("target"),engine)) Complete (one As String)
+					If one<>"" Then
+						resultList.Add(one)
+					End If
+				End If
+			Next
+		End If
+	End If
+
+	
+	
+	Return resultList
 End Sub
 
 Sub showTerm(targetTextArea As TextArea)
