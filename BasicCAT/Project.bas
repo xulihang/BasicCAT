@@ -837,12 +837,17 @@ Sub targetTextArea_FocusChanged (HasFocus As Boolean)
 	Else
 		Log("loseFocus")
 		previousEntry=lastEntry
-		If Main.preferencesMap.ContainsKey("languagetoolEnabled") Then
-			If Main.preferencesMap.Get("languagetoolEnabled")=True Then
-				wait for (LanguageTool.check(TextArea1.Text,lastEntry,projectFile.Get("target"))) complete (result As List)
-				showReplacements(result,TextArea1)
+		If Main.getCheckLVSize<=1 Then
+			If Main.preferencesMap.ContainsKey("languagetoolEnabled") Then
+				If Main.preferencesMap.Get("languagetoolEnabled")=True Then
+					wait for (LanguageTool.check(TextArea1.Text,lastEntry,projectFile.Get("target"))) complete (result As List)
+					showReplacements(result,TextArea1)
+				End If
 			End If
 		End If
+
+
+
 
 	End If
 End Sub
@@ -892,6 +897,7 @@ Sub replacementMi_Action
 	targetTextArea.Text=targetTextArea.Text.SubString2(0,offset)&replacement&targetTextArea.Text.SubString2(offset+length,targetTextArea.Text.Length)
 	Sleep(0)
 	targetTextArea.SetSelection(targetTextArea.Text.Length,targetTextArea.Text.Length)
+	Main.checkLVClear
 End Sub
 
 Sub loadITPSegments(targetTextArea As TextArea,engine As String,fullTranslation As String)

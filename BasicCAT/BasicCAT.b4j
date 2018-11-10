@@ -150,11 +150,11 @@ Library8=jsql
 Library9=jrandomaccessfile
 Module1=FileChooserUtils
 Module10=preTranslateDialog
-Module11=languageChooser
-Module12=LanguageTool
-Module13=ITP
-Module14=idmlFilter
-Module15=Utils
+Module11=Utils
+Module12=languageChooser
+Module13=LanguageTool
+Module14=ITP
+Module15=idmlFilter
 Module16=Preferences
 Module17=icu4j
 Module18=dictWebView
@@ -272,6 +272,7 @@ Sub Process_Globals
 	Public nlp As opennlp
 	Public plugin As ABPlugin
 	Private dw As dictWebView
+
 End Sub
 
 Sub AppStart (Form1 As Form, Args() As String)
@@ -1130,11 +1131,19 @@ Public Sub addCheckList(replacements As List, message As String,offset As Int,le
 			values.Add(offset)
 			values.Add(length)
 			values.Add(entry)
-			checkLV.AddTextItem("replacement: "&replacement.Get("value"),replacement.Get("value"))
+			checkLV.AddTextItem("replacement: "&replacement.Get("value"),values)
 		Next
 	Catch
 		Log(LastException)
 End Try
+End Sub
+
+Public Sub getCheckLVSize As Int
+	Return checkLV.Size
+End Sub
+
+Public Sub checkLVClear
+	checkLV.Clear
 End Sub
 
 Public Sub noErrors
@@ -1143,7 +1152,25 @@ Public Sub noErrors
 End Sub
 
 Sub checkLV_ItemClick (Index As Int, Value As Object)
-	Log(Value)
+	If Value<>"" Then
+		Dim tagList As List
+		tagList=Value
+		Dim offset,length,entry As Int
+		offset=tagList.Get(1)
+		length=tagList.Get(2)
+		entry=tagList.Get(3)
+		Dim replacement As String
+		replacement=tagList.Get(0)
+		Dim p As Pane
+		p=editorLV.GetPanel(entry)
+		Dim targetTextArea As TextArea
+		targetTextArea=p.GetNode(1)
+		targetTextArea.Text=targetTextArea.Text.SubString2(0,offset)&replacement&targetTextArea.Text.SubString2(offset+length,targetTextArea.Text.Length)
+		Sleep(0)
+		targetTextArea.SetSelection(targetTextArea.Text.Length,targetTextArea.Text.Length)
+		targetTextArea.RequestFocus
+		checkLV.Clear
+	End If
 End Sub
 
 
@@ -1228,4 +1255,5 @@ End Sub
 Public Sub changeAutoSaveInterval(seconds As Int)
 	autosaveTimer.Interval=seconds*1000
 End Sub
+
 
