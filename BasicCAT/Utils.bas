@@ -214,6 +214,23 @@ Sub CopyFolder(Source As String, targetFolder As String)
 	Next
 End Sub
 
+Sub CopyWorkFolderAsync(Source As String, targetFolder As String)
+	Sleep(0)
+	If File.Exists(targetFolder, "") = False Then File.MakeDir(targetFolder, "")
+	For Each f As String In File.ListFiles(Source)
+		Log(targetFolder)
+		Log("f"&f)
+		If File.IsDirectory(Source, f) Then
+			CopyFolder(File.Combine(Source, f), File.Combine(targetFolder, f))
+			Continue
+		End If
+		If f.EndsWith(".json")=False Then
+			Continue
+		End If
+		File.Copy(Source, f, targetFolder, f)
+	Next
+End Sub
+
 Sub leftTrim(text As String) As String
 	Dim new As String
 	new=text

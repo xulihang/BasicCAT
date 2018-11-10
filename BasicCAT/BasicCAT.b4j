@@ -150,48 +150,48 @@ Library8=jsql
 Library9=jrandomaccessfile
 Module1=FileChooserUtils
 Module10=preTranslateDialog
-Module11=icu4j
-Module12=dictWebView
+Module11=languageChooser
+Module12=LanguageTool
 Module13=ITP
-Module14=MT
-Module15=xliffFilter
-Module16=idmlFilter
-Module17=SRX
-Module18=POIWord
-Module19=confirmReviewDialog
+Module14=idmlFilter
+Module15=Utils
+Module16=Preferences
+Module17=icu4j
+Module18=dictWebView
+Module19=MT
 Module2=Project
-Module20=InputTextAreaBox
-Module21=progressDialog
-Module22=TMManager
-Module23=SearchView
-Module24=TMEditor
-Module25=TextFlow
-Module26=TermManager
-Module27=TermEditor
-Module28=TMX
-Module29=TBX
+Module20=xliffFilter
+Module21=SRX
+Module22=POIWord
+Module23=confirmReviewDialog
+Module24=InputTextAreaBox
+Module25=progressDialog
+Module26=TMManager
+Module27=SearchView
+Module28=TMEditor
+Module29=TextFlow
 Module3=segmentation
-Module30=Utils
-Module31=searchAndReplaceDialog
-Module32=Preferences
-Module33=MTParamsFiller
-Module34=opennlp
-Module35=serverLauncher
-Module36=PDF2TXT
-Module37=pdfbox
-Module38=languageChooser
-Module39=Previewer
+Module30=TermManager
+Module31=TermEditor
+Module32=TMX
+Module33=TBX
+Module34=searchAndReplaceDialog
+Module35=MTParamsFiller
+Module36=opennlp
+Module37=serverLauncher
+Module38=PDF2TXT
+Module39=pdfbox
 Module4=CustomListView
-Module40=FontPicker
-Module41=InputBox
-Module42=Xml2Map
-Module43=statistics
-Module44=Map2Xml
-Module45=git
-Module46=zip4j
-Module47=idmlUtils
-Module48=coordinate
-Module49=LanguageTool
+Module40=Previewer
+Module41=FontPicker
+Module42=InputBox
+Module43=Xml2Map
+Module44=statistics
+Module45=Map2Xml
+Module46=git
+Module47=zip4j
+Module48=idmlUtils
+Module49=coordinate
 Module5=txtFilter
 Module50=editDistance
 Module51=viewSegment
@@ -1090,7 +1090,7 @@ Sub createBakupFiles
     If File.Exists(currentProject.path,"bak")=False Then
 		File.MakeDir(currentProject.path,"bak")
     End If
-	Utils.CopyFolder(File.Combine(currentProject.path, "work"),File.Combine(currentProject.path, "bak"))
+	Utils.CopyWorkFolderAsync(File.Combine(currentProject.path, "work"),File.Combine(currentProject.path, "bak"))
 	File.Copy(currentProject.path,"project.bcp",File.Combine(currentProject.path,"bak"),"project.bcp")
 End Sub
 
@@ -1130,7 +1130,7 @@ Public Sub addCheckList(replacements As List, message As String,offset As Int,le
 			values.Add(offset)
 			values.Add(length)
 			values.Add(entry)
-			checkLV.AddTextItem("replacement: "&replacement.Get("value"),values)
+			checkLV.AddTextItem("replacement: "&replacement.Get("value"),replacement.Get("value"))
 		Next
 	Catch
 		Log(LastException)

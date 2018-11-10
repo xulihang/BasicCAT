@@ -19,7 +19,7 @@ Sub check(text As String,entry As Int,langcode As String) As ResumableSub
 
 		address=Main.preferencesMap.Get("languagetool_address")
 	Else
-		return values
+		Return values
 	End If
 	
 

@@ -856,10 +856,12 @@ Sub showReplacements(values As List,ta As TextArea)
 	Dim replacements As List
 	replacements=values.Get(2)
 	For Each replace As Map In replacements
+		Log(replace)
 		Dim mi As MenuItem
 		mi.Initialize(replace.Get("value"), "replacementMi")
 		Dim tagList As List
-		tagList=values
+		tagList.Initialize
+		tagList.AddAll(values)
 		tagList.set(2,replace.Get("value"))
 		mi.Tag=tagList
 		replacementsCM.MenuItems.Add(mi)
@@ -882,6 +884,7 @@ Sub replacementMi_Action
 	length=tagList.Get(1)
 	Dim replacement As String
 	replacement=tagList.Get(2)
+	Log(replacement)
 	Dim p As Pane
 	p=Main.editorLV.GetPanel(previousEntry)
 	Dim targetTextArea As TextArea
