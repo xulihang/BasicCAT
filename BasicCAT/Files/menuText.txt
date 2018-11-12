@@ -1,6 +1,7 @@
 _Generate target files
 Go to the next untranslated segment
 Fill with the first matched TM
+Fill with the next tag
 Search and Replace
 Show quickfill dropdown
 Show online dictionary dropdown

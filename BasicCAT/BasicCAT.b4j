@@ -523,6 +523,8 @@ Sub MenuBar1_Action
 			Next
 		Case "Fill with the first matched TM"
 			fillWithTM
+		Case "Fill with the next tag"
+			fillWithTheNextTag
 		Case "Search and Replace"
 			Dim sap As searchAndReplaceDialog
 			sap.Initialize
@@ -593,6 +595,44 @@ Sub MenuBar1_Action
 		Case "_About"
 			fx.Msgbox(MainForm,"BasicCAT 1.0"&CRLF&"@xulihang 2018","BasicCAT")
 	End Select
+End Sub
+
+Sub fillWithTheNextTag
+	If editorLV.Size=0 Then
+		Return
+	End If
+	Dim p As Pane
+	p=editorLV.GetPanel(currentProject.lastEntry)
+	If p.NumberOfNodes=0 Then
+		Return
+	End If
+
+	Dim sourceTextArea As TextArea=p.GetNode(0)
+	Dim targetTextArea As TextArea=p.GetNode(1)
+	
+	Dim tagsInSource As List
+	tagsInSource.Initialize
+	Dim tagMatcher As Matcher=Regex.Matcher("<.*?>",sourceTextArea.Text)
+	Do While tagMatcher.Find
+		tagsInSource.Add(tagMatcher.Match)
+	Loop
+	
+	Dim tagsInTarget As List
+	tagsInTarget.Initialize
+	Dim tagMatcher As Matcher=Regex.Matcher("<.*?>",targetTextArea.Text)
+	Do While tagMatcher.Find
+		tagsInTarget.Add(tagMatcher.Match)
+	Loop
+	
+	For Each tag As String In tagsInTarget
+		tagsInSource.RemoveAt(tagsInSource.IndexOf(tag))
+	Next
+	If tagsInSource.Size<>0 Then
+		Dim selectionEnd As Int=targetTextArea.selectionEnd
+		Dim tag As String=tagsInSource.Get(0)
+		targetTextArea.Text=targetTextArea.Text.SubString2(0,targetTextArea.SelectionEnd)&tag&targetTextArea.Text.SubString2(targetTextArea.SelectionEnd,targetTextArea.Text.Length)
+		targetTextArea.SetSelection(selectionEnd+tag.Length,selectionEnd+tag.Length)
+	End If
 End Sub
 
 Sub showQuickfillDropdown
