@@ -123,10 +123,17 @@ Sub getTransUnits(fileMap As Map) As List
 		attributes=transUnit.Get("Attributes")
 		Dim id As String
 		id=attributes.Get("id")
-		Dim source As Map
-		source=transUnit.Get("source")
-		Dim text As String
-		text=source.Get("Text")
+		Try
+			Dim source As Map
+			source=transUnit.Get("source")
+			Dim text As String
+			text=source.Get("Text")
+		Catch
+			Log(LastException)
+			Dim text As String
+			text=transUnit.Get("source")
+		End Try
+
 		Dim oneTransUnit As List
 		oneTransUnit.Initialize
 		oneTransUnit.Add(text)
