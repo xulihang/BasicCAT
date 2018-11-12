@@ -18,6 +18,8 @@ Sub Class_Globals
 	Private TermListView As ListView
 	Private MatchRateLabel As Label
 	Private MatchRateTextField As TextField
+	Private quickFillListView As ListView
+	Private IncludeTermCheckBox As CheckBox
 End Sub
 
 'Initializes the object. You can add parameters to this method if needed.
@@ -29,6 +31,7 @@ Public Sub Initialize
 	settingTabPane.LoadLayout("generalProjectSetting","General")
 	settingTabPane.LoadLayout("tmSetting","TM")
 	settingTabPane.LoadLayout("termSetting","Term")
+	settingTabPane.LoadLayout("quickfillSetting","Quickfill")
 	If settings.ContainsKey("tmList") Then
 		TMListView.Items.AddAll(settings.Get("tmList"))
 	End If
@@ -38,9 +41,33 @@ Public Sub Initialize
 	If settings.ContainsKey("matchrate") Then
 		MatchRateTextField.Text=(settings.Get("matchrate"))
 	End If
-	
-	
+	loadQuickfill
 	resultList.Initialize
+End Sub
+
+Sub loadQuickfill
+	If settings.ContainsKey("quickfill_includeterm") Then
+		IncludeTermCheckBox.Checked=settings.Get("quickfill_includeterm")
+	End If
+	If settings.ContainsKey("quickfill") Then
+		Dim items As List
+		items=settings.Get("quickfill")
+		For Each item As String In items
+			Dim tf As TextField
+			tf.Initialize("tf")
+			tf.PrefWidth=quickFillListView.Width
+			tf.Text=item
+			quickFillListView.Items.Add(tf)
+		Next
+	Else
+		For Each item As String In Array As String("——","¥","©","®","™","『","』","","","")
+			Dim tf As TextField
+			tf.Initialize("tf")
+			tf.PrefWidth=quickFillListView.Width
+			tf.Text=item
+			quickFillListView.Items.Add(tf)
+		Next
+	End If
 End Sub
 
 Public Sub ShowAndWait As List
@@ -68,11 +95,19 @@ Sub applyButton_MouseClicked (EventData As MouseEvent)
 		fx.Msgbox(frm,"Matchrate cannot be below 0.5 or over 1.0","")
         Return
 	End If
+	Dim quickfillList As List
+	quickfillList.Initialize
+	For Each tf As TextField In quickFillListView.Items
+		quickfillList.Add(tf.Text)
+	Next
+	
 	If ask="yes" Then
 		resultList.Add("changed")
 		settings.Put("matchrate",num)
 		settings.Put("tmList",TMListView.Items)
 		settings.Put("termList",TermListView.Items)
+		settings.Put("quickfill",quickfillList)
+		settings.Put("quickfill_includeterm",IncludeTermCheckBox.Checked)
 		resultList.Add(settings)
 	Else
 		resultList.Add("canceled")

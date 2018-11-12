@@ -1049,6 +1049,7 @@ Sub showTerm(targetTextArea As TextArea)
 		p.Initialize("termpane")
 		p.LoadLayout("oneterm")
 		p.SetSize(Main.termLV.Width,50)
+		p.Tag=termList.Get(1)
 		Dim lbl1 As Label
 		lbl1=p.GetNode(0)
 		lbl1.Text=termList.Get(0)

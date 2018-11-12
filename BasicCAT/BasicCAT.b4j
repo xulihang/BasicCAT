@@ -27,38 +27,39 @@ File30=pretranslate.bjl
 File31=preview.bjl
 File32=progress.bjl
 File33=projectSetting.bjl
-File34=right.bjl
-File35=searchandreplace.bjl
-File36=searchTableView.bjl
-File37=SearchView.bjl
-File38=segment.bjl
-File39=segmentation_en.conf
+File34=quickfillSetting.bjl
+File35=right.bjl
+File36=searchandreplace.bjl
+File37=searchTableView.bjl
+File38=SearchView.bjl
+File39=segment.bjl
 File4=checkList.bjl
-File40=segmentation_en_exception.conf
-File41=segmentation_en_idml.conf
-File42=segmentation_zh.conf
-File43=segmentation_zh_exception.conf
-File44=serverLanucher.bjl
-File45=settingLanguagecheck.bjl
-File46=settingVersionControl.bjl
-File47=statistics.bjl
-File48=supportedFiles.txt
-File49=tableview.bjl
+File40=segmentation_en.conf
+File41=segmentation_en_exception.conf
+File42=segmentation_en_idml.conf
+File43=segmentation_zh.conf
+File44=segmentation_zh_exception.conf
+File45=serverLanucher.bjl
+File46=settingLanguagecheck.bjl
+File47=settingVersionControl.bjl
+File48=statistics.bjl
+File49=supportedFiles.txt
 File5=confirmReview.bjl
-File50=tabpane.bjl
-File51=term.bjl
-File52=TermEditor.bjl
-File53=TermManager.bjl
-File54=termSetting.bjl
-File55=TMEditor.bjl
-File56=tmList.bjl
-File57=TMManager.bjl
-File58=TMsegment.bjl
-File59=tmSetting.bjl
+File50=tableview.bjl
+File51=tabpane.bjl
+File52=term.bjl
+File53=TermEditor.bjl
+File54=TermManager.bjl
+File55=termSetting.bjl
+File56=TMEditor.bjl
+File57=tmList.bjl
+File58=TMManager.bjl
+File59=TMsegment.bjl
 File6=default_rules.srx
-File60=upperRight.bjl
-File61=viewSegment.bjl
-File62=wordLookupSetting.bjl
+File60=tmSetting.bjl
+File61=upperRight.bjl
+File62=viewSegment.bjl
+File63=wordLookupSetting.bjl
 File7=dictList.txt
 File8=dictWebview.bjl
 File9=editor.bjl
@@ -121,6 +122,7 @@ FileGroup6=Default Group
 FileGroup60=Default Group
 FileGroup61=Default Group
 FileGroup62=Default Group
+FileGroup63=Default Group
 FileGroup7=Default Group
 FileGroup8=Default Group
 FileGroup9=Default Group
@@ -199,7 +201,7 @@ Module6=TM
 Module7=Term
 Module8=KeyValueStore
 Module9=ProjectSettings
-NumberOfFiles=62
+NumberOfFiles=63
 NumberOfLibraries=23
 NumberOfModules=51
 Version=6.51
@@ -525,6 +527,8 @@ Sub MenuBar1_Action
 			Dim sap As searchAndReplaceDialog
 			sap.Initialize
 			sap.show
+		Case "Show quickfill dropdown"
+			showQuickfillDropdown
 		Case "Show online dictionary dropdown"
 
 			showDictDropdown
@@ -589,6 +593,67 @@ Sub MenuBar1_Action
 		Case "_About"
 			fx.Msgbox(MainForm,"BasicCAT 1.0"&CRLF&"@xulihang 2018","BasicCAT")
 	End Select
+End Sub
+
+Sub showQuickfillDropdown
+	If editorLV.Size=0 Then
+		Return
+	End If
+
+	
+	Dim p As Pane
+	p=editorLV.GetPanel(currentProject.lastEntry)
+	If p.NumberOfNodes=0 Then
+		Return
+	End If
+	Dim ta As TextArea=p.GetNode(1)
+	Dim cm As ContextMenu
+	cm.Initialize("")
+	Dim quickfillList As List
+	quickfillList.Initialize
+	If currentProject.settings.ContainsKey("quickfill_includeterm") Then
+		If currentProject.settings.Get("quickfill_includeterm")=True Then
+			For Each termPane As Pane In termLV.Items
+				quickfillList.Add(termPane.Tag)
+			Next
+		End If
+	End If
+	If currentProject.settings.ContainsKey("quickfill") Then
+		quickfillList.AddAll(currentProject.settings.Get("quickfill"))
+	Else
+		quickfillList.AddAll(Array As String("——","¥","©","®","™","『","』"))
+	End If
+	
+	For Each item As String In quickfillList
+		If item="" Then 
+			Continue
+		End If
+		Log(item)
+		Dim mi As MenuItem
+		mi.Initialize(item,"quickFillMi")
+		mi.Tag=item
+		cm.MenuItems.Add(mi)
+	Next
+	Dim map1 As Map
+	map1=Utils.GetScreenPosition(ta)
+	Dim jo As JavaObject = cm
+	jo.RunMethod("show", Array(ta, map1.Get("x")+ta.Width/10, map1.Get("y")+ta.Height))
+End Sub
+
+Sub quickFillMi_Action
+	Dim mi As MenuItem
+	mi=Sender
+	Log(mi.Text)
+	Log(mi.Tag)
+	Dim p As Pane
+	p=editorLV.GetPanel(currentProject.lastEntry)
+	If p.NumberOfNodes=0 Then
+		Return
+	End If
+	Dim ta As TextArea=p.GetNode(1)
+	Dim selectionEnd As Int=ta.selectionEnd
+	ta.Text=ta.Text.SubString2(0,ta.SelectionEnd)&mi.Text&ta.Text.SubString2(ta.SelectionEnd,ta.Text.Length)
+	ta.SetSelection(selectionEnd+mi.Text.Length,selectionEnd+mi.Text.Length)
 End Sub
 
 Sub showDictDropdown
