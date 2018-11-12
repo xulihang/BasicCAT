@@ -1,5 +1,7 @@
 ﻿AppType=JavaFX
 Build1=Default,org.xulihang.basiccat
+File1=default_rules.srx
+FileGroup1=Default Group
 Group=Default Group
 Library1=jcore
 Library2=jfx
@@ -10,14 +12,15 @@ Library6=jxui
 Library7=javaobject
 Module1=poFilterPlugin
 Module2=Xml2Map
-Module3=SRX
-Module4=CustomListView
-Module5=Map2Xml
-Module6=Utils
-Module7=segmentation
-NumberOfFiles=0
+Module3=CustomListView
+Module4=Map2Xml
+Module5=segmentation
+Module6=SRX
+Module7=Utils
+Module8=filterGenericUtils
+NumberOfFiles=1
 NumberOfLibraries=7
-NumberOfModules=7
+NumberOfModules=8
 Version=6.51
 @EndOfDesignText@
 #Region Project Attributes 
@@ -35,7 +38,9 @@ Sub AppStart (Form1 As Form, Args() As String)
 	MainForm = Form1
 	'MainForm.RootPane.LoadLayout("Layout1") 'Load the layout file.
 	MainForm.Show
-
+	Dim pf As poFilterPlugin
+	pf.Initialize
+	pf.createWorkFile("testFormat.docx.po","C:\Users\xulihang\Documents\B4J\plugin\filterPlugins\po\Objects\zhtest","zh")
 End Sub
 
 'Return true to allow the default exceptions handler to handle the uncaught exception.

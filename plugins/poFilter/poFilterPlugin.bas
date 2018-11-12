@@ -38,7 +38,7 @@ public Sub Run(Tag As String, Params As Map) As Object
 	Return ""
 End Sub
 
-Sub createWorkFile(filename As String,path As String,sourceLang As String)
+Public Sub createWorkFile(filename As String,path As String,sourceLang As String)
 	Dim workfile As Map
 	workfile.Initialize
 	workfile.Put("filename",filename)
@@ -56,14 +56,29 @@ Sub createWorkFile(filename As String,path As String,sourceLang As String)
 	Dim id As Int=0
 	For Each msgid As String As List In readPO(path,filename)
 		id=id+1
+		Dim size As Int
+		size=segmentation.segmentedTxt(msgid,False,sourceLang,path).Size
+		Dim index As Int=-1
 		For Each source As String In segmentation.segmentedTxt(msgid,False,sourceLang,path)
+			index=index+1
 			Dim bitext As List
 			bitext.Initialize
-			If source.Trim="" Then 'newline or empty space
+		    If source.Trim=""  And index<>size-1 Then 'newline or empty space
 				inbetweenContent=inbetweenContent&source
 				Continue
-			Else if source.Trim<>"" Then
-				bitext.add(source.Trim)
+			else if filterGenericUtils.tagsRemovedText(source).Trim="" And index<>size-1 Then
+				inbetweenContent=inbetweenContent&source
+				Continue
+			Else
+				Dim sourceShown As String=source
+				If filterGenericUtils.tagsNum(sourceShown)=1 Then
+					sourceShown=filterGenericUtils.tagsRemovedText(sourceShown)
+				End If
+				If filterGenericUtils.tagsNum(sourceShown)>=2 And Regex.IsMatch("<.*?>",sourceShown) Then
+					sourceShown=filterGenericUtils.tagsAtBothSidesRemovedText(sourceShown)
+				End If
+
+				bitext.add(sourceShown.Trim)
 				bitext.Add("")
 				bitext.Add(inbetweenContent&source) 'inbetweenContent contains crlf and spaces between sentences
 				bitext.Add(innerfileName)
@@ -73,7 +88,24 @@ Sub createWorkFile(filename As String,path As String,sourceLang As String)
 				bitext.Add(extra)
 				inbetweenContent=""
 			End If
-			segmentsList.Add(bitext)
+			If index=size-1 And filterGenericUtils.tagsRemovedText(sourceShown)="" And segmentsList.Size>0 Then 'last segment contains tags but no text
+				Dim previousBitext As List
+				previousBitext=segmentsList.Get(segmentsList.Size-1)
+				Dim sourceShown As String
+				sourceShown=previousBitext.Get(0)&source.Trim
+				If filterGenericUtils.tagsNum(sourceShown)=1 Then
+					sourceShown=filterGenericUtils.tagsRemovedText(sourceShown)
+				End If
+				If filterGenericUtils.tagsNum(sourceShown)>=2 And Regex.IsMatch("<.*?>",sourceShown) Then
+					sourceShown=filterGenericUtils.tagsAtBothSidesRemovedText(sourceShown)
+				End If
+				previousBitext.Set(0,sourceShown)
+				previousBitext.Set(2,previousBitext.Get(2)&bitext.Get(2))
+			Else if segmentsList.Size=0 And filterGenericUtils.tagsRemovedText(sourceShown)="" Then
+				Continue
+			Else
+				segmentsList.Add(bitext)
+			End If
 		Next
 	Next
 	If segmentsList.Size<>0 Then
@@ -266,9 +298,13 @@ Sub mergeSegment(MainForm As Form,sourceTextArea As TextArea,editorLV As CustomL
 	Dim bitext,nextBiText As List
 	bitext=segments.Get(index)
 	nextBiText=segments.Get(index+1)
-	Dim source As String
+	Dim source,nextsource As String
 	source=bitext.Get(0)
-		
+	nextsource=nextBiText.Get(0)
+	Dim fullsource,nextFullSource As String
+	fullsource=bitext.Get(2)
+	nextFullSource=nextBiText.Get(2)
+	
 	If bitext.Get(3)<>nextBiText.Get(3) Then
 		fx.Msgbox(MainForm,"Cannot merge segments as these two belong to different files.","")
 		Return
@@ -282,6 +318,24 @@ Sub mergeSegment(MainForm As Form,sourceTextArea As TextArea,editorLV As CustomL
 		Return
 	End If
 		
+		
+	Dim showTag As Boolean=False
+	If filterGenericUtils.tagsNum(source&nextsource)<>filterGenericUtils.tagsNum(fullsource&nextFullSource) And filterGenericUtils.tagsNum(fullsource&nextFullSource)>0 Then
+		Dim result As Int
+		result=fx.Msgbox2(MainForm,"Segments contain unshown tags, continue?","","Yes","Cancel","No",fx.MSGBOX_CONFIRMATION)
+		Log(result)
+		'yes -1, no -2, cancel -3
+		Select result
+			Case -1
+				showTag=True
+			Case -2
+				Return
+			Case -3
+				Return
+		End Select
+
+	End If
+	
 	Dim pane,nextPane As Pane
 
 	pane=editorLV.GetPanel(index)
@@ -290,16 +344,14 @@ Sub mergeSegment(MainForm As Form,sourceTextArea As TextArea,editorLV As CustomL
 	nextSourceTa=nextPane.GetNode(0)
 	nextTargetTa=nextPane.GetNode(1)
 	
-	Dim fullsource,nextFullSource As String
-	fullsource=bitext.Get(2)
-	nextFullSource=nextBiText.Get(2)
+
 	
 	Dim sourceWhitespace,targetWhitespace,fullsourceWhitespace As String
 	sourceWhitespace=""
 	targetWhitespace=""
 	fullsourceWhitespace=""
 	
-	If projectFile.Get("source")="en" or Utils.isChinese(fullsource)=False Then
+	If projectFile.Get("source")="en" Or Utils.isChinese(fullsource)=False Then
 		If Regex.IsMatch("\s",fullsource.CharAt(fullsource.Length-1)) Or Regex.IsMatch("\s",nextFullSource.CharAt(0)) Then
 			sourceWhitespace=" "
 		Else
@@ -315,7 +367,16 @@ Sub mergeSegment(MainForm As Form,sourceTextArea As TextArea,editorLV As CustomL
 		End If
 	End If
 		
-	sourceTextArea.Text=source.Trim&sourceWhitespace&nextSourceTa.Text.Trim
+	If showTag Then
+		source=fullsource&nextFullSource
+		source=filterGenericUtils.tagsAtBothSidesRemovedText(source)
+		fullsource=fullsource&nextFullSource
+	Else
+		source=source.Trim&sourceWhitespace&nextSourceTa.Text.Trim
+		fullsource=Utils.rightTrim(fullsource)&fullsourceWhitespace&Utils.leftTrim(nextFullSource)
+	End If
+	
+	sourceTextArea.Text=source
 	sourceTextArea.Tag=sourceTextArea.Text
 		
 	targetTa=pane.GetNode(1)
@@ -327,7 +388,7 @@ Sub mergeSegment(MainForm As Form,sourceTextArea As TextArea,editorLV As CustomL
 
 
 
-	bitext.Set(2,Utils.rightTrim(fullsource)&fullsourceWhitespace&Utils.leftTrim(nextFullSource))
+	bitext.Set(2,fullsource)
 
 		
 	segments.RemoveAt(index+1)
@@ -355,13 +416,13 @@ Sub splitSegment(BCATMain As Object,sourceTextArea As TextArea,editorLV As Custo
 	fullsource=bitext.Get(2)
 	
 	bitext.Set(0,sourceTextArea.Text)
-	bitext.Set(2,sourceTextArea.Text)
+	bitext.Set(2,fullsource.SubString2(0,fullsource.IndexOf(sourceTextArea.Text)+sourceTextArea.Text.Length))
 	
 	
 	newBiText.Initialize
 	newBiText.Add(source)
 	newBiText.Add("")
-	newBiText.Add(fullsource.Replace(sourceTextArea.Text,""))
+	newBiText.Add(fullsource.SubString2(fullsource.IndexOf(sourceTextArea.Text)+sourceTextArea.Text.Length,fullsource.Length))
 	newBiText.Add(bitext.Get(3))
 	newBiText.Add(bitext.Get(4))
 	segments.set(index,bitext)

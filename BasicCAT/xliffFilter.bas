@@ -73,7 +73,7 @@ Sub createWorkFile(filename As String,path As String,sourceLang As String)
 					bitext.Add(extra)
 					inbetweenContent=""
 				End If
-				If index=segmentedText-1 And filterGenericUtils.tagsRemovedText(sourceShown)="" And segmentsList.Size>0 Then 'last segment contains tags but no text
+				If index=segmentedText.Size-1 And filterGenericUtils.tagsRemovedText(sourceShown)="" And segmentsList.Size>0 Then 'last segment contains tags but no text
 					Dim previousBitext As List
 					previousBitext=segmentsList.Get(segmentsList.Size-1)
 					Dim sourceShown As String
@@ -375,8 +375,9 @@ Sub mergeSegment(sourceTextArea As TextArea)
 	Dim bitext,nextBiText As List
 	bitext=Main.currentProject.segments.Get(index)
 	nextBiText=Main.currentProject.segments.Get(index+1)
-	Dim source As String
+	Dim source,nextsource As String
 	source=bitext.Get(0)
+	nextsource=nextBiText.Get(0)
 	Dim fullsource,nextFullSource As String
 	fullsource=bitext.Get(2)
 	nextFullSource=nextBiText.Get(2)
@@ -395,7 +396,7 @@ Sub mergeSegment(sourceTextArea As TextArea)
 	End If
 		
 	Dim showTag As Boolean=False
-	If filterGenericUtils.tagsNum(source)<>filterGenericUtils.tagsNum(fullsource) And filterGenericUtils.tagsNum(fullsource)>0 Then
+	If filterGenericUtils.tagsNum(source&nextsource)<>filterGenericUtils.tagsNum(fullsource&nextFullSource) And filterGenericUtils.tagsNum(fullsource)>0 Then
 		Dim result As Int
 		result=fx.Msgbox2(Main.MainForm,"Segments contain unshown tags, continue?","","Yes","Cancel","No",fx.MSGBOX_CONFIRMATION)
 		Log(result)

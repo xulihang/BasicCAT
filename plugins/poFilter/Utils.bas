@@ -10,6 +10,43 @@ Sub Process_Globals
 	Private menus As Map
 End Sub
 
+Sub exportToBiParagraph(segments As List,path As String)
+	Dim text As StringBuilder
+	text.Initialize
+	Dim sourceText As String
+	Dim targetText As String
+	For Each segment As List In segments
+		Dim source,target,fullsource As String
+		Dim translation As String
+		source=segment.Get(0)
+		target=segment.Get(1)
+		fullsource=segment.Get(2)
+		source=Regex.Replace2("<.*?>",32,source,"")
+		target=Regex.Replace2("<.*?>",32,target,"")
+		fullsource=Regex.Replace2("<.*?>",32,fullsource,"")
+		translation=fullsource.Replace(source,target)
+		sourceText=sourceText&fullsource
+		targetText=targetText&translation
+	Next
+	Dim sourceList,targetList As List
+	sourceList.Initialize
+	targetList.Initialize
+	sourceList.AddAll(Regex.Split(CRLF,sourceText))
+	targetList.AddAll(Regex.Split(CRLF,targetText))
+	For i=0 To Min(sourceList.Size,targetList.Size)-1
+		text.Append(sourceList.Get(i)).Append(CRLF)
+		text.Append(targetList.Get(i)).Append(CRLF).Append(CRLF)
+	Next
+    File.WriteString(path,"",text.ToString)
+End Sub
+
+Sub disableTextArea(p As Pane)
+	Dim sourceTa As TextArea=p.GetNode(0)
+	Dim targetTa As TextArea=p.GetNode(1)
+	sourceTa.Enabled=False
+	targetTa.Enabled=False
+End Sub
+
 Sub getXmlMap(xmlstring As String) As Map
 	Dim ParsedData As Map
 	Dim xm As Xml2Map
@@ -57,7 +94,7 @@ End Sub
 Sub getTextFromPane(index As Int,p As Pane) As String
 	Dim ta As TextArea
 	ta=p.GetNode(index)
-	Return ta.Text
+	Return ta.Text 
 End Sub
 
 Sub enableMenuItems(mb As MenuBar,menuText As List)
@@ -171,6 +208,23 @@ Sub CopyFolder(Source As String, targetFolder As String)
 		Log("f"&f)
 		If File.IsDirectory(Source, f) Then
 			CopyFolder(File.Combine(Source, f), File.Combine(targetFolder, f))
+			Continue
+		End If
+		File.Copy(Source, f, targetFolder, f)
+	Next
+End Sub
+
+Sub CopyWorkFolderAsync(Source As String, targetFolder As String)
+	Sleep(0)
+	If File.Exists(targetFolder, "") = False Then File.MakeDir(targetFolder, "")
+	For Each f As String In File.ListFiles(Source)
+		Log(targetFolder)
+		Log("f"&f)
+		If File.IsDirectory(Source, f) Then
+			CopyFolder(File.Combine(Source, f), File.Combine(targetFolder, f))
+			Continue
+		End If
+		If f.EndsWith(".json")=False Then
 			Continue
 		End If
 		File.Copy(Source, f, targetFolder, f)
