@@ -511,13 +511,10 @@ Sub MenuBar1_Action
 			Log("closing")
 			closeProject
 		Case "Go to the next untranslated segment"
-			For i=currentProject.lastEntry To editorLV.Size-1
-				Dim p As Pane
-				p=editorLV.GetPanel(i)
-				If p.NumberOfNodes=0 Then
-					Return
-				End If
-				If Utils.getTextFromPane(1,p)="" Then
+			For i=currentProject.lastEntry To currentProject.segments.Size-1
+				Dim bitext As List
+				bitext=currentProject.segments.Get(i)
+				If bitext.Get(1)="" Then
 					editorLV.JumpToItem(i)
 					Return
 				End If

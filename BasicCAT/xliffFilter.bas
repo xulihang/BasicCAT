@@ -445,7 +445,12 @@ Sub mergeSegment(sourceTextArea As TextArea)
 		
 	If showTag Then
 		source=fullsource&nextFullSource
-		source=filterGenericUtils.tagsAtBothSidesRemovedText(source)
+		If filterGenericUtils.tagsNum(source)=1 Then
+			source=filterGenericUtils.tagsRemovedText(source)
+		End If
+		If filterGenericUtils.tagsNum(source)>=2 And Regex.IsMatch("<.*?>",source) Then
+			source=filterGenericUtils.tagsAtBothSidesRemovedText(source)
+		End If
 		fullsource=fullsource&nextFullSource
 	Else
 		source=source.Trim&sourceWhitespace&nextSourceTa.Text.Trim
