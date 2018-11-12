@@ -136,7 +136,7 @@ Sub createWorkFile(filename As String,path As String,sourceLang As String)
 				'This is a pagenum story
 				Continue
 			End If
-			If index=segmentedText.Size-1 And sourceShown="" Then 'last segment contains tags
+			If index=segmentedText.Size-1 And sourceShown="" And segmentsList.Size>0 Then 'last segment contains tags
 				'Log(bitext)
 				'Log(segmentsList)
 				Dim previousBitext As List

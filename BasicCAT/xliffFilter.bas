@@ -52,13 +52,16 @@ Sub createWorkFile(filename As String,path As String,sourceLang As String)
 				If source.Trim="" And index<>segmentedText.Size-1 Then 'newline or empty space
 					inbetweenContent=inbetweenContent&source
 					Continue
-				else if tagsRemovedText(source).Trim="" And index<>segmentedText.Size-1 Then
+				else if filterGenericUtils.tagsRemovedText(source).Trim="" And index<>segmentedText.Size-1 Then
 					inbetweenContent=inbetweenContent&source
 					Continue
 				Else
 					Dim sourceShown As String=source
-					If tagsNum(sourceShown)>0 Then
-						sourceShown=tagsAtBothSidesRemovedText(sourceShown)
+					If filterGenericUtils.tagsNum(sourceShown)=1 Then
+						sourceShown=filterGenericUtils.tagsRemovedText(sourceShown)
+					End If
+					If filterGenericUtils.tagsNum(sourceShown)>=2 And Regex.IsMatch("<.*?>",sourceShown) Then
+						sourceShown=filterGenericUtils.tagsAtBothSidesRemovedText(sourceShown)
 					End If
 					bitext.add(sourceShown.Trim)
 					bitext.Add("")
@@ -70,11 +73,21 @@ Sub createWorkFile(filename As String,path As String,sourceLang As String)
 					bitext.Add(extra)
 					inbetweenContent=""
 				End If
-				If index=segmentedText.Size-1 And tagsRemovedText(sourceShown)="" Then 'last segment contains tags but no text
+				If index=segmentedText-1 And filterGenericUtils.tagsRemovedText(sourceShown)="" And segmentsList.Size>0 Then 'last segment contains tags but no text
 					Dim previousBitext As List
 					previousBitext=segmentsList.Get(segmentsList.Size-1)
-					previousBitext.Set(0,previousBitext.Get(0)&source.Trim)
+					Dim sourceShown As String
+					sourceShown=previousBitext.Get(0)&source.Trim
+					If filterGenericUtils.tagsNum(sourceShown)=1 Then
+						sourceShown=filterGenericUtils.tagsRemovedText(sourceShown)
+					End If
+					If filterGenericUtils.tagsNum(sourceShown)>=2 And Regex.IsMatch("<.*?>",sourceShown) Then
+						sourceShown=filterGenericUtils.tagsAtBothSidesRemovedText(sourceShown)
+					End If
+					previousBitext.Set(0,sourceShown)
 					previousBitext.Set(2,previousBitext.Get(2)&bitext.Get(2))
+				Else if segmentsList.Size=0 And filterGenericUtils.tagsRemovedText(sourceShown)="" Then
+					Continue
 				Else
 					segmentsList.Add(bitext)
 				End If
@@ -94,42 +107,7 @@ Sub createWorkFile(filename As String,path As String,sourceLang As String)
 	File.WriteString(File.Combine(path,"work"),filename&".json",json.ToPrettyString(4))
 End Sub
 
-Sub tagsRemovedText(text As String) As String
-	Return Regex.Replace("<.*?>",text,"")
-End Sub
 
-Sub tagsNum(text As String) As Int
-	Dim num As Int
-	Dim tagMatcher As Matcher
-	tagMatcher=Regex.Matcher("<.*?>",text)
-	Do While tagMatcher.Find
-		num=num+1
-	Loop
-	Return num
-End Sub
-
-Sub tagsAtBothSidesRemovedText(text As String) As String
-	Dim textList As List
-	textList.Initialize
-	text=Regex.replace("<.*?>",text,CRLF&"------$0"&CRLF&"------")
-	textList.AddAll(Regex.Split(CRLF&"------",text))
-	Log(textList)
-	If textList.Get(0)="" Then
-		textList.RemoveAt(0)
-	End If
-	If Regex.IsMatch("<.*?>",textList.Get(0)) Then
-		textList.RemoveAt(0)
-	End If
-	If Regex.IsMatch("<.*?>",textList.Get(textList.Size-1)) Then
-		textList.RemoveAt(textList.Size-1)
-	End If
-	text=""
-	For Each item In textList
-		text=text&item
-	Next
-	Log("text"&text)
-	Return text
-End Sub
 
 
 Sub getTransUnits(fileMap As Map) As List
@@ -417,7 +395,7 @@ Sub mergeSegment(sourceTextArea As TextArea)
 	End If
 		
 	Dim showTag As Boolean=False
-	If tagsNum(source)<>tagsNum(fullsource) and tagsNum(fullsource)>0 Then
+	If filterGenericUtils.tagsNum(source)<>filterGenericUtils.tagsNum(fullsource) And filterGenericUtils.tagsNum(fullsource)>0 Then
 		Dim result As Int
 		result=fx.Msgbox2(Main.MainForm,"Segments contain unshown tags, continue?","","Yes","Cancel","No",fx.MSGBOX_CONFIRMATION)
 		Log(result)
@@ -466,7 +444,7 @@ Sub mergeSegment(sourceTextArea As TextArea)
 		
 	If showTag Then
 		source=fullsource&nextFullSource
-		source=tagsAtBothSidesRemovedText(source)
+		source=filterGenericUtils.tagsAtBothSidesRemovedText(source)
 		fullsource=fullsource&nextFullSource
 	Else
 		source=source.Trim&sourceWhitespace&nextSourceTa.Text.Trim

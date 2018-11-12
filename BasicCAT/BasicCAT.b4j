@@ -197,13 +197,14 @@ Module49=coordinate
 Module5=txtFilter
 Module50=editDistance
 Module51=viewSegment
+Module52=filterGenericUtils
 Module6=TM
 Module7=Term
 Module8=KeyValueStore
 Module9=ProjectSettings
 NumberOfFiles=63
 NumberOfLibraries=23
-NumberOfModules=51
+NumberOfModules=52
 Version=6.51
 @EndOfDesignText@
 #Region Project Attributes 
