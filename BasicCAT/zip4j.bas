@@ -13,6 +13,13 @@ Public Sub Initialize
 	
 End Sub
 
+Public Sub unzip(dir As String,filename As String,outdir As String)
+	Dim zipFile As JavaObject
+	zipFile.InitializeNewInstance("net.lingala.zip4j.core.ZipFile",Array(File.Combine(dir,filename)))
+	zipFile.RunMethod("extractAll",Array(outdir))
+	Sleep(0)
+End Sub
+
 Public Sub zipFiles(inDir As String,outDir As String,zipFilename As String) As ResumableSub
 	Dim zipFile As JavaObject
 	zipFile.InitializeNewInstance("net.lingala.zip4j.core.ZipFile",Array(File.Combine(outDir,zipFilename)))

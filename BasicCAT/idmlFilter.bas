@@ -29,6 +29,7 @@ Sub createWorkFile(filename As String,path As String,sourceLang As String)
 	End If
 	progressDialog.ShowWithoutProgressBar("Loading idml file...","loadfile")
 	progressDialog.update2("Unzipping...")
+	Sleep(0)
 	Dim unzipedDirPath As String
 	unzipedDirPath=File.Combine(File.Combine(path,"source"),filename.Replace(".idml",""))
 	wait for (unzipAndLoadIDML(path,filename)) Complete (spreadsList As List)
@@ -434,10 +435,13 @@ Sub unzipAndLoadIDML(path As String,filename As String) As ResumableSub
 	
 	'Log(unzipedDirPath)
 	
-	Dim archiver As Archiver
-	archiver.AsyncUnZip(File.Combine(path,"source"),filename,unzipedDirPath,"archiver")
-	wait for archiver_UnZipDone(CompletedWithoutError As Boolean, NbOfFiles As Int)
+	'Dim archiver As Archiver
+	'archiver.AsyncUnZip(File.Combine(path,"source"),filename,unzipedDirPath,"archiver")
+	'wait for archiver_UnZipDone(CompletedWithoutError As Boolean, NbOfFiles As Int)
 	'Log(CompletedWithoutError)
+	Dim zip As zip4j
+	zip.Initialize
+	zip.unzip(File.Combine(path,"source"),filename,unzipedDirPath)
 	
 	Dim designmapString As String
 	designmapString=File.ReadString(unzipedDirPath, "designmap.xml")

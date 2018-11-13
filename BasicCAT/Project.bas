@@ -334,7 +334,11 @@ Sub removeFileMi_Action
 	subTreeTableItem.Children.RemoveAt(subTreeTableItem.Children.IndexOf(mi.Tag))
 	files.RemoveAt(files.IndexOf(filename))
 	File.Delete(File.Combine(path,"source"),filename)
-	File.Delete(File.Combine(path,"work"),filename&".json")
+	Try
+		File.Delete(File.Combine(path,"work"),filename&".json")
+	Catch
+		Log(LastException)
+	End Try
 	save
 	fx.Msgbox(Main.MainForm,"Done","")
 End Sub
@@ -1413,6 +1417,7 @@ End Sub
 
 Public Sub generateTargetFiles
 	For Each filename As String In files
+		Sleep(0)
 		If filename.EndsWith(".txt") Then
 			txtFilter.generateFile(filename,path,projectFile)
 		Else if filename.EndsWith(".idml") Then
@@ -1425,6 +1430,7 @@ Public Sub generateTargetFiles
 			params.Put("filename",filename)
 			params.Put("path",path)
 			params.Put("projectFile",projectFile)
+			params.Put("main",Main)
 			runFilterPluginAccordingToExtension(filename,"generateFile",params)
 		End If
 	Next

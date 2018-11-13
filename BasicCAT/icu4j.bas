@@ -10,12 +10,18 @@ Sub Process_Globals
 End Sub
 
 Sub convert(dir As String,filename As String)
-	Dim charsetDetector As JavaObject
-	charsetDetector.InitializeNewInstance("com.ibm.icu.text.CharsetDetector",Null)
-	charsetDetector.RunMethodJO("setText",Array(File.OpenInput(dir,filename)))
-	Dim charsetMatch As JavaObject
-	charsetMatch=charsetDetector.RunMethodJO("detect",Null)
-	If charsetMatch.RunMethod("getLanguage",Null)<>"UTF-8" Then
-		File.WriteString(dir,filename,charsetMatch.RunMethod("getString",Null))
-	End If
+    Log(dir)
+	Log(filename)
+	Try
+		Dim charsetDetector As JavaObject
+		charsetDetector.InitializeNewInstance("com.ibm.icu.text.CharsetDetector",Null)
+		charsetDetector.RunMethodJO("setText",Array(File.OpenInput(dir,filename)))
+		Dim charsetMatch As JavaObject
+		charsetMatch=charsetDetector.RunMethodJO("detect",Null)
+		If charsetMatch.RunMethod("getLanguage",Null)<>"UTF-8" Then
+			File.WriteString(dir,filename,charsetMatch.RunMethod("getString",Null))
+		End If
+	Catch
+		Log(LastException)
+	End Try
 End Sub

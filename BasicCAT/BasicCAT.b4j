@@ -1,68 +1,69 @@
 ﻿AppType=JavaFX
 Build1=Default,org.xulihang.basiccat
 File1=.gitignore
-File10=FontPicker.bjl
-File11=Fonts.xml
-File12=generalProjectSetting.bjl
-File13=generalSetting.bjl
-File14=inputbox.bjl
-File15=inputTextArea.bjl
-File16=lang.conf
-File17=languageChooser.bjl
-File18=leftProject.bjl
-File19=Log.bjl
+File10=editor.bjl
+File11=FontPicker.bjl
+File12=Fonts.xml
+File13=generalProjectSetting.bjl
+File14=generalSetting.bjl
+File15=inputbox.bjl
+File16=inputTextArea.bjl
+File17=lang.conf
+File18=languageChooser.bjl
+File19=leftProject.bjl
 File2=appearance.bjl
-File20=lowerRight.bjl
-File21=main.bjl
-File22=menuText.txt
-File23=mtparamfiller.bjl
-File24=mtSetting.bjl
-File25=oneterm.bjl
-File26=pdf2txt.bjl
-File27=pluginsSetting.bjl
-File28=preferences.bjl
-File29=preferences.conf
+File20=Log.bjl
+File21=lowerRight.bjl
+File22=main.bjl
+File23=menuText.txt
+File24=mtparamfiller.bjl
+File25=mtSetting.bjl
+File26=oneterm.bjl
+File27=pdf2txt.bjl
+File28=pluginsSetting.bjl
+File29=preferences.bjl
 File3=autocomplete.bjl
-File30=pretranslate.bjl
-File31=preview.bjl
-File32=progress.bjl
-File33=projectSetting.bjl
-File34=quickfillSetting.bjl
-File35=right.bjl
-File36=searchandreplace.bjl
-File37=searchTableView.bjl
-File38=SearchView.bjl
-File39=segment.bjl
-File4=checkList.bjl
-File40=segmentation_en.conf
-File41=segmentation_en_exception.conf
-File42=segmentation_en_idml.conf
-File43=segmentation_zh.conf
-File44=segmentation_zh_exception.conf
-File45=serverLanucher.bjl
-File46=settingLanguagecheck.bjl
-File47=settingVersionControl.bjl
-File48=statistics.bjl
-File49=supportedFiles.txt
-File5=confirmReview.bjl
-File50=tableview.bjl
-File51=tabpane.bjl
-File52=term.bjl
-File53=TermEditor.bjl
-File54=TermManager.bjl
-File55=termSetting.bjl
-File56=TMEditor.bjl
-File57=tmList.bjl
-File58=TMManager.bjl
-File59=TMsegment.bjl
-File6=default_rules.srx
-File60=tmSetting.bjl
-File61=upperRight.bjl
-File62=viewSegment.bjl
-File63=wordLookupSetting.bjl
-File7=dictList.txt
-File8=dictWebview.bjl
-File9=editor.bjl
+File30=preferences.conf
+File31=pretranslate.bjl
+File32=preview.bjl
+File33=progress.bjl
+File34=projectSetting.bjl
+File35=quickfillSetting.bjl
+File36=right.bjl
+File37=searchandreplace.bjl
+File38=searchTableView.bjl
+File39=SearchView.bjl
+File4=basiccat.jpg
+File40=segment.bjl
+File41=segmentation_en.conf
+File42=segmentation_en_exception.conf
+File43=segmentation_en_idml.conf
+File44=segmentation_zh.conf
+File45=segmentation_zh_exception.conf
+File46=serverLanucher.bjl
+File47=settingLanguagecheck.bjl
+File48=settingVersionControl.bjl
+File49=statistics.bjl
+File5=checkList.bjl
+File50=supportedFiles.txt
+File51=tableview.bjl
+File52=tabpane.bjl
+File53=term.bjl
+File54=TermEditor.bjl
+File55=TermManager.bjl
+File56=termSetting.bjl
+File57=TMEditor.bjl
+File58=tmList.bjl
+File59=TMManager.bjl
+File6=confirmReview.bjl
+File60=TMsegment.bjl
+File61=tmSetting.bjl
+File62=upperRight.bjl
+File63=viewSegment.bjl
+File64=wordLookupSetting.bjl
+File7=default_rules.srx
+File8=dictList.txt
+File9=dictWebview.bjl
 FileGroup1=Default Group
 FileGroup10=Default Group
 FileGroup11=Default Group
@@ -123,6 +124,7 @@ FileGroup60=Default Group
 FileGroup61=Default Group
 FileGroup62=Default Group
 FileGroup63=Default Group
+FileGroup64=Default Group
 FileGroup7=Default Group
 FileGroup8=Default Group
 FileGroup9=Default Group
@@ -152,14 +154,14 @@ Library8=jsql
 Library9=jrandomaccessfile
 Module1=FileChooserUtils
 Module10=preTranslateDialog
-Module11=pdfbox
-Module12=PDF2TXT
-Module13=xliffFilter
-Module14=idmlFilter
-Module15=idmlUtils
-Module16=filterGenericUtils
-Module17=Utils
-Module18=languageChooser
+Module11=PDF2TXT
+Module12=languageChooser
+Module13=pdfbox
+Module14=xliffFilter
+Module15=idmlFilter
+Module16=idmlUtils
+Module17=filterGenericUtils
+Module18=Utils
 Module19=LanguageTool
 Module2=Project
 Module20=ITP
@@ -202,7 +204,7 @@ Module6=TM
 Module7=Term
 Module8=KeyValueStore
 Module9=ProjectSettings
-NumberOfFiles=63
+NumberOfFiles=64
 NumberOfLibraries=23
 NumberOfModules=52
 Version=6.51
@@ -284,8 +286,16 @@ Sub AppStart (Form1 As Form, Args() As String)
 	MainForm.Show
 
 	init
-	Log(fx.Screens)
-	Log(GetSystemProperty("os.name","windows"))
+	
+	'Log(fx.Screens)
+	'Log(GetSystemProperty("os.name","windows"))
+	If Args.Length=1 Then
+		Try
+			openProject(Args(0))
+		Catch
+			Log(LastException)
+		End Try
+	End If
 End Sub
 
 'Return true to allow the default exceptions handler to handle the uncaught exception.
@@ -451,12 +461,7 @@ Sub MenuBar1_Action
 			If path="" Then
 				Return
 			End If
-			currentProject.Initialize
-			currentProject.open(path)
-			autosaveTimer.Enabled=True
-			MainForm.Title=getProjectname(path)
-			Utils.enableMenuItems(MenuBar1,Array As String("_Save","_Close"))
-			Utils.enableMenuItems(MenuBar1,File.ReadList(File.DirAssets,"menuText.txt"))
+			openProject(path)
 		Case "en to zh Project"
 			If currentProject.IsInitialized Then
 				fx.Msgbox(MainForm,"Please close the current project first.","")
@@ -507,7 +512,6 @@ Sub MenuBar1_Action
 				Return
 			End If
 			currentProject.generateTargetFiles
-			fx.Msgbox(MainForm,"Done","")
 		Case "_Close"
 			Log("closing")
 			closeProject
@@ -1077,6 +1081,15 @@ Sub searchTableView_Action
 				editorLV.JumpToItem(index)
 			End If
 	End Select
+End Sub
+
+Sub openProject(path As String)
+	currentProject.Initialize
+	currentProject.open(path)
+	autosaveTimer.Enabled=True
+	MainForm.Title=getProjectname(path)
+	Utils.enableMenuItems(MenuBar1,Array As String("_Save","_Close"))
+	Utils.enableMenuItems(MenuBar1,File.ReadList(File.DirAssets,"menuText.txt"))
 End Sub
 
 Public Sub closeProject

@@ -89,6 +89,7 @@ Sub generateFile(filename As String,path As String,projectFile As Map)
 		Next
 	Next
 	File.WriteString(File.Combine(path,"target"),filename,result)
+	Main.updateOperation(filename&" generated!")
 End Sub
 
 Sub mergeSegment(sourceTextArea As TextArea)

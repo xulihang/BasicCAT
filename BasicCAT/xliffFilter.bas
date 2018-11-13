@@ -298,6 +298,7 @@ Sub generateFile(filename As String,path As String,projectFile As Map)
 	xmlString=unescapedText(xmlString,"target")
 	Log(xmlString)
 	File.WriteString(File.Combine(path,"target"),filename,xmlString)
+	Main.updateOperation(filename&" generated!")
 End Sub
 
 Sub insertTranslation(translationMap As Map,filename As String,path As String) As Map
