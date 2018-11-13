@@ -27,7 +27,7 @@ public Sub Run(Tag As String, Params As Map) As Object
 		Case "createWorkFile"
 			createWorkFile(Params.Get("filename"),Params.Get("path"),Params.Get("sourceLang"))
 		Case "generateFile"
-			generateFile(Params.Get("filename"),Params.Get("path"),Params.Get("projectFile"))
+			generateFile(Params.Get("filename"),Params.Get("path"),Params.Get("projectFile"),Params.Get("main"))
 		Case "mergeSegment"
 			mergeSegment(Params.Get("MainForm"),Params.Get("sourceTextArea"),Params.Get("editorLV"),Params.Get("segments"),Params.Get("projectFile"))
 		Case "splitSegment"
@@ -215,7 +215,7 @@ Sub handleMultiline(text As String) As String
 	Return text
 End Sub
 
-Sub generateFile(filename As String,path As String,projectFile As Map)
+Sub generateFile(filename As String,path As String,projectFile As Map,BCATMain As Object)
 	
 	Dim addID As List
 	addID.Initialize
@@ -289,6 +289,7 @@ Sub generateFile(filename As String,path As String,projectFile As Map)
 	Next
 	
 	File.WriteString(File.Combine(path,"target"),filename,fillPO(msgstrList,path,filename))
+	CallSub2(BCATMain,"updateOperation",filename&" generated!")
 End Sub
 
 Sub mergeSegment(MainForm As Form,sourceTextArea As TextArea,editorLV As CustomListView,segments As List,projectFile As Map)
