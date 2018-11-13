@@ -930,9 +930,9 @@ Sub ListViewParent_Resize
 			setLabelFont(targetlbl,"targetFont")
 			p.AddNode(targetlbl, 0, 0, itemWidth/2-15dip, -1)
 
-			sourcelbl.Text = sourceTa.Text&CRLF&"extra"
+			sourcelbl.Text = "ex"&sourceTa.Text&CRLF&"tra"
 			sourcelbl.WrapText = True
-			targetlbl.Text = targetTa.Text&CRLF&"extra"
+			targetlbl.Text = "ex"&targetTa.Text&CRLF&"tra"
 			targetlbl.WrapText = True
 			Dim jo As JavaObject = p
 			'force the label to refresh its layout.
