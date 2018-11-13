@@ -149,15 +149,22 @@ Sub ocrButton_MouseClicked (EventData As MouseEvent)
 End Sub
 
 Sub testTesseractPath As ResumableSub
+	Dim path As String
+	If File.Exists(File.DirData("BasicCAT"),"tesseractPath") Then
+		path=File.ReadString(File.DirData("BasicCAT"),"tesseractPath")
+	Else
+		path="tesseract"
+	End If
+	
 	Dim sh1 As Shell
-	sh1.Initialize("sh1","tesseract",Null)
+	sh1.Initialize("sh1",path,Null)
 	sh1.Run(-1)
 	Dim exist As Boolean=False
 	wait for sh1_ProcessCompleted (Success As Boolean, ExitCode As Int, StdOut As String, StdErr As String)
 	If Success And ExitCode = 0 Then
 		exist=True
 		Log("Success")
-		File.WriteString(File.DirData("BasicCAT"),"tesseractPath","tesseract")
+		File.WriteString(File.DirData("BasicCAT"),"tesseractPath",path)
 	Else
 		Log("Error: " & StdErr)
 		Dim result As Int
