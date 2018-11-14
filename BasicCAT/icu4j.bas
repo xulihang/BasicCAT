@@ -18,7 +18,7 @@ Sub convert(dir As String,filename As String)
 		charsetDetector.RunMethodJO("setText",Array(File.OpenInput(dir,filename)))
 		Dim charsetMatch As JavaObject
 		charsetMatch=charsetDetector.RunMethodJO("detect",Null)
-		If charsetMatch.RunMethod("getLanguage",Null)<>"UTF-8" Then
+		If charsetMatch.RunMethod("getName",Null)<>"UTF-8" Then
 			File.WriteString(dir,filename,charsetMatch.RunMethod("getString",Null))
 		End If
 	Catch

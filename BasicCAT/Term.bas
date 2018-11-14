@@ -102,14 +102,18 @@ Public Sub termsInASentence(sentence As String) As List
 		For Each source As String In kvs.ListKeys
 			If sourceLanguage="en" Then
 				If Regex.Matcher("\b"&source&"\b",sentence).Find=False Then
-					If Main.nlp.IsInitialized Then
-						Dim lemmatized As String
-						lemmatized=Main.nlp.lemmatizedSentence(source)
-						If Regex.Matcher("\b"&lemmatized&"\b",sentence).Find=False Then
+					If Regex.Matcher("\b"&source.ToLowerCase&"\b",sentence.ToLowerCase).Find=False Then
+						If Main.nlp.IsInitialized Then
+							Dim lemmatized As String
+							lemmatized=Main.nlp.lemmatizedSentence(source)
+							Dim lemmatizedSentence As String
+							lemmatizedSentence=Main.nlp.lemmatizedSentence(sentence)
+							If Regex.Matcher("\b"&lemmatized&"\b",lemmatizedSentence).Find=False Then
+								Continue
+							End If
+						Else
 							Continue
 						End If
-					Else
-						Continue
 					End If
 				End If
 			Else

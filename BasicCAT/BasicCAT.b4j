@@ -158,43 +158,43 @@ Library8=jsql
 Library9=jrandomaccessfile
 Module1=FileChooserUtils
 Module10=preTranslateDialog
-Module11=zip4j
-Module12=idmlFilter
-Module13=xliffFilter
-Module14=icu4j
-Module15=PDF2TXT
-Module16=languageChooser
-Module17=pdfbox
-Module18=idmlUtils
-Module19=filterGenericUtils
+Module11=FontPicker
+Module12=zip4j
+Module13=idmlFilter
+Module14=xliffFilter
+Module15=icu4j
+Module16=PDF2TXT
+Module17=languageChooser
+Module18=pdfbox
+Module19=idmlUtils
 Module2=Project
-Module20=Utils
-Module21=LanguageTool
-Module22=ITP
-Module23=Preferences
-Module24=dictWebView
-Module25=MT
-Module26=SRX
-Module27=POIWord
-Module28=confirmReviewDialog
-Module29=InputTextAreaBox
+Module20=filterGenericUtils
+Module21=Utils
+Module22=LanguageTool
+Module23=ITP
+Module24=Preferences
+Module25=dictWebView
+Module26=MT
+Module27=SRX
+Module28=POIWord
+Module29=confirmReviewDialog
 Module3=segmentation
-Module30=progressDialog
-Module31=TMManager
-Module32=SearchView
-Module33=TMEditor
-Module34=TextFlow
-Module35=TermManager
-Module36=TermEditor
-Module37=TMX
-Module38=TBX
-Module39=searchAndReplaceDialog
+Module30=InputTextAreaBox
+Module31=progressDialog
+Module32=TMManager
+Module33=SearchView
+Module34=TMEditor
+Module35=TextFlow
+Module36=TermManager
+Module37=TermEditor
+Module38=TMX
+Module39=TBX
 Module4=CustomListView
-Module40=MTParamsFiller
-Module41=opennlp
-Module42=serverLauncher
-Module43=Previewer
-Module44=FontPicker
+Module40=searchAndReplaceDialog
+Module41=MTParamsFiller
+Module42=opennlp
+Module43=serverLauncher
+Module44=Previewer
 Module45=InputBox
 Module46=Xml2Map
 Module47=statistics
@@ -599,6 +599,8 @@ Sub MenuBar1_Action
 			Dim sl As serverLauncher
 			sl.Initialize
 			sl.show
+		Case "Documentation"
+			fx.ShowExternalDocument("http://docs.basiccat.org")
 		Case "_About"
 			fx.Msgbox(MainForm,"BasicCAT 1.0"&CRLF&"@xulihang 2018","BasicCAT")
 	End Select
