@@ -55,6 +55,10 @@ Sub FontSizeSpinner_ValueChanged (Value As Object)
 End Sub
 
 Sub FontListView_SelectedIndexChanged(Index As Int)
-	Dim lbl As Label = FontListView.SelectedItem
-	Label1.Font=fx.CreateFont(lbl.Font.FamilyName,Label1.Font.Size,False,False)
+	Try
+		Dim lbl As Label = FontListView.SelectedItem
+		Label1.Font=fx.CreateFont(lbl.Font.FamilyName,Label1.Font.Size,False,False)
+	Catch
+		Log(LastException)
+	End Try
 End Sub

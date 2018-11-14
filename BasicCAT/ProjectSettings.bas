@@ -20,6 +20,8 @@ Sub Class_Globals
 	Private MatchRateTextField As TextField
 	Private quickFillListView As ListView
 	Private IncludeTermCheckBox As CheckBox
+	Private autocorrecCheckBox As CheckBox
+	Private autocorrectListView As ListView
 End Sub
 
 'Initializes the object. You can add parameters to this method if needed.
@@ -32,6 +34,7 @@ Public Sub Initialize
 	settingTabPane.LoadLayout("tmSetting","TM")
 	settingTabPane.LoadLayout("termSetting","Term")
 	settingTabPane.LoadLayout("quickfillSetting","Quickfill")
+	settingTabPane.LoadLayout("autocorrectSetting","Autocorrect")
 	If settings.ContainsKey("tmList") Then
 		TMListView.Items.AddAll(settings.Get("tmList"))
 	End If
@@ -42,6 +45,7 @@ Public Sub Initialize
 		MatchRateTextField.Text=(settings.Get("matchrate"))
 	End If
 	loadQuickfill
+	loadAutocorrect
 	resultList.Initialize
 End Sub
 
@@ -66,6 +70,36 @@ Sub loadQuickfill
 			tf.PrefWidth=quickFillListView.Width
 			tf.Text=item
 			quickFillListView.Items.Add(tf)
+		Next
+	End If
+End Sub
+
+
+Sub loadAutocorrect
+	If settings.ContainsKey("autocorrect_enabled") Then
+		autocorrecCheckBox.Checked=settings.Get("autocorrect_enabled")
+	End If
+	If settings.ContainsKey("autocorrect") Then
+		Dim items As List
+		items=settings.Get("autocorrect")
+		For Each item As List In items
+			Dim p As Pane
+			p.Initialize("")
+			p.LoadLayout("autocorrectItem")
+			p.PrefHeight=50
+			Dim tf1,tf2 As TextField
+			tf1=p.GetNode(0)
+			tf2=p.GetNode(1)
+			tf1.Text=item.Get(0)
+			tf2.Text=item.Get(1)
+			autocorrectListView.Items.Add(p)
+		Next
+	Else
+		For i=0 To 10
+			Dim p As Pane
+			p.Initialize("")
+			p.LoadLayout("autocorrectItem")
+			autocorrectListView.Items.Add(p)
 		Next
 	End If
 End Sub
@@ -100,6 +134,18 @@ Sub applyButton_MouseClicked (EventData As MouseEvent)
 	For Each tf As TextField In quickFillListView.Items
 		quickfillList.Add(tf.Text)
 	Next
+	Dim autocorrectList As List
+	autocorrectList.Initialize
+	For Each p As Pane In autocorrectListView.Items
+		Dim tf1,tf2 As TextField
+		tf1=p.GetNode(0)
+		tf2=p.GetNode(1)
+		Dim list1 As List
+		list1.Initialize
+		list1.Add(tf1.Text)
+		list1.Add(tf2.Text)
+		autocorrectList.Add(list1)
+	Next
 	
 	If ask="yes" Then
 		resultList.Add("changed")
@@ -108,6 +154,8 @@ Sub applyButton_MouseClicked (EventData As MouseEvent)
 		settings.Put("termList",TermListView.Items)
 		settings.Put("quickfill",quickfillList)
 		settings.Put("quickfill_includeterm",IncludeTermCheckBox.Checked)
+		settings.Put("autocorrect",autocorrectList)
+		settings.Put("autocorrect_enabled",autocorrecCheckBox.Checked)
 		resultList.Add(settings)
 	Else
 		resultList.Add("canceled")

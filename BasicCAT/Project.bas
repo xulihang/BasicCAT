@@ -418,16 +418,49 @@ Sub targetTextArea_TextChanged (Old As String, New As String)
 		End If
 	End If
 	
-	Log(Old)
-	Log(New)
 	If Old="" And New.Length>1 Then
 		Return
 	End If
 	If New.Contains(CRLF) Or Old.Contains(CRLF) Then
 		Return
 	End If
+	
 	Dim ta As TextArea
 	ta=Sender
+	
+	'-----autocorrect
+	Dim autocorrectList As List
+	autocorrectList.Initialize
+	If settings.ContainsKey("autocorrect_enabled") Then
+		If settings.Get("autocorrect_enabled")=True Then
+			If settings.ContainsKey("autocorrect") Then
+				autocorrectList=settings.Get("autocorrect")
+			End If
+		End If
+	End If
+	
+	If New.Length>Old.Length And autocorrectList.Size<>0 Then
+		Dim corrected As Boolean=False
+		For Each item As List In autocorrectList
+			If corrected=True Then
+				Exit
+			End If
+			Dim match As String
+			Dim before As String=item.Get(0)
+			Dim after As String=item.Get(1)
+			If ta.SelectionEnd-before.Length>=0 Then
+				match=ta.Text.SubString2(ta.SelectionEnd-before.Length,ta.SelectionEnd)
+				If match=before Then
+					Dim selection As Int=ta.SelectionEnd
+					ta.Text=ta.Text.SubString2(0,ta.SelectionEnd-before.Length)&after&ta.Text.SubString2(ta.SelectionEnd,ta.Text.Length)
+					ta.SetSelection(selection+after.Length,selection+after.Length)
+					corrected=True
+				End If
+			End If
+		Next
+	End If
+	
+
 	
 	Old=Old.SubString2(0,Min(ta.SelectionStart,Old.Length))
 	New=New.SubString2(0,Min(ta.SelectionStart,New.Length))
