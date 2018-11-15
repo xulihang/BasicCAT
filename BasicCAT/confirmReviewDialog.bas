@@ -82,8 +82,9 @@ Sub confirmButton_MouseClicked (EventData As MouseEvent)
 	onerow=thisReviews.Get(index)
 	Dim target As String
 	target=onerow(1)
-	If target.Contains("  --------note: ") Then
-		target=target.SubString2(0,target.IndexOf("  --------note: "))
+	If target.Contains("--------note:") Then
+		target=target.SubString2(0,target.IndexOf("--------note:"))
+		target=target.Trim
 	End If
 	Dim segment As List
 	segment=thisSegments.Get(index)
@@ -98,8 +99,14 @@ Sub confirmAllButton_MouseClicked (EventData As MouseEvent)
 		index=index+1
 		Dim segment As List
 		segment=thisSegments.Get(index)
-		segment.Set(1,row(1))
-		fillOne(row(1))
+		Dim target As String
+		target=row(1)
+		If target.Contains("--------note:") Then
+			target=target.SubString2(0,target.IndexOf("--------note:"))
+			target=target.Trim
+		End If
+		segment.Set(1,target)
+		fillOne(target)
 	Next
 	fx.Msgbox(frm,"Done","")
 	frm.Close
