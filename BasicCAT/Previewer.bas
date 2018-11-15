@@ -30,11 +30,13 @@ Public Sub loadText
 	Dim text As String
 	Dim currentFilename As String
 	currentFilename=Main.currentProject.currentFilename
-	If currentFilename.EndsWith(".txt") Then
+	Dim filenameLowercase As String
+	filenameLowercase=currentFilename.ToLowerCase
+	If filenameLowercase.EndsWith(".txt") Then
 		text=txtFilter.previewText
-	else if currentFilename.EndsWith(".idml") Then
+	else if filenameLowercase.EndsWith(".idml") Then
 		text=idmlFilter.previewText
-	else if currentFilename.EndsWith(".xlf") Then
+	else if filenameLowercase.EndsWith(".xlf") Then
 		text=xliffFilter.previewText
 	Else
 		Dim params As Map

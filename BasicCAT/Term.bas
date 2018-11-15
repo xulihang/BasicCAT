@@ -28,9 +28,11 @@ Public Sub importExternalTerminology(termList As List)
 	Dim termsMap As Map
 	termsMap.Initialize
 	For Each termfile As String In termList
-		If termfile.EndsWith(".txt") Then
+		Dim termfileLowercase As String
+		termfileLowercase=termfile.ToLowerCase
+		If termfileLowercase.EndsWith(".txt") Then
 			importedTxt(termfile,termsMap)
-		Else if termfile.EndsWith(".tbx") Then
+		Else if termfileLowercase.EndsWith(".tbx") Then
 			TBX.readTermsIntoMap(File.Combine(File.Combine(Main.currentProject.path,"Term"),termfile),sourceLanguage,Main.currentProject.projectFile.Get("target"),termsMap)
 		End If
 	Next

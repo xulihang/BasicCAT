@@ -745,11 +745,13 @@ Sub sourceTextArea_KeyPressed_Event (MethodName As String, Args() As Object) As 
 	Log(result)
     If result="ENTER" Then
 		contentIsChanged
-		If currentFilename.EndsWith(".txt") Then
+		Dim filenameLowercase As String
+		filenameLowercase=currentFilename.ToLowerCase
+		If filenameLowercase.EndsWith(".txt") Then
 			txtFilter.splitSegment(sourceTextArea)
-		Else if currentFilename.EndsWith(".idml") Then
+		Else if filenameLowercase.EndsWith(".idml") Then
 			idmlFilter.splitSegment(sourceTextArea)
-		Else if currentFilename.EndsWith(".xlf") Then
+		Else if filenameLowercase.EndsWith(".xlf") Then
 			xliffFilter.splitSegment(sourceTextArea)
 		Else
 			Dim params As Map
@@ -763,11 +765,13 @@ Sub sourceTextArea_KeyPressed_Event (MethodName As String, Args() As Object) As 
 		End If
 	Else if result="DELETE" Then
 		contentIsChanged
-		If currentFilename.EndsWith(".txt") Then
+		Dim filenameLowercase As String
+		filenameLowercase=currentFilename.ToLowerCase
+		If filenameLowercase.EndsWith(".txt") Then
 			txtFilter.mergeSegment(sourceTextArea)
-		Else if currentFilename.EndsWith(".idml") Then
+		Else if filenameLowercase.EndsWith(".idml") Then
 			idmlFilter.mergeSegment(sourceTextArea)
-		Else if currentFilename.EndsWith(".xlf") Then
+		Else if filenameLowercase.EndsWith(".xlf") Then
 			xliffFilter.mergeSegment(sourceTextArea)
 		Else
 			Dim params As Map
@@ -897,6 +901,9 @@ Sub showReplacements(values As List,ta As TextArea)
 	replacementsCM.Initialize("replacementsCM")
 	Dim replacements As List
 	replacements=values.Get(2)
+	'0 offset
+	'1 length
+	'2 replacements
 	For Each replace As Map In replacements
 		Log(replace)
 		Dim mi As MenuItem
@@ -905,6 +912,7 @@ Sub showReplacements(values As List,ta As TextArea)
 		tagList.Initialize
 		tagList.AddAll(values)
 		tagList.set(2,replace.Get("value"))
+		tagList.Add(previousEntry)
 		mi.Tag=tagList
 		replacementsCM.MenuItems.Add(mi)
 	Next
@@ -921,14 +929,15 @@ Sub replacementMi_Action
 	mi=Sender
 	Dim tagList As List
 	tagList=mi.Tag
-	Dim offset,length As Int
+	Dim offset,length,thisPreviousEntry As Int
 	offset=tagList.Get(0)
 	length=tagList.Get(1)
+	thisPreviousEntry=tagList.Get(3)
 	Dim replacement As String
 	replacement=tagList.Get(2)
 	Log(replacement)
 	Dim p As Pane
-	p=Main.editorLV.GetPanel(previousEntry)
+	p=Main.editorLV.GetPanel(thisPreviousEntry)
 	Dim targetTextArea As TextArea
 	targetTextArea=p.GetNode(1)
 	targetTextArea.Text=targetTextArea.Text.SubString2(0,offset)&replacement&targetTextArea.Text.SubString2(offset+length,targetTextArea.Text.Length)
@@ -1318,7 +1327,9 @@ Sub runFilterPluginAccordingToExtension(filename As String,task As String,params
 		If pluginName.EndsWith("Filter") Then
 			Dim extension As String
 			extension=pluginName.Replace("Filter","")
-			If filename.EndsWith(extension) Then
+			Dim filenameLowercase As String
+			filenameLowercase=filename.ToLowerCase
+			If filenameLowercase.EndsWith(extension) Then
 				Return Main.plugin.RunPlugin(pluginName,task,params)
 			End If
 		End If
@@ -1327,11 +1338,13 @@ Sub runFilterPluginAccordingToExtension(filename As String,task As String,params
 End Sub
 
 Sub createWorkFileAccordingToExtension(filename As String)
-	If filename.EndsWith(".txt") Then
+	Dim filenameLowercase As String
+	filenameLowercase=filename.ToLowerCase
+	If filenameLowercase.EndsWith(".txt") Then
 		txtFilter.createWorkFile(filename,path,projectFile.Get("source"))
-	Else if filename.EndsWith(".idml") Then
+	Else if filenameLowercase.EndsWith(".idml") Then
 		idmlFilter.createWorkFile(filename,path,projectFile.Get("source"))
-	Else if filename.EndsWith(".xlf") Then
+	Else if filenameLowercase.EndsWith(".xlf") Then
 		xliffFilter.createWorkFile(filename,path,projectFile.Get("source"))
 	Else
 		Dim params As Map
@@ -1451,11 +1464,13 @@ End Sub
 Public Sub generateTargetFiles
 	For Each filename As String In files
 		Sleep(0)
-		If filename.EndsWith(".txt") Then
+		Dim filenameLowercase As String
+		filenameLowercase=filename.ToLowerCase
+		If filenameLowercase.EndsWith(".txt") Then
 			txtFilter.generateFile(filename,path,projectFile)
-		Else if filename.EndsWith(".idml") Then
+		Else if filenameLowercase.EndsWith(".idml") Then
 			idmlFilter.generateFile(filename,path,projectFile)
-		Else if filename.EndsWith(".xlf") Then
+		Else if filenameLowercase.EndsWith(".xlf") Then
 			xliffFilter.generateFile(filename,path,projectFile)
 		Else
 			Dim params As Map

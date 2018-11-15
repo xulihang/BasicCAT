@@ -47,9 +47,11 @@ Public Sub importExternalTranslationMemory(tmList As List) As ResumableSub
 	Dim segments As List
 	segments.Initialize
 	For Each tmfile As String In tmList
-		If tmfile.EndsWith(".txt") Then
+		Dim tmfileLowercase As String
+		tmfileLowercase=tmfile.ToLowerCase
+		If tmfileLowercase.EndsWith(".txt") Then
 			segments.AddAll(importedTxt(tmfile))
-		Else if tmfile.EndsWith(".tmx") Then
+		Else if tmfileLowercase.EndsWith(".tmx") Then
 			segments.AddAll(TMX.importedList(File.Combine(Main.currentProject.path,"TM"),tmfile))
 		End If
 	Next
