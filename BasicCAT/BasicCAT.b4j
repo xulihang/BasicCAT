@@ -1276,22 +1276,28 @@ End Sub
 
 Sub checkLV_ItemClick (Index As Int, Value As Object)
 	If Value<>"" Then
-		Dim tagList As List
-		tagList=Value
-		Dim offset,length,entry As Int
-		offset=tagList.Get(1)
-		length=tagList.Get(2)
-		entry=tagList.Get(3)
-		Dim replacement As String
-		replacement=tagList.Get(0)
-		Dim p As Pane
-		p=editorLV.GetPanel(entry)
-		Dim targetTextArea As TextArea
-		targetTextArea=p.GetNode(1)
-		targetTextArea.Text=targetTextArea.Text.SubString2(0,offset)&replacement&targetTextArea.Text.SubString2(offset+length,targetTextArea.Text.Length)
-		Sleep(0)
-		targetTextArea.SetSelection(targetTextArea.Text.Length,targetTextArea.Text.Length)
-		targetTextArea.RequestFocus
+		Try
+			Dim tagList As List
+			tagList=Value
+			Dim offset,length,entry As Int
+			offset=tagList.Get(1)
+			length=tagList.Get(2)
+			entry=tagList.Get(3)
+			Dim replacement As String
+			replacement=tagList.Get(0)
+			Dim p As Pane
+			p=editorLV.GetPanel(entry)
+			Dim targetTextArea As TextArea
+			targetTextArea=p.GetNode(1)
+			targetTextArea.Text=targetTextArea.Text.SubString2(0,offset)&replacement&targetTextArea.Text.SubString2(offset+length,targetTextArea.Text.Length)
+			Sleep(0)
+			targetTextArea.SetSelection(targetTextArea.Text.Length,targetTextArea.Text.Length)
+			targetTextArea.RequestFocus
+		Catch
+			Log(LastException)
+		End Try
+		checkLV.Clear
+	Else
 		checkLV.Clear
 	End If
 End Sub

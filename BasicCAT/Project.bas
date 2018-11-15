@@ -15,7 +15,7 @@ Sub Class_Globals
 	Public projectTM As TM
 	Public projectTerm As Term
 	Public lastEntry As Int
-	Private previousEntry As Int
+	Private previousEntry As Int=-1
 	Private lastFilename As String
 	Public settings As Map
 	Public completed As Int
@@ -871,25 +871,29 @@ Sub targetTextArea_FocusChanged (HasFocus As Boolean)
 	lastEntry=Main.editorLV.GetItemFromView(TextArea1.Parent)
 	lastFilename=currentFilename
 	If HasFocus Then
+		
         Log("hasFocus")
+		Log(previousEntry)
+		Log(lastEntry)
 		showTM(TextArea1)
 		showTerm(TextArea1)
 		Main.updateSegmentLabel(Main.editorLV.GetItemFromView(TextArea1.Parent),segments.Size)
+
 	Else
 		Log("loseFocus")
-		previousEntry=lastEntry
-		If Main.getCheckLVSize<=1 Then
-			If Main.preferencesMap.ContainsKey("languagetoolEnabled") Then
-				If Main.preferencesMap.Get("languagetoolEnabled")=True Then
-					wait for (LanguageTool.check(TextArea1.Text,lastEntry,projectFile.Get("target"))) complete (result As List)
-					showReplacements(result,TextArea1)
+		Log(previousEntry)
+		Log(lastEntry)
+		If previousEntry<>lastEntry Then
+			If Main.getCheckLVSize<=1 Then
+				If Main.preferencesMap.ContainsKey("languagetoolEnabled") Then
+					If Main.preferencesMap.Get("languagetoolEnabled")=True Then
+						wait for (LanguageTool.check(TextArea1.Text,lastEntry,projectFile.Get("target"))) complete (result As List)
+						showReplacements(result,TextArea1)
+					End If
 				End If
 			End If
 		End If
-
-
-
-
+		previousEntry=lastEntry
 	End If
 End Sub
 
