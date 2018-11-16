@@ -1149,7 +1149,9 @@ Sub saveTranslation(targetTextArea As TextArea)
 	Dim bitext As List
 	bitext=segments.Get(index)
 	bitext.Set(1,targetTextArea.Text)
-	projectTM.addPair(bitext.Get(0),bitext.Get(1))
+	If targetTextArea.Text<>"" Then
+		projectTM.addPair(bitext.Get(0),bitext.Get(1))
+	End If
 End Sub
 
 Public Sub fillPane(FirstIndex As Int, LastIndex As Int)

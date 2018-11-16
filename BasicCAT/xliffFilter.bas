@@ -541,10 +541,14 @@ Sub previewText As String
 	If Main.editorLV.Size<>Main.currentProject.segments.Size Then
 		Return ""
 	End If
+	Dim previousID As String=""
 	For i=Max(0,Main.currentProject.lastEntry-3) To Min(Main.currentProject.lastEntry+7,Main.currentProject.segments.Size-1)
 
 		Dim p As Pane
 		p=Main.editorLV.GetPanel(i)
+		If p.NumberOfNodes=0 Then
+			Continue
+		End If
 		Dim sourceTextArea As TextArea
 		Dim targetTextArea As TextArea
 		sourceTextArea=p.GetNode(0)
@@ -555,10 +559,19 @@ Sub previewText As String
 		source=sourceTextArea.Text
 		target=targetTextArea.Text
 		fullsource=bitext.Get(2)
+		Dim extra As Map
+		extra=bitext.Get(4)
+
 		If target="" Then
 			translation=fullsource
 		Else
 			translation=fullsource.Replace(source,target)
+		End If
+		Dim id As String
+		id=extra.Get("id")
+		If previousID<>id Then
+			text=text&CRLF
+			previousID=id
 		End If
 		If i=Main.currentProject.lastEntry Then
 			translation=$"<span id="current" name="current" >${translation}</span>"$
