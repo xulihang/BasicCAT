@@ -48,6 +48,8 @@ Private Sub HandleMapElement (m As Map)
 End Sub
 
 Private Sub HandleElement (key As String, value As Object)
+	Log(key)
+	Log(value)
 	If value Is Map Then
 		If key <> "" Then builder = builder.element(key)
 		HandleMapElement(value)

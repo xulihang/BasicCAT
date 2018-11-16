@@ -10,7 +10,7 @@ End Sub
 
 'Initializes the object. You can NOT add parameters to this method!
 Public Sub Initialize() As String
-	Log("Initializing plugin " & GetNiceName)
+	'Log("Initializing plugin " & GetNiceName)
 	' Here return a key to prevent running unauthorized plugins
 	Return "MyKey"
 End Sub
@@ -22,7 +22,7 @@ End Sub
 
 ' must be available
 public Sub Run(Tag As String, Params As Map) As Object
-	Log("run"&Params)
+	'Log("run"&Params)
 	Select Tag
 		Case "createWorkFile"
 			createWorkFile(Params.Get("filename"),Params.Get("path"),Params.Get("sourceLang"))
@@ -52,9 +52,10 @@ Public Sub createWorkFile(filename As String,path As String,sourceLang As String
 	segmentsList.Initialize
 	Dim innerfileName As String
 	innerfileName=filename
-	Dim inbetweenContent As String
+	
 	Dim id As Int=0
 	For Each msgid As String As List In readPO(path,filename)
+		Dim inbetweenContent As String
 		id=id+1
 		Dim size As Int
 		size=segmentation.segmentedTxt(msgid,False,sourceLang,path).Size
@@ -72,7 +73,7 @@ Public Sub createWorkFile(filename As String,path As String,sourceLang As String
 			Else
 				Dim sourceShown As String=source
 				If filterGenericUtils.tagsNum(sourceShown)=1 Then
-					sourceShown=filterGenericUtils.tagsRemovedText(sourceShown)
+					sourceShown=filterGenericUtils.tagsAtBothSidesRemovedText(sourceShown)
 				End If
 				If filterGenericUtils.tagsNum(sourceShown)>=2 And Regex.IsMatch("<.*?>",sourceShown) Then
 					sourceShown=filterGenericUtils.tagsAtBothSidesRemovedText(sourceShown)
@@ -88,20 +89,24 @@ Public Sub createWorkFile(filename As String,path As String,sourceLang As String
 				bitext.Add(extra)
 				inbetweenContent=""
 			End If
-			If index=size-1 And filterGenericUtils.tagsRemovedText(sourceShown)="" And segmentsList.Size>0 Then 'last segment contains tags but no text
+			If index=size-1 And filterGenericUtils.tagsRemovedText(sourceShown).Trim="" And segmentsList.Size>0 Then 'last segment contains tags but no text
 				Dim previousBitext As List
 				previousBitext=segmentsList.Get(segmentsList.Size-1)
-				Dim sourceShown As String
-				sourceShown=previousBitext.Get(0)&source.Trim
-				If filterGenericUtils.tagsNum(sourceShown)=1 Then
-					sourceShown=filterGenericUtils.tagsRemovedText(sourceShown)
+				Dim previousExtra As Map
+				previousExtra=previousBitext.Get(4) 'segments is at file level not msgid level, so needs verification
+				If previousExtra.Get("id")=id Then
+					Dim sourceShown As String
+					sourceShown=previousBitext.Get(0)&source.Trim
+					If filterGenericUtils.tagsNum(sourceShown)=1 Then
+						sourceShown=filterGenericUtils.tagsAtBothSidesRemovedText(sourceShown)
+					End If
+					If filterGenericUtils.tagsNum(sourceShown)>=2 And Regex.IsMatch("<.*?>",sourceShown) Then
+						sourceShown=filterGenericUtils.tagsAtBothSidesRemovedText(sourceShown)
+					End If
+					previousBitext.Set(0,sourceShown)
+					previousBitext.Set(2,previousBitext.Get(2)&bitext.Get(2))
 				End If
-				If filterGenericUtils.tagsNum(sourceShown)>=2 And Regex.IsMatch("<.*?>",sourceShown) Then
-					sourceShown=filterGenericUtils.tagsAtBothSidesRemovedText(sourceShown)
-				End If
-				previousBitext.Set(0,sourceShown)
-				previousBitext.Set(2,previousBitext.Get(2)&bitext.Get(2))
-			Else if segmentsList.Size=0 And filterGenericUtils.tagsRemovedText(sourceShown)="" Then
+			Else if segmentsList.Size=0 And filterGenericUtils.tagsRemovedText(sourceShown).trim="" Then
 				Continue
 			Else
 				segmentsList.Add(bitext)
@@ -156,7 +161,7 @@ Sub readPO(path As String,filename As String) As List
 		line=textReader.ReadLine
 	Loop
 	textReader.Close
-	Log(msgidList)
+	'Log(msgidList)
 	Return msgidList
 End Sub
 
@@ -195,7 +200,7 @@ Sub fillPO(msgstrList As List,path As String,filename As String) As String
 				Continue
 			End If
 			If msgstr.Contains("\n") Then
-				Log(True)
+				'Log(True)
 				msgstr=handleMultiline(msgstr)
 			End If
 			content=content&"msgstr "&Chr(34)&msgstr&Chr(34)&CRLF&CRLF
@@ -222,7 +227,7 @@ Sub generateFile(filename As String,path As String,projectFile As Map,BCATMain A
 	Dim idList As List
 	idList.Initialize
 	For i=1 To countMsgStr(path,filename)
-		Log(i)
+		'Log(i)
 		idList.Add(i)
 	Next
 	
@@ -252,7 +257,7 @@ Sub generateFile(filename As String,path As String,projectFile As Map,BCATMain A
 			Else
 				translation=fullsource.Replace(source,target)
 			End If
-			Log("translation"&translation)
+			'Log("translation"&translation)
 			Dim extra As Map
 			extra=bitext.Get(4)
 			If extra.ContainsKey("translate") Then
@@ -270,6 +275,17 @@ Sub generateFile(filename As String,path As String,projectFile As Map,BCATMain A
 
 			If currentID<>id Then
 				msgstrList.Add(msgstr)
+				If id-currentID>1 Then
+					Log(id)
+					Log(currentID)
+					Log(msgstr)
+					Log(translation)
+					For i=2 To id-currentID
+						msgstrList.Add("")
+						addID.add(currentID)
+						currentID=currentID+1
+					Next
+				End If
 				msgstr=translation
 				addID.add(currentID)
 				currentID=currentID+1
@@ -287,7 +303,7 @@ Sub generateFile(filename As String,path As String,projectFile As Map,BCATMain A
 			addID.InsertAt(id-1,id)
 		End If
 	Next
-	
+	Log(msgstrList)
 	File.WriteString(File.Combine(path,"target"),filename,fillPO(msgstrList,path,filename))
 	CallSub2(BCATMain,"updateOperation",filename&" generated!")
 End Sub
@@ -324,7 +340,7 @@ Sub mergeSegment(MainForm As Form,sourceTextArea As TextArea,editorLV As CustomL
 	If filterGenericUtils.tagsNum(source&nextsource)<>filterGenericUtils.tagsNum(fullsource&nextFullSource) And filterGenericUtils.tagsNum(fullsource&nextFullSource)>0 Then
 		Dim result As Int
 		result=fx.Msgbox2(MainForm,"Segments contain unshown tags, continue?","","Yes","Cancel","No",fx.MSGBOX_CONFIRMATION)
-		Log(result)
+		'Log(result)
 		'yes -1, no -2, cancel -3
 		Select result
 			Case -1
@@ -371,7 +387,7 @@ Sub mergeSegment(MainForm As Form,sourceTextArea As TextArea,editorLV As CustomL
 	If showTag Then
 		source=fullsource&nextFullSource
 		If filterGenericUtils.tagsNum(source)=1 Then
-			source=filterGenericUtils.tagsRemovedText(source)
+			source=filterGenericUtils.tagsAtBothSidesRemovedText(source)
 		End If
 		If filterGenericUtils.tagsNum(source)>=2 And Regex.IsMatch("<.*?>",source) Then
 			source=filterGenericUtils.tagsAtBothSidesRemovedText(source)

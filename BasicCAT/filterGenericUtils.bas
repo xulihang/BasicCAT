@@ -24,6 +24,8 @@ Sub tagsNum(text As String) As Int
 End Sub
 
 Sub tagsAtBothSidesRemovedText(text As String) As String
+	Dim tagscount As Int
+	tagscount=tagsNum(text)
 	Dim textList As List
 	textList.Initialize
 	text=Regex.replace("<.*?>",text,CRLF&"------$0"&CRLF&"------")
@@ -37,10 +39,29 @@ Sub tagsAtBothSidesRemovedText(text As String) As String
 		End If
 	Next
 
+    
 	Do While newList.Size>2 And tagsAreAPair(newList.Get(0),newList.Get(newList.Size-1))
 		newList.RemoveAt(0)
 		newList.RemoveAt(newList.Size-1)
 	Loop
+	
+	'for single tag
+	If tagscount=1 Then
+		Dim firstItem,lastItem As String
+		Try
+			firstItem=newList.Get(0)
+			lastItem=newList.Get(newList.Size-1)
+			If Regex.IsMatch("<.*?>",firstItem) Then
+				newList.RemoveAt(0)
+			End If
+			If Regex.IsMatch("<.*?>",lastItem) Then
+				newList.RemoveAt(newList.Size-1)
+			End If
+		Catch
+			Log(LastException)
+		End Try
+	End If
+	
 	
 	text=""
 	For Each item As String In newList

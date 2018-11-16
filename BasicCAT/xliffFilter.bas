@@ -18,7 +18,7 @@ Sub createWorkFile(filename As String,path As String,sourceLang As String)
 	sourceFiles.Initialize
 	
 	Dim files As List
-	files=getFilesList(escapedText(File.ReadString(File.Combine(path,"source"),filename)))
+	files=getFilesList(escapedText(File.ReadString(File.Combine(path,"source"),filename),"source"))
 	
 	For Each fileMap As Map In files
 		Try
@@ -35,8 +35,9 @@ Sub createWorkFile(filename As String,path As String,sourceLang As String)
 		attributes=fileMap.Get("Attributes")
 		Dim innerfileName As String
 		innerfileName=attributes.Get("original")
-		Dim inbetweenContent As String
+		
 		For Each tu As List In getTransUnits(fileMap)
+			Dim inbetweenContent As String=""
 			Dim text As String
 			text=tu.Get(0)
 			Dim id As String
@@ -58,11 +59,12 @@ Sub createWorkFile(filename As String,path As String,sourceLang As String)
 				Else
 					Dim sourceShown As String=source
 					If filterGenericUtils.tagsNum(sourceShown)=1 Then
-						sourceShown=filterGenericUtils.tagsRemovedText(sourceShown)
-					End If
-					If filterGenericUtils.tagsNum(sourceShown)>=2 And Regex.IsMatch("<.*?>",sourceShown) Then
 						sourceShown=filterGenericUtils.tagsAtBothSidesRemovedText(sourceShown)
 					End If
+					If filterGenericUtils.tagsNum(sourceShown)=2 And Regex.IsMatch("<.*?>",sourceShown) Then
+						sourceShown=filterGenericUtils.tagsAtBothSidesRemovedText(sourceShown)
+					End If
+
 					bitext.add(sourceShown.Trim)
 					bitext.Add("")
 					bitext.Add(inbetweenContent&source) 'inbetweenContent contains crlf and spaces between sentences
@@ -72,21 +74,27 @@ Sub createWorkFile(filename As String,path As String,sourceLang As String)
 					extra.Put("id",id)
 					bitext.Add(extra)
 					inbetweenContent=""
+
 				End If
-				If index=segmentedText.Size-1 And filterGenericUtils.tagsRemovedText(sourceShown)="" And segmentsList.Size>0 Then 'last segment contains tags but no text
+				If index=segmentedText.Size-1 And filterGenericUtils.tagsRemovedText(sourceShown).Trim="" And segmentsList.Size>0 Then 'last segment contains tags but no text
 					Dim previousBitext As List
-					previousBitext=segmentsList.Get(segmentsList.Size-1)
-					Dim sourceShown As String
-					sourceShown=previousBitext.Get(0)&source.Trim
-					If filterGenericUtils.tagsNum(sourceShown)=1 Then
-						sourceShown=filterGenericUtils.tagsRemovedText(sourceShown)
+					previousBitext=segmentsList.Get(segmentsList.Size-1) 
+					Dim previousExtra As Map
+					previousExtra=previousBitext.Get(4) 'segments is at file level not trans-unit level, so needs verification
+					If previousExtra.Get("id")=id Then
+						Dim sourceShown As String
+						sourceShown=previousBitext.Get(0)&source.Trim
+						If filterGenericUtils.tagsNum(sourceShown)=1 Then
+							sourceShown=filterGenericUtils.tagsAtBothSidesRemovedText(sourceShown)
+						End If
+						If filterGenericUtils.tagsNum(sourceShown)=2 And Regex.IsMatch("<.*?>",sourceShown) Then
+							sourceShown=filterGenericUtils.tagsAtBothSidesRemovedText(sourceShown)
+						End If
+						previousBitext.Set(0,sourceShown)
+						previousBitext.Set(2,previousBitext.Get(2)&bitext.Get(2))
+						inbetweenContent=""
 					End If
-					If filterGenericUtils.tagsNum(sourceShown)>=2 And Regex.IsMatch("<.*?>",sourceShown) Then
-						sourceShown=filterGenericUtils.tagsAtBothSidesRemovedText(sourceShown)
-					End If
-					previousBitext.Set(0,sourceShown)
-					previousBitext.Set(2,previousBitext.Get(2)&bitext.Get(2))
-				Else if segmentsList.Size=0 And filterGenericUtils.tagsRemovedText(sourceShown)="" Then
+				Else if segmentsList.Size=0 And filterGenericUtils.tagsRemovedText(sourceShown).trim="" Then
 					Continue
 				Else
 					segmentsList.Add(bitext)
@@ -152,18 +160,20 @@ Sub getFilesList(xmlstring As String) As List
 	Return Utils.GetElements(xliffMap,"file")
 End Sub
 
-Sub escapedText(xmlstring As String) As String
+Sub escapedText(xmlstring As String,tagName As String) As String
+	Dim pattern As String
+	pattern="<"&tagName&".*?>(.*?)</"&tagName&">"
 	Dim new As String
 	new=xmlstring
 	Dim sourceMatcher As Matcher
-	sourceMatcher=Regex.Matcher2("<source.*?>(.*?)</source>",32,new)
+	sourceMatcher=Regex.Matcher2(pattern,32,new)
 	Dim times As Int=0
 	Do While sourceMatcher.Find
 		times=times+1
 	Loop
 	Dim replacedTimes As Int=0
 	Dim sourceMatcher As Matcher
-	sourceMatcher=Regex.Matcher2("<source.*?>(.*?)</source>",32,new)
+	sourceMatcher=Regex.Matcher2(pattern,32,new)
 
     Dim oldText As String=new
 	Do While sourceMatcher.find
@@ -179,7 +189,7 @@ Sub escapedText(xmlstring As String) As String
 		after=new.SubString2(sourceMatcher.GetEnd(1),new.Length)
 		new=before&mid&after
 		If oldText<>new Then
-			sourceMatcher=Regex.Matcher2("<source.*?>(.*?)</source>",32,new)
+			sourceMatcher=Regex.Matcher2(pattern,32,new)
 			replacedTimes=0
 			oldText=new
 		Else
@@ -303,7 +313,9 @@ End Sub
 
 Sub insertTranslation(translationMap As Map,filename As String,path As String) As Map
 	Dim xmlstring As String
-	xmlstring=escapedText(File.ReadString(File.Combine(path,"source"),filename))
+	xmlstring=File.ReadString(File.Combine(path,"source"),filename)
+	xmlstring=escapedText(xmlstring,"source")
+	xmlstring=escapedText(xmlstring,"target")
 	Dim xmlMap As Map
 	xmlMap=Utils.getXmlMap(xmlstring)
 	Dim xliffMap As Map
@@ -335,11 +347,14 @@ Sub insertTranslation(translationMap As Map,filename As String,path As String) A
 				Dim dataMap As Map
 				dataMap=translationMap.Get(id)
 				If originalFilename=dataMap.Get("filename") Then
-					For Each key As String In target.Keys
-						If key<>"Attributes" Then
-							target.Remove(key)
-						End If
-					Next
+					'For Each key As String In target.Keys
+					'	If key<>"Attributes" Then
+					'		target.Remove(key)
+					'	End If
+					'Next
+					If target.ContainsKey("Text") Then
+						target.Remove("Text")
+					End If
 					target.Put("Text",dataMap.Get("translation"))
 					Log(dataMap.Get("translation"))
 				End If
@@ -454,9 +469,9 @@ Sub mergeSegment(sourceTextArea As TextArea)
 	If showTag Then
 		source=fullsource&nextFullSource
 		If filterGenericUtils.tagsNum(source)=1 Then
-			source=filterGenericUtils.tagsRemovedText(source)
+			source=filterGenericUtils.tagsAtBothSidesRemovedText(source)
 		End If
-		If filterGenericUtils.tagsNum(source)>=2 And Regex.IsMatch("<.*?>",source) Then
+		If filterGenericUtils.tagsNum(source)=2 And Regex.IsMatch("<.*?>",source) Then
 			source=filterGenericUtils.tagsAtBothSidesRemovedText(source)
 		End If
 		fullsource=fullsource&nextFullSource
