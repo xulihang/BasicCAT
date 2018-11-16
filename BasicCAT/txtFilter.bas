@@ -204,6 +204,9 @@ Sub previewText As String
 
 		Dim p As Pane
 		p=Main.editorLV.GetPanel(i)
+		If p.NumberOfNodes=0 Then
+			Continue
+		End If
 		Dim sourceTextArea As TextArea
 		Dim targetTextArea As TextArea
 		sourceTextArea=p.GetNode(0)

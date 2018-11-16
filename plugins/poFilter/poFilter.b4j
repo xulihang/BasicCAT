@@ -38,14 +38,14 @@ Sub AppStart (Form1 As Form, Args() As String)
 	MainForm = Form1
 	'MainForm.RootPane.LoadLayout("Layout1") 'Load the layout file.
 	MainForm.Show
-	Dim pf As poFilterPlugin
-	pf.Initialize
+	'Dim pf As poFilterPlugin
+	'pf.Initialize
 	'pf.createWorkFile("321880_ms.docx.po","C:\Users\xulihang\Documents\B4J\plugin\filterPlugins\po\Objects\zhtest","en")
-	Dim projectFile As Map
-	projectFile.Initialize
-	projectFile.Put("source","en")
-	projectFile.Put("target","zh")
-	pf.generateFile("毕业论文答辩稿.docx.po","C:\Users\xulihang\Documents\B4J\plugin\filterPlugins\po\Objects\zhtest",projectFile,Me)
+	'Dim projectFile As Map
+	'projectFile.Initialize
+	'projectFile.Put("source","en")
+	'projectFile.Put("target","zh")
+	'pf.generateFile("毕业论文答辩稿.docx.po","C:\Users\xulihang\Documents\B4J\plugin\filterPlugins\po\Objects\zhtest",projectFile,Me)
 End Sub
 
 'Return true to allow the default exceptions handler to handle the uncaught exception.

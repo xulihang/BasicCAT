@@ -47,6 +47,7 @@ Public Sub loadText
 		params.Put("lastEntry",Main.currentProject.lastEntry)
 		text=Main.currentProject.runFilterPluginAccordingToExtension(currentFilename,"previewText",params)
 	End If
+	Log("preview"&text)
 	loadHtml(text)
 End Sub
 

@@ -1336,6 +1336,8 @@ Sub runFilterPluginAccordingToExtension(filename As String,task As String,params
 			Dim filenameLowercase As String
 			filenameLowercase=filename.ToLowerCase
 			If filenameLowercase.EndsWith(extension) Then
+				Log(pluginName)
+				Log(task)
 				Return Main.plugin.RunPlugin(pluginName,task,params)
 			End If
 		End If

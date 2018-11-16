@@ -10,7 +10,7 @@ End Sub
 
 'Initializes the object. You can NOT add parameters to this method!
 Public Sub Initialize() As String
-	'Log("Initializing plugin " & GetNiceName)
+	Log("Initializing plugin " & GetNiceName)
 	' Here return a key to prevent running unauthorized plugins
 	Return "MyKey"
 End Sub
@@ -22,7 +22,7 @@ End Sub
 
 ' must be available
 public Sub Run(Tag As String, Params As Map) As Object
-	'Log("run"&Params)
+	Log("run"&Tag)
 	Select Tag
 		Case "createWorkFile"
 			createWorkFile(Params.Get("filename"),Params.Get("path"),Params.Get("sourceLang"))
@@ -33,7 +33,7 @@ public Sub Run(Tag As String, Params As Map) As Object
 		Case "splitSegment"
 			splitSegment(Params.Get("main"),Params.Get("sourceTextArea"),Params.Get("editorLV"),Params.Get("segments"),Params.Get("projectFile"))
 		Case "previewText"
-			previewText(Params.Get("editorLV"),Params.Get("segments"),Params.Get("lastEntry"))
+			Return previewText(Params.Get("editorLV"),Params.Get("segments"),Params.Get("lastEntry"))
 	End Select
 	Return ""
 End Sub
@@ -455,14 +455,18 @@ Sub splitSegment(BCATMain As Object,sourceTextArea As TextArea,editorLV As Custo
 End Sub
 
 Sub previewText(editorLV As CustomListView,segments As List,lastEntry As Int) As String
+	Log("Po preview")
 	Dim text As String
 	If editorLV.Size<>segments.Size Then
 		Return ""
 	End If
+	Dim previousID As Int=-1
 	For i=Max(0,lastEntry-3) To Min(lastEntry+7,segments.Size-1)
-
 		Dim p As Pane
 		p=editorLV.GetPanel(i)
+		If p.NumberOfNodes=0 Then
+			Continue
+		End If
 		Dim sourceTextArea As TextArea
 		Dim targetTextArea As TextArea
 		sourceTextArea=p.GetNode(0)
@@ -473,6 +477,9 @@ Sub previewText(editorLV As CustomListView,segments As List,lastEntry As Int) As
 		source=sourceTextArea.Text
 		target=targetTextArea.Text
 		fullsource=bitext.Get(2)
+		Dim extra As Map
+		extra=bitext.Get(4)
+		
 		If target="" Then
 			translation=fullsource
 		Else
@@ -480,6 +487,12 @@ Sub previewText(editorLV As CustomListView,segments As List,lastEntry As Int) As
 		End If
 		If i=lastEntry Then
 			translation=$"<span id="current" name="current" >${translation}</span>"$
+		End If
+		Dim id As Int
+		id=extra.Get("id")
+		If previousID<>id Then
+			text=text&CRLF
+			previousID=id
 		End If
 		text=text&translation
 	Next
