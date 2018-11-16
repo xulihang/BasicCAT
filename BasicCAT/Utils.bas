@@ -10,17 +10,28 @@ Sub Process_Globals
 	Private menus As Map
 End Sub
 
-Sub exportToBiParagraph(segments As List,path As String)
+Sub exportToBiParagraph(segments As List,path As String,filename As String)
 	Dim text As StringBuilder
 	text.Initialize
 	Dim sourceText As String
 	Dim targetText As String
+	Dim previousID As String
 	For Each segment As List In segments
 		Dim source,target,fullsource As String
 		Dim translation As String
 		source=segment.Get(0)
 		target=segment.Get(1)
 		fullsource=segment.Get(2)
+		Dim extra As Map
+		extra=segment.Get(4)
+		If extra.ContainsKey("id") Then
+			Dim id As String
+			id=extra.Get("id")
+			If previousID<>id Then
+				fullsource=fullsource&CRLF
+				previousID=id
+			End If
+		End If
 		source=Regex.Replace2("<.*?>",32,source,"")
 		target=Regex.Replace2("<.*?>",32,target,"")
 		fullsource=Regex.Replace2("<.*?>",32,fullsource,"")

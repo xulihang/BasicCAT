@@ -272,8 +272,12 @@ Sub exportBiParagraphMi_Action
 	Dim fc As FileChooser
 	fc.Initialize
 	fc.SetExtensionFilter("TXT",Array As String("*.txt"))
-	Utils.exportToBiParagraph(segments,fc.ShowSave(Main.MainForm))
-	fx.Msgbox(Main.MainForm,"Done.","")
+	Dim exportPath As String
+	exportPath=fc.ShowSave(Main.MainForm)
+	If exportPath<>"" Then
+		Utils.exportToBiParagraph(segments,exportPath,currentFilename)
+		fx.Msgbox(Main.MainForm,"Done.","")
+	End If
 End Sub
 
 Sub importReviewMi_Action
