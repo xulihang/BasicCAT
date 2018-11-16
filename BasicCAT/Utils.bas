@@ -15,7 +15,7 @@ Sub exportToBiParagraph(segments As List,path As String,filename As String)
 	text.Initialize
 	Dim sourceText As String
 	Dim targetText As String
-	Dim previousID As String
+	Dim previousID As String="-1"
 	For Each segment As List In segments
 		Dim source,target,fullsource As String
 		Dim translation As String
@@ -28,7 +28,7 @@ Sub exportToBiParagraph(segments As List,path As String,filename As String)
 			Dim id As String
 			id=extra.Get("id")
 			If previousID<>id Then
-				fullsource=fullsource&CRLF
+				fullsource=CRLF&fullsource
 				previousID=id
 			End If
 		End If
