@@ -14,6 +14,7 @@ Sub Class_Globals
 	Private launchCorenlpButton As Button
 	Private launchLanguageToolButton As Button
 	Private pathSetting As Map
+	Private javaPath As String="java"
 End Sub
 
 'Initializes the object. You can add parameters to this method if needed.
@@ -65,11 +66,28 @@ Sub testJavaPath As ResumableSub
 	wait for sh1_ProcessCompleted (Success As Boolean, ExitCode As Int, StdOut As String, StdErr As String)
 	If Success And ExitCode = 0 Then
 		Log("Success")
+		javaPath="java"
 		Return True
 	Else
 		Log("Error: " & StdErr)
-		fx.Msgbox(frm,"java is not installed or path not been configured","")
-		Return False
+		Dim newPath As String
+		Dim javaHomePath As String=GetSystemProperty("java.home","")
+		Dim seperator As String=GetSystemProperty("file.separator","")
+		newPath=javaHomePath&seperator&"/bin/java"
+		Log(newPath)
+		Dim sh2 As Shell
+		sh2.Initialize("sh2",newPath,Array As String("-version"))
+		sh2.Run(5000)
+		wait for sh2_ProcessCompleted (Success As Boolean, ExitCode As Int, StdOut As String, StdErr As String)
+		If Success And ExitCode = 0 Then
+			Log("Success")
+			javaPath=newPath
+			Return True
+		Else
+			Log("Error: " & StdErr)
+			fx.Msgbox(frm,"java is not installed or path not been configured","")
+			Return False
+		End If
 	End If
 End Sub
 
@@ -118,13 +136,13 @@ Sub launchCorenlpButton_MouseClicked (EventData As MouseEvent)
 End Sub
 
 Sub launchLanguageToolServer
-	languageToolShell.Initialize("languageToolShell","java",Array As String("-cp","languagetool-server.jar","org.languagetool.server.HTTPServer","--port","8081"))
+	languageToolShell.Initialize("languageToolShell",javaPath,Array As String("-cp","languagetool-server.jar","org.languagetool.server.HTTPServer","--port","8081"))
 	languageToolShell.WorkingDirectory = languageToolPathTextField.Text
 	languageToolShell.RunWithOutputEvents(-1)
 End Sub
 
 Sub launchCorenlpServer
-	corenlpShell.Initialize("corenlpShell","java",Array As String("-mx4g","-cp",$""*""$, "edu.stanford.nlp.pipeline.StanfordCoreNLPServer", "-port", "9000", "-timeout", "15000"))
+	corenlpShell.Initialize("corenlpShell",javaPath,Array As String("-mx4g","-cp",$""*""$, "edu.stanford.nlp.pipeline.StanfordCoreNLPServer", "-port", "9000", "-timeout", "15000"))
 	corenlpShell.WorkingDirectory = stanfordPathTextField.Text
 	corenlpShell.RunWithOutputEvents(-1)
 End Sub
