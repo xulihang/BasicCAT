@@ -212,9 +212,13 @@ Sub AddTermButton_MouseClicked (EventData As MouseEvent)
 	Else
 		Dim filename As String
 		filename=Main.getFilename(path)
-		Wait For (File.CopyAsync(path,"",File.Combine(Main.currentProject.path,"Term"), filename)) Complete (Success As Boolean)
-		Log("Success: " & Success)
-		TermListView.Items.Add(filename)
+		Dim thisImportDialog As importDialog
+		thisImportDialog.Initialize
+		If thisImportDialog.ShowAndWait(path,"term")=True Then
+			Wait For (File.CopyAsync(path,"",File.Combine(Main.currentProject.path,"Term"), filename)) Complete (Success As Boolean)
+			Log("Success: " & Success)
+			TermListView.Items.Add(filename)
+		End If
 	End If
 End Sub
 
@@ -238,9 +242,13 @@ Sub AddTMButton_MouseClicked (EventData As MouseEvent)
 	Else
 		Dim filename As String
 		filename=Main.getFilename(path)
-		Wait For (File.CopyAsync(path,"",File.Combine(Main.currentProject.path,"TM"), filename)) Complete (Success As Boolean)
-		Log("Success: " & Success)
-		TMListView.Items.Add(filename)
+		Dim thisImportDialog As importDialog
+		thisImportDialog.Initialize
+		If thisImportDialog.ShowAndWait(path,"tm")=True Then
+			Wait For (File.CopyAsync(path,"",File.Combine(Main.currentProject.path,"TM"), filename)) Complete (Success As Boolean)
+			Log("Success: " & Success)
+			TMListView.Items.Add(filename)
+		End If
 	End If
 End Sub
 

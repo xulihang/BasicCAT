@@ -45,7 +45,7 @@ Sub setItems
 		For Each target As String In targetMap.Keys
 			Dim terminfo As Map
 			terminfo=targetMap.Get(target)
-			Dim tag,descrip As String
+			Dim tag,note As String
 			
 			If terminfo.ContainsKey("tag") Then
 				tag=terminfo.Get("tag")
@@ -54,9 +54,9 @@ Sub setItems
 				End If
 			End If
 			If terminfo.ContainsKey("note") Then
-				descrip=terminfo.Get("note")
+				note=terminfo.Get("note")
 			End If
-			items.Add(buildItemText(key,target,descrip,tag))
+			items.Add(buildItemText(key,target,note,tag))
 		Next
 	Next
 	SearchView1.SetItems(items)
