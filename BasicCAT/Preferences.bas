@@ -31,6 +31,7 @@ Sub Class_Globals
 	Private pluginsLV As ListView
 	Private AutoSaveTextField As TextField
 	Private lookupUsingMTCheckBox As CheckBox
+	Private ExcludeTagsCheckBox As CheckBox
 End Sub
 
 'Initializes the object. You can add parameters to this method if needed.
@@ -103,6 +104,9 @@ Sub categoryListView_SelectedIndexChanged(Index As Int)
 			'mt
 			SettingPane.RemoveAllNodes
 			SettingPane.LoadLayout("mtSetting")
+			If unsavedPreferences.ContainsKey("mt_excludetags") Then
+				ExcludeTagsCheckBox.Checked=unsavedPreferences.Get("mt_excludetags")
+			End If
 			loadMT
 		Case 3
 			'word lookup
@@ -260,6 +264,10 @@ End Sub
 
 Sub vcsEnabledCheckBox_CheckedChange(Checked As Boolean)
 	unsavedPreferences.Put("vcsEnabled",Checked)
+End Sub
+
+Sub ExcludeTagsCheckBox_CheckedChange(Checked As Boolean)
+	unsavedPreferences.Put("mt_excludetags",Checked)
 End Sub
 
 Sub saveVCSSettingButton_MouseClicked (EventData As MouseEvent)

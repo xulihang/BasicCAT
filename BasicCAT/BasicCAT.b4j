@@ -158,13 +158,13 @@ Library8=jsql
 Library9=jrandomaccessfile
 Module1=FileChooserUtils
 Module10=preTranslateDialog
-Module11=xliffFilter
-Module12=filterGenericUtils
-Module13=Map2Xml
-Module14=Previewer
-Module15=dictWebView
-Module16=idmlFilter
-Module17=Utils
+Module11=Utils
+Module12=Previewer
+Module13=xliffFilter
+Module14=filterGenericUtils
+Module15=Map2Xml
+Module16=dictWebView
+Module17=idmlFilter
 Module18=LanguageTool
 Module19=TMManager
 Module2=Project
@@ -842,8 +842,17 @@ Sub exportTMXMi_Action
 			bitext.Add(tmKVS.Get(key))
 			segments.Add(bitext)
 		Next
-		TMX.export(segments,currentProject.projectFile.Get("source"),currentProject.projectFile.Get("target"),path)
-		fx.Msgbox(MainForm,"exported","")
+		Dim result As Int
+		result=fx.Msgbox2(MainForm,"Include tags?","","Yes","Cancel","No",fx.MSGBOX_CONFIRMATION)
+		Select result
+			Case fx.DialogResponse.NEGATIVE
+				TMX.export(segments,currentProject.projectFile.Get("source"),currentProject.projectFile.Get("target"),path,False)
+				fx.Msgbox(MainForm,"exported","")
+			Case fx.DialogResponse.POSITIVE
+				TMX.export(segments,currentProject.projectFile.Get("source"),currentProject.projectFile.Get("target"),path,True)
+				fx.Msgbox(MainForm,"exported","")
+		End Select
+		
 	End If
 End Sub
 

@@ -159,20 +159,41 @@ Sub exportToFile
 		End If
 		segments.Add(bitext)
 	Next
+	Dim result As Int
+	result=fx.Msgbox2(frm,"Include tags?","","Yes","Cancel","No",fx.MSGBOX_CONFIRMATION)
+	If result=fx.DialogResponse.CANCEL Then
+		Return
+	End If
 	If path.EndsWith(".tmx") Then
-		TMX.export(segments,Main.currentProject.projectFile.Get("source"),Main.currentProject.projectFile.Get("target"),path)
+		Select result
+			Case fx.DialogResponse.NEGATIVE
+				TMX.export(segments,Main.currentProject.projectFile.Get("source"),Main.currentProject.projectFile.Get("target"),path,False)
+			Case fx.DialogResponse.POSITIVE
+				TMX.export(segments,Main.currentProject.projectFile.Get("source"),Main.currentProject.projectFile.Get("target"),path,True)
+		End Select
 	Else
-		exportToTXT(segments,path)
+		Select result
+			Case fx.DialogResponse.NEGATIVE
+				exportToTXT(segments,path,False)
+			Case fx.DialogResponse.POSITIVE
+				exportToTXT(segments,path,True)
+		End Select
 	End If
 	
 	fx.Msgbox(frm,"exported","")
 End Sub
 
-Sub exportToTXT(segments As List,path As String)
+Sub exportToTXT(segments As List,path As String,includeTags As Boolean)
 	Dim sb As StringBuilder
 	sb.Initialize
 	For Each bitext As List In segments
-		sb.Append(bitext.Get(0)).Append("	").Append(bitext.Get(1)).Append(CRLF)
+		Dim source As String=bitext.Get(0)
+		Dim target As String=bitext.Get(1)
+		If includeTags=False Then
+			source=Regex.Replace("<.*?>",source,"")
+			target=Regex.Replace("<.*?>",target,"")
+		End If
+		sb.Append(source).Append("	").Append(target).Append(CRLF)
 	Next
 	File.WriteString(path,"",sb.ToString)
 End Sub

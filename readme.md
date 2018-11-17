@@ -23,7 +23,7 @@ BasicCAT cannot be done without the following libraries.
 * [SQLite JDBC](https://github.com/xerial/sqlite-jdbc) to use sqlite. Apache v2 Licensed.
 * [
 JavaWuzzy](https://github.com/xdrop/fuzzywuzzy) for fuzzy match. GPL v3 Licensed.
-* [icu](http://site.icu-project.org/) for encoding conversion and detection. ICU Licensed.
+* [icu](http://site.icu-project.org/) for encoding conversion and detection. Unicode Inc. Licensed.
 
 
 

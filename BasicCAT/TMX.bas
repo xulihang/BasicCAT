@@ -37,7 +37,7 @@ Sub importedList(dir As String,filename As String) As List
 	Return segments
 End Sub
 
-Sub export(segments As List,sourceLang As String,targetLang As String,path As String)
+Sub export(segments As List,sourceLang As String,targetLang As String,path As String,includeTag As Boolean)
 	Dim rootmap As Map
 	rootmap.Initialize
 	Dim tmxMap As Map
@@ -63,6 +63,9 @@ Sub export(segments As List,sourceLang As String,targetLang As String,path As St
 		tuvList.Initialize
 		Dim index As Int=0
 		For Each seg As String In bitext
+			If includeTag=False Then
+				seg=Regex.Replace("<.*?>",seg,"")
+			End If
 			index=index+1
 			If index Mod 2=0 Then
 				tuvList.Add(CreateMap("Attributes":CreateMap("xml:lang":targetLang),"seg":seg))

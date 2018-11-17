@@ -30,6 +30,11 @@ Sub getMTPluginList As List
 End Sub
 
 Sub getMT(source As String,sourceLang As String,targetLang As String,MTEngine As String) As ResumableSub
+	If Main.preferencesMap.ContainsKey("mt_excludetags") Then
+		If Main.preferencesMap.Get("mt_excludetags")=True Then
+			source=Regex.Replace("<.*?>",source,"")
+		End If
+	End If
 	Select MTEngine
 		Case "baidu"
 			wait for (BaiduMT(source,sourceLang,targetLang)) Complete (result As String)
