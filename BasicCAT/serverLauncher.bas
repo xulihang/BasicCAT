@@ -142,7 +142,14 @@ Sub launchLanguageToolServer
 End Sub
 
 Sub launchCorenlpServer
-	corenlpShell.Initialize("corenlpShell",javaPath,Array As String("-mx4g","-cp",$""*""$, "edu.stanford.nlp.pipeline.StanfordCoreNLPServer", "-port", "9000", "-timeout", "15000"))
-	corenlpShell.WorkingDirectory = stanfordPathTextField.Text
-	corenlpShell.RunWithOutputEvents(-1)
+	If GetSystemProperty("os.arch","")="x86" Then
+		fx.Msgbox(frm,"You are currently running on an x86 version of java. The corenlp may be lack of memory.","")
+		corenlpShell.Initialize("corenlpShell",javaPath,Array As String("-cp",$""*""$, "edu.stanford.nlp.pipeline.StanfordCoreNLPServer", "-port", "9000", "-timeout", "15000"))
+		corenlpShell.WorkingDirectory = stanfordPathTextField.Text
+		corenlpShell.RunWithOutputEvents(-1)
+	Else
+		corenlpShell.Initialize("corenlpShell",javaPath,Array As String("-mx4g","-cp",$""*""$, "edu.stanford.nlp.pipeline.StanfordCoreNLPServer", "-port", "9000", "-timeout", "15000"))
+		corenlpShell.WorkingDirectory = stanfordPathTextField.Text
+		corenlpShell.RunWithOutputEvents(-1)
+	End If
 End Sub
