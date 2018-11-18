@@ -160,7 +160,7 @@ Sub importTBX(path As String)
 			ListView1.Items.Add(buildTermItemText(key,target,tag,note,descrip))
 			If i=5 Then
 				ListView1.Items.Add("......")
-				Exit
+				Return
 			End If
 		Next
 	Next

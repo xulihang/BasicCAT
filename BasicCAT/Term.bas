@@ -90,53 +90,140 @@ End Sub
 
 
 Public Sub termsInASentence(sentence As String) As List
+    Dim result As List
+	result.Initialize
+	result.AddAll(termsInASentenceUsingIteration(sentence,terminology))
+	result.AddAll(termsInASentenceUsingHashMap(sentence,externalTerminology))
+	Return result
+End Sub
+
+Sub termsInASentenceUsingHashMap(sentence As String,kvs As KeyValueStore) As List
 	Dim result As List
 	result.Initialize
-	For i=0 To 1 
-		Dim kvs As KeyValueStore
-		Select i 
-			Case 0 
-				kvs=terminology
-			Case 1
-				kvs=externalTerminology
-		End Select
-		
-		For Each source As String In kvs.ListKeys
-			If sourceLanguage="en" Then
-				If Regex.Matcher("\b"&source&"\b",sentence).Find=False Then
-					If Regex.Matcher("\b"&source.ToLowerCase&"\b",sentence.ToLowerCase).Find=False Then
-						If Main.nlp.IsInitialized Then
-							Dim lemmatized As String
-							lemmatized=Main.nlp.lemmatizedSentence(source)
-							Dim lemmatizedSentence As String
-							lemmatizedSentence=Main.nlp.lemmatizedSentence(sentence)
-							If Regex.Matcher("\b"&lemmatized&"\b",lemmatizedSentence).Find=False Then
-								Continue
-							End If
-						Else
-							Continue
-						End If
-					End If
-				End If
-			Else
-				If sentence.Contains(source)=False Then
-					Continue
-				End If
+    Dim words As List
+	words.Initialize
+	If sourceLanguage="en" Then
+		Log(sentence)
+		sentence=Regex.Replace("[\x21-\x2F\x3A-\x40\x5B-\x60\x7B-\x7E]",sentence,"") 'remove punctuations
+		words.AddAll(Regex.Split(" ",sentence))
+		addEnglishPhrases(words)
+		Dim lemmatized As List
+		lemmatized.Initialize
+		lemmatized.AddAll(Regex.Split(" ",Main.nlp.lemmatizedSentence(sentence)))
+		addEnglishPhrases(lemmatized)
+		For Each lemma As String In lemmatized 'here, lemma may be lemmatized phrases
+			If words.IndexOf(lemma)=-1 Then
+				words.Add(lemma)
 			End If
-
-
+		Next
+	Else
+	    words.AddAll(Regex.Split("",sentence))
+		words.AddAll(addChineseWords(sentence))
+	End If
+	For Each word As String In words
+		Log(word)
+		If kvs.ContainsKey(word) Then
 			Dim targetMap As Map
-			targetMap=kvs.Get(source)
+			targetMap=kvs.Get(word)
 			For Each target As String In targetMap.Keys
 				Dim oneterm As List
 				oneterm.Initialize
-				oneterm.Add(source)
+				oneterm.Add(word)
 				oneterm.Add(target)
 				oneterm.Add(targetMap.Get(target))
 				result.Add(oneterm)
 			Next
+		End If
+	Next
+
+	Return result
+End Sub
+
+Sub addEnglishPhrases(words As List)
+	Dim iterateList As List
+	iterateList.Initialize
+	iterateList.AddAll(words)
+	For i=1 To 8
+		Dim endnum As Int=iterateList.Size-i
+		If endnum<=0 Then
+			Exit
+		End If
+		For j=0 To endnum 
+			Dim word As String
+			If j+i>iterateList.Size-1 Then
+				Exit
+			End If
+			For k=j To j+i
+				word=word&" "&iterateList.Get(k)
+			Next
+			word=word.Trim
+			If words.IndexOf(word)=-1 Then
+				words.Add(word)
+			End If
 		Next
 	Next
+End Sub
+
+Sub addChineseWords(source As String) As List
+	Dim words As List
+	words.Initialize
+	For i=1 To 8
+		If source.Length-i<=0 Then
+			Exit
+		End If
+		For j=0 To source.Length-i
+			If j+i>source.Length Then
+				Exit
+			End If
+			Dim word As String
+			word=source.SubString2(j,j+i)
+			words.Add(word)
+		Next
+	Next
+	Return words
+End Sub
+
+
+Sub termsInASentenceUsingIteration(sentence As String,kvs As KeyValueStore) As List
+	Dim result As List
+	result.Initialize
+
+	Dim lemmatizedSentence As String
+	lemmatizedSentence=Main.nlp.lemmatizedSentence(sentence)
+	For Each source As String In kvs.ListKeys
+		If sourceLanguage="en" Then
+			If Regex.Matcher("\b"&source&"\b",sentence).Find=False Then
+				If Regex.Matcher("\b"&source.ToLowerCase&"\b",sentence.ToLowerCase).Find=False Then
+					If Main.nlp.IsInitialized Then
+						Dim lemmatized As String
+						lemmatized=Main.nlp.lemmatizedSentence(source)
+						If Regex.Matcher("\b"&lemmatized&"\b",lemmatizedSentence).Find=False Then
+							Continue
+						End If
+					Else
+						Continue
+					End If
+				End If
+			End If
+		Else
+			If sentence.Contains(source)=False Then
+				Continue
+			End If
+		End If
+
+
+		Dim targetMap As Map
+		targetMap=kvs.Get(source)
+		For Each target As String In targetMap.Keys
+			Dim oneterm As List
+			oneterm.Initialize
+			oneterm.Add(source)
+			oneterm.Add(target)
+			oneterm.Add(targetMap.Get(target))
+			result.Add(oneterm)
+		Next
+	Next
+
 	
 	Return result
 End Sub
