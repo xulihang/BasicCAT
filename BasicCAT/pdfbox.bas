@@ -57,7 +57,7 @@ Sub getImage(dir As String,filename As String) As ResumableSub
 	pageNum=doc.RunMethod("getNumberOfPages",Null)
 	Dim PDFRenderer As JavaObject
 	PDFRenderer.InitializeNewInstance("org.apache.pdfbox.rendering.PDFRenderer",Array(doc))
-	For i=0 To pageNum
+	For i=0 To pageNum-1
 		Log(i)
 		Sleep(0)
 		Dim bi As JavaObject
@@ -65,12 +65,12 @@ Sub getImage(dir As String,filename As String) As ResumableSub
 		dpi=150
 		bi=PDFRenderer.RunMethodJO("renderImageWithDPI",Array(i,dpi))
 		Dim out As OutputStream
-		out=File.OpenOutput(dir,filename&"-"&i&".jpg",False)
+		out=File.OpenOutput(dir,i&".jpg",False)
 		Dim imageIO As JavaObject
 		imageIO.InitializeStatic("javax.imageio.ImageIO")
 		imageIO.RunMethod("write",Array(bi,"jpg",out))
 		out.Close
-		files.Add(File.Combine(dir,filename&"-"&i&".jpg"))
+		files.Add(File.Combine(dir,i&".jpg"))
 	Next
 	Return files
 End Sub

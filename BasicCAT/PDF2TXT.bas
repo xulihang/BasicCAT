@@ -217,7 +217,7 @@ Sub scanWithPagenum(files As List,langsParam As String,affix As String,offset As
 		End If
 		Dim args As List
 		args.Initialize
-		args.AddAll(Array As String(pdfFilename&"-"&i&".jpg",i,"-l",langsParam))
+		args.AddAll(Array As String(i&".jpg",i,"-l",langsParam))
 		
 
 		Dim sh1 As Shell
