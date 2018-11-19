@@ -70,6 +70,7 @@ Sub showResult(jsonstring As String,entry As Int) As List
 			values.Add(offset)
 			values.Add(length)
 			values.Add(replacements)
+			values.Add(entry)
 			Main.addCheckList(replacements,message,offset,length,context.Get("text"),entry)
 		Next
 	End If

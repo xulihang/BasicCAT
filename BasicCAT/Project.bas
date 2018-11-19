@@ -877,16 +877,16 @@ Sub targetTextArea_FocusChanged (HasFocus As Boolean)
 	If HasFocus Then
 		
         Log("hasFocus")
-		Log(previousEntry)
-		Log(lastEntry)
+		'Log(previousEntry)
+		'Log(lastEntry)
 		showTM(TextArea1)
 		showTerm(TextArea1)
 		Main.updateSegmentLabel(Main.editorLV.GetItemFromView(TextArea1.Parent),segments.Size)
 
 	Else
 		Log("loseFocus")
-		Log(previousEntry)
-		Log(lastEntry)
+		'Log("previous"&previousEntry)
+		'Log("lastentry"&lastEntry)
 		If previousEntry<>lastEntry Then
 			If Main.getCheckLVSize<=1 Then
 				If Main.preferencesMap.ContainsKey("languagetoolEnabled") Then
@@ -920,7 +920,6 @@ Sub showReplacements(values As List,ta As TextArea)
 		tagList.Initialize
 		tagList.AddAll(values)
 		tagList.set(2,replace.Get("value"))
-		tagList.Add(previousEntry)
 		mi.Tag=tagList
 		replacementsCM.MenuItems.Add(mi)
 	Next
@@ -933,25 +932,30 @@ Sub showReplacements(values As List,ta As TextArea)
 End Sub
 
 Sub replacementMi_Action
-	Dim mi As MenuItem
-	mi=Sender
-	Dim tagList As List
-	tagList=mi.Tag
-	Dim offset,length,thisPreviousEntry As Int
-	offset=tagList.Get(0)
-	length=tagList.Get(1)
-	thisPreviousEntry=tagList.Get(3)
-	Dim replacement As String
-	replacement=tagList.Get(2)
-	Log(replacement)
-	Dim p As Pane
-	p=Main.editorLV.GetPanel(thisPreviousEntry)
-	Dim targetTextArea As TextArea
-	targetTextArea=p.GetNode(1)
-	targetTextArea.Text=targetTextArea.Text.SubString2(0,offset)&replacement&targetTextArea.Text.SubString2(offset+length,targetTextArea.Text.Length)
-	Sleep(0)
-	targetTextArea.SetSelection(targetTextArea.Text.Length,targetTextArea.Text.Length)
-	Main.checkLVClear
+	Try
+		Dim mi As MenuItem
+		mi=Sender
+		Dim tagList As List
+		tagList=mi.Tag
+		Dim offset,length,thisPreviousEntry As Int
+		offset=tagList.Get(0)
+		length=tagList.Get(1)
+		thisPreviousEntry=tagList.Get(3)
+		Log(thisPreviousEntry)
+		Dim replacement As String
+		replacement=tagList.Get(2)
+		Log(replacement)
+		Dim p As Pane
+		p=Main.editorLV.GetPanel(thisPreviousEntry)
+		Dim targetTextArea As TextArea
+		targetTextArea=p.GetNode(1)
+		targetTextArea.Text=targetTextArea.Text.SubString2(0,offset)&replacement&targetTextArea.Text.SubString2(offset+length,targetTextArea.Text.Length)
+		Sleep(0)
+		targetTextArea.SetSelection(targetTextArea.Text.Length,targetTextArea.Text.Length)
+		Main.checkLVClear
+	Catch
+		Log(LastException)
+	End Try
 End Sub
 
 Sub loadITPSegments(targetTextArea As TextArea,engine As String,fullTranslation As String)
