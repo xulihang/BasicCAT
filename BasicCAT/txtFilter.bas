@@ -62,7 +62,9 @@ Sub generateFile(filename As String,path As String,projectFile As Map)
 	For Each sourceFileMap As Map In sourceFiles
 		Dim segmentsList As List
 		segmentsList=sourceFileMap.Get(innerfilename)
+		Dim index As Int=-1
 		For Each bitext As List In segmentsList
+			index=index+1
 			Dim source,target,fullsource,translation As String
 			source=bitext.Get(0)
 			target=bitext.Get(1)
@@ -80,16 +82,43 @@ Sub generateFile(filename As String,path As String,projectFile As Map)
 			If target="" Then
 				translation=fullsource
 			Else
+				If shouldAddSpace(projectFile.Get("source"),index,segmentsList) Then
+					target=target&" "
+				End If
 				translation=fullsource.Replace(source,target)
 				If projectFile.Get("source")="en" Then
 					translation=translation.Replace(" ","")
 				End If
 			End If
+
 			result=result&translation
 		Next
 	Next
 	File.WriteString(File.Combine(path,"target"),filename,result)
 	Main.updateOperation(filename&" generated!")
+End Sub
+
+
+Sub shouldAddSpace(sourceLang As String,index As Int,segmentsList As List) As Boolean
+	Dim bitext As List=segmentsList.Get(index)
+	Dim fullsource As String=bitext.Get(2)
+	If sourceLang="zh" Then
+		If index+1<=segmentsList.Size-1 Then
+			Dim nextBitext As List
+			nextBitext=segmentsList.Get(index+1)
+			Dim nextfullsource As String=nextBitext.Get(2)
+			If fullsource.EndsWith(CRLF)=False And nextfullsource.StartsWith(CRLF)=False Then
+				Try
+					If Regex.IsMatch("\s",nextfullsource.CharAt(0))=False And Regex.IsMatch("\s",fullsource.CharAt(fullsource.Length-1))=False Then
+						Return True
+					End If
+				Catch
+					Log(LastException)
+				End Try
+			End If
+		End If
+	End If
+	Return False
 End Sub
 
 Sub mergeSegment(sourceTextArea As TextArea)
@@ -220,11 +249,15 @@ Sub previewText As String
 		If target="" Then
 			translation=fullsource
 		Else
+			If shouldAddSpace(Main.currentProject.projectFile.Get("source"),i,Main.currentProject.segments) Then
+				target=target&" "
+			End If
 			translation=fullsource.Replace(source,target)
 			If Main.currentProject.projectFile.Get("source")="en" Then
 				translation=translation.Replace(" ","")
 			End If
 		End If
+
 		If i=Main.currentProject.lastEntry Then
 			translation=$"<span id="current" name="current" >${translation}</span>"$
 		End If

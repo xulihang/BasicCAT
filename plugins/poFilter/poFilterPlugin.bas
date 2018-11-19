@@ -33,7 +33,7 @@ public Sub Run(Tag As String, Params As Map) As Object
 		Case "splitSegment"
 			splitSegment(Params.Get("main"),Params.Get("sourceTextArea"),Params.Get("editorLV"),Params.Get("segments"),Params.Get("projectFile"))
 		Case "previewText"
-			Return previewText(Params.Get("editorLV"),Params.Get("segments"),Params.Get("lastEntry"))
+			Return previewText(Params.Get("editorLV"),Params.Get("segments"),Params.Get("lastEntry"),Params.Get("sourceLang"))
 	End Select
 	Return ""
 End Sub
@@ -247,7 +247,9 @@ Sub generateFile(filename As String,path As String,projectFile As Map,BCATMain A
 		innerfilename=sourceFileMap.GetKeyAt(0)
 		Dim segmentsList As List
 		segmentsList=sourceFileMap.Get(innerfilename)
+		Dim index As Int=-1
 		For Each bitext As List In segmentsList
+			index=index+1
 			Dim source,target,fullsource,translation As String
 			source=bitext.Get(0)
 			target=bitext.Get(1)
@@ -255,6 +257,9 @@ Sub generateFile(filename As String,path As String,projectFile As Map,BCATMain A
 			If target="" Then
 				translation=fullsource
 			Else
+				If shouldAddSpace(projectFile.Get("source"),index,segmentsList) Then
+					target=target&" "
+				End If
 				translation=fullsource.Replace(source,target)
 			End If
 			'Log("translation"&translation)
@@ -267,6 +272,10 @@ Sub generateFile(filename As String,path As String,projectFile As Map,BCATMain A
 			End If
 			
 			Dim id As Int=extra.Get("id")
+			
+
+			
+
 			If first Then
 				currentID=id
 				first=False
@@ -454,7 +463,36 @@ Sub splitSegment(BCATMain As Object,sourceTextArea As TextArea,editorLV As Custo
 	editorLV.InsertAt(editorLV.GetItemFromView(sourceTextArea.Parent)+1,newSegmentPane,"")
 End Sub
 
-Sub previewText(editorLV As CustomListView,segments As List,lastEntry As Int) As String
+Sub shouldAddSpace(sourceLang As String,index As Int,segmentsList As List) As Boolean
+	Dim bitext As List=segmentsList.Get(index)
+	Dim fullsource As String=bitext.Get(2)
+	fullsource=Utils.getPureTextWithoutTrim(fullsource)
+	Dim extra As Map
+	extra=bitext.Get(4)
+	Dim id As Int=extra.Get("id")
+	If sourceLang="zh" Then
+		If index+1<=segmentsList.Size-1 Then
+			Dim nextBitext As List
+			nextBitext=segmentsList.Get(index+1)
+			Dim nextfullsource As String=nextBitext.Get(2)
+			nextfullsource=Utils.getPureTextWithoutTrim(nextfullsource)
+			Dim nextExtra As Map=nextBitext.Get(4)
+			Dim nextid As Int=nextExtra.Get("id")
+			If nextid=id Then
+				Try
+					If Regex.IsMatch("\s",nextfullsource.CharAt(0))=False And Regex.IsMatch("\s",fullsource.CharAt(fullsource.Length-1))=False Then
+						Return True
+					End If
+				Catch
+					Log(LastException)
+				End Try
+			End If
+		End If
+	End If
+	Return False
+End Sub
+
+Sub previewText(editorLV As CustomListView,segments As List,lastEntry As Int,sourceLang As String) As String
 	Log("Po preview")
 	Dim text As String
 	If editorLV.Size<>segments.Size Then
@@ -483,6 +521,9 @@ Sub previewText(editorLV As CustomListView,segments As List,lastEntry As Int) As
 		If target="" Then
 			translation=fullsource
 		Else
+			If shouldAddSpace(sourceLang,i,segments) Then
+				target=target&" "
+			End If
 			translation=fullsource.Replace(source,target)
 		End If
 		If i=lastEntry Then
@@ -490,6 +531,7 @@ Sub previewText(editorLV As CustomListView,segments As List,lastEntry As Int) As
 		End If
 		Dim id As Int
 		id=extra.Get("id")
+
 		If previousID<>id Then
 			text=text&CRLF
 			previousID=id

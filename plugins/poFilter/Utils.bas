@@ -10,6 +10,10 @@ Sub Process_Globals
 	Private menus As Map
 End Sub
 
+Sub getPureTextWithoutTrim(fullsource As String) As String
+	Return Regex.Replace("<.*?>",fullsource,"")
+End Sub
+
 Sub exportToBiParagraph(segments As List,path As String,filename As String)
 	Dim text As StringBuilder
 	text.Initialize

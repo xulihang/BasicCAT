@@ -271,7 +271,9 @@ Sub generateFile(filename As String,path As String,projectFile As Map)
 		innerfilename=sourceFileMap.GetKeyAt(0)
 		Dim segmentsList As List
 		segmentsList=sourceFileMap.Get(innerfilename)
+		Dim index As Int=-1
 		For Each bitext As List In segmentsList
+			index=index+1
 			Dim source,target,fullsource,translation As String
 			source=bitext.Get(0)
 			target=bitext.Get(1)
@@ -282,6 +284,9 @@ Sub generateFile(filename As String,path As String,projectFile As Map)
 			If target="" Then
 				translation=fullsource
 			Else
+				If shouldAddSpace(projectFile.Get("source"),index,segmentsList) Then
+					target=target&" "
+				End If
 				target=addNecessaryTags(target,source)
 				translation=fullsource.Replace(source,target)
 			End If
@@ -292,6 +297,7 @@ Sub generateFile(filename As String,path As String,projectFile As Map)
 					translation=fullsource.Replace(source,"")
 				End If
 			End If
+
 			If translationMap.ContainsKey(extra.Get("id")) Then
 				Dim dataMap As Map
 				dataMap=translationMap.Get(extra.Get("id"))
@@ -389,6 +395,36 @@ Sub addNecessaryTags(target As String,source As String) As String
 		target=target&tag
 	Next
 	Return target
+End Sub
+
+
+Sub shouldAddSpace(sourceLang As String,index As Int,segmentsList As List) As Boolean
+	Dim bitext As List=segmentsList.Get(index)
+	Dim fullsource As String=bitext.Get(2)
+	fullsource=Utils.getPureTextWithoutTrim(fullsource)
+	Dim extra As Map
+	extra=bitext.Get(4)
+	Dim id As String=extra.Get("id")
+	If sourceLang="zh" Then
+		If index+1<=segmentsList.Size-1 Then
+			Dim nextBitext As List
+			nextBitext=segmentsList.Get(index+1)
+			Dim nextfullsource As String=nextBitext.Get(2)
+			nextfullsource=Utils.getPureTextWithoutTrim(nextfullsource)
+			Dim nextExtra As Map=nextBitext.Get(4)
+			Dim nextid As String=nextExtra.Get("id")
+			If nextid=id Then
+				Try
+					If Regex.IsMatch("\s",nextfullsource.CharAt(0))=False And Regex.IsMatch("\s",fullsource.CharAt(fullsource.Length-1))=False Then
+						Return True
+					End If
+				Catch
+					Log(LastException)
+				End Try
+			End If
+		End If
+	End If
+	Return False
 End Sub
 
 Sub mergeSegment(sourceTextArea As TextArea)
@@ -565,8 +601,12 @@ Sub previewText As String
 		If target="" Then
 			translation=fullsource
 		Else
+			If shouldAddSpace(Main.currentProject.projectFile.Get("source"),i,Main.currentProject.segments) Then
+				target=target&" "
+			End If
 			translation=fullsource.Replace(source,target)
 		End If
+
 		Dim id As String
 		id=extra.Get("id")
 		If previousID<>id Then

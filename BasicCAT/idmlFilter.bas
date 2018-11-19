@@ -612,9 +612,9 @@ Sub generateFile(filename As String,path As String,projectFile As Map)
 		Dim innerfileContent As String
 		Dim segmentsList As List
 		segmentsList=sourceFileMap.Get(innerfilename)
-
+        Dim index As Int=-1
 		For Each bitext As List In segmentsList
-			
+			index=index+1
 			Dim source,target,fullsource,translation As String
 			source=bitext.Get(0)
 			target=bitext.Get(1)
@@ -630,6 +630,9 @@ Sub generateFile(filename As String,path As String,projectFile As Map)
 				pp=source
 				source=source.Replace("<br/>",CRLF)
 				target=target.Replace("<br/>",CRLF)
+				If shouldAddSpace(projectFile.Get("source"),index,segmentsList) Then
+					target=target&" "
+				End If
 				If fullsource.Contains(C0TagAddedText(source,fullsource)) And idmlUtils.containsUnshownSpecialTaggedContent(target,source)=False Then
 					translation=fullsource.Replace(C0TagAddedText(source,fullsource),C0TagAddedText(target,fullsource))
 
@@ -669,6 +672,8 @@ Sub generateFile(filename As String,path As String,projectFile As Map)
 
 			End If
 			
+
+			
 			Dim extra As Map
 			extra=bitext.Get(4)
 			If extra.ContainsKey("translate") Then
@@ -689,6 +694,29 @@ Sub generateFile(filename As String,path As String,projectFile As Map)
 	Next
 	progressDialog.update2("Zipping...")
 	zipIDML(unzipedDirPath,filename,path)
+End Sub
+
+
+Sub shouldAddSpace(sourceLang As String,index As Int,segmentsList As List) As Boolean
+	Dim bitext As List=segmentsList.Get(index)
+	Dim fullsource As String=bitext.Get(2)
+	fullsource=Utils.getPureTextWithoutTrim(fullsource)
+	If sourceLang="zh" Then
+		If index+1<=segmentsList.Size-1 Then
+			Dim nextBitext As List
+			nextBitext=segmentsList.Get(index+1)
+			Dim nextfullsource As String=nextBitext.Get(2)
+			nextfullsource=Utils.getPureTextWithoutTrim(nextfullsource)
+			Try
+				If Regex.IsMatch("\s",nextfullsource.CharAt(0))=False And Regex.IsMatch("\s",fullsource.CharAt(fullsource.Length-1))=False Then
+					Return True
+				End If
+			Catch
+				Log(LastException)
+			End Try
+		End If
+	End If
+	Return False
 End Sub
 
 Sub zipIDML(unzipedDirPath As String,filename As String,path As String)
@@ -1351,6 +1379,9 @@ Sub previewText As String
 		Else
 			source=source.Replace("<br/>",CRLF)
 			target=target.Replace("<br/>",CRLF)
+			If shouldAddSpace(Main.currentProject.projectFile.Get("source"),i,Main.currentProject.segments) Then
+				target=target&" "
+			End If
 			If fullsource.Contains(C0TagAddedText(source,fullsource)) And idmlUtils.containsUnshownSpecialTaggedContent(target,source)=False Then
 				translation=fullsource.Replace(C0TagAddedText(source,fullsource),C0TagAddedText(target,fullsource))
 			Else
@@ -1372,7 +1403,7 @@ Sub previewText As String
 				translation=translation.Replace(" ","")
 			End If
 		End If
-		
+
 		If i=Main.currentProject.lastEntry Then
 			translation=$"<span id="current" name="current" >${translation}</span>"$
 		End If
