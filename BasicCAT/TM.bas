@@ -65,9 +65,14 @@ Public Sub importExternalTranslationMemory(tmList As List) As ResumableSub
 			Dim source,target,filename As String
 			Dim targetList As List
 			targetList.Initialize
-			source=bitext.get(0)
-			target=bitext.Get(1)
-			filename=bitext.Get(2)
+			If bitext.Size=3 Then
+				source=bitext.get(0)
+				target=bitext.Get(1)
+				filename=bitext.Get(2)
+			Else
+				Continue
+			End If
+
 			targetList.Add(target)
 			targetList.Add(filename)
 			externalTranslationMemory.put(source,targetList)
@@ -125,6 +130,7 @@ Sub getMatchList(source As String) As ResumableSub
 			If basicCompare(source,key)=False Then
 				Continue
 			End If
+
 			Dim pairList As List
 			pairList.Initialize
 			pairList.Add(source)
@@ -132,8 +138,13 @@ Sub getMatchList(source As String) As ResumableSub
 			Dim json As JSONGenerator
 			json.Initialize2(pairList)
 			Dim similarity As Double
-			wait for (getSimilarityFuzzyWuzzy(source,key)) Complete (Result As Double)
-			similarity=Result
+			If key=source Then 'exact match
+				similarity=1.0
+			Else
+				wait for (getSimilarityFuzzyWuzzy(source,key)) Complete (Result As Double)
+				similarity=Result
+			End If
+
 			If similarity>matchrate Then
 				Dim tmPairList As List
 				tmPairList.Initialize
@@ -159,7 +170,7 @@ Sub getMatchList(source As String) As ResumableSub
 End Sub
 
 
-Sub getOneUseMemory(source As String,rate As Int) As ResumableSub
+Sub getOneUseMemory(source As String,rate As Double) As ResumableSub
 	
 	Dim matchList As List
 	matchList.Initialize
@@ -173,21 +184,31 @@ Sub getOneUseMemory(source As String,rate As Int) As ResumableSub
 			Dim kvs As KeyValueStore
 			kvs=externalTranslationMemory
 		End If
+		
+		If kvs.ContainsKey(source) Then
+			Dim tmPairList As List
+			tmPairList.Initialize
+			tmPairList.Add(1)
+			tmPairList.Add(source)
+			If i=0 Then
+				tmPairList.Add(kvs.Get(source))
+				tmPairList.Add("")
+			Else
+				Dim targetList As List
+				targetList=kvs.Get(source)
+				tmPairList.Add(targetList.Get(0))
+				tmPairList.Add(targetList.Get(1))
+			End If
+			onePairList=tmPairList
+			Return onePairList
+		End If
+		
 		For Each key As String In kvs.ListKeys
 			If basicCompare(source,key)=False Then
 				Continue
 			End If
 			
-			If kvs.ContainsKey("source") Then
-				Dim tmPairList As List
-				tmPairList.Initialize
-				tmPairList.Add(1)
-				tmPairList.Add(key)
-				tmPairList.Add(kvs.Get(key))
-				tmPairList.Add("")
-				onePairList=tmPairList
-				Return onePairList
-			End If
+			
 			
 			Dim similarity As Double
 			

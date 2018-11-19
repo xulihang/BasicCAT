@@ -126,10 +126,14 @@ Public Sub saveSettings(newsettings As Map)
 	projectFile.Put("settings",newsettings)
 	Log(newsettings)
 	save
-	projectTM.deleteExternalTranslationMemory
-	wait for (projectTM.importExternalTranslationMemory(settings.Get("tmList"))) complete (result As Boolean)
-	projectTerm.deleteExternalTerminology
-	projectTerm.importExternalTerminology(settings.Get("termList"))
+	If newsettings.Get("tmListChanged")="yes" Then
+		projectTM.deleteExternalTranslationMemory
+		wait for (projectTM.importExternalTranslationMemory(settings.Get("tmList"))) complete (result As Boolean)
+	End If
+	If newsettings.Get("termListChanged")="yes" Then
+		projectTerm.deleteExternalTerminology
+		projectTerm.importExternalTerminology(settings.Get("termList"))
+	End If
 End Sub
 
 public Sub save
@@ -1260,6 +1264,7 @@ Sub preTranslate(options As Map)
 					Return
 				End If
 	            Dim resultList As List
+				Log("rate"&options.Get("rate"))
 				Wait For (projectTM.getOneUseMemory(bitext.Get(0),options.Get("rate"))) Complete (Result As List)
 				resultList=Result
 				If resultList.Size=0 Then

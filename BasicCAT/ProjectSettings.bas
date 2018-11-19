@@ -147,7 +147,14 @@ Sub applyButton_MouseClicked (EventData As MouseEvent)
 		autocorrectList.Add(list1)
 	Next
 	
-	If ask="yes" Then
+	Dim updateTM As String=askTM
+	Dim updateTerm As String
+	If updateTM<>"cancel" Then
+		updateTerm=askTerm
+	End If
+	If updateTM="cancel" Or updateTerm="cancel" Then
+		Return
+	Else
 		resultList.Add("changed")
 		settings.Put("matchrate",num)
 		settings.Put("tmList",TMListView.Items)
@@ -156,26 +163,57 @@ Sub applyButton_MouseClicked (EventData As MouseEvent)
 		settings.Put("quickfill_includeterm",IncludeTermCheckBox.Checked)
 		settings.Put("autocorrect",autocorrectList)
 		settings.Put("autocorrect_enabled",autocorrecCheckBox.Checked)
+		settings.put("tmListChanged",updateTM)
+		settings.put("termListChanged",updateTerm)
 		resultList.Add(settings)
-	Else
-		resultList.Add("canceled")
 	End If
 	frm.Close
 End Sub
 
-Sub ask As String
-	Dim tmList,termList As List
-	tmList=settings.Get("tmList")
-	termList=settings.Get("termList")
-	If tmList<>TMListView.Items Or termList<>TermListView.Items Then
-		Dim result As Int=fx.Msgbox2(frm,"Will reset external tm and term db, continue?","","Continue","","Cancel",fx.MSGBOX_CONFIRMATION)
+Sub askTM As String
+	If tmListChanged Then
+		Dim result As Int=fx.Msgbox2(frm,"Will reset external tm db, continue?","","Continue","","Cancel",fx.MSGBOX_CONFIRMATION)
 		If result=fx.DialogResponse.POSITIVE Then
 			Return "yes"
+		Else
+			Return "cancel"
 		End If
 	Else
-		Return "yes"
+		Return "notchanged"
 	End If
-	Return "no"
+End Sub
+
+Sub askTerm As String
+	If termListChanged Then
+		Dim result As Int=fx.Msgbox2(frm,"Will reset external term db, continue?","","Continue","","Cancel",fx.MSGBOX_CONFIRMATION)
+		If result=fx.DialogResponse.POSITIVE Then
+			Return "yes"
+		Else
+			Return "cancel"
+		End If
+	Else
+		Return "notchanged"
+	End If
+End Sub
+
+Sub tmListChanged As Boolean
+	Dim tmList As List
+	tmList=settings.Get("tmList")
+	If tmList<>TMListView.Items Then
+		Return True
+	Else
+		Return False
+	End If
+End Sub
+
+Sub termListChanged As Boolean
+	Dim termList As List
+	termList=settings.Get("termList")
+	If termList<>TermListView.Items Then
+		Return True
+	Else
+		Return False
+	End If
 End Sub
 
 Sub DeleteTMButton_MouseClicked (EventData As MouseEvent)

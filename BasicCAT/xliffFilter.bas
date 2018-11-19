@@ -243,7 +243,7 @@ End Sub
 
 Sub escapeInlineTag(text As String) As String
 	Dim tags As String
-	tags="(bpt|ept|it|ph|g|bx|ex|x|sub)"
+	tags="(bpt|ept|it|ph|g|bx|ex|x|sub|mrk)"
 	text=Regex.Replace2("<(/?\b"&tags&"\b.*?)>",32,text,"&lt;$1&gt;")
 	text=text.Replace($"""$,"&quot;")
 	Return text
@@ -251,7 +251,7 @@ End Sub
 
 Sub unescapeInlineTag(text As String) As String
 	Dim tags As String
-	tags="(bpt|ept|it|ph|g|bx|ex|x|sub)"
+	tags="(bpt|ept|it|ph|g|bx|ex|x|sub|mrk)"
 	text=text.Replace("&quot;",$"""$)
 	text=Regex.Replace2("&lt;(/?\b"&tags&"\b.*?)&gt;",32,text,"<$1>")
 	Return text
@@ -322,8 +322,10 @@ Sub insertTranslation(translationMap As Map,filename As String,path As String) A
 	xmlstring=File.ReadString(File.Combine(path,"source"),filename)
 	xmlstring=escapedText(xmlstring,"source")
 	xmlstring=escapedText(xmlstring,"target")
+	Log("xml"&xmlstring)
 	Dim xmlMap As Map
 	xmlMap=Utils.getXmlMap(xmlstring)
+	Log("map"&xmlMap)
 	Dim xliffMap As Map
 	xliffMap=xmlMap.Get("xliff")
 	Dim filesList As List
