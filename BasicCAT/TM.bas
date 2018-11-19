@@ -131,18 +131,23 @@ Sub getMatchList(source As String) As ResumableSub
 				Continue
 			End If
 
-			Dim pairList As List
-			pairList.Initialize
-			pairList.Add(source)
-			pairList.Add(key) ' two sourcelanguage sentences
-			Dim json As JSONGenerator
-			json.Initialize2(pairList)
+			'Dim pairList As List
+			'pairList.Initialize
+			'pairList.Add(source)
+			'pairList.Add(key) ' two sourcelanguage sentences
+			'Dim json As JSONGenerator
+			'json.Initialize2(pairList)
 			Dim similarity As Double
 			If key=source Then 'exact match
 				similarity=1.0
 			Else
-				wait for (getSimilarityFuzzyWuzzy(source,key)) Complete (Result As Double)
-				similarity=Result
+				If similarityStore.ContainsKey(source&"	"&key) Then
+					similarity=similarityStore.Get(source&"	"&key)
+				Else
+					wait for (getSimilarityFuzzyWuzzy(source,key)) Complete (Result As Double)
+					similarity=Result
+					similarityStore.Put(source&"	"&key,similarity)
+				End If
 			End If
 
 			If similarity>matchrate Then
