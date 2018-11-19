@@ -15,6 +15,8 @@ For Linux/macOS, you need to use the [MonoBuilder](https://www.b4x.com/android/f
 
 BasicCAT cannot be done without the following libraries.
 
+### Java Libraries
+
 * [Apache POI](http://poi.apache.org/) for export and import docx. Apache v2 Licensed.
 * [Apache PDFBOX](https://pdfbox.apache.org/) for strip PDF text and export PDF to images. Apache v2 Licensed.
 * [Apache OpenNLP](http://opennlp.apache.org/) for lemmatizing words. Apache v2 Licensed.
@@ -24,6 +26,15 @@ BasicCAT cannot be done without the following libraries.
 * [
 JavaWuzzy](https://github.com/xdrop/fuzzywuzzy) for fuzzy match. GPL v3 Licensed.
 * [icu](http://site.icu-project.org/) for encoding conversion and detection. Unicode Inc. Licensed.
+
+### B4J Libraries
+
+* [KeyValueStore](https://www.b4x.com/android/forum/threads/b4x-keyvaluestore-2-simple-powerful-local-datastore.63633/)
+* [Xml2Map, Map2Xml](https://www.b4x.com/android/forum/threads/b4x-xml2map-simple-way-to-parse-xml-documents.74848/#content)
+* [SearchView](https://www.b4x.com/android/forum/threads/custom-view-searchview.82007/#content)
+* [TextFlow](https://www.b4x.com/android/forum/threads/class-textflow-similar-to-b4a-b4i-richstring.61237/#content)
+* [File Chooser Utils](https://www.b4x.com/android/forum/threads/file-chooser-utils.92092/)
+* [xCustomListView](https://www.b4x.com/android/forum/threads/b4x-xui-xcustomlistview-cross-platform-customlistview.84501/)
 
 
 
