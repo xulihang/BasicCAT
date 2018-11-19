@@ -391,8 +391,8 @@ Sub addFilesToTreeTable(filename As String)
 	Dim lbl As Label
 	lbl.Initialize("lbl")
 	lbl.Text=filename
-	Dim cm As ContextMenu
-	cm.Initialize("cm")
+	Dim fileCM As ContextMenu
+	fileCM.Initialize("fileCM")
 	Dim mi As MenuItem
 	mi.Initialize("Remove","removeFileMi")
 	Dim mi2 As MenuItem
@@ -401,12 +401,12 @@ Sub addFilesToTreeTable(filename As String)
 	mi3.Initialize("Import from review","importReviewMi")
 	Dim mi4 As MenuItem
 	mi4.Initialize("Export to bi-paragraphs","exportBiParagraphMi")
-	cm.MenuItems.Add(mi)
-	cm.MenuItems.Add(mi2)
-	cm.MenuItems.Add(mi3)
-	cm.MenuItems.Add(mi4)
+	fileCM.MenuItems.Add(mi)
+	fileCM.MenuItems.Add(mi2)
+	fileCM.MenuItems.Add(mi3)
+	fileCM.MenuItems.Add(mi4)
 
-	lbl.ContextMenu=cm
+	lbl.ContextMenu=fileCM
 	
 	tti.Initialize("tti",Array As Object(lbl))
 	mi.Tag=tti
@@ -506,8 +506,14 @@ Sub targetTextArea_TextChanged (Old As String, New As String)
 			Sleep(0)
 			Dim segmentsList As List
 			segmentsList=ta.Tag
+			Dim maxSuggestionNum As Int=5
+			If Main.preferencesMap.ContainsKey("maxSuggestionNum") Then
+				maxSuggestionNum=Main.preferencesMap.Get("maxSuggestionNum")
+			End If
+			Dim num As Int=0
 			For Each text As String In segmentsList
 				If text.ToLowerCase.StartsWith(lastString.ToLowerCase) And text<>lastString Then
+					num=num+1
 					If text.StartsWith(lastString) Then
 						Dim mi As MenuItem
 						mi.Initialize(text, "mi")
@@ -519,7 +525,9 @@ Sub targetTextArea_TextChanged (Old As String, New As String)
 						mi.Tag=lastString
 						cm.MenuItems.Add(mi)
 					End If
-
+				End If
+				If num=maxSuggestionNum Then
+					Exit
 				End If
 			Next
 			If cm.MenuItems.Size<>0 Then
@@ -916,8 +924,14 @@ Sub showReplacements(values As List,ta As TextArea)
 	'0 offset
 	'1 length
 	'2 replacements
+	Dim maxCheckDropdownNum As Int=5
+	If Main.preferencesMap.ContainsKey("maxCheckDropdownNum") Then
+		maxCheckDropdownNum=Main.preferencesMap.Get("maxCheckDropdownNum")
+	End If
+	Dim num As Int=0
 	For Each replace As Map In replacements
 		Log(replace)
+		num=num+1
 		Dim mi As MenuItem
 		mi.Initialize(replace.Get("value"), "replacementMi")
 		Dim tagList As List
@@ -926,6 +940,9 @@ Sub showReplacements(values As List,ta As TextArea)
 		tagList.set(2,replace.Get("value"))
 		mi.Tag=tagList
 		replacementsCM.MenuItems.Add(mi)
+		If num=maxCheckDropdownNum Then
+			Exit
+		End If
 	Next
 	Sleep(100)
 	Dim map1 As Map

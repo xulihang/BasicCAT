@@ -32,6 +32,8 @@ Sub Class_Globals
 	Private AutoSaveTextField As TextField
 	Private lookupUsingMTCheckBox As CheckBox
 	Private ExcludeTagsCheckBox As CheckBox
+	Private maxSuggestionNumSpinner As Spinner
+	Private maxCheckDropdownNumSpinner As Spinner
 End Sub
 
 'Initializes the object. You can add parameters to this method if needed.
@@ -128,7 +130,9 @@ Sub categoryListView_SelectedIndexChanged(Index As Int)
 			If unsavedPreferences.ContainsKey("corenlp_address") Then
 				corenlpAddressTextField.Text=unsavedPreferences.get("corenlp_address")
 			End If
-
+			If unsavedPreferences.ContainsKey("maxSuggestionNum") Then
+				maxSuggestionNumSpinner.Value=unsavedPreferences.Get("maxSuggestionNum")
+			End If
 		Case 5
 			'Language Check
 			SettingPane.RemoveAllNodes
@@ -138,6 +142,9 @@ Sub categoryListView_SelectedIndexChanged(Index As Int)
 			End If
 			If unsavedPreferences.ContainsKey("languagetool_address") Then
 				languagetoolAddressTextField.Text=unsavedPreferences.get("languagetool_address")
+			End If
+			If unsavedPreferences.ContainsKey("maxCheckDropdownNum") Then
+				maxCheckDropdownNumSpinner.Value=unsavedPreferences.Get("maxCheckDropdownNum")
 			End If
 		Case 6
 			'Version Control
@@ -379,3 +386,12 @@ Sub SaveGeneralButton_MouseClicked (EventData As MouseEvent)
 	unsavedPreferences.Put("autosaveInterval",AutoSaveTextField.Text)
 End Sub
 
+
+
+Sub maxSuggestionNumSpinner_ValueChanged (Value As Object)
+	unsavedPreferences.Put("maxSuggestionNum",Value)
+End Sub
+
+Sub maxCheckDropdownNumSpinner_ValueChanged (Value As Object)
+	unsavedPreferences.Put("maxCheckDropdownNum",Value)
+End Sub
