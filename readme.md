@@ -1,5 +1,7 @@
 # BasicCAT
 
+[![Documentation Status](https://readthedocs.org/projects/basiccat-docs/badge/?version=latest)](https://docs.basiccat.org/zh_CN/latest/?badge=latest)
+
 A computer-aided translation tool written in basic.
 
 Visit BasicCAT's [homepage](https://www.basiccat.org) to see the detailed description.
