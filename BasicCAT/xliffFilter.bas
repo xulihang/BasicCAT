@@ -355,11 +355,11 @@ Sub insertTranslation(translationMap As Map,filename As String,path As String) A
 				Dim dataMap As Map
 				dataMap=translationMap.Get(id)
 				If originalFilename=dataMap.Get("filename") Then
-					'For Each key As String In target.Keys
-					'	If key<>"Attributes" Then
-					'		target.Remove(key)
-					'	End If
-					'Next
+					For Each key As String In target.Keys
+						If key<>"Attributes" Then
+							target.Remove(key)
+						End If
+					Next
 					If target.ContainsKey("Text") Then
 						target.Remove("Text")
 					End If

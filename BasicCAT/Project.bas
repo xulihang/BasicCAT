@@ -991,15 +991,18 @@ Sub loadITPSegments(targetTextArea As TextArea,engine As String,fullTranslation 
 	pane=targetTextArea.Parent
 	Dim sourceTA As TextArea
 	sourceTA=pane.GetNode(0)
-	wait for (ITP.getAllSegmentTranslation(sourceTA.Text,engine)) Complete (Result As List)
-	Result.Add(fullTranslation)
+	Dim result As List
+	result.Initialize
+	wait for (ITP.getAllSegmentTranslation(sourceTA.Text,engine)) Complete (segmentTranslations As List)
+	result.Add(fullTranslation)
+	result.AddAll(segmentTranslations)
 	If Utils.isList(targetTextArea.Tag) Then
 		Dim list1 As List
 		list1=targetTextArea.Tag
-		list1.AddAll(Result)
+		list1.AddAll(result)
 		targetTextArea.Tag=ITP.duplicatedRemovedList(list1)
 	Else
-		targetTextArea.Tag=Result
+		targetTextArea.Tag=result
 	End If
 End Sub
 
@@ -1013,27 +1016,38 @@ Sub showTM(targetTextArea As TextArea)
 	Dim targetTA As TextArea
 	targetTA=pane.GetNode(1)
 	Log(sourceTA.Text)
-	If projectTM.currentSource=sourceTA.Text Then
+	
+	
+	If projectTM.currentSource=sourceTA.Text Then 'avoid loading the same many times
 		Return
 	End If
 	Main.tmTableView.Items.Clear
 	Main.LogWebView.LoadHtml("")
 	projectTM.currentSource=sourceTA.Text
+	showMT(sourceTA.Text,targetTextArea)
 	Dim senderFilter As Object = projectTM.getMatchList(sourceTA.Text)
 	Wait For (senderFilter) Complete (Result As List)
 
 
+    Dim index As Int=0
 	For Each matchList As List In Result
 
 		If matchList.Get(1)=sourceTA.Text And matchList.Get(3)="" And targetTA.Text=matchList.Get(2) Then
 			Continue 'itself
 		End If
 		Dim row()  As Object = Array As String(matchList.Get(0),matchList.Get(1),matchList.Get(2),matchList.Get(3))
-		Main.tmTableView.Items.Add(row)
+        If index=0 Then
+			Main.tmTableView.Items.InsertAt(0,row)
+		    index=index+1
+		Else
+			Main.tmTableView.Items.Add(row)
+        End If
+		
+		
 	Next
 	Log(DateTime.Now-time)
 	
-	showMT(sourceTA.Text,targetTextArea)
+
 	
 	Main.changeWhenSegmentOrSelectionChanges
 	If Main.tmTableView.Items.Size<>0 Then
@@ -1053,7 +1067,7 @@ Sub showMT(source As String,targetTextArea As TextArea)
 			wait for (MT.getMT(source,projectFile.Get("source"),projectFile.Get("target"),engine)) Complete (Result As String)
 			If Result<>"" Then
 				Dim row()  As Object = Array As String("","",Result,engine)
-				Main.tmTableView.Items.InsertAt(Min(Main.tmTableView.Items.Size,1),row)
+				Main.tmTableView.Items.Add(row)
 				Main.changeWhenSegmentOrSelectionChanges
 			End If
 			loadITPSegments(targetTextArea,engine,Result)
