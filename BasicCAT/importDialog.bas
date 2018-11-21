@@ -38,7 +38,7 @@ Sub loadTM(path As String)
 	If path.ToLowerCase.EndsWith(".txt") Then
 		importTMTxt(path)
 	else if path.ToLowerCase.EndsWith(".tmx") Then
-		importTMX(path)
+		importTMX(path,Main.currentProject.projectFile.Get("source"),Main.currentProject.projectFile.Get("target"))
 	End If
 End Sub
 
@@ -61,7 +61,7 @@ Sub importTMTxt(path As String)
 	Next
 End Sub
 
-Sub importTMX(path As String)
+Sub importTMX(path As String,sourceLang As String,targetLang As String)
 	Dim tmxString As String
 	tmxString=File.ReadString(path,"")
 	Dim tmxMap As Map
@@ -79,14 +79,22 @@ Sub importTMX(path As String)
 		tuvList=Utils.GetElements(tu,"tuv")
 		Dim source As String
 		Dim target As String
-		Dim j As Int=0
+
 		For Each tuv As Map In tuvList
-			If j=0 Then
+			Dim attributes As Map
+			attributes=tuv.Get("Attributes")
+			Dim lang As String
+			If attributes.ContainsKey("lang") Then
+				lang=attributes.Get("lang")
+			else if attributes.ContainsKey("xml:lang") Then
+				lang=attributes.Get("xml:lang")
+			End If
+			lang=lang.ToLowerCase
+			If lang.StartsWith(sourceLang) Then
 				source=tuv.Get("seg")
-			else if j=1 Then
+			else if lang.StartsWith(targetLang) Then
 				target=tuv.Get("seg")
 			End If
-			j=j+1
 		Next
 		i=i+1
 		ListView1.Items.Add(buildTMItemText(source,target))

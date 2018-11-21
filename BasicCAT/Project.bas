@@ -60,7 +60,7 @@ Sub initializeTM(projectPath As String,isExistingProject As Boolean)
 		End If
 	End If
 
-	projectTM.importExternalTranslationMemory(externalTMList)
+	projectTM.importExternalTranslationMemory(externalTMList,projectFile)
 	'runTMBackend
 End Sub
 
@@ -128,7 +128,7 @@ Public Sub saveSettings(newsettings As Map)
 	save
 	If newsettings.Get("tmListChanged")="yes" Then
 		projectTM.deleteExternalTranslationMemory
-		wait for (projectTM.importExternalTranslationMemory(settings.Get("tmList"))) complete (result As Boolean)
+		wait for (projectTM.importExternalTranslationMemory(settings.Get("tmList"),projectFile)) complete (result As Boolean)
 	End If
 	If newsettings.Get("termListChanged")="yes" Then
 		projectTerm.deleteExternalTerminology

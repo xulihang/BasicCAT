@@ -52,6 +52,7 @@ Sub readTermsIntoMap(filepath As String,sourceLang As String,targetLang As Strin
 			attributes=langSet.Get("Attributes")
 			Dim lang As String
 			lang=attributes.Get("xml:lang")
+			lang=lang.ToLowerCase
 			If lang.StartsWith(sourceLang) Then
 				source=getTermFromLangSet(langSet)
 				description=getDescriptionFromLangSet(langSet,description)

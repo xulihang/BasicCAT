@@ -9,7 +9,7 @@ Sub Process_Globals
 	Private fx As JFX
 End Sub
 
-Sub importedList(dir As String,filename As String) As List
+Sub importedList(dir As String,filename As String,sourceLang As String,targetLang as String) As List
 	Dim segments As List
 	segments.Initialize
 	Dim tmxString As String
@@ -28,8 +28,23 @@ Sub importedList(dir As String,filename As String) As List
 		bitext.Initialize
 		Dim tuvList As List
 		tuvList=Utils.GetElements(tu,"tuv")
+		bitext.Add("")
+		bitext.Add("")
 		For Each tuv As Map In tuvList
-			bitext.Add(tuv.Get("seg"))
+			Dim attributes As Map
+			attributes=tuv.Get("Attributes")
+			Dim lang As String
+			If attributes.ContainsKey("lang") Then
+				lang=attributes.Get("lang")
+			else if attributes.ContainsKey("xml:lang") Then
+				lang=attributes.Get("xml:lang")
+			End If
+			lang=lang.ToLowerCase
+			If lang.StartsWith(sourceLang) Then
+				bitext.Set(0,tuv.Get("seg"))
+			else if lang.StartsWith(targetLang) Then
+				bitext.Set(1,tuv.Get("seg"))
+			End If
 		Next
 		bitext.Add(filename)
 		segments.Add(bitext)
