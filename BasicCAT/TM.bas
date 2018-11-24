@@ -52,7 +52,7 @@ Public Sub importExternalTranslationMemory(tmList As List,projectFile As Map) As
 		If tmfileLowercase.EndsWith(".txt") Then
 			segments.AddAll(importedTxt(tmfile))
 		Else if tmfileLowercase.EndsWith(".tmx") Then
-			segments.AddAll(TMX.importedList(File.Combine(Main.currentProject.path,"TM"),tmfile,projectFile.Get("suorce"),projectFile.Get("target")))
+			segments.AddAll(TMX.importedList(File.Combine(Main.currentProject.path,"TM"),tmfile,projectFile.Get("source"),projectFile.Get("target")))
 		End If
 	Next
 	Log(segments)
