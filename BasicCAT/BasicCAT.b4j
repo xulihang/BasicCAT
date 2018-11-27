@@ -207,13 +207,14 @@ Module50=statistics
 Module51=git
 Module52=coordinate
 Module53=editDistance
+Module54=FileUtils
 Module6=TM
 Module7=Term
 Module8=KeyValueStore
 Module9=ProjectSettings
 NumberOfFiles=67
 NumberOfLibraries=23
-NumberOfModules=53
+NumberOfModules=54
 Version=6.51
 @EndOfDesignText@
 #Region Project Attributes 
@@ -424,7 +425,10 @@ Public Sub addProjectTreeTableItem
 			cm.Initialize("cm")
 			Dim mi As MenuItem
 			mi.Initialize("Add File","addFileMi")
+			Dim mi2 As MenuItem
+			mi2.Initialize("Add Folder","addFolderMi")
 			cm.MenuItems.Add(mi)
+			cm.MenuItems.Add(mi2)
 			lbl.ContextMenu=cm
 		End If
 		If item="Translation Memory" Then
@@ -859,6 +863,68 @@ Sub exportTMXMi_Action
 	End If
 End Sub
 
+
+Sub addFolderMi_Action
+	If currentProject.IsInitialized=False Then
+		fx.Msgbox(MainForm,"Please first open a project.","")
+		Return
+	End If
+	If currentProject.path="" Then
+		fx.Msgbox(MainForm,"Please first save the project.","")
+	Return
+	End If
+	Dim dc As DirectoryChooser
+	dc.Initialize
+	
+	Dim path As String = dc.Show(MainForm)
+	If path="" Then
+		Return
+	End If
+	Dim files As List
+	files.Initialize
+	addFiles(path,files,"")
+	For Each subfolder As String In FileUtils.GetSubFolders(path)
+		Dim unixLikePath As String=path.Replace("\","/")
+		Dim unixSubfolderPath As String=subfolder.Replace("\","/")
+		addFiles(subfolder,files,unixSubfolderPath.Replace(unixLikePath&"/","")&"/")
+	Next
+    For Each filename As String In files
+		Log(filename)
+		currentProject.addFileInFolder(path,filename)
+    Next
+	
+End Sub
+
+Sub addFiles(path As String,files As List,prefix As String)
+	For Each filename As String In File.ListFiles(path)
+		Log(filename)
+		If File.IsDirectory(path,filename)=False Then
+			Dim extension As String=filename
+			extension=filename.SubString2(filename.LastIndexOf(".")+1,filename.Length)
+			If supportedFilesList.IndexOf(extension)<>-1 Then
+				files.Add(prefix&filename)
+			End If
+		End If
+	Next
+End Sub
+
+Sub supportedFilesList As List
+	Dim extensions As List
+	extensions.Initialize
+	Dim supportedFiles As List
+	supportedFiles=File.ReadList(File.DirAssets,"supportedFiles.txt")
+	For Each line As String In supportedFiles
+		extensions.Add(Regex.Split("	",line)(1).Replace("*.",""))
+	Next
+	For Each pluginName As String In plugin.GetAvailablePlugins
+		If pluginName.EndsWith("Filter") Then
+			extensions.Add(pluginName.Replace("Filter",""))
+		End If
+	Next
+	Log(extensions)
+	Return extensions
+End Sub
+
 Sub addFileMi_Action
 	Dim mi As MenuItem
 	mi=Sender
@@ -889,7 +955,7 @@ Sub addFileMi_Action
 	Log(getFilename(path))
 	If path="" Then
 		Return
-	else if File.Exists(File.Combine(currentProject.path,"source"),getFilename(path)) Then
+	else if currentProject.files.IndexOf(getFilename(path))<>-1 Then
 		fx.Msgbox(MainForm,"A file with the same name already exists.","")
 		Return
 	End If

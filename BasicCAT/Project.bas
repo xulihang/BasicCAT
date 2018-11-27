@@ -121,6 +121,21 @@ Public Sub addFile(filepath As String)
 	save
 End Sub
 
+Public Sub addFileInFolder(folderPath As String,filename As String)
+	filename=filename.Replace("/",GetSystemProperty("file.separator","/"))
+	If files.IndexOf(filename)=-1 Then
+		FileUtils.createNonExistingDir(File.Combine(File.Combine(path,"source"),filename))
+		FileUtils.createNonExistingDir(File.Combine(File.Combine(path,"work"),filename))
+		FileUtils.createNonExistingDir(File.Combine(File.Combine(path,"target"),filename))
+		Wait For (File.CopyAsync(folderPath,filename,File.Combine(path,"source"),filename)) Complete (Success As Boolean)
+		Log("Success: " & Success)
+		files.Add(filename)
+		addFilesToTreeTable(filename)
+		createWorkFileAccordingToExtension(filename)
+		save
+	End If
+End Sub
+
 
 Public Sub saveSettings(newsettings As Map)
 	projectFile.Put("settings",newsettings)
@@ -345,6 +360,7 @@ Sub removeFileMi_Action
 
 	subTreeTableItem.Children.RemoveAt(subTreeTableItem.Children.IndexOf(mi.Tag))
 	files.RemoveAt(files.IndexOf(filename))
+	filename=filename.Replace("/",GetSystemProperty("file.separator","/"))
 	File.Delete(File.Combine(path,"source"),filename)
 	Try
 		File.Delete(File.Combine(path,"work"),filename&".json")

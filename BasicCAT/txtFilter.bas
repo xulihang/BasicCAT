@@ -47,6 +47,7 @@ Sub createWorkFile(filename As String,path As String,sourceLang As String)
 	
 	Dim json As JSONGenerator
 	json.Initialize(workfile)
+
 	File.WriteString(File.Combine(path,"work"),filename&".json",json.ToPrettyString(4))
 End Sub
 
@@ -94,6 +95,7 @@ Sub generateFile(filename As String,path As String,projectFile As Map)
 			result=result&translation
 		Next
 	Next
+	
 	File.WriteString(File.Combine(path,"target"),filename,result)
 	Main.updateOperation(filename&" generated!")
 End Sub
