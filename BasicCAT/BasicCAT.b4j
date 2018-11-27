@@ -160,24 +160,24 @@ Library8=jsql
 Library9=jrandomaccessfile
 Module1=FileChooserUtils
 Module10=preTranslateDialog
-Module11=confirmReviewDialog
-Module12=FileUtils
-Module13=idmlFilter
-Module14=TMX
-Module15=importDialog
-Module16=Previewer
-Module17=Utils
-Module18=viewSegment
-Module19=TBX
+Module11=idmlUtils
+Module12=Utils
+Module13=LanguageTool
+Module14=confirmReviewDialog
+Module15=FileUtils
+Module16=idmlFilter
+Module17=TMX
+Module18=importDialog
+Module19=Previewer
 Module2=Project
-Module20=xliffFilter
-Module21=TMManager
-Module22=SearchView
-Module23=Preferences
-Module24=LanguageTool
-Module25=ITP
-Module26=Xml2Map
-Module27=idmlUtils
+Module20=viewSegment
+Module21=TBX
+Module22=xliffFilter
+Module23=TMManager
+Module24=SearchView
+Module25=Preferences
+Module26=ITP
+Module27=Xml2Map
 Module28=PDF2TXT
 Module29=pdfbox
 Module3=segmentation
@@ -898,17 +898,27 @@ Sub addFiles(path As String,files As List,prefix As String)
 	For Each filename As String In File.ListFiles(path)
 		Log(filename)
 		If File.IsDirectory(path,filename)=False Then
-			Dim extension As String=filename
-			Try
-				extension=filename.SubString2(filename.LastIndexOf(".")+1,filename.Length)
-			Catch
-				Log(LastException)
-			End Try
-			If supportedFilesList.IndexOf(extension)<>-1 Then
+            If isFiletypeSupported(filename) Then
 				files.Add(prefix&filename)
-			End If
+            End If
 		End If
 	Next
+End Sub
+
+Sub isFiletypeSupported(filename As String) As Boolean
+	filename=filename.ToLowerCase
+	Dim extension As String=filename
+	Try
+		extension=filename.SubString2(filename.LastIndexOf(".")+1,filename.Length)
+		Log(extension)
+	Catch
+		Log(LastException)
+	End Try
+	If supportedFilesList.IndexOf(extension)<>-1 Then
+		Return True
+	Else
+		Return False
+	End If
 End Sub
 
 Sub supportedFilesList As List
@@ -962,8 +972,13 @@ Sub addFileMi_Action
 		fx.Msgbox(MainForm,"A file with the same name already exists.","")
 		Return
 	End If
-	currentProject.addFile(path)
-	Log(path)
+	If isFiletypeSupported(File.GetName(path))=False Then
+		fx.Msgbox(MainForm,"This file format is not supported.","")
+	Else
+		currentProject.addFile(path)
+		Log(path)
+	End If
+
 End Sub
 
 Public Sub getFilename(path As String) As String
