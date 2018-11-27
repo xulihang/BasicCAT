@@ -35,14 +35,14 @@ Sub check(text As String,entry As Int,langcode As String) As ResumableSub
 	job.Download("http://"&address&"/v2/check"&params)
 	wait for (job) JobDone(job As HttpJob)
 	If job.Success Then
-		Log(job.GetString)
-		values=showResult(job.GetString,entry)
+		Log("languagetool"&job.GetString)
+		values=showResult(job.GetString,entry,text)
 	End If
 	job.Release
 	Return values
 End Sub
 
-Sub showResult(jsonstring As String,entry As Int) As List
+Sub showResult(jsonstring As String,entry As Int,text As String) As List
 	Dim values As List
 	values.Initialize
 	Dim json As JSONParser
@@ -55,24 +55,23 @@ Sub showResult(jsonstring As String,entry As Int) As List
 		Main.noErrors
 		Return values
 	Else
-		For Each match As Map In matches
-			Log("match"&match)
-			'match.Get("shortMessage")
-			Dim context As Map
-			Dim message As String
-			message=match.Get("message")
-			context=match.Get("context")
-			Dim replacements As List
-			replacements=match.Get("replacements")
-			Dim offset,length As Int
-			offset=match.Get("offset")
-			length=match.Get("length")
-			values.Add(offset)
-			values.Add(length)
-			values.Add(replacements)
-			values.Add(entry)
-			Main.addCheckList(replacements,message,offset,length,context.Get("text"),entry)
-		Next
+		Dim match As Map=matches.Get(0)
+		Log("match"&match)
+		'match.Get("shortMessage")
+		'Dim context As Map
+		Dim message As String
+		message=match.Get("message")
+		'context=match.Get("context")
+		Dim replacements As List
+		replacements=match.Get("replacements")
+		Dim offset,length As Int
+		offset=match.Get("offset")
+		length=match.Get("length")
+		values.Add(offset)
+		values.Add(length)
+		values.Add(replacements)
+		values.Add(entry)
+		Main.addCheckList(replacements,message,offset,length,text,entry)
 	End If
 	Return values
 End Sub

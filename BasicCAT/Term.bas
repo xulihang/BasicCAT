@@ -103,7 +103,7 @@ Sub termsInASentenceUsingHashMap(sentence As String,kvs As KeyValueStore) As Lis
     Dim words As List
 	words.Initialize
 	If sourceLanguage="en" Then
-		Log(sentence)
+		'Log(sentence)
 		sentence=Regex.Replace("[\x21-\x2F\x3A-\x40\x5B-\x60\x7B-\x7E]",sentence,"") 'remove punctuations
 		words.AddAll(Regex.Split(" ",sentence))
 		addEnglishPhrases(words)
@@ -121,7 +121,7 @@ Sub termsInASentenceUsingHashMap(sentence As String,kvs As KeyValueStore) As Lis
 		words.AddAll(addChineseWords(sentence))
 	End If
 	For Each word As String In words
-		Log(word)
+		'Log(word)
 		If kvs.ContainsKey(word) Then
 			Dim targetMap As Map
 			targetMap=kvs.Get(word)

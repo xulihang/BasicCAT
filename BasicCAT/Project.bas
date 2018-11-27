@@ -755,7 +755,7 @@ Sub mi_Action
 	p=Main.editorLV.GetPanel(lastEntry)
 	Dim targetTextArea As TextArea
 	targetTextArea=p.GetNode(1)
-	targetTextArea.Text=targetTextArea.Text.SubString2(0,targetTextArea.SelectionStart)&utils.replaceOnce(mi.Text,mi.Tag,"")&targetTextArea.Text.SubString2(targetTextArea.SelectionStart,targetTextArea.Text.Length)
+	targetTextArea.Text=targetTextArea.Text.SubString2(0,targetTextArea.SelectionStart)&Utils.replaceOnce(mi.Text,mi.Tag,"")&targetTextArea.Text.SubString2(targetTextArea.SelectionStart,targetTextArea.Text.Length)
 	Sleep(0)
 	targetTextArea.SetSelection(targetTextArea.Text.Length,targetTextArea.Text.Length)
 End Sub
@@ -866,6 +866,7 @@ Sub changeSegment(offset As Int,targetTextArea As TextArea)
 		lastFilename=currentFilename
 		showTM(nextTA)
 		showTerm(nextTA)
+		languagecheck(targetTextArea,index)
 		Main.updateSegmentLabel(lastEntry,segments.Size)
 		If index+offset<Main.editorLV.FirstVisibleIndex+1 Or index+offset>Main.editorLV.LastVisibleIndex-1 Then
 			If offset<0 Then
@@ -896,6 +897,7 @@ End Sub
 Sub targetTextArea_FocusChanged (HasFocus As Boolean)
 	Dim TextArea1 As TextArea
 	TextArea1=Sender
+	Sleep(0)
 	If TextArea1.IsInitialized=False Then
 		Log("Null,Textarea")
 		Return
@@ -909,6 +911,7 @@ Sub targetTextArea_FocusChanged (HasFocus As Boolean)
 	If HasFocus Then
 		
         Log("hasFocus")
+		Log(TextArea1.Text)
 		'Log(previousEntry)
 		'Log(lastEntry)
 		showTM(TextArea1)
@@ -919,17 +922,22 @@ Sub targetTextArea_FocusChanged (HasFocus As Boolean)
 		Log("loseFocus")
 		'Log("previous"&previousEntry)
 		'Log("lastentry"&lastEntry)
+		Log(TextArea1.Text)
 		If previousEntry<>lastEntry Then
-			If Main.getCheckLVSize<=1 Then
-				If Main.preferencesMap.ContainsKey("languagetoolEnabled") Then
-					If Main.preferencesMap.Get("languagetoolEnabled")=True Then
-						wait for (LanguageTool.check(TextArea1.Text,lastEntry,projectFile.Get("target"))) complete (result As List)
-						showReplacements(result,TextArea1)
-					End If
-				End If
-			End If
+			languagecheck(TextArea1,lastEntry)
 		End If
 		previousEntry=lastEntry
+	End If
+End Sub
+
+Sub languagecheck(ta As TextArea,entry As Int)
+	If Main.getCheckLVSize<=1 Then
+		If Main.preferencesMap.ContainsKey("languagetoolEnabled") Then
+			If Main.preferencesMap.Get("languagetoolEnabled")=True Then
+				wait for (LanguageTool.check(ta.Text,entry,projectFile.Get("target"))) complete (result As List)
+				showReplacements(result,ta)
+			End If
+		End If
 	End If
 End Sub
 
@@ -937,6 +945,7 @@ Sub showReplacements(values As List,ta As TextArea)
 	If values.Size=0 Then
 		Return
 	End If
+	
 	Dim replacementsCM As ContextMenu
 	replacementsCM.Initialize("replacementsCM")
 	Dim replacements As List

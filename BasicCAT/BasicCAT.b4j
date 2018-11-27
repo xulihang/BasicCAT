@@ -1320,7 +1320,7 @@ Public Sub addCheckList(replacements As List, message As String,offset As Int,le
 	
 		TabPane1.SelectedIndex=2
 		checkLV.Clear
-		Log(offset)
+		Log("offset"&offset)
 		Log(context)
 		Dim tf As TextFlow
 		tf.Initialize
