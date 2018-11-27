@@ -39,12 +39,16 @@ Sub loadNextOne
 		If review.Contains("  --------note: ") Then
 			review=review.SubString2(0,review.IndexOf("  --------note: "))
 		End If
-		Dim sb As StringBuilder
-		sb.Initialize
-		sb.Append("<p>source:&nbsp;").Append(onerow(0)).Append("</p>")
-		sb.Append("<p>target:&nbsp;").Append(segment.Get(1)).Append("</p>")
-		sb.Append("<p>review:&nbsp;").Append(review).Append("</p>")
-		loadHtml(sb.ToString)
+		If review<>segment.Get(1) Then
+			Dim sb As StringBuilder
+			sb.Initialize
+			sb.Append("<p>source:&nbsp;").Append(onerow(0)).Append("</p>")
+			sb.Append("<p>target:&nbsp;").Append(segment.Get(1)).Append("</p>")
+			sb.Append("<p>review:&nbsp;").Append(review).Append("</p>")
+			loadHtml(sb.ToString)
+		Else
+			loadNextOne
+		End If
 	Else
 		loadNextOne
 	End If

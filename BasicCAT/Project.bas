@@ -304,6 +304,10 @@ Sub importReviewMi_Action
 		poiw.Initialize(reviewFilePath,"read")
 		rows=poiw.readTable
 		Dim crDialog As confirmReviewDialog
+		If rows.Size<>segments.Size Then
+			fx.Msgbox(Main.MainForm,"Unmatched segments size.","")
+			Return
+		End If
 		crDialog.Initialize(rows,segments)
 		crDialog.ShowAndWait
 	End If
