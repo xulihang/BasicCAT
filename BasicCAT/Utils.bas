@@ -10,6 +10,15 @@ Sub Process_Globals
 	Private menus As Map
 End Sub
 
+Sub replaceOnce(text As String,match As String,replacement As String) As String
+	Try
+		text=text.SubString2(0,text.IndexOf(match))&replacement&text.SubString2(text.IndexOf(match)+match.Length,text.Length)
+	Catch
+		Log(LastException)
+	End Try
+	Return text
+End Sub
+
 Sub getPureTextWithoutTrim(fullsource As String) As String
 	Return Regex.Replace("<.*?>",fullsource,"")
 End Sub

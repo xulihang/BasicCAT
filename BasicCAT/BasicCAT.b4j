@@ -160,54 +160,54 @@ Library8=jsql
 Library9=jrandomaccessfile
 Module1=FileChooserUtils
 Module10=preTranslateDialog
-Module11=idmlFilter
-Module12=TMX
-Module13=importDialog
-Module14=Previewer
-Module15=Utils
-Module16=viewSegment
-Module17=confirmReviewDialog
-Module18=TBX
-Module19=xliffFilter
+Module11=confirmReviewDialog
+Module12=FileUtils
+Module13=idmlFilter
+Module14=TMX
+Module15=importDialog
+Module16=Previewer
+Module17=Utils
+Module18=viewSegment
+Module19=TBX
 Module2=Project
-Module20=TMManager
-Module21=SearchView
-Module22=Preferences
-Module23=LanguageTool
-Module24=ITP
-Module25=Xml2Map
-Module26=idmlUtils
-Module27=PDF2TXT
-Module28=pdfbox
-Module29=serverLauncher
+Module20=xliffFilter
+Module21=TMManager
+Module22=SearchView
+Module23=Preferences
+Module24=LanguageTool
+Module25=ITP
+Module26=Xml2Map
+Module27=idmlUtils
+Module28=PDF2TXT
+Module29=pdfbox
 Module3=segmentation
-Module30=TermManager
-Module31=MT
-Module32=filterGenericUtils
-Module33=Map2Xml
-Module34=dictWebView
-Module35=searchAndReplaceDialog
-Module36=icu4j
-Module37=FontPicker
-Module38=zip4j
-Module39=languageChooser
+Module30=serverLauncher
+Module31=TermManager
+Module32=MT
+Module33=filterGenericUtils
+Module34=Map2Xml
+Module35=dictWebView
+Module36=searchAndReplaceDialog
+Module37=icu4j
+Module38=FontPicker
+Module39=zip4j
 Module4=CustomListView
-Module40=SRX
-Module41=POIWord
-Module42=InputTextAreaBox
-Module43=progressDialog
-Module44=TMEditor
-Module45=TextFlow
-Module46=TermEditor
-Module47=MTParamsFiller
-Module48=opennlp
-Module49=InputBox
+Module40=languageChooser
+Module41=SRX
+Module42=POIWord
+Module43=InputTextAreaBox
+Module44=progressDialog
+Module45=TMEditor
+Module46=TextFlow
+Module47=TermEditor
+Module48=MTParamsFiller
+Module49=opennlp
 Module5=txtFilter
-Module50=statistics
-Module51=git
-Module52=coordinate
-Module53=editDistance
-Module54=FileUtils
+Module50=InputBox
+Module51=statistics
+Module52=git
+Module53=coordinate
+Module54=editDistance
 Module6=TM
 Module7=Term
 Module8=KeyValueStore
@@ -292,7 +292,6 @@ Sub AppStart (Form1 As Form, Args() As String)
 	MainForm = Form1
 	MainForm.RootPane.LoadLayout("main") 'Load the layout file.
 	MainForm.Show
-
 	init
 	
 	'Log(fx.Screens)
@@ -900,7 +899,11 @@ Sub addFiles(path As String,files As List,prefix As String)
 		Log(filename)
 		If File.IsDirectory(path,filename)=False Then
 			Dim extension As String=filename
-			extension=filename.SubString2(filename.LastIndexOf(".")+1,filename.Length)
+			Try
+				extension=filename.SubString2(filename.LastIndexOf(".")+1,filename.Length)
+			Catch
+				Log(LastException)
+			End Try
 			If supportedFilesList.IndexOf(extension)<>-1 Then
 				files.Add(prefix&filename)
 			End If

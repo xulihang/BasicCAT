@@ -755,7 +755,7 @@ Sub mi_Action
 	p=Main.editorLV.GetPanel(lastEntry)
 	Dim targetTextArea As TextArea
 	targetTextArea=p.GetNode(1)
-	targetTextArea.Text=targetTextArea.Text.SubString2(0,targetTextArea.SelectionStart)&mi.Text.Replace(mi.Tag,"")&targetTextArea.Text.SubString2(targetTextArea.SelectionStart,targetTextArea.Text.Length)
+	targetTextArea.Text=targetTextArea.Text.SubString2(0,targetTextArea.SelectionStart)&utils.replaceOnce(mi.Text,mi.Tag,"")&targetTextArea.Text.SubString2(targetTextArea.SelectionStart,targetTextArea.Text.Length)
 	Sleep(0)
 	targetTextArea.SetSelection(targetTextArea.Text.Length,targetTextArea.Text.Length)
 End Sub
