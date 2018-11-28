@@ -887,11 +887,17 @@ Sub addFolderMi_Action
 		Dim unixSubfolderPath As String=subfolder.Replace("\","/")
 		addFiles(subfolder,files,unixSubfolderPath.Replace(unixLikePath&"/","")&"/")
 	Next
+	Dim imported As Int=0
+	progressDialog.Show("Importing...","import")
     For Each filename As String In files
 		Log(filename)
+		imported=imported+1
+		Sleep(0)
+		progressDialog.update(imported,files.Size)
 		currentProject.addFileInFolder(path,filename)
     Next
-	
+	currentProject.save
+	progressDialog.close
 End Sub
 
 Sub addFiles(path As String,files As List,prefix As String)

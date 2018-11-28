@@ -152,6 +152,7 @@ Sub getTransUnits(fileMap As Map) As List
 End Sub
 
 Sub getFilesList(xmlstring As String) As List
+	Log("read")
 	Dim xmlMap As Map
 	xmlMap=Utils.getXmlMap(xmlstring)
 	Log(xmlMap)
@@ -161,6 +162,7 @@ Sub getFilesList(xmlstring As String) As List
 End Sub
 
 Sub escapedText(xmlstring As String,tagName As String) As String
+	Log("es"&tagName)
 	Dim pattern As String
 	pattern="<"&tagName&".*?>(.*?)</"&tagName&">"
 	Dim new As String
@@ -174,20 +176,26 @@ Sub escapedText(xmlstring As String,tagName As String) As String
 	Dim replacedTimes As Int=0
 	Dim sourceMatcher As Matcher
 	sourceMatcher=Regex.Matcher2(pattern,32,new)
-
+	Log(times)
     Dim oldText As String=new
+	
 	Do While sourceMatcher.find
 		'Log("match"&sourceMatcher.Group(1))
 		If replacedTimes>=times Then
 			Exit
 		End If
-		Dim before As String
-		before=new.SubString2(0,sourceMatcher.GetStart(1))
-		Dim mid As String
-		mid=escapeInlineTag(sourceMatcher.Group(1))
-		Dim after As String
-		after=new.SubString2(sourceMatcher.GetEnd(1),new.Length)
-		new=before&mid&after
+		Dim sb As StringBuilder
+		sb.Initialize
+		sb.Append(new.SubString2(0,sourceMatcher.GetStart(1)))
+		sb.Append(escapeInlineTag(sourceMatcher.Group(1)))
+		sb.Append(new.SubString2(sourceMatcher.GetEnd(1),new.Length))
+		'Dim before As String
+		'before=new.SubString2(0,sourceMatcher.GetStart(1))
+		'Dim mid As String
+		'mid=escapeInlineTag(sourceMatcher.Group(1))
+		'Dim after As String
+		'after=new.SubString2(sourceMatcher.GetEnd(1),new.Length)
+		new=sb.ToString
 		If oldText<>new Then
 			sourceMatcher=Regex.Matcher2(pattern,32,new)
 			replacedTimes=0
@@ -198,6 +206,7 @@ Sub escapedText(xmlstring As String,tagName As String) As String
 		
 		
     Loop
+	Log("esd"&tagName)
 	Return new
 End Sub
 

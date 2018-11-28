@@ -132,7 +132,6 @@ Public Sub addFileInFolder(folderPath As String,filename As String)
 		files.Add(filename)
 		addFilesToTreeTable(filename)
 		createWorkFileAccordingToExtension(filename)
-		save
 	End If
 End Sub
 
