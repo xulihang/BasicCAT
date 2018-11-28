@@ -22,6 +22,9 @@ Sub Class_Globals
 	Private IncludeTermCheckBox As CheckBox
 	Private autocorrecCheckBox As CheckBox
 	Private autocorrectListView As ListView
+	Private serverAddressTextField As TextField
+	Private sharingTermCheckBox As CheckBox
+	Private sharingTMCheckBox As CheckBox
 End Sub
 
 'Initializes the object. You can add parameters to this method if needed.
@@ -35,6 +38,7 @@ Public Sub Initialize
 	settingTabPane.LoadLayout("termSetting","Term")
 	settingTabPane.LoadLayout("quickfillSetting","Quickfill")
 	settingTabPane.LoadLayout("autocorrectSetting","Autocorrect")
+	settingTabPane.LoadLayout("ServerSetting","Server")
 	If settings.ContainsKey("tmList") Then
 		TMListView.Items.AddAll(settings.Get("tmList"))
 	End If
@@ -46,6 +50,7 @@ Public Sub Initialize
 	End If
 	loadQuickfill
 	loadAutocorrect
+	loadServer
 	resultList.Initialize
 End Sub
 
@@ -101,6 +106,18 @@ Sub loadAutocorrect
 			p.LoadLayout("autocorrectItem")
 			autocorrectListView.Items.Add(p)
 		Next
+	End If
+End Sub
+
+Sub loadServer
+	If settings.ContainsKey("sharingTM_enabled") Then
+		sharingTMCheckBox.Checked=settings.Get("sharingTM_enabled")
+	End If
+	If settings.ContainsKey("sharingTerm_enabled") Then
+		sharingTermCheckBox.Checked=settings.Get("sharingTerm_enabled")
+	End If
+	If settings.ContainsKey("server_address") Then
+		serverAddressTextField.Text=settings.Get("server_address")
 	End If
 End Sub
 
@@ -165,6 +182,9 @@ Sub applyButton_MouseClicked (EventData As MouseEvent)
 		settings.Put("autocorrect_enabled",autocorrecCheckBox.Checked)
 		settings.put("tmListChanged",updateTM)
 		settings.put("termListChanged",updateTerm)
+		settings.Put("server_address",serverAddressTextField.Text)
+		settings.Put("sharingTM_enabled",sharingTMCheckBox.Checked)
+		settings.Put("sharingTerm_enabled",sharingTermCheckBox.Checked)
 		resultList.Add(settings)
 	End If
 	frm.Close

@@ -8,7 +8,9 @@ Sub Class_Globals
 	Private fx As JFX
 	Public terminology As KeyValueStore
 	Public externalTerminology As KeyValueStore
+	Private sharedTerm As ClientKVS
 	Private sourceLanguage As String
+	Private projectName As String
 End Sub
 
 'Initializes the object. You can add parameters to this method if needed.
@@ -16,8 +18,58 @@ Public Sub Initialize(projectPath As String,source As String)
 	terminology.Initialize(File.Combine(projectPath,"Term"),"term.db")
 	externalTerminology.Initialize(File.Combine(projectPath,"Term"),"external-term.db")
 	sourceLanguage=source
+	If Main.currentProject.settings.GetDefault("sharingTerm_enabled",False)=True Then
+		projectName=File.GetName(projectPath)
+		Log("projectName"&projectName)
+		Dim address As String=Main.currentProject.settings.GetDefault("server_address","")
+		If address<>"" Then
+			sharedTerm.Initialize(Me, "sharedTerm", address,File.Combine(projectPath,"Term"),"sharedTerm.db")
+			sharedTerm.SetAutoRefresh(Array(projectName&"Term"), 0.1) 'auto refresh every 0.1 minute
+			Dim termmap As Map
+			termmap=sharedTerm.GetAll(projectName&"Term")
+			If termmap.Size=0 Then
+				fillSharedTerm
+			End If
+		End If
+
+	End If
 End Sub
 
+
+Sub fillSharedTerm
+	Dim termmap As Map
+	termmap=sharedTerm.GetAll(projectName&"Term")
+	Dim size As Int=terminology.ListKeys.Size
+	progressDialog.Show("Filling SharedTerm","sharedTerm")
+	Dim index As Int=0
+	For Each key As String In terminology.ListKeys
+		index=index+1
+		Sleep(0)
+		progressDialog.update(index,size)
+		If termmap.ContainsKey(key) Then
+			If termmap.Get(key)<>terminology.Get(key) Then
+				sharedTerm.Put(projectName&"Term",key,terminology.Get(key))
+			End If
+		Else
+			sharedTerm.Put(projectName&"Term",key,terminology.Get(key))
+		End If
+	Next
+	progressDialog.close
+End Sub
+
+
+Sub sharedTerm_NewData
+	Dim map1 As Map=sharedTerm.GetAll(projectName&"Term")
+	For Each key As String In map1.Keys
+		If terminology.ContainsKey(key) Then
+			If terminology.Get(key)<>map1.Get(key) Then
+				terminology.Put(key,map1.Get(key))
+			End If
+		Else
+			terminology.Put(key,map1.Get(key))
+		End If
+	Next
+End Sub
 
 Public Sub deleteExternalTerminology
 	externalTerminology.DeleteAll
@@ -263,6 +315,9 @@ Sub addTerm(source As String,target As String)
 	termInfo.Initialize
 	targetMap.Put(target,termInfo)
 	terminology.Put(source,targetMap)
+	If Main.currentProject.settings.GetDefault("sharingTerm_enabled",False)=True Then
+		sharedTerm.Put(projectName&"Term",source,targetMap)
+	End If
 End Sub
 
 Sub exportToTXT(segments As List,path As String)

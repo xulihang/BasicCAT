@@ -8,8 +8,10 @@ Sub Class_Globals
 	Private fx As JFX
 	Public translationMemory As KeyValueStore
 	Public externalTranslationMemory As KeyValueStore
+	Private sharedTM As ClientKVS
 	Private similarityStore As Map
 	Public currentSource As String
+	Private projectName As String
 End Sub
 
 'Initializes the object. You can add parameters to this method if needed.
@@ -17,6 +19,52 @@ Public Sub Initialize(projectPath As String)
 	translationMemory.Initialize(File.Combine(projectPath,"TM"),"TM.db")
     externalTranslationMemory.Initialize(File.Combine(projectPath,"TM"),"externalTM.db")
 	similarityStore.Initialize
+	If Main.currentProject.settings.GetDefault("sharingTM_enabled",False)=True Then
+		projectName=File.GetName(projectPath)
+		Log("projectName"&projectName)
+		sharedTM.Initialize(Me, "sharedTM", "http://127.0.0.1:51042",File.Combine(projectPath,"TM"),"sharedTM.db")
+		sharedTM.SetAutoRefresh(Array(projectName&"TM"), 0.1) 'auto refresh every 0.1 minute
+		Dim tmmap As Map
+		tmmap=sharedTM.GetAll(projectName&"TM")
+		If tmmap.Size=0 Then
+			fillSharedTM
+		End If
+	End If
+End Sub
+
+Sub fillSharedTM 
+	Dim tmmap As Map
+	tmmap=sharedTM.GetAll(projectName&"TM")
+	Dim size As Int=translationMemory.ListKeys.Size
+	progressDialog.Show("Filling SharedTM","sharedTM")
+	Dim index As Int=0
+	For Each key As String In translationMemory.ListKeys
+		index=index+1
+		Sleep(0)
+		progressDialog.update(index,size)
+		If tmmap.ContainsKey(key) Then
+			If tmmap.Get(key)<>translationMemory.Get(key) Then
+				sharedTM.Put(projectName&"TM",key,translationMemory.Get(key))
+			End If
+		Else
+			sharedTM.Put(projectName&"TM",key,translationMemory.Get(key))
+		End If
+	Next
+	progressDialog.close
+End Sub
+
+Sub sharedTM_NewData
+	sharedTM.UtilPrintData
+	Dim map1 As Map=sharedTM.GetAll(projectName&"TM")
+	For Each key As String In map1.Keys
+		If translationMemory.ContainsKey(key) Then
+			If translationMemory.Get(key)<>map1.Get(key) Then
+				translationMemory.Put(key,map1.Get(key))
+			End If
+		Else
+			translationMemory.Put(key,map1.Get(key))
+		End If
+	Next
 End Sub
 
 public Sub close
@@ -36,6 +84,9 @@ Sub addPair(source As String,target As String)
 		End If
 	End If
 	translationMemory.Put(source,target)
+	If Main.currentProject.settings.GetDefault("sharingTM_enabled",False)=True Then
+		sharedTM.Put(projectName&"TM",source,target)
+	End If
 End Sub
 
 Public Sub deleteExternalTranslationMemory

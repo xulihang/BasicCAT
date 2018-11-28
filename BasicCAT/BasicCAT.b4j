@@ -45,25 +45,26 @@ File47=segmentation_zh.conf
 File48=segmentation_zh_exception.conf
 File49=serverLanucher.bjl
 File5=autocorrectSetting.bjl
-File50=settingLanguagecheck.bjl
-File51=settingVersionControl.bjl
-File52=statistics.bjl
-File53=supportedFiles.txt
-File54=tableview.bjl
-File55=tabpane.bjl
-File56=term.bjl
-File57=TermEditor.bjl
-File58=TermManager.bjl
-File59=termSetting.bjl
+File50=ServerSetting.bjl
+File51=settingLanguagecheck.bjl
+File52=settingVersionControl.bjl
+File53=statistics.bjl
+File54=supportedFiles.txt
+File55=tableview.bjl
+File56=tabpane.bjl
+File57=term.bjl
+File58=TermEditor.bjl
+File59=TermManager.bjl
 File6=basiccat.jpg
-File60=TMEditor.bjl
-File61=tmList.bjl
-File62=TMManager.bjl
-File63=TMsegment.bjl
-File64=tmSetting.bjl
-File65=upperRight.bjl
-File66=viewSegment.bjl
-File67=wordLookupSetting.bjl
+File60=termSetting.bjl
+File61=TMEditor.bjl
+File62=tmList.bjl
+File63=TMManager.bjl
+File64=TMsegment.bjl
+File65=tmSetting.bjl
+File66=upperRight.bjl
+File67=viewSegment.bjl
+File68=wordLookupSetting.bjl
 File7=checkList.bjl
 File8=confirmReview.bjl
 File9=default_rules.srx
@@ -131,6 +132,7 @@ FileGroup64=Default Group
 FileGroup65=Default Group
 FileGroup66=Default Group
 FileGroup67=Default Group
+FileGroup68=Default Group
 FileGroup7=Default Group
 FileGroup8=Default Group
 FileGroup9=Default Group
@@ -160,40 +162,40 @@ Library8=jsql
 Library9=jrandomaccessfile
 Module1=FileChooserUtils
 Module10=preTranslateDialog
-Module11=FileUtils
-Module12=xliffFilter
-Module13=Xml2Map
-Module14=idmlUtils
-Module15=Utils
-Module16=LanguageTool
-Module17=confirmReviewDialog
-Module18=idmlFilter
-Module19=TMX
+Module11=SRX
+Module12=FileUtils
+Module13=xliffFilter
+Module14=Xml2Map
+Module15=idmlUtils
+Module16=Utils
+Module17=LanguageTool
+Module18=confirmReviewDialog
+Module19=idmlFilter
 Module2=Project
-Module20=importDialog
-Module21=Previewer
-Module22=viewSegment
-Module23=TBX
-Module24=TMManager
-Module25=SearchView
-Module26=Preferences
-Module27=ITP
-Module28=PDF2TXT
-Module29=pdfbox
+Module20=TMX
+Module21=importDialog
+Module22=Previewer
+Module23=viewSegment
+Module24=TBX
+Module25=TMManager
+Module26=SearchView
+Module27=Preferences
+Module28=ITP
+Module29=PDF2TXT
 Module3=segmentation
-Module30=serverLauncher
-Module31=TermManager
-Module32=MT
-Module33=filterGenericUtils
-Module34=Map2Xml
-Module35=dictWebView
-Module36=searchAndReplaceDialog
-Module37=icu4j
-Module38=FontPicker
-Module39=zip4j
+Module30=pdfbox
+Module31=serverLauncher
+Module32=TermManager
+Module33=MT
+Module34=filterGenericUtils
+Module35=Map2Xml
+Module36=dictWebView
+Module37=searchAndReplaceDialog
+Module38=icu4j
+Module39=FontPicker
 Module4=CustomListView
-Module40=languageChooser
-Module41=SRX
+Module40=zip4j
+Module41=languageChooser
 Module42=POIWord
 Module43=InputTextAreaBox
 Module44=progressDialog
@@ -208,13 +210,15 @@ Module51=statistics
 Module52=git
 Module53=coordinate
 Module54=editDistance
+Module55=CallSubUtils
+Module56=ClientKVS
 Module6=TM
 Module7=Term
 Module8=KeyValueStore
 Module9=ProjectSettings
-NumberOfFiles=67
+NumberOfFiles=68
 NumberOfLibraries=23
-NumberOfModules=54
+NumberOfModules=56
 Version=6.51
 @EndOfDesignText@
 #Region Project Attributes 
@@ -279,13 +283,13 @@ Sub Process_Globals
 	Private MenuBar1 As MenuBar
 	Public pre As Previewer
     Private autosaveTimer As Timer
-	
 	Private operationLabel As Label
 	Private checkLV As CustomListView
 	Public nlp As opennlp
 	Public plugin As ABPlugin
 	Private dw As dictWebView
-
+	Type Item (UserField As String, KeyField As String, ValueField() As Byte, IdField As Long, TimeField As Long)
+	Type Task (TaskName As String, TaskItem As Item)
 End Sub
 
 Sub AppStart (Form1 As Form, Args() As String)

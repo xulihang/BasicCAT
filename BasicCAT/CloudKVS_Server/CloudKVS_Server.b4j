@@ -1,0 +1,46 @@
+﻿AppType=StandardJava
+Build1=Default,b4j.cloudkvs.server
+Group=Default Group
+Library1=jcore
+Library2=jrandomaccessfile
+Library3=jsql
+Library4=jserver
+Library5=jnetwork
+Library6=jbuilderutils
+Module1=Action
+Module2=DB
+NumberOfFiles=0
+NumberOfLibraries=6
+NumberOfModules=2
+Version=6.51
+@EndOfDesignText@
+'Non-UI application (console / server application)
+#Region  Project Attributes 
+	#CommandLineArgs:
+	#MergeLibraries: True 
+#End Region
+#AdditionalJar: sqlite-jdbc-3.7.2
+Sub Process_Globals
+	Type Item (UserField As String, KeyField As String, ValueField() As Byte, IdField As Long, TimeField As Long)
+	Type Task (TaskName As String, TaskItem As Item)
+	Public server As Server
+	Private const VERSION As String = "0.9"
+End Sub
+
+Sub AppStart (Args() As String)
+	server.Initialize("")
+	DB.Init
+	If Args.Length > 0 Then
+		server.Port = Args(0)
+	Else
+		server.Port = 51042
+	End If
+	server.AddHandler("/action", "Action", False)
+	server.Start
+	Dim sersocket As ServerSocket 'ignore
+	Log($"CloudKVS server.
+Version = ${VERSION}. 
+Listening on port: ${server.Port}
+Ip address: ${sersocket.GetMyIP}"$)
+	StartMessageLoop
+End Sub
