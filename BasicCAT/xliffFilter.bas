@@ -169,44 +169,37 @@ Sub escapedText(xmlstring As String,tagName As String) As String
 	new=xmlstring
 	Dim sourceMatcher As Matcher
 	sourceMatcher=Regex.Matcher2(pattern,32,new)
-	Dim times As Int=0
+	Dim replaceList As List
+	replaceList.Initialize
+
 	Do While sourceMatcher.Find
-		times=times+1
-	Loop
-	Dim replacedTimes As Int=0
-	Dim sourceMatcher As Matcher
-	sourceMatcher=Regex.Matcher2(pattern,32,new)
-	Log(times)
-    Dim oldText As String=new
-	
-	Do While sourceMatcher.find
-		'Log("match"&sourceMatcher.Group(1))
-		If replacedTimes>=times Then
-			Exit
+		Dim group As String=sourceMatcher.Group(1)
+		Dim escapedGroup As String=escapeInlineTag(group)
+		If escapedGroup<>group Then
+			Dim replacement As Map
+			replacement.Initialize
+			replacement.Put("start",sourceMatcher.GetStart(1))
+			replacement.Put("end",sourceMatcher.GetEnd(1))
+			replacement.Put("group",escapedGroup)
+			replaceList.InsertAt(0,replacement)
 		End If
+	Loop
+    Log(replaceList)
+	For Each replacement As Map In replaceList
+		Dim startIndex,endIndex As Int
+		Dim group As String
+		startIndex=replacement.Get("start")
+		endIndex=replacement.Get("end")
+		group=replacement.Get("group")
 		Dim sb As StringBuilder
 		sb.Initialize
-		sb.Append(new.SubString2(0,sourceMatcher.GetStart(1)))
-		sb.Append(escapeInlineTag(sourceMatcher.Group(1)))
-		sb.Append(new.SubString2(sourceMatcher.GetEnd(1),new.Length))
-		'Dim before As String
-		'before=new.SubString2(0,sourceMatcher.GetStart(1))
-		'Dim mid As String
-		'mid=escapeInlineTag(sourceMatcher.Group(1))
-		'Dim after As String
-		'after=new.SubString2(sourceMatcher.GetEnd(1),new.Length)
+		sb.Append(new.SubString2(0,startIndex))
+		sb.Append(group)
+		sb.Append(new.SubString2(endIndex,new.Length))
 		new=sb.ToString
-		If oldText<>new Then
-			sourceMatcher=Regex.Matcher2(pattern,32,new)
-			replacedTimes=0
-			oldText=new
-		Else
-			replacedTimes=replacedTimes+1
-		End If
-		
-		
-    Loop
+    Next
 	Log("esd"&tagName)
+	'Log(new)
 	Return new
 End Sub
 
@@ -217,35 +210,35 @@ Sub unescapedText(xmlstring As String,tagName As String) As String
 	new=xmlstring
 	Dim sourceMatcher As Matcher
 	sourceMatcher=Regex.Matcher2(pattern,32,new)
-	Dim times As Int=0
+	Dim replaceList As List
+	replaceList.Initialize
+		
 	Do While sourceMatcher.Find
-		times=times+1
-	Loop
-	Dim sourceMatcher As Matcher
-	sourceMatcher=Regex.Matcher2(pattern,32,new)
-    Dim replacedTimes As Int=0
-    Dim oldText As String=new
-	Do While sourceMatcher.Find
-
-		If replacedTimes>=times Then
-			Exit
-		End If
-
-		Dim before As String
-		before=new.SubString2(0,sourceMatcher.GetStart(1))
-		Dim mid As String
-		mid=unescapeInlineTag(sourceMatcher.Group(1))
-		Dim after As String
-		after=new.SubString2(sourceMatcher.GetEnd(1),new.Length)
-		new=before&mid&after
-		If oldText<>new Then
-			sourceMatcher=Regex.Matcher2(pattern,32,new)
-			replacedTimes=0
-			oldText=new
-		Else
-		    replacedTimes=replacedTimes+1
+		Dim group As String=sourceMatcher.Group(1)
+		Dim unescapedGroup As String=unescapeInlineTag(group)
+		If unescapedGroup<>group Then
+			Dim replacement As Map
+			replacement.Initialize
+			replacement.Put("start",sourceMatcher.GetStart(1))
+			replacement.Put("end",sourceMatcher.GetEnd(1))
+			replacement.Put("group",unescapedGroup)
+			replaceList.InsertAt(0,replacement)
 		End If
 	Loop
+		Log(replaceList)
+	For Each replacement As Map In replaceList
+		Dim startIndex,endIndex As Int
+		Dim group As String
+		startIndex=replacement.Get("start")
+		endIndex=replacement.Get("end")
+		group=replacement.Get("group")
+		Dim sb As StringBuilder
+		sb.Initialize
+		sb.Append(new.SubString2(0,startIndex))
+	    sb.Append(group)
+		sb.Append(new.SubString2(endIndex,new.Length))
+		new=sb.ToString
+	Next
 
 	Return new
 End Sub
