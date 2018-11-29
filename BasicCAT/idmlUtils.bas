@@ -56,7 +56,7 @@ Sub changeFontsFromEnToZhOfStyleFile(ParsedData As Map)
 		Dim root As Map = ParsedData.Get("idPkg:Styles")
 		Dim styleGroup As Map = root.Get(GroupName)
 		Dim styles As List
-		styles=Utils.GetElements(styleGroup,styleName)
+		styles=XMLUtils.GetElements(styleGroup,styleName)
 		For Each style As Map In styles
 			changeFontsFromEnToZh(style)
 		Next

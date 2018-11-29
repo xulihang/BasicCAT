@@ -30,7 +30,7 @@ Sub readRules(filepath As String,lang As String) As Map
 
 	Dim srxMap As Map
 	srxMap.Initialize
-	srxMap=Utils.getXmlMap(srxString).Get("srx")
+	srxMap=XMLUtils.getXmlMap(srxString).Get("srx")
 	Dim srxBody As Map
 	srxBody.Initialize
 	srxBody=srxMap.Get("body")
@@ -57,7 +57,7 @@ Sub readRules(filepath As String,lang As String) As Map
 	Log(languageRuleNames)
 	'------ read languagerules
 	Dim languageRules As List
-	languageRules=Utils.GetElements(srxBody.Get("languagerules"),"languagerule")
+	languageRules=XMLUtils.GetElements(srxBody.Get("languagerules"),"languagerule")
 
 	For Each languageRule As Map In languageRules
 
@@ -68,7 +68,7 @@ Sub readRules(filepath As String,lang As String) As Map
 		If languageRuleNames.IndexOf(languageRuleName)<>-1 Then
 			
 			Dim oneLangRules As List
-			oneLangRules=Utils.GetElements(languageRule,"rule")
+			oneLangRules=XMLUtils.GetElements(languageRule,"rule")
 
 			For Each rule As Map In oneLangRules
 				Dim tidyRule As Map

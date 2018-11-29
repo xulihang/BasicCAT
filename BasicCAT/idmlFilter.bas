@@ -1210,7 +1210,9 @@ End Sub
 Sub mergeSegment(sourceTextArea As TextArea)
 	Dim index As Int
 	index=Main.editorLV.GetItemFromView(sourceTextArea.Parent)
-	
+	If index+1>Main.currentProject.segments.Size-1 Then
+		Return
+	End If
 	Dim bitext,nextBiText As List
 	bitext=Main.currentProject.segments.Get(index)
 	nextBiText=Main.currentProject.segments.Get(index+1)

@@ -10,13 +10,13 @@ Sub Process_Globals
 End Sub
 
 Sub tagsRemovedText(text As String) As String
-	Return Regex.Replace("<.*?>",text,"")
+	Return Regex.Replace2("<.*?>",32,text,"")
 End Sub
 
 Sub tagsNum(text As String) As Int
 	Dim num As Int
 	Dim tagMatcher As Matcher
-	tagMatcher=Regex.Matcher("<.*?>",text)
+	tagMatcher=Regex.Matcher2("<.*?>",32,text)
 	Do While tagMatcher.Find
 		num=num+1
 	Loop
@@ -28,8 +28,8 @@ Sub tagsAtBothSidesRemovedText(text As String) As String
 	tagscount=tagsNum(text)
 	Dim textList As List
 	textList.Initialize
-	text=Regex.replace("<.*?>",text,CRLF&"------$0"&CRLF&"------")
-	textList.AddAll(Regex.Split(CRLF&"------",text))
+	text=Regex.replace2("<.*?>",32,text,CRLF&"------$0"&CRLF&"------")
+	textList.AddAll(Regex.Split2(CRLF&"------",32,text))
 
     Dim newList As List
 	newList.Initialize
@@ -51,10 +51,10 @@ Sub tagsAtBothSidesRemovedText(text As String) As String
 		Try
 			firstItem=newList.Get(0)
 			lastItem=newList.Get(newList.Size-1)
-			If Regex.IsMatch("<.*?>",firstItem) Then
+			If Regex.IsMatch2("<.*?>",32,firstItem) Then
 				newList.RemoveAt(0)
 			End If
-			If Regex.IsMatch("<.*?>",lastItem) Then
+			If Regex.IsMatch2("<.*?>",32,lastItem) Then
 				newList.RemoveAt(newList.Size-1)
 			End If
 		Catch
@@ -74,13 +74,13 @@ End Sub
 Sub tagsAreAPair(tag1 As String,tag2 As String) As Boolean
 	Dim tagType As Int
 	Dim tag1Matcher As Matcher
-	tag1Matcher=Regex.Matcher($"<.*?id="(.*?)">"$,tag1)
+	tag1Matcher=Regex.Matcher2($"<.*?id="(.*?)">"$,32,tag1)
 	Dim beginId As Int=-1
 	If tag1Matcher.Find Then
 		beginId=tag1Matcher.Group(1)
 		tagType=0 '<g id="0">
 	Else
-		tag1Matcher=Regex.Matcher($"<[a-z].*?(\d+)>"$,tag1)
+		tag1Matcher=Regex.Matcher2($"<[a-z].*?(\d+)>"$,32,tag1)
 		If tag1Matcher.Find Then
 			beginId=tag1Matcher.Group(1)
 			tagType=1 '<g1>
@@ -88,7 +88,7 @@ Sub tagsAreAPair(tag1 As String,tag2 As String) As Boolean
 	End If
 	Log(beginId)
 	Dim tag2Matcher As Matcher
-	tag2Matcher=Regex.Matcher($"</[a-z].*?(\d*)>"$,tag2)
+	tag2Matcher=Regex.Matcher2($"</[a-z].*?(\d*)>"$,32,tag2)
 	Dim endId As Int=-1
 	If tag2Matcher.Find Then
 		Try

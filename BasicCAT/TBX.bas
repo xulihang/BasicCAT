@@ -11,7 +11,7 @@ End Sub
 
 Sub readTermsIntoMap(filepath As String,sourceLang As String,targetLang As String,termsMap As Map)
 	Dim xmlMap As Map
-	xmlMap=Utils.getXmlMap(File.ReadString(filepath,""))
+	xmlMap=XMLUtils.getXmlMap(File.ReadString(filepath,""))
 	Dim martif As Map
 	martif=xmlMap.Get("martif")
 	Dim textMap As Map
@@ -19,12 +19,12 @@ Sub readTermsIntoMap(filepath As String,sourceLang As String,targetLang As Strin
 	Dim body As Map
 	body=textMap.Get("body")
 	Dim termEntries As List
-	termEntries=Utils.GetElements(body,"termEntry")
+	termEntries=XMLUtils.GetElements(body,"termEntry")
 	For Each termEntry As Map In termEntries
 		Dim tag As String
 		If termEntry.ContainsKey("descrip") Then
 			Dim descripList As List
-			descripList=Utils.GetElements(termEntry,"descrip")
+			descripList=XMLUtils.GetElements(termEntry,"descrip")
 			For Each descrip As Map In descripList
 				Dim attributes As Map
 				attributes=descrip.Get("Attributes")
@@ -37,7 +37,7 @@ Sub readTermsIntoMap(filepath As String,sourceLang As String,targetLang As Strin
 		End If
 		
 		Dim langSets As List
-		langSets=Utils.GetElements(termEntry,"langSet")
+		langSets=XMLUtils.GetElements(termEntry,"langSet")
 		
 		Dim targetMap As Map
 		targetMap.Initialize
@@ -84,21 +84,21 @@ Sub getTermFromLangSet(langSet As Map) As String
 	Dim termStr As String
 	If langSet.ContainsKey("ntig") Then	
 		Dim ntigList As List
-		ntigList=Utils.GetElements(langSet,"ntig")
+		ntigList=XMLUtils.GetElements(langSet,"ntig")
 		Dim ntigMap As Map
 		ntigMap=ntigList.Get(0)
 		Dim termGrpList As List
-		termGrpList=Utils.GetElements(ntigMap,"termGrp")
+		termGrpList=XMLUtils.GetElements(ntigMap,"termGrp")
 		Dim termGrpMap As Map
 		termGrpMap=termGrpList.Get(0)
 		Dim termList As List
-		termList=Utils.GetElements(termGrpMap,"term")
+		termList=XMLUtils.GetElements(termGrpMap,"term")
 		Dim termMap As Map
 		termMap=termList.Get(0)
 		termStr=termMap.Get("Text")
 	Else if langSet.ContainsKey("tig") Then
 		Dim tigList As List
-		tigList=Utils.GetElements(langSet,"tig")
+		tigList=XMLUtils.GetElements(langSet,"tig")
 		Dim tigMap As Map
 		tigMap=tigList.Get(0)
 		Dim termMap As Map
@@ -112,7 +112,7 @@ End Sub
 Sub getNoteFromLangSet(langSet As Map) As String
 	If langSet.ContainsKey("tig")=True Then
 		Dim tigs As List
-		tigs=Utils.GetElements(langSet,"tig")
+		tigs=XMLUtils.GetElements(langSet,"tig")
 		Dim tigMap As Map
 		tigMap=tigs.Get(0)
 		If tigMap.ContainsKey("note") Then
@@ -127,11 +127,11 @@ End Sub
 Sub getDescriptionFromLangSet(langSet As Map,description As String) As String
     If langSet.ContainsKey("descripGrp")=True Then
 		Dim descripGrpList As List
-		descripGrpList=Utils.GetElements(langSet,"descripGrp")
+		descripGrpList=XMLUtils.GetElements(langSet,"descripGrp")
 		Dim descripGrpMap As Map
 		descripGrpMap=descripGrpList.Get(0)
 		Dim descripList As List
-		descripList=Utils.GetElements(descripGrpMap,"descrip")
+		descripList=XMLUtils.GetElements(descripGrpMap,"descrip")
 		Dim descripMap As Map
 		descripMap=descripList.Get(0)
 		description=descripMap.Get("Text")
@@ -195,7 +195,7 @@ Sub export(termsKVS As KeyValueStore,sourceLang As String,targetLang As String,p
 	text.Put("body",body)
 	martifMap.Put("text",text)
 	rootmap.Put("martif",martifMap)
-	File.WriteString(path,"",Utils.getXmlFromMap(rootmap))
+	File.WriteString(path,"",XMLUtils.getXmlFromMap(rootmap))
 End Sub
 
 Sub addOneLangSet(langSetList As List,text As String,lang As String,note As String)

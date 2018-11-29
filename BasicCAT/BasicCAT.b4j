@@ -162,63 +162,64 @@ Library8=jsql
 Library9=jrandomaccessfile
 Module1=FileChooserUtils
 Module10=preTranslateDialog
-Module11=SRX
-Module12=FileUtils
-Module13=xliffFilter
-Module14=Xml2Map
-Module15=idmlUtils
-Module16=Utils
-Module17=LanguageTool
-Module18=confirmReviewDialog
-Module19=idmlFilter
+Module11=CallSubUtils
+Module12=ClientKVS
+Module13=idmlFilter
+Module14=SRX
+Module15=FileUtils
+Module16=xliffFilter
+Module17=Xml2Map
+Module18=idmlUtils
+Module19=Utils
 Module2=Project
-Module20=TMX
-Module21=importDialog
-Module22=Previewer
-Module23=viewSegment
-Module24=TBX
-Module25=TMManager
-Module26=SearchView
-Module27=Preferences
-Module28=ITP
-Module29=PDF2TXT
+Module20=LanguageTool
+Module21=confirmReviewDialog
+Module22=TMX
+Module23=importDialog
+Module24=Previewer
+Module25=viewSegment
+Module26=TBX
+Module27=TMManager
+Module28=SearchView
+Module29=Preferences
 Module3=segmentation
-Module30=pdfbox
-Module31=serverLauncher
-Module32=TermManager
-Module33=MT
-Module34=filterGenericUtils
-Module35=Map2Xml
-Module36=dictWebView
-Module37=searchAndReplaceDialog
-Module38=icu4j
-Module39=FontPicker
+Module30=ITP
+Module31=PDF2TXT
+Module32=pdfbox
+Module33=serverLauncher
+Module34=TermManager
+Module35=MT
+Module36=filterGenericUtils
+Module37=Map2Xml
+Module38=dictWebView
+Module39=searchAndReplaceDialog
 Module4=CustomListView
-Module40=zip4j
-Module41=languageChooser
-Module42=POIWord
-Module43=InputTextAreaBox
-Module44=progressDialog
-Module45=TMEditor
-Module46=TextFlow
-Module47=TermEditor
-Module48=MTParamsFiller
-Module49=opennlp
+Module40=icu4j
+Module41=FontPicker
+Module42=zip4j
+Module43=languageChooser
+Module44=POIWord
+Module45=InputTextAreaBox
+Module46=progressDialog
+Module47=TMEditor
+Module48=TextFlow
+Module49=TermEditor
 Module5=txtFilter
-Module50=InputBox
-Module51=statistics
-Module52=git
-Module53=coordinate
-Module54=editDistance
-Module55=CallSubUtils
-Module56=ClientKVS
+Module50=MTParamsFiller
+Module51=opennlp
+Module52=InputBox
+Module53=statistics
+Module54=git
+Module55=coordinate
+Module56=editDistance
+Module57=XMLUtils
 Module6=TM
 Module7=Term
 Module8=KeyValueStore
 Module9=ProjectSettings
 NumberOfFiles=68
 NumberOfLibraries=23
-NumberOfModules=56
+NumberOfModules=57
 Version=6.51
 @EndOfDesignText@
 #Region Project Attributes 
@@ -856,11 +857,20 @@ Sub exportTMXMi_Action
 		result=fx.Msgbox2(MainForm,"Include tags?","","Yes","Cancel","No",fx.MSGBOX_CONFIRMATION)
 		Select result
 			Case fx.DialogResponse.NEGATIVE
-				TMX.export(segments,currentProject.projectFile.Get("source"),currentProject.projectFile.Get("target"),path,False)
+				TMX.export(segments,currentProject.projectFile.Get("source"),currentProject.projectFile.Get("target"),path,False,False)
 				fx.Msgbox(MainForm,"exported","")
 			Case fx.DialogResponse.POSITIVE
-				TMX.export(segments,currentProject.projectFile.Get("source"),currentProject.projectFile.Get("target"),path,True)
-				fx.Msgbox(MainForm,"exported","")
+				Dim result2 As Int
+				result2=fx.Msgbox2(MainForm,"Convert tags to universal tags?","","Yes","Cancel","No",fx.MSGBOX_CONFIRMATION)
+				Select result2
+					Case fx.DialogResponse.NEGATIVE
+						TMX.export(segments,currentProject.projectFile.Get("source"),currentProject.projectFile.Get("target"),path,True,False)
+						fx.Msgbox(MainForm,"exported","")
+					Case fx.DialogResponse.POSITIVE
+						TMX.export(segments,currentProject.projectFile.Get("source"),currentProject.projectFile.Get("target"),path,True,True)
+						fx.Msgbox(MainForm,"exported","")
+				End Select
+
 		End Select
 		
 	End If

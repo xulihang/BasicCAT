@@ -63,20 +63,20 @@ End Sub
 
 Sub importTMX(path As String,sourceLang As String,targetLang As String)
 	Dim tmxString As String
-	tmxString=File.ReadString(path,"")
+	tmxString=XMLUtils.escapedText(File.ReadString(path,""),"seg","tmx")
 	Dim tmxMap As Map
-	tmxMap=Utils.getXmlMap(tmxString)
+	tmxMap=XMLUtils.getXmlMap(tmxString)
 	Log(tmxMap)
 	Dim tmxroot As Map
 	tmxroot=tmxMap.Get("tmx")
 	Dim body As Map
 	body=tmxroot.Get("body")
 	Dim tuList As List
-	tuList=Utils.GetElements(body,"tu")
+	tuList=XMLUtils.GetElements(body,"tu")
 	Dim i As Int
 	For Each tu As Map In tuList
 		Dim tuvList As List
-		tuvList=Utils.GetElements(tu,"tuv")
+		tuvList=XMLUtils.GetElements(tu,"tuv")
 		Dim source As String
 		Dim target As String
 

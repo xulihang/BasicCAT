@@ -18,7 +18,7 @@ Sub createWorkFile(filename As String,path As String,sourceLang As String)
 	sourceFiles.Initialize
 	
 	Dim files As List
-	files=getFilesList(escapedText(File.ReadString(File.Combine(path,"source"),filename),"source"))
+	files=getFilesList(XMLUtils.escapedText(File.ReadString(File.Combine(path,"source"),filename),"source","xliff"))
 	
 	For Each fileMap As Map In files
 		Try
@@ -124,7 +124,7 @@ Sub getTransUnits(fileMap As Map) As List
 	Dim tidyTransUnits As List
 	tidyTransUnits.Initialize
 	Dim transUnits As List
-	transUnits=Utils.GetElements(body,"trans-unit")
+	transUnits=XMLUtils.GetElements(body,"trans-unit")
 	For Each transUnit As Map In transUnits
 		Log(transUnit)
 		Dim attributes As Map
@@ -154,110 +154,13 @@ End Sub
 Sub getFilesList(xmlstring As String) As List
 	Log("read")
 	Dim xmlMap As Map
-	xmlMap=Utils.getXmlMap(xmlstring)
+	xmlMap=XMLUtils.getXmlMap(xmlstring)
 	Log(xmlMap)
 	Dim xliffMap As Map
 	xliffMap=xmlMap.Get("xliff")
-	Return Utils.GetElements(xliffMap,"file")
+	Return XMLUtils.GetElements(xliffMap,"file")
 End Sub
 
-Sub escapedText(xmlstring As String,tagName As String) As String
-	Log("es"&tagName)
-	Dim pattern As String
-	pattern="<"&tagName&".*?>(.*?)</"&tagName&">"
-	Dim new As String
-	new=xmlstring
-	Dim sourceMatcher As Matcher
-	sourceMatcher=Regex.Matcher2(pattern,32,new)
-	Dim replaceList As List
-	replaceList.Initialize
-
-	Do While sourceMatcher.Find
-		Dim group As String=sourceMatcher.Group(1)
-		Dim escapedGroup As String=escapeInlineTag(group)
-		If escapedGroup<>group Then
-			Dim replacement As Map
-			replacement.Initialize
-			replacement.Put("start",sourceMatcher.GetStart(1))
-			replacement.Put("end",sourceMatcher.GetEnd(1))
-			replacement.Put("group",escapedGroup)
-			replaceList.InsertAt(0,replacement)
-		End If
-	Loop
-    Log(replaceList)
-	For Each replacement As Map In replaceList
-		Dim startIndex,endIndex As Int
-		Dim group As String
-		startIndex=replacement.Get("start")
-		endIndex=replacement.Get("end")
-		group=replacement.Get("group")
-		Dim sb As StringBuilder
-		sb.Initialize
-		sb.Append(new.SubString2(0,startIndex))
-		sb.Append(group)
-		sb.Append(new.SubString2(endIndex,new.Length))
-		new=sb.ToString
-    Next
-	Log("esd"&tagName)
-	'Log(new)
-	Return new
-End Sub
-
-Sub unescapedText(xmlstring As String,tagName As String) As String
-	Dim pattern As String
-	pattern="<"&tagName&".*?>(.*?)</"&tagName&">"
-	Dim new As String
-	new=xmlstring
-	Dim sourceMatcher As Matcher
-	sourceMatcher=Regex.Matcher2(pattern,32,new)
-	Dim replaceList As List
-	replaceList.Initialize
-		
-	Do While sourceMatcher.Find
-		Dim group As String=sourceMatcher.Group(1)
-		Dim unescapedGroup As String=unescapeInlineTag(group)
-		If unescapedGroup<>group Then
-			Dim replacement As Map
-			replacement.Initialize
-			replacement.Put("start",sourceMatcher.GetStart(1))
-			replacement.Put("end",sourceMatcher.GetEnd(1))
-			replacement.Put("group",unescapedGroup)
-			replaceList.InsertAt(0,replacement)
-		End If
-	Loop
-		Log(replaceList)
-	For Each replacement As Map In replaceList
-		Dim startIndex,endIndex As Int
-		Dim group As String
-		startIndex=replacement.Get("start")
-		endIndex=replacement.Get("end")
-		group=replacement.Get("group")
-		Dim sb As StringBuilder
-		sb.Initialize
-		sb.Append(new.SubString2(0,startIndex))
-	    sb.Append(group)
-		sb.Append(new.SubString2(endIndex,new.Length))
-		new=sb.ToString
-	Next
-
-	Return new
-End Sub
-
-Sub escapeInlineTag(text As String) As String
-	Dim tags As String
-	tags="(bpt|ept|it|ph|g|bx|ex|x|sub|mrk)"
-	text=Regex.Replace2("<(/?\b"&tags&"\b.*?)>",32,text,"&lt;$1&gt;")
-	text=text.Replace($"""$,"&quot;")
-	Return text
-End Sub
-
-Sub unescapeInlineTag(text As String) As String
-	Dim tags As String
-	tags="(bpt|ept|it|ph|g|bx|ex|x|sub|mrk)"
-	text=text.Replace("&quot;",$"""$)
-	text=Regex.Replace2("&lt;(/?\b"&tags&"\b.*?)&gt;",32,text,"<$1>")
-	Return text
-End Sub
 
 Sub generateFile(filename As String,path As String,projectFile As Map)
 	Dim workfile As Map
@@ -311,9 +214,9 @@ Sub generateFile(filename As String,path As String,projectFile As Map)
 		Next
 	Next
 	Dim xmlString As String
-	xmlString=Utils.getXmlFromMap(insertTranslation(translationMap,filename,path))
-	xmlString=unescapedText(xmlString,"source")
-	xmlString=unescapedText(xmlString,"target")
+	xmlString=XMLUtils.getXmlFromMap(insertTranslation(translationMap,filename,path))
+	xmlString=XMLUtils.unescapedText(xmlString,"source","xliff")
+	xmlString=XMLUtils.unescapedText(xmlString,"target","xliff")
 	Log(xmlString)
 	File.WriteString(File.Combine(path,"target"),filename,xmlString)
 	Main.updateOperation(filename&" generated!")
@@ -322,16 +225,16 @@ End Sub
 Sub insertTranslation(translationMap As Map,filename As String,path As String) As Map
 	Dim xmlstring As String
 	xmlstring=File.ReadString(File.Combine(path,"source"),filename)
-	xmlstring=escapedText(xmlstring,"source")
-	xmlstring=escapedText(xmlstring,"target")
+	xmlstring=XMLUtils.escapedText(xmlstring,"source","xliff")
+	xmlstring=XMLUtils.escapedText(xmlstring,"target","xliff")
 	Log("xml"&xmlstring)
 	Dim xmlMap As Map
-	xmlMap=Utils.getXmlMap(xmlstring)
+	xmlMap=XMLUtils.getXmlMap(xmlstring)
 	Log("map"&xmlMap)
 	Dim xliffMap As Map
 	xliffMap=xmlMap.Get("xliff")
 	Dim filesList As List
-	filesList=Utils.GetElements(xliffMap,"file")
+	filesList=XMLUtils.GetElements(xliffMap,"file")
 	For Each innerFile As Map In filesList
 		Dim body As Map
 		Try
@@ -345,7 +248,7 @@ Sub insertTranslation(translationMap As Map,filename As String,path As String) A
 		Dim originalFilename As String
 		originalFilename=fileAttributes.Get("original")
 		Dim transUnits As List
-		transUnits=Utils.GetElements(body,"trans-unit")
+		transUnits=XMLUtils.GetElements(body,"trans-unit")
 		For Each transUnit As Map In transUnits
 			Dim attributes As Map
 			attributes=transUnit.Get("Attributes")
@@ -434,7 +337,9 @@ End Sub
 Sub mergeSegment(sourceTextArea As TextArea)
 	Dim index As Int
 	index=Main.editorLV.GetItemFromView(sourceTextArea.Parent)
-	
+	If index+1>Main.currentProject.segments.Size-1 Then
+		Return
+	End If
 	Dim bitext,nextBiText As List
 	bitext=Main.currentProject.segments.Get(index)
 	nextBiText=Main.currentProject.segments.Get(index+1)
@@ -459,7 +364,7 @@ Sub mergeSegment(sourceTextArea As TextArea)
 	End If
 		
 	Dim showTag As Boolean=False
-	If filterGenericUtils.tagsNum(source&nextsource)<>filterGenericUtils.tagsNum(fullsource&nextFullSource) And filterGenericUtils.tagsNum(fullsource)>0 Then
+	If filterGenericUtils.tagsNum(source&nextsource)<>filterGenericUtils.tagsNum(fullsource&nextFullSource) And filterGenericUtils.tagsNum(fullsource&nextFullSource)>0 Then
 		Dim result As Int
 		result=fx.Msgbox2(Main.MainForm,"Segments contain unshown tags, continue?","","Yes","Cancel","No",fx.MSGBOX_CONFIRMATION)
 		Log(result)
