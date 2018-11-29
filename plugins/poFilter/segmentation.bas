@@ -8,18 +8,24 @@ Version=6.51
 Sub Process_Globals
 	Private fx As JFX
 	Private rules As Map
+	Private previousLang As String
 End Sub
 
 Sub segmentedTxt(text As String,Trim As Boolean,sourceLang As String,path As String) As List
-	Log("text"&text)
+	'Log("text"&text)
 	If rules.IsInitialized=False Then
 		rules.Initialize
 	End If
-	If File.Exists(path,"segmentationRules.srx") Then
-		rules=SRX.readRules(File.Combine(path,"segmentationRules.srx"),sourceLang)
-	Else
-	    rules=SRX.readRules("",sourceLang)
+	If previousLang<>sourceLang Then
+		previousLang=sourceLang
+		If File.Exists(path,"segmentationRules.srx") Then
+			rules=SRX.readRules(File.Combine(path,"segmentationRules.srx"),sourceLang)
+		Else
+			rules=SRX.readRules(File.Combine(File.DirAssets,"default_rules.srx"),sourceLang)
+		End If
 	End If
+
+
 	
 
 	Dim segments As List
@@ -35,8 +41,8 @@ Sub segmentedTxt(text As String,Trim As Boolean,sourceLang As String,path As Str
 	For Each para As String In splitted
 		index=index+1
 	    segments.AddAll(paragraphInSegments(para))
-		Log(segments)
-		Log(segments.Size)
+		'Log(segments)
+		'Log(segments.Size)
 	    Dim last As String
 	    last=segments.Get(segments.Size-1)
 
@@ -47,7 +53,7 @@ Sub segmentedTxt(text As String,Trim As Boolean,sourceLang As String,path As Str
 		End If
 		segments.set(segments.Size-1,last)
 	Next
-    Log(segments)
+    'Log(segments)
 	Return segments
 End Sub
 
@@ -201,9 +207,9 @@ Sub paragraphInSegments(text As String) As List
 			finalBreakPositions.Add(index)
 		End If
 	Next
-	Log(breakPositions)
-	Log(nonbreakPositions)
-	Log(finalBreakPositions)
+	'Log(breakPositions)
+	'Log(nonbreakPositions)
+	'Log(finalBreakPositions)
 	For Each index As Int In finalBreakPositions
 		Dim textTobeAdded As String
 		textTobeAdded=text.SubString2(previousText.Length,index)

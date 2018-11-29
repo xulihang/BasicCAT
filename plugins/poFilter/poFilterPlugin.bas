@@ -320,7 +320,9 @@ End Sub
 Sub mergeSegment(MainForm As Form,sourceTextArea As TextArea,editorLV As CustomListView,segments As List,projectFile As Map)
 	Dim index As Int
 	index=editorLV.GetItemFromView(sourceTextArea.Parent)
-	
+	If index+1>segments.Size-1 Then
+		Return
+	End If
 	Dim bitext,nextBiText As List
 	bitext=segments.Get(index)
 	nextBiText=segments.Get(index+1)

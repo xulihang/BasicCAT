@@ -14,13 +14,14 @@ Module1=poFilterPlugin
 Module2=Xml2Map
 Module3=CustomListView
 Module4=Map2Xml
-Module5=segmentation
-Module6=SRX
-Module7=Utils
-Module8=filterGenericUtils
+Module5=filterGenericUtils
+Module6=Utils
+Module7=SRX
+Module8=XMLUtils
+Module9=segmentation
 NumberOfFiles=1
 NumberOfLibraries=7
-NumberOfModules=8
+NumberOfModules=9
 Version=6.51
 @EndOfDesignText@
 #Region Project Attributes 
