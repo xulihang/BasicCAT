@@ -93,6 +93,7 @@ Sub mi_Action
 				kvs.Put(bitext.Get(0),list1)
 			Else
 				kvs.Put(bitext.Get(0),bitext.Get(1))
+				Main.currentProject.projectTM.addPairToSharedTM(bitext.Get(0),bitext.Get(1))
 			End If
 			setItems(externalTMRadioButton.Selected)
 			SearchView1.replaceItem(buildItemText(bitext.Get(0),bitext.Get(1)),SearchView1.GetSelectedIndex)
@@ -106,6 +107,7 @@ Sub mi_Action
 				Dim source As String
 				source=Regex.Split(CRLF&"- ",text)(0).Replace("- source: ","")
 				kvs.Remove(source)
+				Main.currentProject.projectTM.removeFromSharedTM(source)
 				setItems(externalTMRadioButton.Selected)
 				SearchView1.GetItems.RemoveAt(SearchView1.GetSelectedIndex)
 			End If

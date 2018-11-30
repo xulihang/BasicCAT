@@ -18,34 +18,46 @@ Public Sub Initialize(projectPath As String,source As String)
 	terminology.Initialize(File.Combine(projectPath,"Term"),"term.db")
 	externalTerminology.Initialize(File.Combine(projectPath,"Term"),"external-term.db")
 	sourceLanguage=source
+	initSharedTerm(projectPath)
+End Sub
+
+Public Sub initSharedTerm(projectPath As String)
 	If Main.currentProject.settings.GetDefault("sharingTerm_enabled",False)=True Then
 		projectName=File.GetName(projectPath)
 		Log("projectName"&projectName)
-		Dim address As String=Main.currentProject.settings.GetDefault("server_address","")
-		If address<>"" Then
-			sharedTerm.Initialize(Me, "sharedTerm", address,File.Combine(projectPath,"Term"),"sharedTerm.db")
-			sharedTerm.SetAutoRefresh(Array(projectName&"Term"), 0.1) 'auto refresh every 0.1 minute
-			Dim termmap As Map
-			termmap=sharedTerm.GetAll(projectName&"Term")
-			If termmap.Size=0 Then
-				fillSharedTerm
-			End If
+		Dim address As String=Main.currentProject.settings.GetDefault("server_address","http://127.0.0.1:51042")
+		sharedTerm.Initialize(Me, "sharedTerm", address,File.Combine(projectPath,"Term"),"sharedTerm.db")
+		sharedTerm.SetAutoRefresh(Array(projectName&"Term"), 0.1) 'auto refresh every 0.1 minute
+		Dim job As HttpJob
+		job.Initialize("job",Me)
+		If address.EndsWith("/")=False Then
+			address=address&"/"
 		End If
-
+		job.Download(address&"getinfo?type=size&user="&projectName&"Term")
+		wait for (job) JobDone(job As HttpJob)
+		If job.Success Then
+			Try
+				Dim size As Int=job.GetString
+				If size=0 Then
+					fillSharedTerm
+				End If
+			Catch
+				Log(LastException)
+			End Try
+		End If
+		job.Release
 	End If
 End Sub
-
 
 Sub fillSharedTerm
 	Dim termmap As Map
 	termmap=sharedTerm.GetAll(projectName&"Term")
 	Dim size As Int=terminology.ListKeys.Size
-	progressDialog.Show("Filling SharedTerm","sharedTerm")
 	Dim index As Int=0
 	For Each key As String In terminology.ListKeys
 		index=index+1
-		Sleep(0)
-		progressDialog.update(index,size)
+		'Sleep(0)
+		'progressDialog.update(index,size)
 		If termmap.ContainsKey(key) Then
 			If termmap.Get(key)<>terminology.Get(key) Then
 				sharedTerm.Put(projectName&"Term",key,terminology.Get(key))
@@ -54,19 +66,21 @@ Sub fillSharedTerm
 			sharedTerm.Put(projectName&"Term",key,terminology.Get(key))
 		End If
 	Next
-	progressDialog.close
 End Sub
 
 
-Sub sharedTerm_NewData
+Sub sharedTerm_NewData(changedItems As List)
+	Log(changedItems)
 	Dim map1 As Map=sharedTerm.GetAll(projectName&"Term")
-	For Each key As String In map1.Keys
-		If terminology.ContainsKey(key) Then
-			If terminology.Get(key)<>map1.Get(key) Then
-				terminology.Put(key,map1.Get(key))
+	For Each item1 As Item In changedItems
+		If item1.UserField=projectname&"Term" Then
+			If terminology.ContainsKey(item1.KeyField) Then
+				If terminology.Get(item1.KeyField)<>map1.Get(item1.KeyField) Then
+					terminology.Put(item1.KeyField,map1.Get(item1.KeyField))
+				End If
+			Else
+				terminology.Put(item1.KeyField,map1.Get(item1.KeyField))
 			End If
-		Else
-			terminology.Put(key,map1.Get(key))
 		End If
 	Next
 End Sub
@@ -315,8 +329,18 @@ Sub addTerm(source As String,target As String)
 	termInfo.Initialize
 	targetMap.Put(target,termInfo)
 	terminology.Put(source,targetMap)
+	addPairToSharedTerm(source,targetMap)
+End Sub
+
+Public Sub addPairToSharedTerm(source As String,targetMap As Map)
 	If Main.currentProject.settings.GetDefault("sharingTerm_enabled",False)=True Then
 		sharedTerm.Put(projectName&"Term",source,targetMap)
+	End If
+End Sub
+
+Public Sub removeFromSharedTerm(source As String)
+	If Main.currentProject.settings.GetDefault("sharingTerm_enabled",False)=True Then
+		sharedTerm.GetAll(projectName&"Term").Remove(source)
 	End If
 End Sub
 

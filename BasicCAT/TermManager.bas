@@ -113,6 +113,7 @@ Sub mi_Action
 			terminfo.Put("note",termData.Get("note"))
 			targetMap.Put(termData.Get("target"),terminfo)
 			kvs.Put(termData.Get("source"),targetMap)
+			Main.currentProject.projectTerm.addPairToSharedTerm(termData.Get("source"),targetMap)
 			setItems
 			SearchView1.replaceItem(buildItemText(termData.Get("source"),termData.Get("target"),termData.Get("note"),termData.Get("tag")),SearchView1.GetSelectedIndex)
 		Case "Remove"
@@ -130,8 +131,10 @@ Sub mi_Action
 				targetMap.Remove(target)
 				If targetMap.Size<>0 Then
 					kvs.Put(source,targetMap)
+					Main.currentProject.projectTerm.addPairToSharedTerm(source,targetMap)
 				Else
 					kvs.Remove(source)
+					Main.currentProject.projectTerm.removeFromSharedTerm(source)
 				End If
 				setItems
 				SearchView1.GetItems.RemoveAt(SearchView1.GetSelectedIndex)

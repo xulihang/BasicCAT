@@ -9,9 +9,10 @@ Library5=jnetwork
 Library6=jbuilderutils
 Module1=Action
 Module2=DB
+Module3=GetInfo
 NumberOfFiles=0
 NumberOfLibraries=6
-NumberOfModules=2
+NumberOfModules=3
 Version=6.51
 @EndOfDesignText@
 'Non-UI application (console / server application)
@@ -36,6 +37,7 @@ Sub AppStart (Args() As String)
 		server.Port = 51042
 	End If
 	server.AddHandler("/action", "Action", False)
+	server.AddHandler("/getinfo", "GetInfo", False)
 	server.Start
 	Dim sersocket As ServerSocket 'ignore
 	Log($"CloudKVS server.

@@ -148,6 +148,12 @@ Public Sub saveSettings(newsettings As Map)
 		projectTerm.deleteExternalTerminology
 		projectTerm.importExternalTerminology(settings.Get("termList"))
 	End If
+	If newsettings.Get("sharingTM_enabled")=True Then
+		projectTM.initSharedTM(path)
+	End If
+	If newsettings.Get("sharingTerm_enabled")=True Then
+		projectTerm.initSharedTerm(path)
+	End If
 End Sub
 
 public Sub save

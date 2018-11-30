@@ -57,6 +57,16 @@ End Sub
 
 
 
+Public Sub GetUserItemsSize (user As String) As Int
+    Dim num As Int=0
+	Dim rs As ResultSet = sql.ExecQuery2("SELECT key, value, id, time FROM data WHERE user = ?", Array(user))
+	Do While rs.NextRow
+		num=num+1
+	Loop
+	rs.Close
+	Return num
+End Sub
+
 Public Sub GetUserItems (user As String, lastId As Int) As List
 	Dim items As List
 	items.Initialize

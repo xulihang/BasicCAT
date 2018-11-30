@@ -19,50 +19,78 @@ Public Sub Initialize(projectPath As String)
 	translationMemory.Initialize(File.Combine(projectPath,"TM"),"TM.db")
     externalTranslationMemory.Initialize(File.Combine(projectPath,"TM"),"externalTM.db")
 	similarityStore.Initialize
+	initSharedTM(projectPath)
+End Sub
+
+Public Sub initSharedTM(projectPath As String)
 	If Main.currentProject.settings.GetDefault("sharingTM_enabled",False)=True Then
 		projectName=File.GetName(projectPath)
 		Log("projectName"&projectName)
-		sharedTM.Initialize(Me, "sharedTM", "http://127.0.0.1:51042",File.Combine(projectPath,"TM"),"sharedTM.db")
+		Dim address As String=Main.currentProject.settings.GetDefault("server_address","http://127.0.0.1:51042")
+		sharedTM.Initialize(Me, "sharedTM", address,File.Combine(projectPath,"TM"),"sharedTM.db")
 		sharedTM.SetAutoRefresh(Array(projectName&"TM"), 0.1) 'auto refresh every 0.1 minute
-		Dim tmmap As Map
-		tmmap=sharedTM.GetAll(projectName&"TM")
-		If tmmap.Size=0 Then
-			fillSharedTM
+		Dim job As HttpJob
+		job.Initialize("job",Me)
+		If address.EndsWith("/")=False Then
+			address=address&"/"
 		End If
+		job.Download(address&"getinfo?type=size&user="&projectName&"TM")
+		wait for (job) JobDone(job As HttpJob)
+		If job.Success Then
+			Try
+				Dim size As Int=job.GetString
+				If size=0 Then
+					fillSharedTM
+				End If
+			Catch
+				Log(LastException)
+			End Try
+		End If
+		job.Release
 	End If
 End Sub
 
-Sub fillSharedTM 
+
+Sub fillSharedTM
+	'progressDialog.Show("Filling SharedTM","sharedTM")
 	Dim tmmap As Map
 	tmmap=sharedTM.GetAll(projectName&"TM")
 	Dim size As Int=translationMemory.ListKeys.Size
-	progressDialog.Show("Filling SharedTM","sharedTM")
 	Dim index As Int=0
 	For Each key As String In translationMemory.ListKeys
 		index=index+1
-		Sleep(0)
-		progressDialog.update(index,size)
-		If tmmap.ContainsKey(key) Then
-			If tmmap.Get(key)<>translationMemory.Get(key) Then
-				sharedTM.Put(projectName&"TM",key,translationMemory.Get(key))
-			End If
-		Else
-			sharedTM.Put(projectName&"TM",key,translationMemory.Get(key))
-		End If
+		Log(index)
+		Log(size)
+		'Sleep(0)
+		'progressDialog.update(index,size)
+		fillOne(tmmap,key)
 	Next
-	progressDialog.close
+	'progressDialog.close
 End Sub
 
-Sub sharedTM_NewData
-	sharedTM.UtilPrintData
+Sub fillOne(tmmap As Map,key As String)
+	If tmmap.ContainsKey(key) Then
+		If tmmap.Get(key)<>translationMemory.Get(key) Then
+			sharedTM.Put(projectName&"TM",key,translationMemory.Get(key))
+		End If
+	Else
+		sharedTM.Put(projectName&"TM",key,translationMemory.Get(key))
+	End If
+End Sub
+
+
+Sub sharedTM_NewData(changedItems As List)
+	Log(changedItems)
 	Dim map1 As Map=sharedTM.GetAll(projectName&"TM")
-	For Each key As String In map1.Keys
-		If translationMemory.ContainsKey(key) Then
-			If translationMemory.Get(key)<>map1.Get(key) Then
-				translationMemory.Put(key,map1.Get(key))
+	For Each item1 As Item In changedItems
+		If item1.UserField=projectName&"TM" Then
+			If translationMemory.ContainsKey(item1.KeyField) Then
+				If translationMemory.Get(item1.KeyField)<>map1.Get(item1.KeyField) Then
+					translationMemory.Put(item1.KeyField,map1.Get(item1.KeyField))
+				End If
+			Else
+				translationMemory.Put(item1.KeyField,map1.Get(item1.KeyField))
 			End If
-		Else
-			translationMemory.Put(key,map1.Get(key))
 		End If
 	Next
 End Sub
@@ -84,8 +112,18 @@ Sub addPair(source As String,target As String)
 		End If
 	End If
 	translationMemory.Put(source,target)
+	addPairToSharedTM(source,target)
+End Sub
+
+Public Sub addPairToSharedTM(source As String,target As String)
 	If Main.currentProject.settings.GetDefault("sharingTM_enabled",False)=True Then
 		sharedTM.Put(projectName&"TM",source,target)
+	End If
+End Sub
+
+Public Sub removeFromSharedTM(source As String)
+	If Main.currentProject.settings.GetDefault("sharingTM_enabled",False)=True Then
+		sharedTM.GetAll(projectName&"TM").Remove(source)
 	End If
 End Sub
 

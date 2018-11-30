@@ -41,6 +41,12 @@ Sub update2(info As String)
 	Label1.Text=info
 End Sub
 
+Sub delayedInfo(info As String)
+	Label1.Text=info
+	Sleep(2000)
+	close
+End Sub
+
 Sub close
 	frm.Close	
 End Sub

@@ -15,11 +15,13 @@ Sub Class_Globals
 	Private AutoRefreshUsers As List
 	Private mCallback As Object
 	Private mEventName As String
+	Private changedItems As List
 End Sub
 
 'Initializes the client.
 Public Sub Initialize (Callback As Object, EventName As String, ServerUrl As String,dir As String,filename As String)
 	csu.Initialize
+	changedItems.Initialize
 #if B4J
 	sql.InitializeSQLite(dir, filename, True)
 #else if B4A
@@ -91,6 +93,7 @@ Private Sub ser_BytesToObject (Success As Boolean, NewObject As Object)
 		Dim items As List = NewObject
 		If items.Size > 0 Then
 			For Each item1 As Item In items
+				changedItems.Add(item1)
 				InsertItemIntoData(item1, True)
 			Next
 			sql.ExecNonQueryBatch("getuser")
@@ -106,7 +109,7 @@ Private Sub GetUser_NonQueryComplete (Success As Boolean)
 	If Not(Success) Then
 		Log("Error writing to database: " & LastException)
 	End If
-	CallSub(mCallback, mEventName & "_newdata")
+	CallSub2(mCallback, mEventName & "_newdata",changedItems)
 End Sub
 
 Private Sub InsertItemIntoData(item As Item, async As Boolean)
@@ -241,6 +244,7 @@ End Sub
 Private Sub AutoRefresh_Tick
 	For Each user As String In AutoRefreshUsers
 		If sql.ExecQuerySingleResult2("SELECT count(*) FROM queue WHERE taskname = ?", Array As String("getuser_" & user)) = 0 Then
+			changedItems.Clear
 			RefreshUser(user)	
 		End If
 	Next
