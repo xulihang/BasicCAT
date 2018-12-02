@@ -50,21 +50,32 @@ Public Sub initSharedTerm(projectPath As String)
 End Sub
 
 Sub fillSharedTerm
+	progressDialog.Show("Filling SharedTerm","sharedTerm")
 	Dim termmap As Map
 	termmap=sharedTerm.GetAll(projectName&"Term")
 	Dim size As Int=terminology.ListKeys.Size
 	Dim index As Int=0
+	Dim toAllList As List
+	toAllList.Initialize
 	For Each key As String In terminology.ListKeys
 		index=index+1
-		'Sleep(0)
-		'progressDialog.update(index,size)
+		Sleep(0)
+		progressDialog.update(index,size)
 		If termmap.ContainsKey(key) Then
 			If termmap.Get(key)<>terminology.Get(key) Then
-				sharedTerm.Put(projectName&"Term",key,terminology.Get(key))
+				toAllList.Add(key)
 			End If
 		Else
-			sharedTerm.Put(projectName&"Term",key,terminology.Get(key))
+			toAllList.Add(key)
 		End If
+	Next
+	fillALL(toAllList)
+	progressDialog.close
+End Sub
+
+Sub fillALL(toAllList As List)
+	For Each key As String In toAllList
+		sharedTerm.Put(projectName&"Term",key,terminology.Get(key))
 	Next
 End Sub
 
@@ -73,7 +84,7 @@ Sub sharedTerm_NewData(changedItems As List)
 	Log(changedItems)
 	Dim map1 As Map=sharedTerm.GetAll(projectName&"Term")
 	For Each item1 As Item In changedItems
-		If item1.UserField=projectname&"Term" Then
+		If item1.UserField=projectName&"Term" Then
 			If terminology.ContainsKey(item1.KeyField) Then
 				If terminology.Get(item1.KeyField)<>map1.Get(item1.KeyField) Then
 					terminology.Put(item1.KeyField,map1.Get(item1.KeyField))
