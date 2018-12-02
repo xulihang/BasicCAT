@@ -52,7 +52,7 @@ End Sub
 
 
 Sub fillSharedTM
-	progressDialog.Show("Filling SharedTM","sharedTM")
+	'progressDialog.Show("Filling SharedTM","sharedTM")
 	Dim tmmap As Map
 	tmmap=sharedTM.GetAll(projectName&"TM")
 	Dim size As Int=translationMemory.ListKeys.Size
@@ -62,7 +62,7 @@ Sub fillSharedTM
 	For Each key As String In translationMemory.ListKeys
 		index=index+1
 	    Sleep(0)
-		progressDialog.update(index,size)
+		'progressDialog.update(index,size)
 		If tmmap.ContainsKey(key) Then
 			If tmmap.Get(key)<>translationMemory.Get(key) Then
 				toAddMap.Put(key,translationMemory.Get(key))
@@ -72,7 +72,7 @@ Sub fillSharedTM
 		End If
 	Next
 	fillALL(toAddMap)
-	progressDialog.close
+	'progressDialog.close
 End Sub
 
 Sub fillALL(toAddMap As Map)

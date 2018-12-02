@@ -50,7 +50,7 @@ Public Sub initSharedTerm(projectPath As String)
 End Sub
 
 Sub fillSharedTerm
-	progressDialog.Show("Filling SharedTerm","sharedTerm")
+	'progressDialog.Show("Filling SharedTerm","sharedTerm")
 	Dim termmap As Map
 	termmap=sharedTerm.GetAll(projectName&"Term")
 	Dim size As Int=terminology.ListKeys.Size
@@ -60,7 +60,7 @@ Sub fillSharedTerm
 	For Each key As String In terminology.ListKeys
 		index=index+1
 		Sleep(0)
-		progressDialog.update(index,size)
+		'progressDialog.update(index,size)
 		If termmap.ContainsKey(key) Then
 			If termmap.Get(key)<>terminology.Get(key) Then
 				toAddMap.Put(key,terminology.Get(key))
@@ -70,7 +70,7 @@ Sub fillSharedTerm
 		End If
 	Next
 	fillALL(toAddMap)
-	progressDialog.close
+	'progressDialog.close
 End Sub
 
 Sub fillALL(toAddMap As Map)
