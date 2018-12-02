@@ -55,27 +55,28 @@ Sub fillSharedTerm
 	termmap=sharedTerm.GetAll(projectName&"Term")
 	Dim size As Int=terminology.ListKeys.Size
 	Dim index As Int=0
-	Dim toAllList As List
-	toAllList.Initialize
+	Dim toAddMap As Map
+	toAddMap.Initialize
 	For Each key As String In terminology.ListKeys
 		index=index+1
 		Sleep(0)
 		progressDialog.update(index,size)
 		If termmap.ContainsKey(key) Then
 			If termmap.Get(key)<>terminology.Get(key) Then
-				toAllList.Add(key)
+				toAddMap.Put(key,terminology.Get(key))
 			End If
 		Else
-			toAllList.Add(key)
+			toAddMap.Put(key,terminology.Get(key))
 		End If
 	Next
-	fillALL(toAllList)
+	fillALL(toAddMap)
 	progressDialog.close
 End Sub
 
-Sub fillALL(toAllList As List)
-	For Each key As String In toAllList
-		sharedTerm.Put(projectName&"Term",key,terminology.Get(key))
+Sub fillALL(toAddMap As Map)
+	For Each key As String In toAddMap.Keys
+		Sleep(0)
+		sharedTerm.Put(projectName&"Term",key,toAddMap.Get(key))
 	Next
 End Sub
 

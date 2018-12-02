@@ -57,27 +57,28 @@ Sub fillSharedTM
 	tmmap=sharedTM.GetAll(projectName&"TM")
 	Dim size As Int=translationMemory.ListKeys.Size
 	Dim index As Int=0
-	Dim toAllList As List
-	toAllList.Initialize
+	Dim toAddMap As Map
+	toAddMap.Initialize
 	For Each key As String In translationMemory.ListKeys
 		index=index+1
-		Sleep(0)
+	    Sleep(0)
 		progressDialog.update(index,size)
 		If tmmap.ContainsKey(key) Then
 			If tmmap.Get(key)<>translationMemory.Get(key) Then
-				toAllList.Add(key)
+				toAddMap.Put(key,translationMemory.Get(key))
 			End If
 		Else
-			toAllList.Add(key)
+			toAddMap.Put(key,translationMemory.Get(key))
 		End If
 	Next
-	fillALL(toAllList)
+	fillALL(toAddMap)
 	progressDialog.close
 End Sub
 
-Sub fillALL(toAllList As List)
-	For Each key As String In toAllList
-		sharedTM.Put(projectName&"TM",key,translationMemory.Get(key))
+Sub fillALL(toAddMap As Map)
+	For Each key As String In toAddMap.Keys
+		Sleep(0)
+		sharedTM.Put(projectName&"TM",key,toAddMap.Get(key))
 	Next
 End Sub
 
