@@ -48,7 +48,7 @@ Public Sub setTranslation(index As String,translation As String)
 		If settings.GetDefault("sharingTM_enabled",False)=True Then
 			extra.Put("creator",Main.preferencesMap.GetDefault("vcs_username","anonymous"))
 		Else
-			extra.Put("creator",Main.preferencesMap.GetDefault("vcs_username",""))
+			extra.Put("creator","")
 		End If
 		
 	End If
@@ -1085,7 +1085,7 @@ Sub showTM(targetTextArea As TextArea)
         Dim note As String
 		note=matchList.Get(3)
 		Dim isExternal As Boolean=True
-		If note.ToLowerCase.EndsWith(".txt")=False And note.ToLowerCase.EndsWith(".tmx") Then
+		If note.ToLowerCase.EndsWith(".txt")=False And note.ToLowerCase.EndsWith(".tmx")=False Then
 			isExternal=False
 		End If
 		If matchList.Get(1)=sourceTA.Text And isExternal=False And targetTA.Text=matchList.Get(2) Then
