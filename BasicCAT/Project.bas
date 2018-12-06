@@ -45,7 +45,7 @@ Public Sub setTranslation(index As String,translation As String)
 		Dim extra As Map
 		extra=bitext.Get(4)
 		extra.Put("createdTime",time)
-		If settings.Get("sharingTM_enabled")=True Then
+		If settings.GetDefault("sharingTM_enabled",False)=True Then
 			extra.Put("creator",Main.preferencesMap.GetDefault("vcs_username","anonymous"))
 		Else
 			extra.Put("creator",Main.preferencesMap.GetDefault("vcs_username",""))
