@@ -355,7 +355,7 @@ Sub getOneUseMemory(source As String,rate As Double) As ResumableSub
 				
 				Dim target As String
 				Dim targetMap As Map
-				targetMap=kvs.Get(source)
+				targetMap=kvs.Get(key)
 				target=targetMap.Get("text")
 				
 				Dim tmPairList As List
