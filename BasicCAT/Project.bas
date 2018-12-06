@@ -36,6 +36,15 @@ Public Sub Initialize
 
 End Sub
 
+Public Sub setTranslation(index As String,translation As String)
+	Dim bitext As List
+	bitext=segments.Get(index)
+	bitext.Set(1,translation)
+	Dim time As String=DateTime.Now
+	Dim extra As Map
+	extra=bitext.Get(4)
+	extra.Put("createdTime",time)
+End Sub
 
 Sub initializeTM(projectPath As String,isExistingProject As Boolean)
 	projectTM.Initialize(projectPath)
@@ -1198,16 +1207,22 @@ Sub showTerm(targetTextArea As TextArea)
 End Sub
 
 
+Sub saveOneTranslationToTM(bitext As List)
+	Dim createdTime As Long
+	Dim extra As Map
+	extra=bitext.Get(4)
+	createdTime=extra.GetDefault("createdTime",0)
+	projectTM.addPair(bitext.Get(0),bitext.Get(1),createdTime)
+End Sub
+
 Public Sub saveAlltheTranslationToTM
 	For Each bitext As List In segments
-		projectTM.addPair(bitext.Get(0),bitext.Get(1))
+		saveOneTranslationToTM(bitext)
     Next
 End Sub
 
 Public Sub saveAlltheTranslationToSegmentsInVisibleArea(FirstIndex As Int, LastIndex As Int)
 	For i=Max(0,FirstIndex) To Min(LastIndex,Main.editorLV.Size-1)
-		Dim bitext As List
-		bitext=segments.Get(i)
 		Dim targetTextArea As TextArea
 		Dim p As Pane
 		p=Main.editorLV.GetPanel(i)
@@ -1215,7 +1230,8 @@ Public Sub saveAlltheTranslationToSegmentsInVisibleArea(FirstIndex As Int, LastI
 			Continue
 		End If
 		targetTextArea=p.GetNode(1)
-		bitext.Set(1,targetTextArea.Text)
+		setTranslation(i,targetTextArea.Text)
+		
 		'projectTM.addPair(bitext.Get(0),bitext.Get(1))
 	Next
 End Sub
@@ -1225,9 +1241,9 @@ Sub saveTranslation(targetTextArea As TextArea)
 	index=Main.editorLV.GetItemFromView(targetTextArea.Parent)
 	Dim bitext As List
 	bitext=segments.Get(index)
-	bitext.Set(1,targetTextArea.Text)
+	setTranslation(index,targetTextArea.Text)
 	If targetTextArea.Text<>"" Then
-		projectTM.addPair(bitext.Get(0),bitext.Get(1))
+		saveOneTranslationToTM(bitext)
 	End If
 End Sub
 
@@ -1347,15 +1363,15 @@ Sub preTranslate(options As Map)
 				Log(similarity>=matchrate)
 				
 				If similarity>=matchrate Then
-					bitext.Set(1,resultList.Get(2))
-					segments.Set(index,bitext)
+					setTranslation(index,resultList.Get(2))
+					'setSegment(bitext,index)
 					fillOne(index,resultList.Get(2))
 				End If
 			Else if options.Get("type")="MT" Then
 				wait for (MT.getMT(bitext.Get(0),projectFile.Get("source"),projectFile.Get("target"),options.Get("engine"))) Complete (translation As String)
 				If translation<>"" Then
-					bitext.Set(1,translation)
-					segments.Set(index,bitext)
+					setTranslation(index,translation)
+					'setSegment(bitext,index)
 					fillOne(index,translation)
 				End If
 			End If

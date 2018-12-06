@@ -41,7 +41,7 @@ End Sub
 Sub escapedText(xmlstring As String,tagName As String,filetype As String) As String
 	Log("es"&tagName)
 	Dim pattern As String
-	pattern="<"&tagName&".*?>(.*?)</"&tagName&">"
+	pattern="<"&tagName&"\b.*?>(.*?)</"&tagName&">"
 	Dim new As String
 	new=xmlstring
 	Dim sourceMatcher As Matcher
@@ -50,6 +50,7 @@ Sub escapedText(xmlstring As String,tagName As String,filetype As String) As Str
 	replaceList.Initialize
 
 	Do While sourceMatcher.Find
+		Log("match"&sourceMatcher.Match)
 		Dim group As String=sourceMatcher.Group(1)
 		Dim escapedGroup As String=escapeInlineTag(group,filetype)
 		If escapedGroup<>group Then
@@ -82,7 +83,7 @@ End Sub
 
 Sub unescapedText(xmlstring As String,tagName As String,filetype As String) As String
 	Dim pattern As String
-	pattern="<"&tagName&".*?>(.*?)</"&tagName&">"
+	pattern="<"&tagName&"\b.*?>(.*?)</"&tagName&">"
 	Dim new As String
 	new=xmlstring
 	Dim sourceMatcher As Matcher

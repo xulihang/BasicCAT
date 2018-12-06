@@ -55,7 +55,7 @@ Sub fillSharedTM
 	'progressDialog.Show("Filling SharedTM","sharedTM")
 	Dim tmmap As Map
 	tmmap=sharedTM.GetAll(projectName&"TM")
-	Dim size As Int=translationMemory.ListKeys.Size
+	'Dim size As Int=translationMemory.ListKeys.Size
 	Dim index As Int=0
 	Dim toAddMap As Map
 	toAddMap.Initialize
@@ -64,7 +64,14 @@ Sub fillSharedTM
 	    Sleep(0)
 		'progressDialog.update(index,size)
 		If tmmap.ContainsKey(key) Then
-			If tmmap.Get(key)<>translationMemory.Get(key) Then
+			
+			Dim previousTargetMap As Map=translationMemory.Get(key)
+			Dim newTargetMap As Map=tmmap.Get(key)
+			Dim previousCreatedTime,newCreatedTime As Long
+			previousCreatedTime=previousTargetMap.Get("createdTime")
+			newCreatedTime=newTargetMap.Get("createdTime")
+			
+			If previousTargetMap.Get("text")<>translationMemory.Get("text") And newCreatedTime>previousCreatedTime Then
 				toAddMap.Put(key,translationMemory.Get(key))
 			End If
 		Else
@@ -89,7 +96,14 @@ Sub sharedTM_NewData(changedItems As List)
 	For Each item1 As Item In changedItems
 		If item1.UserField=projectName&"TM" Then
 			If translationMemory.ContainsKey(item1.KeyField) Then
-				If translationMemory.Get(item1.KeyField)<>map1.Get(item1.KeyField) Then
+				Dim previousTargetMap,newTargetMap As Map
+				previousTargetMap=translationMemory.Get(item1.KeyField)
+				newTargetMap=map1.Get(item1.KeyField)
+				Dim previousCreatedTime,newCreatedTime As Long
+				previousCreatedTime=previousTargetMap.Get("createdTime")
+				newCreatedTime=newTargetMap.Get("createdTime")
+				
+				If previousTargetMap.Get("text")<>newTargetMap.Get("text") And newCreatedTime>previousCreatedTime Then
 					translationMemory.Put(item1.KeyField,map1.Get(item1.KeyField))
 				End If
 			Else
@@ -106,28 +120,38 @@ public Sub close
 	End If
 End Sub
 
-Sub addPair(source As String,target As String)
+Sub addPair(source As String,target As String,createdTime As Long)
 	If target="" Then
 		Return
 	End If
+	Dim targetMap As Map
+	targetMap.Initialize
+	targetMap.Put("text",target)
+	targetMap.Put("createdTime",createdTime)
 	If translationMemory.ContainsKey(source) Then
-		If translationMemory.Get(source)=target Then
+		Dim previousTargetMap As Map
+		previousTargetMap=translationMemory.Get(source)
+		Dim previousCreatedTime As Long=previousTargetMap.GetDefault("createdTime",0)
+		If previousTargetMap.Get("text")=target Then
+			Return
+		End If
+		If previousCreatedTime>createdTime Then
 			Return
 		End If
 	End If
-	translationMemory.Put(source,target)
-	addPairToSharedTM(source,target)
+	translationMemory.Put(source,targetMap)
+	addPairToSharedTM(source,targetMap)
 End Sub
 
-Public Sub addPairToSharedTM(source As String,target As String)
+Public Sub addPairToSharedTM(source As String,targetMap As Map)
 	If Main.currentProject.settings.GetDefault("sharingTM_enabled",False)=True Then
-		sharedTM.Put(projectName&"TM",source,target)
+		sharedTM.Put(projectName&"TM",source,targetMap)
 	End If
 End Sub
 
 Public Sub removeFromSharedTM(source As String)
 	If Main.currentProject.settings.GetDefault("sharingTM_enabled",False)=True Then
-		sharedTM.GetAll(projectName&"TM").Remove(source)
+		sharedTM.Put(projectName&"TM", source, Null) ' this equals remove method
 	End If
 End Sub
 
@@ -156,8 +180,8 @@ Public Sub importExternalTranslationMemory(tmList As List,projectFile As Map) As
 			progressDialog.update(index,segments.Size)
 			Sleep(0)
 			Dim source,target,filename As String
-			Dim targetList As List
-			targetList.Initialize
+			Dim targetMap As Map
+			targetMap.Initialize
 			If bitext.Size=3 Then
 				source=bitext.get(0)
 				target=bitext.Get(1)
@@ -166,9 +190,9 @@ Public Sub importExternalTranslationMemory(tmList As List,projectFile As Map) As
 				Continue
 			End If
 
-			targetList.Add(target)
-			targetList.Add(filename)
-			externalTranslationMemory.put(source,targetList)
+			targetMap.Put("text",target)
+			targetMap.Put("filename",filename)
+			externalTranslationMemory.put(source,targetMap)
 		Next
 	End If
 	Log(externalTranslationMemory.ListKeys.Size)
@@ -249,14 +273,15 @@ Sub getMatchList(source As String) As ResumableSub
 				tmPairList.Add(similarity)
 				tmPairList.Add(key)
 				
+				Dim target As String
+				Dim targetMap As Map
+				targetMap=kvs.Get(key)
+				target=targetMap.Get("text")
+				tmPairList.Add(target)
 				If i=0 Then
-					tmPairList.Add(kvs.Get(key))
 					tmPairList.Add("")
 				Else
-					Dim targetList As List
-					targetList=kvs.Get(key)
-					tmPairList.Add(targetList.Get(0))
-					tmPairList.Add(targetList.Get(1)) ' external tm name
+					tmPairList.Add(targetMap.Get("filename")) ' external tm name
 				End If
 				Log(tmPairList)
 				matchList.Add(tmPairList)
@@ -288,14 +313,18 @@ Sub getOneUseMemory(source As String,rate As Double) As ResumableSub
 			tmPairList.Initialize
 			tmPairList.Add(1)
 			tmPairList.Add(source)
+			
+			Dim target As String
+			Dim targetMap As Map
+			targetMap=kvs.Get(source)
+			target=targetMap.Get("text")
+			
 			If i=0 Then
-				tmPairList.Add(kvs.Get(source))
+				tmPairList.Add(target)
 				tmPairList.Add("")
 			Else
-				Dim targetList As List
-				targetList=kvs.Get(source)
-				tmPairList.Add(targetList.Get(0))
-				tmPairList.Add(targetList.Get(1))
+				tmPairList.Add(target)
+				tmPairList.Add(targetMap.Get("filename"))
 			End If
 			onePairList=tmPairList
 			Return onePairList
@@ -323,19 +352,23 @@ Sub getOneUseMemory(source As String,rate As Double) As ResumableSub
 
 
 			If similarity>rate Then
+				
+				Dim target As String
+				Dim targetMap As Map
+				targetMap=kvs.Get(source)
+				target=targetMap.Get("text")
+				
 				Dim tmPairList As List
 				tmPairList.Initialize
 				tmPairList.Add(similarity)
 				tmPairList.Add(key)
 				
 				If i=0 Then
-					tmPairList.Add(kvs.Get(key))
+					tmPairList.Add(target)
 					tmPairList.Add("")
 				Else
-					Dim targetList As List
-					targetList=kvs.Get(key)
-					tmPairList.Add(targetList.Get(0))
-					tmPairList.Add(targetList.Get(1))
+					tmPairList.Add(target)
+					tmPairList.Add(targetMap.Get("filename"))
 				End If
 				If similarity=1 Then
 					'Log("exact match")

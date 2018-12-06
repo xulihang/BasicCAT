@@ -309,9 +309,10 @@ Sub replaceSelectedButton_MouseClicked (EventData As MouseEvent)
 		Dim bitext As List
 		bitext=Main.currentProject.segments.Get(tagList.Get(0))
 		If bitext.Get(1)=target Then
-			bitext.Set(1,after)
+			'bitext.Set(1,after)
+			Main.currentProject.setTranslation(tagList.Get(0),after)
 		End If
-		Main.currentProject.segments.Set(tagList.Get(0),bitext)
+		'Main.currentProject.setSegment(tagList.Get(0),bitext)
 		Main.currentProject.fillVisibleTargetTextArea
 		resultListView.Items.RemoveAt(resultListView.SelectedIndex)
 		Main.currentProject.contentIsChanged
@@ -337,9 +338,10 @@ Sub replaceAllButton_MouseClicked (EventData As MouseEvent)
 			Dim bitext As List
 			bitext=Main.currentProject.segments.Get(tagList.Get(0))
 			If bitext.Get(1)=target Then
-				bitext.Set(1,after)
+				'bitext.Set(1,after)
+				Main.currentProject.setTranslation(tagList.Get(0),after)
 			End If
-			Main.currentProject.segments.Set(tagList.Get(0),bitext)
+			'Main.currentProject.setSegment(tagList.Get(0),bitext)
 			Main.currentProject.fillVisibleTargetTextArea
 			resultListView.Items.RemoveAt(resultListView.Items.IndexOf(p))
 			count=count+1

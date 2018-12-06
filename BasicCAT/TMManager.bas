@@ -26,26 +26,21 @@ End Sub
 
 Sub init
 	kvs=Main.currentProject.projectTM.translationMemory
-	setItems(False)
+	setItems
 	Sleep(0)
 	SearchView1.show
 	addContextMenuToLV
 End Sub
 
 
-Sub setItems(isExternal As Boolean)
+Sub setItems
 	Dim items As List
 	items.Initialize
 	For Each key As String In kvs.ListKeys
 		'Log(key)
-		If isExternal Then
-			Dim list1 As List
-			list1=kvs.Get(key)
-			items.Add(buildItemText(key,list1.Get(0)))
-		Else
-			items.Add(buildItemText(key,kvs.Get(key)))
-		End If
-		
+		Dim targetMap As Map
+	    targetMap=kvs.Get(key)
+		items.Add(buildItemText(key,targetMap.Get("text")))
 	Next
 	SearchView1.SetItems(items)
 End Sub
@@ -86,16 +81,16 @@ Sub mi_Action
 			tmEd.Initialize(source,target)
 			Dim bitext As List
 			bitext=tmEd.showAndWait
-			If externalTMRadioButton.Selected Then
-				Dim list1 As List
-				list1=kvs.Get(bitext.Get(0))
-				list1.Set(0,bitext.Get(1))
-				kvs.Put(bitext.Get(0),list1)
-			Else
-				kvs.Put(bitext.Get(0),bitext.Get(1))
-				Main.currentProject.projectTM.addPairToSharedTM(bitext.Get(0),bitext.Get(1))
+			
+			Dim targetMap As Map
+			targetMap=kvs.Get(bitext.Get(0))
+			targetMap.Put("text",bitext.Get(1))
+			kvs.Put(bitext.Get(0),targetMap)
+			
+			If externalTMRadioButton.Selected=False Then
+				Main.currentProject.projectTM.addPairToSharedTM(bitext.Get(0),targetMap)
 			End If
-			setItems(externalTMRadioButton.Selected)
+			setItems
 			SearchView1.replaceItem(buildItemText(bitext.Get(0),bitext.Get(1)),SearchView1.GetSelectedIndex)
 		Case "Remove"
 			Dim result As Int=fx.Msgbox2(frm,"Will delete this entry, continue?","","Yes","","Cancel",fx.MSGBOX_CONFIRMATION)
@@ -108,7 +103,7 @@ Sub mi_Action
 				source=Regex.Split(CRLF&"- ",text)(0).Replace("- source: ","")
 				kvs.Remove(source)
 				Main.currentProject.projectTM.removeFromSharedTM(source)
-				setItems(externalTMRadioButton.Selected)
+				setItems
 				SearchView1.GetItems.RemoveAt(SearchView1.GetSelectedIndex)
 			End If
 	End Select
@@ -117,7 +112,7 @@ End Sub
 Sub projectTMRadioButton_SelectedChange(Selected As Boolean)
 	If Selected Then
 		kvs=Main.currentProject.projectTM.translationMemory
-		setItems(False)
+		setItems
 		SearchView1.show
 	End If
 End Sub
@@ -125,7 +120,7 @@ End Sub
 Sub externalTMRadioButton_SelectedChange(Selected As Boolean)
 	If Selected Then
 		kvs=Main.currentProject.projectTM.externalTranslationMemory
-		setItems(True)
+		setItems
 		SearchView1.show
 	End If
 End Sub
@@ -152,13 +147,11 @@ Sub exportToFile
 		Dim bitext As List
 		bitext.Initialize
 		bitext.Add(key)
-		Dim list1 As List
-		If externalTMRadioButton.Selected Then
-			list1=kvs.Get(key)
-			bitext.Add(list1.Get(0))
-		Else
-			bitext.Add(kvs.Get(key))
-		End If
+		Dim targetMap As Map
+		targetMap=kvs.Get(key)
+		Dim target As String
+		target=targetMap.Get("text")
+		bitext.Add(target)
 		segments.Add(bitext)
 	Next
 	Dim result As Int

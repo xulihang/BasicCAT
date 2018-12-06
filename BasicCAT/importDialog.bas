@@ -43,66 +43,79 @@ Sub loadTM(path As String)
 End Sub
 
 Sub importTMTxt(path As String)
-	Dim content As String
-	content=File.ReadString(path,"")
-	Dim segments As List
-	segments=Regex.Split(CRLF,content)
-	Dim i As Int=0
-	For Each line As String In segments
-		Dim source,target As String
-		source=Regex.Split("	",line)(0)
-		target=Regex.Split("	",line)(1)
-		i=i+1
-		ListView1.Items.Add(buildTMItemText(source,target))
-		If i=5 Then
-			ListView1.Items.Add("......")
-			Exit
-		End If
-	Next
+	Try
+		Dim content As String
+		content=File.ReadString(path,"")
+		Dim segments As List
+		segments=Regex.Split(CRLF,content)
+		Dim i As Int=0
+		For Each line As String In segments
+			Dim source,target As String
+			source=Regex.Split("	",line)(0)
+			target=Regex.Split("	",line)(1)
+			i=i+1
+			ListView1.Items.Add(buildTMItemText(source,target))
+			If i=5 Then
+				ListView1.Items.Add("......")
+				Exit
+			End If
+		Next
+	Catch
+		fx.Msgbox(frm,"Invalid file","")
+		Log(LastException)
+	End Try
+
 End Sub
 
 Sub importTMX(path As String,sourceLang As String,targetLang As String)
-	Dim tmxString As String
-	tmxString=XMLUtils.escapedText(File.ReadString(path,""),"seg","tmx")
-	Dim tmxMap As Map
-	tmxMap=XMLUtils.getXmlMap(tmxString)
-	Log(tmxMap)
-	Dim tmxroot As Map
-	tmxroot=tmxMap.Get("tmx")
-	Dim body As Map
-	body=tmxroot.Get("body")
-	Dim tuList As List
-	tuList=XMLUtils.GetElements(body,"tu")
-	Dim i As Int
-	For Each tu As Map In tuList
-		Dim tuvList As List
-		tuvList=XMLUtils.GetElements(tu,"tuv")
-		Dim source As String
-		Dim target As String
+	Try
+		Dim tmxString As String
+		tmxString=XMLUtils.escapedText(File.ReadString(path,""),"seg","tmx")
+		Log(tmxstring)
+		Dim tmxMap As Map
+		tmxMap=XMLUtils.getXmlMap(tmxString)
+		Log(tmxMap)
+		Dim tmxroot As Map
+		tmxroot=tmxMap.Get("tmx")
+		Dim body As Map
+		body=tmxroot.Get("body")
+		Dim tuList As List
+		tuList=XMLUtils.GetElements(body,"tu")
+		Dim i As Int
+		For Each tu As Map In tuList
+			Dim tuvList As List
+			tuvList=XMLUtils.GetElements(tu,"tuv")
+			Dim source As String
+			Dim target As String
 
-		For Each tuv As Map In tuvList
-			Dim attributes As Map
-			attributes=tuv.Get("Attributes")
-			Dim lang As String
-			If attributes.ContainsKey("lang") Then
-				lang=attributes.Get("lang")
-			else if attributes.ContainsKey("xml:lang") Then
-				lang=attributes.Get("xml:lang")
-			End If
-			lang=lang.ToLowerCase
-			If lang.StartsWith(sourceLang) Then
-				source=tuv.Get("seg")
-			else if lang.StartsWith(targetLang) Then
-				target=tuv.Get("seg")
+			For Each tuv As Map In tuvList
+				Dim attributes As Map
+				attributes=tuv.Get("Attributes")
+				Log(attributes)
+				Dim lang As String
+				If attributes.ContainsKey("lang") Then
+					lang=attributes.Get("lang")
+				else if attributes.ContainsKey("xml:lang") Then
+					lang=attributes.Get("xml:lang")
+				End If
+				lang=lang.ToLowerCase
+				If lang.StartsWith(sourceLang) Then
+					source=tuv.Get("seg")
+				else if lang.StartsWith(targetLang) Then
+					target=tuv.Get("seg")
+				End If
+			Next
+			i=i+1
+			ListView1.Items.Add(buildTMItemText(source,target))
+			If i=5 Then
+				ListView1.Items.Add("......")
+				Exit
 			End If
 		Next
-		i=i+1
-		ListView1.Items.Add(buildTMItemText(source,target))
-		If i=5 Then
-			ListView1.Items.Add("......")
-			Exit
-		End If
-	Next
+	Catch
+		fx.Msgbox(frm,"Invalid file","")
+		Log(LastException)
+	End Try
 End Sub
 
 Sub loadTerm(path As String)
