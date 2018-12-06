@@ -39,11 +39,13 @@ End Sub
 Public Sub setTranslation(index As String,translation As String)
 	Dim bitext As List
 	bitext=segments.Get(index)
-	bitext.Set(1,translation)
-	Dim time As String=DateTime.Now
-	Dim extra As Map
-	extra=bitext.Get(4)
-	extra.Put("createdTime",time)
+	If translation<>bitext.Get(1) Then
+		bitext.Set(1,translation)
+		Dim time As String=DateTime.Now
+		Dim extra As Map
+		extra=bitext.Get(4)
+		extra.Put("createdTime",time)
+	End If
 End Sub
 
 Sub initializeTM(projectPath As String,isExistingProject As Boolean)
