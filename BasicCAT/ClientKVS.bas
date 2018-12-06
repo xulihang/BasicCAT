@@ -177,6 +177,11 @@ Public Sub Put2 (user As String, key As String, Value As Object, IsDefault As Bo
 	HandleQueue
 End Sub
 
+
+Public Sub removeLocal (user As String,key As String)
+	sql.ExecNonQuery2("DELETE FROM data WHERE user = ? AND key = ?", Array(user,key))
+End Sub
+
 Private Sub ObjectToBytes (o As Object) As Byte()
 	If o = Null Then Return Null
 	Dim ser As B4XSerializator

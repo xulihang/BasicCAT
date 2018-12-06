@@ -86,6 +86,14 @@ Sub sharedTerm_NewData(changedItems As List)
 	Dim map1 As Map=sharedTerm.GetAll(projectName&"Term")
 	For Each item1 As Item In changedItems
 		If item1.UserField=projectName&"Term" Then
+			If item1.ValueField=Null Then 'remove
+				sharedTerm.removeLocal(item1.UserField,item1.KeyField)
+				If terminology.ContainsKey(item1.KeyField) Then
+					terminology.Remove(item1.KeyField)
+				End If
+				Continue
+			End If
+			
 			If terminology.ContainsKey(item1.KeyField) Then
 				If terminology.Get(item1.KeyField)<>map1.Get(item1.KeyField) Then
 					terminology.Put(item1.KeyField,map1.Get(item1.KeyField))
@@ -352,7 +360,7 @@ End Sub
 
 Public Sub removeFromSharedTerm(source As String)
 	If Main.currentProject.settings.GetDefault("sharingTerm_enabled",False)=True Then
-		sharedTerm.GetAll(projectName&"Term").Remove(source)
+		sharedTerm.Put(projectName&"Term", source, Null) ' this equals remove method
 	End If
 End Sub
 

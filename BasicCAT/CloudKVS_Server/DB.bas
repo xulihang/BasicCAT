@@ -46,9 +46,15 @@ Public Sub AddItem(item As Item)
 			End If
 			rs.Close
 		End If
+		'If item.ValueField=Null Then
+		'	sql.ExecNonQuery2("DELETE FROM data WHERE user = ? AND key = ?", Array(item.UserField,item.KeyField))
+		'Else
 		
-		sql.ExecNonQuery2("INSERT OR REPLACE INTO data VALUES (?, ?, ?, ?, ?)",  _
+			sql.ExecNonQuery2("INSERT OR REPLACE INTO data VALUES (?, ?, ?, ?, ?)",  _
 			Array (item.UserField, item.KeyField, item.ValueField, id, Min(item.TimeField, DateTime.Now)))
+		
+		'End If
+
 	Catch
 		Log(LastException)
 	End Try

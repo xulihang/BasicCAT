@@ -91,11 +91,20 @@ End Sub
 
 
 Sub sharedTM_NewData(changedItems As List)
-	Log(changedItems)
+	Log("changed"&changedItems)
 	Dim map1 As Map=sharedTM.GetAll(projectName&"TM")
 	For Each item1 As Item In changedItems
 		If item1.UserField=projectName&"TM" Then
+			If item1.ValueField=Null Then 'remove
+				sharedTM.removeLocal(item1.UserField,item1.KeyField)
+				If translationMemory.ContainsKey(item1.KeyField) Then
+					translationMemory.Remove(item1.KeyField)
+				End If
+				Continue
+			End If
+			
 			If translationMemory.ContainsKey(item1.KeyField) Then
+
 				Dim previousTargetMap,newTargetMap As Map
 				previousTargetMap=translationMemory.Get(item1.KeyField)
 				newTargetMap=map1.Get(item1.KeyField)

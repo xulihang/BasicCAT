@@ -13,7 +13,7 @@ Module3=GetInfo
 NumberOfFiles=0
 NumberOfLibraries=6
 NumberOfModules=3
-Version=6.51
+Version=6.8
 @EndOfDesignText@
 'Non-UI application (console / server application)
 #Region  Project Attributes 
