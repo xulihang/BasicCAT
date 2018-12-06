@@ -120,7 +120,7 @@ public Sub close
 	End If
 End Sub
 
-Sub addPair(source As String,target As String,createdTime As Long)
+Sub addPair(source As String,target As String,createdTime As Long,creator As String)
 	If target="" Then
 		Return
 	End If
@@ -128,6 +128,7 @@ Sub addPair(source As String,target As String,createdTime As Long)
 	targetMap.Initialize
 	targetMap.Put("text",target)
 	targetMap.Put("createdTime",createdTime)
+	targetMap.Put("creator",createdTime)
 	If translationMemory.ContainsKey(source) Then
 		Dim previousTargetMap As Map
 		previousTargetMap=translationMemory.Get(source)
@@ -279,7 +280,7 @@ Sub getMatchList(source As String) As ResumableSub
 				target=targetMap.Get("text")
 				tmPairList.Add(target)
 				If i=0 Then
-					tmPairList.Add("")
+					tmPairList.Add(targetMap.GetDefault("creator","anonymous"))
 				Else
 					tmPairList.Add(targetMap.Get("filename")) ' external tm name
 				End If
@@ -321,7 +322,7 @@ Sub getOneUseMemory(source As String,rate As Double) As ResumableSub
 			
 			If i=0 Then
 				tmPairList.Add(target)
-				tmPairList.Add("")
+				tmPairList.Add(targetMap.GetDefault("creator","anonymous"))
 			Else
 				tmPairList.Add(target)
 				tmPairList.Add(targetMap.Get("filename"))

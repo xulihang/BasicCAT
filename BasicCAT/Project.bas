@@ -45,6 +45,7 @@ Public Sub setTranslation(index As String,translation As String)
 		Dim extra As Map
 		extra=bitext.Get(4)
 		extra.Put("createdTime",time)
+		extra.Put("creator",Main.preferencesMap.GetDefault("vcs_username","anonymous"))
 	End If
 End Sub
 
@@ -1211,10 +1212,12 @@ End Sub
 
 Sub saveOneTranslationToTM(bitext As List)
 	Dim createdTime As Long
+	Dim creator As String
 	Dim extra As Map
 	extra=bitext.Get(4)
 	createdTime=extra.GetDefault("createdTime",0)
-	projectTM.addPair(bitext.Get(0),bitext.Get(1),createdTime)
+	creator=extra.GetDefault("creator","anonymous")
+	projectTM.addPair(bitext.Get(0),bitext.Get(1),createdTime,creator)
 End Sub
 
 Public Sub saveAlltheTranslationToTM
