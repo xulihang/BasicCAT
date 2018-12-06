@@ -128,7 +128,7 @@ Sub addPair(source As String,target As String,createdTime As Long,creator As Str
 	targetMap.Initialize
 	targetMap.Put("text",target)
 	targetMap.Put("createdTime",createdTime)
-	targetMap.Put("creator",createdTime)
+	targetMap.Put("creator",creator)
 	If translationMemory.ContainsKey(source) Then
 		Dim previousTargetMap As Map
 		previousTargetMap=translationMemory.Get(source)

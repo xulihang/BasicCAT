@@ -1077,8 +1077,13 @@ Sub showTM(targetTextArea As TextArea)
 
     Dim index As Int=0
 	For Each matchList As List In Result
-
-		If matchList.Get(1)=sourceTA.Text And matchList.Get(3)="" And targetTA.Text=matchList.Get(2) Then
+        Dim note As String
+		note=matchList.Get(3)
+		Dim isExternal As Boolean=True
+		If note.ToLowerCase.EndsWith(".txt")=False And note.ToLowerCase.EndsWith(".tmx") Then
+			isExternal=False
+		End If
+		If matchList.Get(1)=sourceTA.Text And isExternal=False And targetTA.Text=matchList.Get(2) Then
 			Continue 'itself
 		End If
 		Dim row()  As Object = Array As String(matchList.Get(0),matchList.Get(1),matchList.Get(2),matchList.Get(3))
