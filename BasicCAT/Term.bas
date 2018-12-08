@@ -26,7 +26,13 @@ Public Sub initSharedTerm(projectPath As String)
 		projectName=File.GetName(projectPath)
 		Log("projectName"&projectName)
 		Dim address As String=Main.currentProject.settings.GetDefault("server_address","http://127.0.0.1:51042")
-		sharedTerm.Initialize(Me, "sharedTerm", address,File.Combine(projectPath,"Term"),"sharedTerm.db")
+		Dim key As String
+		If File.Exists(Main.currentProject.path,"accesskey") Then
+			key=File.ReadString(Main.currentProject.path,"accesskey")
+		Else
+			key="put your key in this file"
+		End If
+		sharedTerm.Initialize(Me, "sharedTerm", address,File.Combine(projectPath,"Term"),"sharedTerm.db",key)
 		sharedTerm.SetAutoRefresh(Array(projectName&"Term"), 0.1) 'auto refresh every 0.1 minute
 		Dim job As HttpJob
 		job.Initialize("job",Me)

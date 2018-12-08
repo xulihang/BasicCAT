@@ -89,7 +89,11 @@ Sub paramsTableView_MouseClicked (EventData As MouseEvent)
 		inpBox.Initialize
 		Dim row() As Object
 		row=paramsTableView.Items.Get(paramsTableView.SelectedRow)
-		row(1)=inpBox.showAndWait
+		If row(1)<>Null Or row(1)<>"" Then
+			row(1)=inpBox.showAndWait(row(1))
+		Else
+			row(1)=inpBox.showAndWait("")
+		End If
 		paramsTableView.Items.Set(paramsTableView.SelectedRow,row)
 		params.Put(paramsTableView.SelectedRowValues(0),row(1))
 	End If

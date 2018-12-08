@@ -16,6 +16,10 @@ End Sub
 Sub Handle(req As ServletRequest, resp As ServletResponse)
 	Dim task As Task = serializator.ConvertBytesToObject(Bit.InputStreamToBytes(req.InputStream))
 	Log($"Task: ${task.TaskName}, User: ${task.TaskItem.UserField}, Key: ${task.TaskItem.KeyField}, IP: ${req.RemoteAddress}"$)
+	If task.TaskKey<>File.ReadString(File.DirApp,"key.txt") Then
+		Log("wrong key")
+		Return
+	End If
 	If task.TaskName.StartsWith("getuser") Then
 		'the lastid value is stored in the key field
 		Dim items As List = DB.GetUserItems(task.TaskItem.UserField, task.TaskItem.KeyField)

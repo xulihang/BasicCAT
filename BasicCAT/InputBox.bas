@@ -17,7 +17,8 @@ Public Sub Initialize
 End Sub
 
 
-Public Sub showAndWait As String
+Public Sub showAndWait(default As String) As String
+	TextField1.Text=default
     frm.ShowAndWait
 	Return TextField1.Text
 End Sub

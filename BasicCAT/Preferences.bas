@@ -24,6 +24,7 @@ Sub Class_Globals
 	Private languagetoolEnabledCheckBox As CheckBox
 	Private emailTextField As TextField
 	Private usernameTextField As TextField
+	Private gitPasswordTextField As TextField
 	Private vcsEnabledCheckBox As CheckBox
 	Private sourceFontLbl As Label
 	Private targetFontLbl As Label
@@ -159,6 +160,9 @@ Sub categoryListView_SelectedIndexChanged(Index As Int)
 			If unsavedPreferences.ContainsKey("vcs_username") Then
 				usernameTextField.Text=unsavedPreferences.get("vcs_username")
 			End If
+			If unsavedPreferences.ContainsKey("vcs_password") Then
+				gitPasswordTextField.Text=unsavedPreferences.get("vcs_password")
+			End If
 		Case 7
 			'Plugins
 			SettingPane.RemoveAllNodes
@@ -280,6 +284,7 @@ End Sub
 Sub saveVCSSettingButton_MouseClicked (EventData As MouseEvent)
 	unsavedPreferences.Put("vcs_username",usernameTextField.Text)
 	unsavedPreferences.Put("vcs_email",emailTextField.Text)
+	unsavedPreferences.Put("vcs_password",gitPasswordTextField.Text)
 End Sub
 
 Sub targetFontLbl_MouseClicked (EventData As MouseEvent)

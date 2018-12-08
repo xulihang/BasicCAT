@@ -27,7 +27,13 @@ Public Sub initSharedTM(projectPath As String)
 		projectName=File.GetName(projectPath)
 		Log("projectName"&projectName)
 		Dim address As String=Main.currentProject.settings.GetDefault("server_address","http://127.0.0.1:51042")
-		sharedTM.Initialize(Me, "sharedTM", address,File.Combine(projectPath,"TM"),"sharedTM.db")
+		Dim key As String
+		If File.Exists(Main.currentProject.path,"accesskey") Then
+			key=File.ReadString(Main.currentProject.path,"accesskey")
+		Else
+			key="put your key in this file"
+		End If
+		sharedTM.Initialize(Me, "sharedTM", address,File.Combine(projectPath,"TM"),"sharedTM.db",key)
 		sharedTM.SetAutoRefresh(Array(projectName&"TM"), 0.1) 'auto refresh every 0.1 minute
 		Dim job As HttpJob
 		job.Initialize("job",Me)
@@ -92,6 +98,9 @@ End Sub
 
 Sub sharedTM_NewData(changedItems As List)
 	Log("changed"&changedItems)
+	Dim changedKeys As List
+	changedKeys.Initialize
+
 	Dim map1 As Map=sharedTM.GetAll(projectName&"TM")
 	For Each item1 As Item In changedItems
 		If item1.UserField=projectName&"TM" Then
@@ -114,12 +123,15 @@ Sub sharedTM_NewData(changedItems As List)
 				
 				If previousTargetMap.Get("text")<>newTargetMap.Get("text") And newCreatedTime>previousCreatedTime Then
 					translationMemory.Put(item1.KeyField,map1.Get(item1.KeyField))
+					changedKeys.Add(item1.KeyField)
 				End If
 			Else
 				translationMemory.Put(item1.KeyField,map1.Get(item1.KeyField))
+				changedKeys.Add(item1.KeyField)
 			End If
 		End If
 	Next
+	Main.currentProject.saveNewDataToWorkfile(changedKeys)
 End Sub
 
 public Sub close
@@ -129,15 +141,11 @@ public Sub close
 	End If
 End Sub
 
-Sub addPair(source As String,target As String,createdTime As Long,creator As String)
-	If target="" Then
-		Return
-	End If
-	Dim targetMap As Map
-	targetMap.Initialize
-	targetMap.Put("text",target)
-	targetMap.Put("createdTime",createdTime)
-	targetMap.Put("creator",creator)
+Sub addPair(source As String,targetMap As Map)
+    Dim target As String
+	target=targetMap.Get("text")
+	Dim createdTime As Long
+	createdTime=targetMap.Get("createdTime")
 	If translationMemory.ContainsKey(source) Then
 		Dim previousTargetMap As Map
 		previousTargetMap=translationMemory.Get(source)

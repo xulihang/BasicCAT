@@ -25,11 +25,15 @@ Sub Class_Globals
 	Private serverAddressTextField As TextField
 	Private sharingTermCheckBox As CheckBox
 	Private sharingTMCheckBox As CheckBox
+	Private enableGitCollaborationCheckBox As CheckBox
+	Private updateWorkFileCheckBox As CheckBox
+	Private GitURITextField As TextField
+	Private setKeyButton As Button
 End Sub
 
 'Initializes the object. You can add parameters to this method if needed.
 Public Sub Initialize
-	frm.Initialize("frm",600,400)
+	frm.Initialize("frm",600,600)
 	frm.RootPane.LoadLayout("projectSetting")
 	settings.Initialize
 	settings=Main.currentProject.settings
@@ -38,7 +42,7 @@ Public Sub Initialize
 	settingTabPane.LoadLayout("termSetting","Term")
 	settingTabPane.LoadLayout("quickfillSetting","Quickfill")
 	settingTabPane.LoadLayout("autocorrectSetting","Autocorrect")
-	settingTabPane.LoadLayout("ServerSetting","Server")
+	settingTabPane.LoadLayout("teamSetting","Team")
 	If settings.ContainsKey("tmList") Then
 		TMListView.Items.AddAll(settings.Get("tmList"))
 	End If
@@ -50,7 +54,7 @@ Public Sub Initialize
 	End If
 	loadQuickfill
 	loadAutocorrect
-	loadServer
+	loadTeam
 	resultList.Initialize
 End Sub
 
@@ -109,7 +113,7 @@ Sub loadAutocorrect
 	End If
 End Sub
 
-Sub loadServer
+Sub loadTeam
 	If settings.ContainsKey("sharingTM_enabled") Then
 		sharingTMCheckBox.Checked=settings.Get("sharingTM_enabled")
 	End If
@@ -118,6 +122,18 @@ Sub loadServer
 	End If
 	If settings.ContainsKey("server_address") Then
 		serverAddressTextField.Text=settings.Get("server_address")
+	End If
+	If settings.ContainsKey("git_enabled") Then
+		enableGitCollaborationCheckBox.Checked=settings.Get("git_enabled")
+	End If
+	If settings.ContainsKey("updateWorkFile_enabled") Then
+		updateWorkFileCheckBox.Checked=settings.Get("updateWorkFile_enabled")
+	End If
+	If File.Exists(Main.currentProject.path,".git") Then
+		Dim uri As String=Main.currentProject.getGitRemote
+		If uri<>"" Then
+			GitURITextField.Text=uri
+		End If
 	End If
 End Sub
 
@@ -185,6 +201,8 @@ Sub applyButton_MouseClicked (EventData As MouseEvent)
 		settings.Put("server_address",serverAddressTextField.Text)
 		settings.Put("sharingTM_enabled",sharingTMCheckBox.Checked)
 		settings.Put("sharingTerm_enabled",sharingTermCheckBox.Checked)
+		settings.Put("git_enabled",enableGitCollaborationCheckBox.Checked)
+		settings.Put("updateWorkFile_enabled",updateWorkFileCheckBox.Checked)
 		resultList.Add(settings)
 	End If
 	frm.Close
@@ -313,11 +331,43 @@ End Sub
 
 
 Sub MatchRateTextField_TextChanged (Old As String, New As String)
-
 	If Regex.IsMatch("^([0-9]{1,}[.][0-9]*)$",New)=False Then
 		fx.Msgbox(frm,"The text must be like *.*","")
 		MatchRateTextField.Text=Old
 		Return
 	End If
-	
+End Sub
+
+
+Sub enableGitCollaborationCheckBox_CheckedChange(Checked As Boolean)
+	If sharingTMCheckBox.Checked=False Or updateWorkFileCheckBox.Checked=False Then
+		fx.Msgbox(frm,"It is recommended to share TM and update workfile to avoid conflicts when using git. But you can continue with sharingTM disabled.","")
+	End If
+	If Checked Then
+		Log(Main.currentProject.getGitRemote)
+		Log(GitURITextField.Text)
+		If Main.currentProject.getGitRemote="" And GitURITextField.Text="" Then
+			
+		    fx.Msgbox(frm,"Please set up a remote uri.","")
+			enableGitCollaborationCheckBox.Checked=False
+		End If
+	End If
+End Sub
+
+Sub setRemoteButton_MouseClicked (EventData As MouseEvent)
+	Main.currentProject.setGitRemoteAndPush(GitURITextField.Text)
+	fx.Msgbox(frm,"Done","")
+End Sub
+
+Sub setKeyButton_MouseClicked (EventData As MouseEvent)
+	Dim key As String
+	If File.Exists(Main.currentProject.path,"accesskey") Then
+		key=File.ReadString(Main.currentProject.path,"accesskey")
+	End If
+	Dim inp As InputBox
+	inp.Initialize
+	key=inp.showAndWait(key)
+	If key<>"" Then
+		File.WriteString(Main.currentProject.path,"accesskey",key)
+	End If
 End Sub

@@ -48,7 +48,12 @@ Public Sub setTranslation(index As String,translation As String)
 		If settings.GetDefault("sharingTM_enabled",False)=True Then
 			extra.Put("creator",Main.preferencesMap.GetDefault("vcs_username","anonymous"))
 		Else
-			extra.Put("creator","")
+			If settings.GetDefault("git_enabled",False)=False Then
+				extra.Put("creator","")
+			Else
+				extra.Put("creator",Main.preferencesMap.GetDefault("vcs_username","anonymous"))
+			End If
+			
 		End If
 		
 	End If
@@ -196,23 +201,45 @@ public Sub save
 		saveFile(currentFilename)
 		If Main.preferencesMap.ContainsKey("vcsEnabled") Then
 			If Main.preferencesMap.Get("vcsEnabled")=True Then
-				gitcommit
+				If settings.GetDefault("git_enabled",False) Then
+					commitAndPush("")
+				Else
+					gitcommit
+				End If
+				
 			End If
 		End If
 		
 	End If
 	
-	
-
-	
 	Main.updateSavedTime
 End Sub
 
-Sub gitcommit
+
+Public Sub gitinit
 	createGitignore
 	If projectGit.IsInitialized=False Then
 		projectGit.Initialize(path)
 	End If
+End Sub
+
+Public Sub setGitRemoteAndPush(uri As String)
+	setGitRemote(uri)
+	commitAndPush("init")
+End Sub
+
+Public Sub setGitRemote(uri As String)
+	gitinit
+	projectGit.addRemote(uri,"origin")
+End Sub
+
+Public Sub getGitRemote As String
+	gitinit
+	Return projectGit.getRemoteUri
+End Sub
+
+Sub gitcommit
+	gitinit
 	Dim username,email As String
 	If Main.preferencesMap.ContainsKey("vcs_email") Then
 		email=Main.preferencesMap.Get("vcs_email")
@@ -233,6 +260,62 @@ Sub createGitignore
 		File.Copy(File.DirAssets,".gitignore",path,".gitignore")
 	End If
 End Sub
+
+
+Sub commitAndPush(commitMessage As String)
+	gitinit
+	If commitMessage="" Then
+		commitMessage="new translation"
+	End If
+	Dim username,email,password As String
+	If Main.preferencesMap.ContainsKey("vcs_email") Then
+		email=Main.preferencesMap.Get("vcs_email")
+	End If
+	If Main.preferencesMap.ContainsKey("vcs_username") Then
+		username=Main.preferencesMap.Get("vcs_username")
+	End If
+	If Main.preferencesMap.ContainsKey("vcs_password") Then
+		password=Main.preferencesMap.Get("vcs_password")
+	End If
+	If email="" Or username="" Or password="" Then
+		fx.Msgbox(Main.MainForm,"Please configure your git account info first.","")
+		Return
+	End If
+	Dim diffList As List
+	
+	diffList=projectGit.diffList
+	Log(diffList)
+	If projectGit.isConflicting Then
+		Log("conflicting")
+		Dim filename As String=projectGit.conflictsUnSolvedFilename(path)
+		If filename<>"conflictsSolved" Then
+			fx.Msgbox(Main.MainForm,filename&" still contains conflicts.","")
+		Else
+			projectGit.add(".")
+			projectGit.rebase("CONTINUE")
+			wait for (projectGit.push(username,password)) complete (result As String)
+			If result.StartsWith("error") Then
+				fx.Msgbox(Main.MainForm,"Failed","")
+			End If
+		End If
+	Else
+		If diffList<>Null And diffList.Size<>0 Then
+			projectGit.add(".")
+			projectGit.commit(commitMessage,username,email)
+		End If
+		wait for (projectGit.pullRebase("","")) complete (pullresult As String)
+		If pullresult="STOPPED" Then
+			fx.Msgbox(Main.MainForm,"Conflits exist.","")
+		Else
+			wait for (projectGit.push(username,password)) complete (result As String)
+			If result.StartsWith("error") Then
+				fx.Msgbox(Main.MainForm,"Failed","")
+			End If
+		End If
+	End If
+End Sub
+
+
 
 Sub showPreView
 	If Main.pre.IsInitialized And Main.pre.isShowing Then
@@ -408,7 +491,7 @@ Sub openFile(filename As String,onOpeningProject As Boolean)
 	segments.Clear
 	currentFilename=filename
 
-	readWorkFile(currentFilename)
+	readWorkFile(currentFilename,segments)
 
 	Log("currentFilename:"&currentFilename)
 	If lastFilename=currentFilename Then
@@ -1220,19 +1303,33 @@ Sub showTerm(targetTextArea As TextArea)
 End Sub
 
 
-Sub saveOneTranslationToTM(bitext As List)
+Sub saveOneTranslationToTM(bitext As List,index As Int)
+	If bitext.Get(1)="" Then
+		Return
+	End If
 	Dim createdTime As Long
 	Dim creator As String
 	Dim extra As Map
 	extra=bitext.Get(4)
 	createdTime=extra.GetDefault("createdTime",0)
 	creator=extra.GetDefault("creator","anonymous")
-	projectTM.addPair(bitext.Get(0),bitext.Get(1),createdTime,creator)
+	
+	Dim targetMap As Map
+	targetMap.Initialize
+	targetMap.Put("text",bitext.Get(1))
+	targetMap.Put("createdTime",createdTime)
+	targetMap.Put("creator",creator)
+	targetMap.Put("filename",currentFilename)
+	targetMap.Put("index",index)
+	
+	projectTM.addPair(bitext.Get(0),targetMap)
 End Sub
 
 Public Sub saveAlltheTranslationToTM
+	Dim index As Int=0
 	For Each bitext As List In segments
-		saveOneTranslationToTM(bitext)
+		saveOneTranslationToTM(bitext,index)
+		index=index+1
     Next
 End Sub
 
@@ -1258,7 +1355,7 @@ Sub saveTranslation(targetTextArea As TextArea)
 	bitext=segments.Get(index)
 	setTranslation(index,targetTextArea.Text)
 	If targetTextArea.Text<>"" Then
-		saveOneTranslationToTM(bitext)
+		saveOneTranslationToTM(bitext,index)
 	End If
 End Sub
 
@@ -1474,7 +1571,7 @@ Sub createWorkFileAccordingToExtension(filename As String)
 	End If
 End Sub
 
-Sub readWorkFile(filename As String)
+Sub readWorkFile(filename As String,filesegments As List)
 	Dim workfile As Map
 	Dim json As JSONParser
 	json.Initialize(File.ReadString(File.Combine(path,"work"),filename&".json"))
@@ -1486,7 +1583,7 @@ Sub readWorkFile(filename As String)
 	    innerFilename=sourceFileMap.GetKeyAt(0)
 		Dim segmentsList As List
 		segmentsList=sourceFileMap.Get(innerFilename)
-		segments.AddAll(segmentsList)
+		filesegments.AddAll(segmentsList)
 		Dim index As Int=0
 		For Each bitext As List In segmentsList
 			'Sleep(0) 'should not use coroutine as when change file, it will be a problem.
@@ -1502,7 +1599,7 @@ Sub readWorkFile(filename As String)
 	Next
 End Sub
 
-Sub saveWorkFile(filename As String)
+Sub saveWorkFile(filename As String,fileSegments As List)
 	Dim workfile As Map
 	workfile.Initialize
 	workfile.Put("filename",filename)
@@ -1514,9 +1611,9 @@ Sub saveWorkFile(filename As String)
 	
 	Dim previousInnerFilename As String
 	Dim firstBitext As List
-	firstBitext=segments.Get(0)
+	firstBitext=fileSegments.Get(0)
 	previousInnerFilename= firstBitext.Get(3)
-	For Each bitext As List In segments
+	For Each bitext As List In fileSegments
 		If previousInnerFilename=bitext.Get(3) Then
 			segmentsForEachFile.Add(bitext)
 		Else
@@ -1553,7 +1650,7 @@ Sub saveFile(filename As String)
 	End If
 	saveAlltheTranslationToSegmentsInVisibleArea(Main.editorLV.FirstVisibleIndex,Main.editorLV.LastVisibleIndex)
 	saveAlltheTranslationToTM
-	saveWorkFile(filename)
+	saveWorkFile(filename,segments)
 	contentChanged=False
 	Main.MainForm.Title=Main.MainForm.Title.Replace("*","")
 End Sub
@@ -1606,4 +1703,74 @@ Public Sub contentIsChanged
 		contentChanged=True
 		Main.MainForm.Title=Main.MainForm.Title&"*"
 	End If
+End Sub
+
+Public Sub saveNewDataToWorkfile(changedKeys As List)
+	If settings.ContainsKey("updateWorkFile_enabled") Then
+		If settings.Get("updateWorkFile_enabled")=False Then
+			Return
+		End If
+	End If
+	If changedKeys.Size<>0 Then
+		Main.updateOperation("updating workfile...")
+		
+		Dim changes As Map
+		changes=getChangedMap(changedKeys)
+		For Each filename As String In changes.Keys
+			Dim filesegments As List
+			filesegments.Initialize
+			readWorkFile(filename,filesegments)
+			Dim changedSegmentsList As List
+			changedSegmentsList=changes.Get(filename)
+			For Each changedSegment As Map In changedSegmentsList
+				Dim index As Int
+				Dim target,source As String
+				index=changedSegment.get("index")
+				target=changedSegment.get("target")
+				source=changedSegment.get("source")
+				Dim bitext As List
+				bitext=filesegments.Get(index)
+				If bitext.Get(0)=source Then
+					bitext.Set(1,target)
+					If filename=currentFilename Then
+						fillOne(index,target)
+					End If
+				End If
+			Next
+			saveWorkFile(filename,filesegments)
+		Next
+	End If
+	Main.updateOperation("updated")
+End Sub
+
+Sub getChangedMap(changedKeys As List) As Map
+	Dim changes As Map
+	changes.Initialize
+	For Each key In changedKeys
+		Dim targetMap As Map
+		targetMap=projectTM.translationMemory.Get(key)
+		Dim filename As String
+		Dim target As String
+		Dim index As String
+		filename=targetMap.Get("filename")
+		target=targetMap.Get("text")
+		index=targetMap.Get("index")
+		
+		Dim changedSegmentsList As List
+		If changes.ContainsKey(filename) Then
+			changedSegmentsList=changes.Get(filename)
+		Else
+			changedSegmentsList.Initialize
+		End If
+		
+		Dim changedSegment As Map
+		changedSegment.Initialize
+		changedSegment.Put("index",index)
+		changedSegment.Put("target",target)
+		changedSegment.Put("source",key)
+		changedSegmentsList.Add(changedSegment)
+		
+		changes.Put(filename,changedSegmentsList)
+	Next
+	Return changes
 End Sub

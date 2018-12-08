@@ -34,7 +34,8 @@ Public Sub add(files As String)
 	gitJO.RunMethodJO("add",Null).RunMethodJO("addFilepattern",Array(files)).RunMethodJO("call",Null)
 End Sub
 
-public Sub commit(message As String,name As String,email As String) As String
+public Sub commit(message As String,name As String,email As String) As ResumableSub
+	Sleep(0)
 	Try
 		Dim commitCommand As JavaObject
 		commitCommand=gitJO.RunMethodJO("commit",Null)
@@ -57,7 +58,8 @@ Sub setCredentialProvider(username As String,password As String) As JavaObject
 	Return cp
 End Sub
 
-Public Sub pullRebase(username As String,password As String) As String
+Public Sub pullRebase(username As String,password As String) As ResumableSub
+	Sleep(0)
 	Try
 		Dim pullCommand As JavaObject
 		pullCommand=gitJO.RunMethodJO("pull",Null)
@@ -70,7 +72,7 @@ Public Sub pullRebase(username As String,password As String) As String
 		Dim result As JavaObject
 		result=pullCommand.RunMethodJO("call",Null).RunMethodJO("getRebaseResult",Null)
 		Log("status"&result.RunMethod("getStatus",Null))
-		Return result.RunMethod("getStatus",Null)
+		Return result.RunMethodJO("getStatus",Null).RunMethod(".toString",Null)
 		'FAST_FORWARD
 		'UP_TO_DATE
 		'OK
@@ -91,7 +93,8 @@ Public Sub addRemote(urlString As String,name As String)
 	RemoteAddCommand.RunMethodJO("call",Null)
 End Sub
 
-Public Sub push(username As String,password As String) As String
+Public Sub push(username As String,password As String) As ResumableSub
+	Sleep(0)
 	Try
 		Dim PushCommand As JavaObject
 		PushCommand=gitJO.RunMethodJO("push",Null)
@@ -136,7 +139,7 @@ Public Sub getStatus
 	Log("UntrackedFolders: " & status.RunMethodJO("getUntrackedFolders",Null))
 End Sub
 
-Sub isConflicting As Boolean
+Public Sub isConflicting As Boolean
 	Dim status As JavaObject
 	status=gitJO.RunMethodJO("status",Null).RunMethodJO("call",Null)
 	Dim size As Int=status.RunMethodJO("getConflicting",Null).RunMethod("size",Null)
@@ -180,4 +183,42 @@ Public Sub changedFiles As List
 		result.Add(diffEntry.RunMethod("getNewPath",Null))
 	Next
 	Return result
+End Sub
+
+Public Sub conflictsUnSolvedFilename(dirPath As String) As String
+	For Each filename In changedFiles
+		If File.Exists(dirPath,filename) Then
+			Dim content As String
+			content=File.ReadString(dirPath,filename)
+			If content.Contains("<<<<<<<") And content.Contains("=======") And content.Contains(">>>>>>>") Then
+				Return filename
+			End If
+		End If
+	Next
+	Return "conflictsSolved"
+End Sub
+
+Public Sub getRemoteUri As String
+	Dim RemoteListCommand As JavaObject
+	RemoteListCommand=gitJO.RunMethodJO("remoteList",Null)
+	Dim RemoteConfigList As JavaObject
+	RemoteConfigList=RemoteListCommand.RunMethodJO("call",Null)
+	Dim listSize As Int
+	listSize=RemoteConfigList.RunMethod("size",Null)
+	Log(listSize)
+	Dim uri As String
+	If listSize>0 Then
+		Dim jo As JavaObject
+		jo=RemoteConfigList.RunMethodJO("get",Array(0))
+		Dim urisList As List
+		urisList=jo.RunMethod("getURIs",Null)
+		If urisList.Size>0 Then
+			uri=urisList.Get(0)
+		Else
+			uri=""
+		End If
+	Else
+		uri=""
+	End If
+	Return uri
 End Sub

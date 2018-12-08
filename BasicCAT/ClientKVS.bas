@@ -16,10 +16,11 @@ Sub Class_Globals
 	Private mCallback As Object
 	Private mEventName As String
 	Private changedItems As List
+	Private TaskKey As String
 End Sub
 
 'Initializes the client.
-Public Sub Initialize (Callback As Object, EventName As String, ServerUrl As String,dir As String,filename As String)
+Public Sub Initialize (Callback As Object, EventName As String, ServerUrl As String,dir As String,filename As String,key As String)
 	csu.Initialize
 	changedItems.Initialize
 #if B4J
@@ -34,6 +35,7 @@ Public Sub Initialize (Callback As Object, EventName As String, ServerUrl As Str
 	autoRefreshTimer.Initialize("AutoRefresh", 1000)
 	mCallback = Callback
 	mEventName = EventName
+	TaskKey=key
 	HandleQueue
 	If False Then CallSub(Me, "HandleQueue") 'to avoid obfuscation issues
 End Sub
@@ -162,6 +164,7 @@ Public Sub Put2 (user As String, key As String, Value As Object, IsDefault As Bo
 		task1.Initialize
 		task1.TaskName = "additem"
 		task1.TaskItem = item
+		task1.TaskKey= TaskKey
 		sql.ExecNonQuery2("DELETE FROM queue WHERE user = ? AND key = ?", Array (user, key))
 		AddTaskToQueue(task1)
 		sql.TransactionSuccessful
@@ -263,6 +266,7 @@ Public Sub RefreshUser(user As String)
 	Dim lastId As String = sql.ExecQuerySingleResult2("SELECT max(id) FROM data WHERE user = ?", Array As String(user))
 	If lastId = Null Then lastId = 0
 	task1.TaskItem = CreateItem(user, lastId, Null)
+	task1.TaskKey=TaskKey
 	AddTaskToQueue(task1)
 	HandleQueue
 End Sub
