@@ -29,6 +29,8 @@ Sub Class_Globals
 	Private updateWorkFileCheckBox As CheckBox
 	Private GitURITextField As TextField
 	Private setKeyButton As Button
+	Private firstTime As Boolean=True
+	Private SaveAndCommitCheckBox As CheckBox
 End Sub
 
 'Initializes the object. You can add parameters to this method if needed.
@@ -52,6 +54,7 @@ Public Sub Initialize
 	If settings.ContainsKey("matchrate") Then
 		MatchRateTextField.Text=(settings.Get("matchrate"))
 	End If
+	SaveAndCommitCheckBox.checked=settings.GetDefault("save_and_commit",False)
 	loadQuickfill
 	loadAutocorrect
 	loadTeam
@@ -190,6 +193,7 @@ Sub applyButton_MouseClicked (EventData As MouseEvent)
 	Else
 		resultList.Add("changed")
 		settings.Put("matchrate",num)
+		settings.Put("save_and_commit",SaveAndCommitCheckBox.Checked)
 		settings.Put("tmList",TMListView.Items)
 		settings.Put("termList",TermListView.Items)
 		settings.Put("quickfill",quickfillList)
@@ -340,10 +344,14 @@ End Sub
 
 
 Sub enableGitCollaborationCheckBox_CheckedChange(Checked As Boolean)
-	If sharingTMCheckBox.Checked=False Or updateWorkFileCheckBox.Checked=False Then
-		fx.Msgbox(frm,"It is recommended to share TM and update workfile to avoid conflicts when using git. But you can continue with sharingTM disabled.","")
+	If Main.currentProject.settings.ContainsKey("git_enabled") And firstTime=True Then
+		firstTime=False
+		Return
 	End If
 	If Checked Then
+		If sharingTMCheckBox.Checked=False Or updateWorkFileCheckBox.Checked=False Then
+			fx.Msgbox(frm,"It is recommended to share TM and update workfile to avoid conflicts when using git. But you can continue with sharingTM disabled.","")
+		End If
 		Log(Main.currentProject.getGitRemote)
 		Log(GitURITextField.Text)
 		If Main.currentProject.getGitRemote="" And GitURITextField.Text="" Then
@@ -352,6 +360,7 @@ Sub enableGitCollaborationCheckBox_CheckedChange(Checked As Boolean)
 			enableGitCollaborationCheckBox.Checked=False
 		End If
 	End If
+
 End Sub
 
 Sub setRemoteButton_MouseClicked (EventData As MouseEvent)

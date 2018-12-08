@@ -10,6 +10,17 @@ Sub Process_Globals
 	Private menus As Map
 End Sub
 
+Sub conflictsUnSolvedFilename(dirPath As String,filename As String) As String
+	If File.Exists(dirPath,filename) Then
+		Dim content As String
+		content=File.ReadString(dirPath,filename)
+		If content.Contains("<<<<<<<") And content.Contains("=======") And content.Contains(">>>>>>>") Then
+			Return filename
+		End If
+	End If
+	Return "conflictsSolved"
+End Sub
+
 Sub replaceOnce(text As String,match As String,replacement As String) As String
 	Try
 		text=text.SubString2(0,text.IndexOf(match))&replacement&text.SubString2(text.IndexOf(match)+match.Length,text.Length)

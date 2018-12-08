@@ -8,5 +8,7 @@ Show online dictionary dropdown
 Show/Edit notes of the current segmnet
 Mark the current segment as non-translatable
 Mark the current segment as translatable
-Project Settings
-Pre-translate
+Project _Settings
+Pre-_translate
+Git _Commit
+Git Commit and _Push

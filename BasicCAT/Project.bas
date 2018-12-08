@@ -37,6 +37,9 @@ Public Sub Initialize
 End Sub
 
 Public Sub setTranslation(index As String,translation As String)
+	If segments.Size=0 Then
+		Return 
+	End If
 	Dim bitext As List
 	bitext=segments.Get(index)
 	If translation<>bitext.Get(1) Then
@@ -93,6 +96,10 @@ End Sub
 
 
 Public Sub open(jsonPath As String)
+	If Utils.conflictsUnSolvedFilename(jsonPath,"")<>"conflictsSolved" Then
+		fx.Msgbox(Main.MainForm,jsonPath&" has unresolved conflicts.","")
+		Return
+	End If
 	Main.addProjectTreeTableItem
 	path=getProjectPath(jsonPath)
 	Dim json As JSONParser
@@ -108,6 +115,13 @@ Public Sub open(jsonPath As String)
 	initializeTM(path,True)
 	initializeTerm(path)
 	Main.initializeNLP(projectFile.Get("source"))
+
+	If Main.preferencesMap.GetDefault("vcsEnabled",False)=True Then
+		If settings.GetDefault("git_enabled",False) Then
+			commitAndPush("")
+		End If
+	End If
+
 	'jumpToLastEntry
 End Sub
 
@@ -199,22 +213,38 @@ public Sub save
 	
 	If contentChanged Then
 		saveFile(currentFilename)
-		If Main.preferencesMap.ContainsKey("vcsEnabled") Then
-			If Main.preferencesMap.Get("vcsEnabled")=True Then
-				If settings.GetDefault("git_enabled",False) Then
-					commitAndPush("")
-				Else
-					gitcommit
-				End If
-				
-			End If
-		End If
+        gitcommit(False,True)
 		
 	End If
 	
 	Main.updateSavedTime
 End Sub
 
+Sub gitcommit(local As Boolean,isSaving As Boolean) As Boolean
+	Dim configured As Boolean=False
+	If Main.preferencesMap.ContainsKey("vcsEnabled") Then
+		If Main.preferencesMap.Get("vcsEnabled")=True Then
+			configured=True
+			If isSaving Then
+				If settings.GetDefault("save_and_commit",False) Then
+					If settings.GetDefault("git_enabled",False) And local=False Then
+						commitAndPush("")
+					Else
+						gitcommitLocal
+					End If
+				End If
+			Else
+				If local Then
+					gitcommitLocal
+				Else
+					commitAndPush("")
+				End If
+			End If
+
+		End If
+	End If
+	Return configured
+End Sub
 
 Public Sub gitinit
 	createGitignore
@@ -238,7 +268,7 @@ Public Sub getGitRemote As String
 	Return projectGit.getRemoteUri
 End Sub
 
-Sub gitcommit
+Public Sub gitcommitLocal
 	gitinit
 	Dim username,email As String
 	If Main.preferencesMap.ContainsKey("vcs_email") Then
@@ -262,8 +292,10 @@ Sub createGitignore
 End Sub
 
 
-Sub commitAndPush(commitMessage As String)
+Public Sub commitAndPush(commitMessage As String)
 	gitinit
+	Main.enableAutosaveTimer(False)
+	Main.updateOperation("commiting and pushing")
 	If commitMessage="" Then
 		commitMessage="new translation"
 	End If
@@ -293,7 +325,7 @@ Sub commitAndPush(commitMessage As String)
 		Else
 			projectGit.add(".")
 			projectGit.rebase("CONTINUE")
-			wait for (projectGit.push(username,password)) complete (result As String)
+			wait for (projectGit.push(username,password,"origin","master")) complete (result As String)
 			If result.StartsWith("error") Then
 				fx.Msgbox(Main.MainForm,"Failed","")
 			End If
@@ -307,14 +339,32 @@ Sub commitAndPush(commitMessage As String)
 		If pullresult="STOPPED" Then
 			fx.Msgbox(Main.MainForm,"Conflits exist.","")
 		Else
-			wait for (projectGit.push(username,password)) complete (result As String)
+			wait for (projectGit.push(username,password,"origin","master")) complete (result As String)
 			If result.StartsWith("error") Then
 				fx.Msgbox(Main.MainForm,"Failed","")
 			End If
 		End If
 	End If
+	checkWorkfile
+	Main.enableAutosaveTimer(True)
+	Main.updateOperation("committed")
 End Sub
 
+Sub checkWorkfile
+	If segments.Size<>0 Then
+		Dim filesegments As List
+		filesegments.Initialize
+		readWorkFile(currentFilename,filesegments,False)
+		If filesegments.Size<>segments.Size Then
+		    Dim result As Int
+			result=fx.Msgbox2(Main.MainForm,"Someone has merged or splitted segments of current file. Reopen it?","","Reopen","","No",fx.MSGBOX_CONFIRMATION)
+			Select result
+				Case fx.DialogResponse.POSITIVE
+			        openFile(currentFilename,True)
+			End Select
+		End If
+	End If
+End Sub
 
 
 Sub showPreView
@@ -491,10 +541,10 @@ Sub openFile(filename As String,onOpeningProject As Boolean)
 	segments.Clear
 	currentFilename=filename
 
-	readWorkFile(currentFilename,segments)
+	readWorkFile(currentFilename,segments,True)
 
 	Log("currentFilename:"&currentFilename)
-	If lastFilename=currentFilename Then
+	If lastFilename=currentFilename And segments.Size<>0 Then
 		Log("ddd"&True)
 		Log(lastEntry)
 		Main.editorLV.JumpToItem(lastEntry)
@@ -1361,6 +1411,9 @@ End Sub
 
 Public Sub fillPane(FirstIndex As Int, LastIndex As Int)
 	Log("fillPane")
+	If segments.Size=0 Then
+		Return
+	End If
 	Dim ExtraSize As Int
 	ExtraSize=15
 	For i = 0 To Main.editorLV.Size - 1
@@ -1571,7 +1624,11 @@ Sub createWorkFileAccordingToExtension(filename As String)
 	End If
 End Sub
 
-Sub readWorkFile(filename As String,filesegments As List)
+Sub readWorkFile(filename As String,filesegments As List,fillUI As Boolean)
+	If Utils.conflictsUnSolvedFilename(File.Combine(path,"work"),filename&".json")<>"conflictsSolved" Then
+		fx.Msgbox(Main.MainForm,filename&" has unresolved conflicts.","")
+		Return
+	End If
 	Dim workfile As Map
 	Dim json As JSONParser
 	json.Initialize(File.ReadString(File.Combine(path,"work"),filename&".json"))
@@ -1584,18 +1641,20 @@ Sub readWorkFile(filename As String,filesegments As List)
 		Dim segmentsList As List
 		segmentsList=sourceFileMap.Get(innerFilename)
 		filesegments.AddAll(segmentsList)
-		Dim index As Int=0
-		For Each bitext As List In segmentsList
-			'Sleep(0) 'should not use coroutine as when change file, it will be a problem.
-			If index<=20 Then
-				Main.currentProject.createSegmentPane(bitext)
+		If fillUI Then
+			Dim index As Int=0
+			For Each bitext As List In segmentsList
+				'Sleep(0) 'should not use coroutine as when change file, it will be a problem.
+				If index<=20 Then
+					Main.currentProject.createSegmentPane(bitext)
 				
-				index=index+1
-			Else
-				Main.currentProject.createEmptyPane(bitext)
-				index=index+1
-			End If
-		Next
+					index=index+1
+				Else
+					Main.currentProject.createEmptyPane(bitext)
+					index=index+1
+				End If
+			Next
+		End If
 	Next
 End Sub
 
@@ -1706,6 +1765,7 @@ Public Sub contentIsChanged
 End Sub
 
 Public Sub saveNewDataToWorkfile(changedKeys As List)
+	Log(changedKeys)
 	If settings.ContainsKey("updateWorkFile_enabled") Then
 		If settings.Get("updateWorkFile_enabled")=False Then
 			Return
@@ -1717,22 +1777,38 @@ Public Sub saveNewDataToWorkfile(changedKeys As List)
 		Dim changes As Map
 		changes=getChangedMap(changedKeys)
 		For Each filename As String In changes.Keys
+			If files.IndexOf(filename)=-1 Then 'file not in the project
+				Continue
+			End If
 			Dim filesegments As List
 			filesegments.Initialize
-			readWorkFile(filename,filesegments)
+			readWorkFile(filename,filesegments,False)
 			Dim changedSegmentsList As List
 			changedSegmentsList=changes.Get(filename)
 			For Each changedSegment As Map In changedSegmentsList
 				Dim index As Int
-				Dim target,source As String
+				Dim target,source,creator,createdTime As String
 				index=changedSegment.get("index")
 				target=changedSegment.get("target")
 				source=changedSegment.get("source")
+				creator=changedSegment.get("creator")
+				createdTime=changedSegment.get("createdTime")
 				Dim bitext As List
 				bitext=filesegments.Get(index)
+				Dim extra As Map
+				extra=bitext.Get(4)
 				If bitext.Get(0)=source Then
 					bitext.Set(1,target)
+					extra.Put("creator",creator)
+					extra.Put("createdTime",createdTime)
 					If filename=currentFilename Then
+						Dim segment As List 'also need to set the clv and segment
+						segment=segments.Get(index)
+						segment.Set(1,target)
+						Dim extraOfTheSegment As Map
+						extraOfTheSegment=segment.Get(4)
+						extraOfTheSegment.Put("creator",creator)
+						extraOfTheSegment.Put("createdTime",createdTime)
 						fillOne(index,target)
 					End If
 				End If
@@ -1752,10 +1828,12 @@ Sub getChangedMap(changedKeys As List) As Map
 		Dim filename As String
 		Dim target As String
 		Dim index As String
+		Dim createdTime,creator As String
 		filename=targetMap.Get("filename")
 		target=targetMap.Get("text")
 		index=targetMap.Get("index")
-		
+		createdTime=targetMap.Get("createdTime")
+		creator=targetMap.Get("creator")
 		Dim changedSegmentsList As List
 		If changes.ContainsKey(filename) Then
 			changedSegmentsList=changes.Get(filename)
@@ -1768,6 +1846,8 @@ Sub getChangedMap(changedKeys As List) As Map
 		changedSegment.Put("index",index)
 		changedSegment.Put("target",target)
 		changedSegment.Put("source",key)
+		changedSegment.Put("createdTime",createdTime)
+		changedSegment.Put("creator",creator)
 		changedSegmentsList.Add(changedSegment)
 		
 		changes.Put(filename,changedSegmentsList)

@@ -121,7 +121,7 @@ Sub sharedTM_NewData(changedItems As List)
 				previousCreatedTime=previousTargetMap.Get("createdTime")
 				newCreatedTime=newTargetMap.Get("createdTime")
 				
-				If previousTargetMap.Get("text")<>newTargetMap.Get("text") And newCreatedTime>previousCreatedTime Then
+				If newCreatedTime>previousCreatedTime Then
 					translationMemory.Put(item1.KeyField,map1.Get(item1.KeyField))
 					changedKeys.Add(item1.KeyField)
 				End If

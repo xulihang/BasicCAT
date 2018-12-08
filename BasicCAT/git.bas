@@ -93,11 +93,13 @@ Public Sub addRemote(urlString As String,name As String)
 	RemoteAddCommand.RunMethodJO("call",Null)
 End Sub
 
-Public Sub push(username As String,password As String) As ResumableSub
+Public Sub push(username As String,password As String,remoteName As String,branchName As String) As ResumableSub
 	Sleep(0)
 	Try
 		Dim PushCommand As JavaObject
 		PushCommand=gitJO.RunMethodJO("push",Null)
+		PushCommand.RunMethodJO("setRemote",Array(remoteName))
+		PushCommand.RunMethodJO("add",Array(branchName))
 		If username<>"" Then
 			Dim cp As JavaObject
 			cp=setCredentialProvider(username,password)
