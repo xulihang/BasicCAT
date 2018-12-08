@@ -184,7 +184,11 @@ End Sub
 Public Sub termsInASentence(sentence As String) As List
     Dim result As List
 	result.Initialize
-	result.AddAll(termsInASentenceUsingIteration(sentence,terminology))
+	If Main.currentProject.settings.GetDefault("termMatch_algorithm","iteration")="iteration" Then
+		result.AddAll(termsInASentenceUsingIteration(sentence,terminology))
+	Else
+		result.AddAll(termsInASentenceUsingHashMap(sentence,terminology))
+	End If
 	result.AddAll(termsInASentenceUsingHashMap(sentence,externalTerminology))
 	Return result
 End Sub

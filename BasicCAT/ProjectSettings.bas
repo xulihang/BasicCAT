@@ -31,6 +31,7 @@ Sub Class_Globals
 	Private setKeyButton As Button
 	Private firstTime As Boolean=True
 	Private SaveAndCommitCheckBox As CheckBox
+	Private TermMatchAlgorithmComboBox As ComboBox
 End Sub
 
 'Initializes the object. You can add parameters to this method if needed.
@@ -45,20 +46,41 @@ Public Sub Initialize
 	settingTabPane.LoadLayout("quickfillSetting","Quickfill")
 	settingTabPane.LoadLayout("autocorrectSetting","Autocorrect")
 	settingTabPane.LoadLayout("teamSetting","Team")
+
+
+	loadGeneral
+	loadTMandTermList
+	loadQuickfill
+	loadAutocorrect
+	loadTeam
+	resultList.Initialize
+End Sub
+
+Sub loadTMandTermList
 	If settings.ContainsKey("tmList") Then
 		TMListView.Items.AddAll(settings.Get("tmList"))
 	End If
 	If settings.ContainsKey("termList") Then
 		TermListView.Items.AddAll(settings.Get("termList"))
 	End If
+End Sub
+
+Sub loadGeneral
+	TermMatchAlgorithmComboBox.Items.AddAll(Array As String("hashmap","iteration"))
+	If settings.ContainsKey("termMatch_algorithm") Then
+		Select settings.Get("termMatch_algorithm")
+			Case "hashmap"
+				TermMatchAlgorithmComboBox.SelectedIndex=0
+			Case "iteration"
+				TermMatchAlgorithmComboBox.SelectedIndex=1
+		End Select
+	Else
+		TermMatchAlgorithmComboBox.SelectedIndex=1
+	End If
 	If settings.ContainsKey("matchrate") Then
 		MatchRateTextField.Text=(settings.Get("matchrate"))
 	End If
 	SaveAndCommitCheckBox.checked=settings.GetDefault("save_and_commit",False)
-	loadQuickfill
-	loadAutocorrect
-	loadTeam
-	resultList.Initialize
 End Sub
 
 Sub loadQuickfill
@@ -207,6 +229,12 @@ Sub applyButton_MouseClicked (EventData As MouseEvent)
 		settings.Put("sharingTerm_enabled",sharingTermCheckBox.Checked)
 		settings.Put("git_enabled",enableGitCollaborationCheckBox.Checked)
 		settings.Put("updateWorkFile_enabled",updateWorkFileCheckBox.Checked)
+		Select TermMatchAlgorithmComboBox.SelectedIndex
+			Case 0
+				settings.Put("termMatch_algorithm","hashmap")
+			Case 1
+				settings.Put("termMatch_algorithm","iteration")
+		End Select
 		resultList.Add(settings)
 	End If
 	frm.Close
@@ -365,6 +393,7 @@ End Sub
 
 Sub setRemoteButton_MouseClicked (EventData As MouseEvent)
 	Main.currentProject.setGitRemoteAndPush(GitURITextField.Text)
+	Sleep(2000)
 	fx.Msgbox(frm,"Done","")
 End Sub
 
