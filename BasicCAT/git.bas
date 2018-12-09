@@ -262,11 +262,17 @@ Public Sub diffListBetweenBranches(oldHead As String,newHead As String) As List
 End Sub
 
 Public Sub getCommitIDofBranch(branchRef As String) As String
-	Dim repo As JavaObject
-	repo=gitJO.RunMethodJO("getRepository",Null)
-	Dim id As String
-	id=repo.RunMethodJO("exactRef",Array(branchRef)).RunMethodJO("getObjectId",Null).RunMethod("getName",Null)
-	Return id
+	Try
+	
+		Dim repo As JavaObject
+		repo=gitJO.RunMethodJO("getRepository",Null)
+		Dim id As String
+		id=repo.RunMethodJO("exactRef",Array(branchRef)).RunMethodJO("getObjectId",Null).RunMethod("getName",Null)
+		Return id
+	Catch
+		Log(LastException)
+	End Try
+    Return ""
 End Sub
 
 

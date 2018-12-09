@@ -256,7 +256,7 @@ End Sub
 Public Sub setGitRemoteAndPush(uri As String)
 	gitinit
 	setGitRemote(uri)
-	commitAndPush("init")
+	initAndPush
 End Sub
 
 Public Sub setGitRemote(uri As String)
@@ -280,6 +280,7 @@ Public Sub gitcommitLocal
 	End If
 	Dim diffList As List
 	diffList=projectGit.diffList
+	Log(diffList)
 	If diffList<>Null And diffList.Size<>0 Then
 		projectGit.add(".")
 		projectGit.commit("new text change",username,email)
@@ -292,14 +293,29 @@ Sub createGitignore
 	End If
 End Sub
 
+Public Sub initAndPush
+	Dim username,email,password As String
+	If Main.preferencesMap.ContainsKey("vcs_email") Then
+		email=Main.preferencesMap.Get("vcs_email")
+	End If
+	If Main.preferencesMap.ContainsKey("vcs_username") Then
+		username=Main.preferencesMap.Get("vcs_username")
+	End If
+	If Main.preferencesMap.ContainsKey("vcs_password") Then
+		password=Main.preferencesMap.Get("vcs_password")
+	End If
+	projectGit.add(".")
+	projectGit.commit("init",username,email)
+	wait for (projectGit.push(username,password,"origin","master")) complete (result As String)
+	If result.StartsWith("error") Then
+		fx.Msgbox(Main.MainForm,"Push Failed","")
+	End If
+End Sub
+
 
 Public Sub commitAndPush(commitMessage As String)
 	gitinit
-	Main.enableAutosaveTimer(False)
-	Main.updateOperation("commiting and pushing")
-	If commitMessage="" Then
-		commitMessage="new translation"
-	End If
+
 	Dim username,email,password As String
 	If Main.preferencesMap.ContainsKey("vcs_email") Then
 		email=Main.preferencesMap.Get("vcs_email")
@@ -314,7 +330,14 @@ Public Sub commitAndPush(commitMessage As String)
 		fx.Msgbox(Main.MainForm,"Please configure your git account info first.","")
 		Return
 	End If
-
+	
+	If commitMessage="" Then
+		commitMessage="new translation"
+	End If
+	
+	Main.enableAutosaveTimer(False)
+	Main.updateOperation("commiting and pushing")
+	
 
 	If projectGit.isConflicting Then
 		Log("conflicting")
@@ -388,7 +411,7 @@ Sub samelocalHeadAndRemoteHead(username As String,password As String,fetch As Bo
 			End If
 		End If
 	Else
-		result=false
+		result=False
 	End If
 	Return result
 End Sub
@@ -400,7 +423,9 @@ Sub updateLocalFileBasedonFetch(username As String,password As String,email As S
 		localHead=projectGit.getCommitIDofBranch("refs/heads/master")
 		remoteHead=projectGit.getCommitIDofBranch("refs/remotes/origin/master")
 		Log("remotelyChanged")
-		FileUtils.Delete(path,"tmp")
+		If File.Exists(path,"tmp") Then
+			FileUtils.Delete(path,"tmp")
+		End If
 		File.MakeDir(path,"tmp")
 
 		projectGit.setWorkdir(File.Combine(path,"tmp"))
