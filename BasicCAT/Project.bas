@@ -387,6 +387,8 @@ Sub samelocalHeadAndRemoteHead(username As String,password As String,fetch As Bo
 				result = True
 			End If
 		End If
+	Else
+		result=false
 	End If
 	Return result
 End Sub
