@@ -29,7 +29,6 @@ Sub Class_Globals
 	Private updateWorkFileCheckBox As CheckBox
 	Private GitURITextField As TextField
 	Private setKeyButton As Button
-	Private firstTime As Boolean=True
 	Private SaveAndCommitCheckBox As CheckBox
 	Private TermMatchAlgorithmComboBox As ComboBox
 End Sub
@@ -372,23 +371,12 @@ End Sub
 
 
 Sub enableGitCollaborationCheckBox_CheckedChange(Checked As Boolean)
-	If Main.currentProject.settings.ContainsKey("git_enabled") And firstTime=True Then
-		firstTime=False
-		Return
-	End If
 	If Checked Then
-		If sharingTMCheckBox.Checked=False Or updateWorkFileCheckBox.Checked=False Then
-			fx.Msgbox(frm,"It is recommended to share TM and update workfile to avoid conflicts when using git. But you can continue with sharingTM disabled.","")
-		End If
-		Log(Main.currentProject.getGitRemote)
-		Log(GitURITextField.Text)
 		If Main.currentProject.getGitRemote="" And GitURITextField.Text="" Then
-			
 		    fx.Msgbox(frm,"Please set up a remote uri.","")
 			enableGitCollaborationCheckBox.Checked=False
 		End If
 	End If
-
 End Sub
 
 Sub setRemoteButton_MouseClicked (EventData As MouseEvent)

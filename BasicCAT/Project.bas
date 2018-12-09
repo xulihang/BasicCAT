@@ -371,6 +371,8 @@ Sub samelocalHeadAndRemoteHead(username As String,password As String,fetch As Bo
 	Dim refsPath As String
 	refsPath=File.Combine(File.Combine(path,".git"),"refs")
 	If File.Exists(refsPath,"remotes") Then
+		Dim previousRemoteHead As String
+		previousRemoteHead=projectGit.getCommitIDofBranch("refs/remotes/origin/master")
 		If fetch Then
 			projectGit.fetch(username,password)
 		End If
@@ -379,6 +381,11 @@ Sub samelocalHeadAndRemoteHead(username As String,password As String,fetch As Bo
 		remoteHead=projectGit.getCommitIDofBranch("refs/remotes/origin/master")
 		If localHead<>remoteHead Then
 			result=False
+		End If
+		If fetch Then
+			If previousRemoteHead=remoteHead Then
+				result = True
+			End If
 		End If
 	End If
 	Return result
