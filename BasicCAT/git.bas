@@ -34,8 +34,7 @@ Public Sub add(files As String)
 	gitJO.RunMethodJO("add",Null).RunMethodJO("addFilepattern",Array(files)).RunMethodJO("call",Null)
 End Sub
 
-public Sub commit(message As String,name As String,email As String) As ResumableSub
-	Sleep(0)
+public Sub commit(message As String,name As String,email As String) As String
 	Try
 		Dim commitCommand As JavaObject
 		commitCommand=gitJO.RunMethodJO("commit",Null)
@@ -58,6 +57,58 @@ Sub setCredentialProvider(username As String,password As String) As JavaObject
 	Return cp
 End Sub
 
+Public Sub fetch(username As String,password As String)
+	Dim fetchCommand As JavaObject
+	fetchCommand=gitJO.RunMethodJO("fetch",Null)
+	If username<>"" Then
+		Dim cp As JavaObject
+		cp=setCredentialProvider(username,password)
+		fetchCommand.RunMethod("setCredentialsProvider",Array(cp))
+	End If
+	fetchCommand.RunMethodJO("call",Null)
+End Sub
+
+Public Sub setWorkdir(dirpath As String)
+	Dim StoredConfig As JavaObject
+	StoredConfig=gitJO.RunMethodJO("getRepository",Null).RunMethodJO("getConfig",Null)
+	StoredConfig.RunMethodJO("setString",Array("core",Null,"worktree",dirpath))
+	StoredConfig.RunMethod("save",Null)
+End Sub
+
+Public Sub unsetWorkdir
+	Dim StoredConfig As JavaObject
+	StoredConfig=gitJO.RunMethodJO("getRepository",Null).RunMethodJO("getConfig",Null)
+	StoredConfig.RunMethodJO("unset",Array("core",Null,"worktree"))
+	StoredConfig.RunMethod("save",Null)
+End Sub
+
+Public Sub getWorkdirPath As String
+	Dim repo As JavaObject
+	repo=gitJO.RunMethodJO("getRepository",Null)
+	Dim path As String
+	path=repo.RunMethodJO("getWorkTree",Null).RunMethod("getCanonicalPath",Null)
+	Return path
+End Sub
+
+
+Public Sub checkoutFile(path As String,name As String,startpoint As String)
+	Dim checkoutCommand As JavaObject
+	checkoutCommand=gitJO.RunMethodJO("checkout",Null)
+	checkoutCommand.RunMethod("addPath",Array(path))
+	checkoutCommand.RunMethod("setName",Array(name))
+	checkoutCommand.RunMethod("setStartPoint",Array(startpoint))
+	checkoutCommand.RunMethod("call",Null)
+End Sub
+
+Public Sub checkoutAllFiles(name As String,startpoint As String)
+	Dim checkoutCommand As JavaObject
+	checkoutCommand=gitJO.RunMethodJO("checkout",Null)
+	checkoutCommand.RunMethod("setAllPaths",Array(True))
+	checkoutCommand.RunMethod("setName",Array(name))
+	checkoutCommand.RunMethod("setStartPoint",Array(startpoint))
+	checkoutCommand.RunMethod("call",Null)
+End Sub
+
 Public Sub pullRebase(username As String,password As String) As ResumableSub
 	Sleep(0)
 	Try
@@ -72,7 +123,7 @@ Public Sub pullRebase(username As String,password As String) As ResumableSub
 		Dim result As JavaObject
 		result=pullCommand.RunMethodJO("call",Null).RunMethodJO("getRebaseResult",Null)
 		Log("status"&result.RunMethod("getStatus",Null))
-		Return result.RunMethodJO("getStatus",Null).RunMethod(".toString",Null)
+		Return result.RunMethodJO("getStatus",Null).RunMethod("toString",Null)
 		'FAST_FORWARD
 		'UP_TO_DATE
 		'OK
@@ -152,25 +203,72 @@ Public Sub isConflicting As Boolean
 	End If
 End Sub
 
-Public Sub rebase(operationMode As String)
+Public Sub rebase(operationMode As String,upstream As String) As String
 	Try
 		Dim operationJO As JavaObject
 		operationJO.InitializeStatic("org.eclipse.jgit.api.RebaseCommand.Operation")
-		Dim operation As Object
-		operation=operationJO.GetField(operationMode)
+
 		Dim RebaseCommand As JavaObject
 		RebaseCommand=gitJO.RunMethodJO("rebase",Null)
-		RebaseCommand.RunMethod("setOperation",Array(operation))
-		RebaseCommand.RunMethod("call",Null)
+		If operationMode<>"" And operationMode<>Null Then
+			Log("rebase")
+			Dim operation As Object
+			operation=operationJO.GetField(operationMode)
+			RebaseCommand.RunMethod("setOperation",Array(operation))
+		End If
+		If upstream<>"" Then
+			RebaseCommand.RunMethod("setUpstream",Array(upstream))
+		End If
+		
+		Dim result As JavaObject
+		result=RebaseCommand.RunMethod("call",Null)
+		Log("status"&result.RunMethod("getStatus",Null))
+		Return result.RunMethodJO("getStatus",Null).RunMethod("toString",Null)
 	Catch
 		Log(LastException)
+		Return "error"&LastException.Message
 	End Try
-
 End Sub
 
 Public Sub diffList As List
 	Return  gitJO.RunMethodJO("diff",Null).RunMethod("call",Null)
 End Sub
+
+Public Sub diffListBetweenBranches(oldHead As String,newHead As String) As List
+	Dim repo As JavaObject
+	repo=gitJO.RunMethodJO("getRepository",Null)
+
+	
+	Dim oldHeadObjectID As JavaObject
+	oldHeadObjectID=repo.RunMethodJO("resolve",Array(oldHead&"^{tree}"))
+
+	Dim newHeadObjectID As JavaObject
+	newHeadObjectID=repo.RunMethodJO("resolve",Array(newHead&"^{tree}"))
+	
+	Dim ObjectReader As JavaObject
+	ObjectReader=repo.RunMethodJO("newObjectReader",Null)
+	Dim oldTreeIter,currentTreeIter As JavaObject
+	oldTreeIter.InitializeNewInstance("org.eclipse.jgit.treewalk.CanonicalTreeParser",Null)
+	currentTreeIter.InitializeNewInstance("org.eclipse.jgit.treewalk.CanonicalTreeParser",Null)
+	oldTreeIter.RunMethod("reset",Array(ObjectReader,oldHeadObjectID))
+	currentTreeIter.RunMethod("reset",Array(ObjectReader,newHeadObjectID))
+	Dim DiffEntryList As List=gitJO.RunMethodJO("diff",Null).RunMethodJO("setNewTree",Array(currentTreeIter)).RunMethodJO("setOldTree",Array(oldTreeIter)).RunMethod("call",Null)
+	Dim filenames As List
+	filenames.Initialize
+	For Each diffEntry As JavaObject In DiffEntryList
+		filenames.Add(diffEntry.RunMethod("getNewPath",Null))
+	Next
+	Return filenames
+End Sub
+
+Public Sub getCommitIDofBranch(branchRef As String) As String
+	Dim repo As JavaObject
+	repo=gitJO.RunMethodJO("getRepository",Null)
+	Dim id As String
+	id=repo.RunMethodJO("exactRef",Array(branchRef)).RunMethodJO("getObjectId",Null).RunMethod("getName",Null)
+	Return id
+End Sub
+
 
 Public Sub changedFiles As List
 	Dim result As List

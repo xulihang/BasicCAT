@@ -30,6 +30,15 @@ Sub replaceOnce(text As String,match As String,replacement As String) As String
 	Return text
 End Sub
 
+Sub replaceOnceFromTheEnd(text As String,match As String,replacement As String) As String
+	Try
+		text=text.SubString2(0,text.LastIndexOf(match))&replacement&text.SubString2(text.LastIndexOf(match)+match.Length,text.Length)
+	Catch
+		Log(LastException)
+	End Try
+	Return text
+End Sub
+
 Sub getPureTextWithoutTrim(fullsource As String) As String
 	Return Regex.Replace("<.*?>",fullsource,"")
 End Sub

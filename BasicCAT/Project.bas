@@ -52,7 +52,7 @@ Public Sub setTranslation(index As String,translation As String)
 			extra.Put("creator",Main.preferencesMap.GetDefault("vcs_username","anonymous"))
 		Else
 			If settings.GetDefault("git_enabled",False)=False Then
-				extra.Put("creator","")
+				extra.Put("creator",Main.preferencesMap.GetDefault("vcs_username",""))
 			Else
 				extra.Put("creator",Main.preferencesMap.GetDefault("vcs_username","anonymous"))
 			End If
@@ -254,6 +254,7 @@ Public Sub gitinit
 End Sub
 
 Public Sub setGitRemoteAndPush(uri As String)
+	gitinit
 	setGitRemote(uri)
 	commitAndPush("init")
 End Sub
@@ -313,35 +314,50 @@ Public Sub commitAndPush(commitMessage As String)
 		fx.Msgbox(Main.MainForm,"Please configure your git account info first.","")
 		Return
 	End If
-	Dim diffList As List
-	
-	diffList=projectGit.diffList
-	Log(diffList)
+
+
 	If projectGit.isConflicting Then
 		Log("conflicting")
 		Dim filename As String=projectGit.conflictsUnSolvedFilename(path)
 		If filename<>"conflictsSolved" Then
 			fx.Msgbox(Main.MainForm,filename&" still contains conflicts.","")
+			Return
 		Else
 			projectGit.add(".")
-			projectGit.rebase("CONTINUE")
+			projectGit.rebase("CONTINUE","")
 			wait for (projectGit.push(username,password,"origin","master")) complete (result As String)
 			If result.StartsWith("error") Then
 				fx.Msgbox(Main.MainForm,"Failed","")
+				Return
 			End If
 		End If
 	Else
+		updateLocalFileBasedonFetch(username,password,email)
+		Dim diffList As List
+		diffList=projectGit.diffList
+		Log(diffList)
 		If diffList<>Null And diffList.Size<>0 Then
 			projectGit.add(".")
 			projectGit.commit(commitMessage,username,email)
 		End If
-		wait for (projectGit.pullRebase("","")) complete (pullresult As String)
-		If pullresult="STOPPED" Then
-			fx.Msgbox(Main.MainForm,"Conflits exist.","")
-		Else
-			wait for (projectGit.push(username,password,"origin","master")) complete (result As String)
-			If result.StartsWith("error") Then
-				fx.Msgbox(Main.MainForm,"Failed","")
+		
+
+		If samelocalHeadAndRemoteHead(username,password,False)=False Then
+			wait for (projectGit.pullRebase(username,password)) complete (result As String)
+		
+			Dim rebaseResult As String
+			rebaseResult=result
+			Log("rebaseResult"&rebaseResult)
+			If rebaseResult="STOPPED" Or rebaseResult="CONFLICTS" Then
+				fx.Msgbox(Main.MainForm,"Conflits exist. Please solve the conflicts first.","")
+				closeFile
+				Return
+			Else
+				wait for (projectGit.push(username,password,"origin","master")) complete (result As String)
+				If result.StartsWith("error") Then
+					fx.Msgbox(Main.MainForm,"Push Failed","")
+					Return
+				End If
 			End If
 		End If
 	End If
@@ -350,11 +366,137 @@ Public Sub commitAndPush(commitMessage As String)
 	Main.updateOperation("committed")
 End Sub
 
+Sub samelocalHeadAndRemoteHead(username As String,password As String,fetch As Boolean) As Boolean
+	Dim result As Boolean=True
+	Dim refsPath As String
+	refsPath=File.Combine(File.Combine(path,".git"),"refs")
+	If File.Exists(refsPath,"remotes") Then
+		If fetch Then
+			projectGit.fetch(username,password)
+		End If
+		Dim localHead,remoteHead As String
+		localHead=projectGit.getCommitIDofBranch("refs/heads/master")
+		remoteHead=projectGit.getCommitIDofBranch("refs/remotes/origin/master")
+		If localHead<>remoteHead Then
+			result=False
+		End If
+	End If
+	Return result
+End Sub
+
+
+Sub updateLocalFileBasedonFetch(username As String,password As String,email As String)
+	If samelocalHeadAndRemoteHead(username,password,True)=False Then
+		Dim localHead,remoteHead As String
+		localHead=projectGit.getCommitIDofBranch("refs/heads/master")
+		remoteHead=projectGit.getCommitIDofBranch("refs/remotes/origin/master")
+		Log("remotelyChanged")
+		FileUtils.Delete(path,"tmp")
+		File.MakeDir(path,"tmp")
+
+		projectGit.setWorkdir(File.Combine(path,"tmp"))
+		projectGit.Initialize(path)
+		projectGit.checkoutAllFiles("master","origin/master")
+		projectGit.rebase("","origin/master")
+		
+		projectGit.unsetWorkdir
+		projectGit.Initialize(path)
+		
+		Dim diffList As List
+		diffList=projectGit.diffListBetweenBranches(localHead,remoteHead)
+		Log(diffList)
+		
+		projectGit.setWorkdir(File.Combine(path,"tmp"))
+		projectGit.Initialize(path)
+		
+		Log("worddir,before: "&projectGit.getWorkdirPath)
+		Dim needsPushList As List
+		needsPushList.Initialize
+		
+		For Each filename As String In diffList
+			Log(filename&" changed")
+			If File.Exists(path,filename) Then
+				If filename.StartsWith("work") And filename.EndsWith(".json") Then
+					Dim pureFilename As String
+					pureFilename=Utils.replaceOnce(filename,"work/","")
+					pureFilename=Utils.replaceOnceFromTheEnd(pureFilename,".json","")
+					If updateWorkFile(pureFilename) Then
+						needsPushList.Add(filename)
+					End If
+				End If
+			End If
+		Next
+		Log(needsPushList)
+		If needsPushList.Size<>0 Then
+			Dim diffList As List
+			diffList=projectGit.diffList
+			Log("sync")
+			Log(diffList)
+			If diffList<>Null And diffList.Size<>0 Then
+				projectGit.add(".")
+				projectGit.commit("sync",username,email)
+			End If
+			wait for (projectGit.push(username,password,"origin","master")) complete (result As String)
+			Log("pushresult"&result)
+		End If
+		projectGit.unsetWorkdir
+		projectGit.Initialize(path)
+	End If
+
+	Log("worddir,after: "&projectGit.getWorkdirPath)
+End Sub
+
+Sub updateWorkFile(filename As String) As Boolean
+	Dim needsPush As Boolean=False
+	Dim localFileSegments,remoteFileSegments As List
+	localFileSegments.Initialize
+	remoteFileSegments.Initialize
+	readWorkFile(filename,localFileSegments,False,path)
+	readWorkFile(filename,remoteFileSegments,False,File.Combine(path,"tmp"))
+	If localFileSegments.Size<>remoteFileSegments.Size Then
+		Return needsPush
+	End If
+	Dim size As Int=localFileSegments.Size
+	For i=0 To size-1
+		Dim localSegment,remoteSegment As List
+		localSegment=localFileSegments.Get(i)
+		remoteSegment=remoteFileSegments.Get(i)
+		If localSegment.Get(1)<>remoteSegment.Get(1) Then
+			Dim localExtra,remoteExtra As Map
+			localExtra=localSegment.Get(4)
+			remoteExtra=remoteSegment.Get(4)
+			Dim localCreatedTime,remoteCreatedTime As Long
+			localCreatedTime=localExtra.GetDefault("createdTime",0)
+			remoteCreatedTime=remoteExtra.GetDefault("createdTime",0)
+			Log(localCreatedTime)
+			Log(remoteCreatedTime)
+			If remoteCreatedTime>localCreatedTime Then
+				localSegment.Set(1,remoteSegment.Get(1))
+				localSegment.Set(4,remoteExtra)
+				If filename=currentFilename Then
+					Dim segment As List 'also need to set the clv and segment
+					segment=segments.Get(i)
+					segment.Set(1,remoteSegment.Get(1))
+					segment.Set(4,remoteExtra)
+					fillOne(i,remoteSegment.Get(1))
+				End If
+			else if remoteCreatedTime<localCreatedTime Then
+				needsPush=True
+				remoteSegment.Set(1,localSegment.Get(1))
+				remoteSegment.Set(4,localExtra)
+			End If
+		End If
+	Next
+	saveWorkFile(filename,localFileSegments,path)
+	saveWorkFile(filename,remoteFileSegments,File.Combine(path,"tmp"))
+	Return needsPush
+End Sub
+
 Sub checkWorkfile
 	If segments.Size<>0 Then
 		Dim filesegments As List
 		filesegments.Initialize
-		readWorkFile(currentFilename,filesegments,False)
+		readWorkFile(currentFilename,filesegments,False,path)
 		If filesegments.Size<>segments.Size Then
 		    Dim result As Int
 			result=fx.Msgbox2(Main.MainForm,"Someone has merged or splitted segments of current file. Reopen it?","","Reopen","","No",fx.MSGBOX_CONFIRMATION)
@@ -541,7 +683,7 @@ Sub openFile(filename As String,onOpeningProject As Boolean)
 	segments.Clear
 	currentFilename=filename
 
-	readWorkFile(currentFilename,segments,True)
+	readWorkFile(currentFilename,segments,True,path)
 
 	Log("currentFilename:"&currentFilename)
 	If lastFilename=currentFilename And segments.Size<>0 Then
@@ -557,6 +699,15 @@ Sub openFile(filename As String,onOpeningProject As Boolean)
 		'ta.RequestFocus
 		
 	End If
+End Sub
+
+Sub closeFile
+	Main.editorLV.Clear
+	Main.tmTableView.Items.Clear
+	Main.LogWebView.LoadHtml("")
+	Main.searchTableView.Items.Clear
+	segments.Clear
+	currentFilename=""
 End Sub
 
 Sub addFilesToTreeTable(filename As String)
@@ -1624,14 +1775,14 @@ Sub createWorkFileAccordingToExtension(filename As String)
 	End If
 End Sub
 
-Sub readWorkFile(filename As String,filesegments As List,fillUI As Boolean)
-	If Utils.conflictsUnSolvedFilename(File.Combine(path,"work"),filename&".json")<>"conflictsSolved" Then
+Sub readWorkFile(filename As String,filesegments As List,fillUI As Boolean,root As String)
+	If Utils.conflictsUnSolvedFilename(File.Combine(root,"work"),filename&".json")<>"conflictsSolved" Then
 		fx.Msgbox(Main.MainForm,filename&" has unresolved conflicts.","")
 		Return
 	End If
 	Dim workfile As Map
 	Dim json As JSONParser
-	json.Initialize(File.ReadString(File.Combine(path,"work"),filename&".json"))
+	json.Initialize(File.ReadString(File.Combine(root,"work"),filename&".json"))
 	workfile=json.NextObject
 	Dim sourceFiles As List
 	sourceFiles=workfile.Get("files")
@@ -1658,7 +1809,7 @@ Sub readWorkFile(filename As String,filesegments As List,fillUI As Boolean)
 	Next
 End Sub
 
-Sub saveWorkFile(filename As String,fileSegments As List)
+Sub saveWorkFile(filename As String,fileSegments As List,root As String)
 	Dim workfile As Map
 	workfile.Initialize
 	workfile.Put("filename",filename)
@@ -1700,7 +1851,7 @@ Sub saveWorkFile(filename As String,fileSegments As List)
 	workfile.Put("files",sourceFiles)
 	Dim json As JSONGenerator
 	json.Initialize(workfile)
-	File.WriteString(File.Combine(path,"work"),filename&".json",json.ToPrettyString(4))
+	File.WriteString(File.Combine(root,"work"),filename&".json",json.ToPrettyString(4))
 End Sub
 
 Sub saveFile(filename As String)
@@ -1709,7 +1860,7 @@ Sub saveFile(filename As String)
 	End If
 	saveAlltheTranslationToSegmentsInVisibleArea(Main.editorLV.FirstVisibleIndex,Main.editorLV.LastVisibleIndex)
 	saveAlltheTranslationToTM
-	saveWorkFile(filename,segments)
+	saveWorkFile(filename,segments,path)
 	contentChanged=False
 	Main.MainForm.Title=Main.MainForm.Title.Replace("*","")
 End Sub
@@ -1782,7 +1933,7 @@ Public Sub saveNewDataToWorkfile(changedKeys As List)
 			End If
 			Dim filesegments As List
 			filesegments.Initialize
-			readWorkFile(filename,filesegments,False)
+			readWorkFile(filename,filesegments,False,path)
 			Dim changedSegmentsList As List
 			changedSegmentsList=changes.Get(filename)
 			For Each changedSegment As Map In changedSegmentsList
@@ -1813,7 +1964,7 @@ Public Sub saveNewDataToWorkfile(changedKeys As List)
 					End If
 				End If
 			Next
-			saveWorkFile(filename,filesegments)
+			saveWorkFile(filename,filesegments,path)
 		Next
 	End If
 	Main.updateOperation("updated")
