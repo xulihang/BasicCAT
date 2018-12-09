@@ -230,12 +230,12 @@ Sub gitcommit(local As Boolean,isSaving As Boolean) As Boolean
 					If settings.GetDefault("git_enabled",False) And local=False Then
 						commitAndPush("")
 					Else
-						gitcommitLocal
+						gitcommitLocal("")
 					End If
 				End If
 			Else
 				If local Then
-					gitcommitLocal
+					gitcommitLocal("")
 				Else
 					commitAndPush("")
 				End If
@@ -269,8 +269,11 @@ Public Sub getGitRemote As String
 	Return projectGit.getRemoteUri
 End Sub
 
-Public Sub gitcommitLocal
+Public Sub gitcommitLocal(commitMessage As String)
 	gitinit
+	If commitMessage="" Then
+		commitMessage="new text change"
+	End If
 	Dim username,email As String
 	If Main.preferencesMap.ContainsKey("vcs_email") Then
 		email=Main.preferencesMap.Get("vcs_email")
@@ -283,7 +286,7 @@ Public Sub gitcommitLocal
 	Log(diffList)
 	If diffList<>Null And diffList.Size<>0 Then
 		projectGit.add(".")
-		projectGit.commit("new text change",username,email)
+		projectGit.commit(commitMessage,username,email)
 	End If
 End Sub
 
@@ -294,18 +297,18 @@ Sub createGitignore
 End Sub
 
 Public Sub initAndPush
-	Dim username,email,password As String
-	If Main.preferencesMap.ContainsKey("vcs_email") Then
-		email=Main.preferencesMap.Get("vcs_email")
+	gitcommitLocal("init")
+	Dim password,username As String
+	If Main.preferencesMap.ContainsKey("vcs_password") Then
+		password=Main.preferencesMap.Get("vcs_password")
 	End If
 	If Main.preferencesMap.ContainsKey("vcs_username") Then
 		username=Main.preferencesMap.Get("vcs_username")
 	End If
-	If Main.preferencesMap.ContainsKey("vcs_password") Then
-		password=Main.preferencesMap.Get("vcs_password")
+	If password="" Or username="" Then
+		fx.Msgbox(Main.MainForm,"Please configure your git account info first.","")
+		Return
 	End If
-	projectGit.add(".")
-	projectGit.commit("init",username,email)
 	wait for (projectGit.push(username,password,"origin","master")) complete (result As String)
 	If result.StartsWith("error") Then
 		fx.Msgbox(Main.MainForm,"Push Failed","")
@@ -330,6 +333,11 @@ Public Sub commitAndPush(commitMessage As String)
 		fx.Msgbox(Main.MainForm,"Please configure your git account info first.","")
 		Return
 	End If
+	If getGitRemote="" Then
+		fx.Msgbox(Main.MainForm,"Please configure git remote first.","")
+		Return
+	End If
+
 	
 	If commitMessage="" Then
 		commitMessage="new translation"
