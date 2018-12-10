@@ -31,6 +31,7 @@ Sub Class_Globals
 	Private setKeyButton As Button
 	Private SaveAndCommitCheckBox As CheckBox
 	Private TermMatchAlgorithmComboBox As ComboBox
+	Private HistoryCheckBox As CheckBox
 End Sub
 
 'Initializes the object. You can add parameters to this method if needed.
@@ -80,6 +81,7 @@ Sub loadGeneral
 		MatchRateTextField.Text=(settings.Get("matchrate"))
 	End If
 	SaveAndCommitCheckBox.checked=settings.GetDefault("save_and_commit",False)
+	HistoryCheckBox.checked=settings.GetDefault("record_history",True)
 End Sub
 
 Sub loadQuickfill
@@ -228,6 +230,7 @@ Sub applyButton_MouseClicked (EventData As MouseEvent)
 		settings.Put("sharingTerm_enabled",sharingTermCheckBox.Checked)
 		settings.Put("git_enabled",enableGitCollaborationCheckBox.Checked)
 		settings.Put("updateWorkFile_enabled",updateWorkFileCheckBox.Checked)
+		settings.Put("record_history",HistoryCheckBox.Checked)
 		Select TermMatchAlgorithmComboBox.SelectedIndex
 			Case 0
 				settings.Put("termMatch_algorithm","hashmap")

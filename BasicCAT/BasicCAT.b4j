@@ -8,64 +8,66 @@ File13=FontPicker.bjl
 File14=Fonts.xml
 File15=generalProjectSetting.bjl
 File16=generalSetting.bjl
-File17=importDialog.bjl
-File18=inputbox.bjl
-File19=inputTextArea.bjl
+File17=HistoryItem.bjl
+File18=HistoryViewer.bjl
+File19=importDialog.bjl
 File2=appearance.bjl
-File20=lang.conf
-File21=languageChooser.bjl
-File22=leftProject.bjl
-File23=Log.bjl
-File24=lowerRight.bjl
-File25=main.bjl
-File26=menuText.txt
-File27=mtparamfiller.bjl
-File28=mtSetting.bjl
-File29=oneterm.bjl
+File20=inputbox.bjl
+File21=inputTextArea.bjl
+File22=lang.conf
+File23=languageChooser.bjl
+File24=leftProject.bjl
+File25=Log.bjl
+File26=lowerRight.bjl
+File27=main.bjl
+File28=menuText.txt
+File29=mtparamfiller.bjl
 File3=autocomplete.bjl
-File30=pdf2txt.bjl
-File31=pluginsSetting.bjl
-File32=preferences.bjl
-File33=preferences.conf
-File34=pretranslate.bjl
-File35=preview.bjl
-File36=progress.bjl
-File37=projectSetting.bjl
-File38=quickfillSetting.bjl
-File39=right.bjl
+File30=mtSetting.bjl
+File31=oneterm.bjl
+File32=pdf2txt.bjl
+File33=pluginsSetting.bjl
+File34=preferences.bjl
+File35=preferences.conf
+File36=pretranslate.bjl
+File37=preview.bjl
+File38=progress.bjl
+File39=projectSetting.bjl
 File4=autocorrectItem.bjl
-File40=searchandreplace.bjl
-File41=searchTableView.bjl
-File42=SearchView.bjl
-File43=segment.bjl
-File44=segmentation_en.conf
-File45=segmentation_en_exception.conf
-File46=segmentation_en_idml.conf
-File47=segmentation_zh.conf
-File48=segmentation_zh_exception.conf
-File49=serverLanucher.bjl
+File40=quickfillSetting.bjl
+File41=right.bjl
+File42=searchandreplace.bjl
+File43=searchTableView.bjl
+File44=SearchView.bjl
+File45=segment.bjl
+File46=segmentation_en.conf
+File47=segmentation_en_exception.conf
+File48=segmentation_en_idml.conf
+File49=segmentation_zh.conf
 File5=autocorrectSetting.bjl
-File50=settingLanguagecheck.bjl
-File51=settingVersionControl.bjl
-File52=statistics.bjl
-File53=supportedFiles.txt
-File54=tableview.bjl
-File55=tabpane.bjl
-File56=teamSetting.bjl
-File57=term.bjl
-File58=TermEditor.bjl
-File59=TermManager.bjl
+File50=segmentation_zh_exception.conf
+File51=serverLanucher.bjl
+File52=settingLanguagecheck.bjl
+File53=settingVersionControl.bjl
+File54=statistics.bjl
+File55=supportedFiles.txt
+File56=tableview.bjl
+File57=tabpane.bjl
+File58=teamSetting.bjl
+File59=term.bjl
 File6=basiccat.jpg
-File60=termSetting.bjl
-File61=TMEditor.bjl
-File62=tmList.bjl
-File63=TMManager.bjl
-File64=TMsegment.bjl
-File65=tmSetting.bjl
-File66=upperRight.bjl
-File67=viewSegment.bjl
-File68=wordLookupSetting.bjl
+File60=TermEditor.bjl
+File61=TermManager.bjl
+File62=termSetting.bjl
+File63=TMEditor.bjl
+File64=tmList.bjl
+File65=TMManager.bjl
+File66=TMsegment.bjl
+File67=tmSetting.bjl
+File68=upperRight.bjl
+File69=viewSegment.bjl
 File7=checkList.bjl
+File70=wordLookupSetting.bjl
 File8=confirmReview.bjl
 File9=default_rules.srx
 FileGroup1=Default Group
@@ -133,7 +135,9 @@ FileGroup65=Default Group
 FileGroup66=Default Group
 FileGroup67=Default Group
 FileGroup68=Default Group
+FileGroup69=Default Group
 FileGroup7=Default Group
+FileGroup70=Default Group
 FileGroup8=Default Group
 FileGroup9=Default Group
 Group=Default Group
@@ -211,13 +215,15 @@ Module54=opennlp
 Module55=statistics
 Module56=coordinate
 Module57=editDistance
+Module58=SegmentHistory
+Module59=HistoryViewer
 Module6=TM
 Module7=Term
 Module8=KeyValueStore
 Module9=ProjectSettings
-NumberOfFiles=68
+NumberOfFiles=70
 NumberOfLibraries=21
-NumberOfModules=57
+NumberOfModules=59
 Version=6.8
 @EndOfDesignText@
 #Region Project Attributes 
@@ -548,8 +554,9 @@ Sub MenuBar1_Action
 		Case "Show quickfill dropdown"
 			showQuickfillDropdown
 		Case "Show online dictionary dropdown"
-
 			showDictDropdown
+		Case "Show segment history"
+			showSegmentHistory
 		Case "Show/Edit notes of the current segmnet"
 			If currentProject.segments.Size<>0 Then
 				Dim inp As InputTextAreaBox
@@ -724,6 +731,23 @@ Sub quickFillMi_Action
 	Dim selectionEnd As Int=ta.selectionEnd
 	ta.Text=ta.Text.SubString2(0,ta.SelectionEnd)&mi.Text&ta.Text.SubString2(ta.SelectionEnd,ta.Text.Length)
 	ta.SetSelection(selectionEnd+mi.Text.Length,selectionEnd+mi.Text.Length)
+End Sub
+
+Sub showSegmentHistory
+	If editorLV.Size=0 Then
+		Return
+	End If
+	Dim p As Pane
+	p=editorLV.GetPanel(currentProject.lastEntry)
+	If p.NumberOfNodes=0 Then
+		Return
+	End If
+	Dim ta As TextArea=p.GetNode(0)
+    Dim hisViewer As HistoryViewer
+	hisViewer.Initialize
+	Dim historyList As List
+	historyList=currentProject.projectHistory.getHistory(ta.Text,currentProject.currentFilename)
+	hisViewer.Show(historyList)
 End Sub
 
 Sub showDictDropdown

@@ -14,6 +14,7 @@ Sub Class_Globals
 	Public segments As List
 	Public projectTM As TM
 	Public projectTerm As Term
+	Public projectHistory As SegmentHistory
 	Public lastEntry As Int
 	Private previousEntry As Int=-1
 	Private lastFilename As String
@@ -33,7 +34,6 @@ Public Sub Initialize
 	segments.Initialize
 	settings.Initialize
 	cm.Initialize("cm")
-
 End Sub
 
 Public Sub setTranslation(index As String,translation As String)
@@ -93,6 +93,10 @@ Sub initializeTerm(projectPath As String)
 	projectTerm.Initialize(projectPath,projectFile.Get("source"))
 End Sub
 
+Sub initializeHistory(projectPath As String)
+	projectHistory.Initialize(projectPath)
+End Sub
+
 
 
 Public Sub open(jsonPath As String)
@@ -102,6 +106,7 @@ Public Sub open(jsonPath As String)
 	End If
 	Main.addProjectTreeTableItem
 	path=getProjectPath(jsonPath)
+	createProjectFiles
 	Dim json As JSONParser
 	json.Initialize(File.ReadString(jsonPath,""))
 	projectFile=json.NextObject
@@ -114,6 +119,7 @@ Public Sub open(jsonPath As String)
 	Next
 	initializeTM(path,True)
 	initializeTerm(path)
+	initializeHistory(path)
 	Main.initializeNLP(projectFile.Get("source"))
 
 	If Main.preferencesMap.GetDefault("vcsEnabled",False)=True Then
@@ -193,14 +199,15 @@ Public Sub saveSettings(newsettings As Map)
 End Sub
 
 public Sub save
-	If File.Exists(path,"")=False Then
-		createProjectFiles
-	End If
+	createProjectFiles
 	If projectTM.IsInitialized=False Then
 		initializeTM(path,False)
 	End If
 	If projectTerm.IsInitialized=False Then
 		initializeTerm(path)
+	End If
+	If projectHistory.IsInitialized=False Then
+		initializeHistory(path)
 	End If
 	showPreView
 	projectFile.Put("files",files)
@@ -558,14 +565,25 @@ Sub showPreView
 End Sub
 
 Sub createProjectFiles
-	File.MakeDir(path,"")
-	File.MakeDir(path,"source")
-	File.MakeDir(path,"work")
-	File.MakeDir(path,"target")
-	File.MakeDir(path,"TM")
-	File.MakeDir(path,"Term")
-	File.MakeDir(path,"bak")
-	File.Copy(File.DirAssets,"default_rules.srx",path,"segmentationRules.srx")
+	Dim dirList As List
+	dirList.Initialize
+	dirList.Add("")
+	dirList.Add("source")
+	dirList.Add("work")
+	dirList.Add("target")
+	dirList.Add("TM")
+	dirList.Add("Term")
+	dirList.Add("History")
+	dirList.Add("bak")
+	For Each dirname As String In dirList
+		If File.Exists(path,dirname)=False Then
+			Log(dirname)
+			File.MakeDir(path,dirname)
+		End If
+	Next
+	If File.Exists(path,"segmentationRules.srx")=False Then
+		File.Copy(File.DirAssets,"default_rules.srx",path,"segmentationRules.srx")
+	End If
 End Sub
 
 
@@ -1547,7 +1565,7 @@ End Sub
 
 
 Sub saveOneTranslationToTM(bitext As List,index As Int)
-	If bitext.Get(1)="" Then
+	If bitext.Get(1)="" Or bitext.Get(0)=bitext.Get(1) Then
 		Return
 	End If
 	Dim createdTime As Long
@@ -1566,6 +1584,9 @@ Sub saveOneTranslationToTM(bitext As List,index As Int)
 	targetMap.Put("index",index)
 	
 	projectTM.addPair(bitext.Get(0),targetMap)
+	If settings.GetDefault("record_history",True)=True Then
+		projectHistory.addHistory(bitext.Get(0),targetMap)
+	End If
 End Sub
 
 Public Sub saveAlltheTranslationToTM
