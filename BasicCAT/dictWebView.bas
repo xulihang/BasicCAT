@@ -9,12 +9,30 @@ Sub Class_Globals
 	Private frm As Form
 	Private WebView1 As WebView
 	Private currentUrl As String
+	Private dictComboBox As ComboBox
+	Private dictMap As Map
+	Private selected As String
 End Sub
 
 'Initializes the object. You can add parameters to this method if needed.
-Public Sub Initialize
+Public Sub Initialize(projectPath As String)
 	frm.Initialize("frm",600,300)
 	frm.RootPane.LoadLayout("dictWebview")
+
+	dictMap.Initialize
+	Dim dictList As List
+	If File.Exists(projectPath,"dictList.txt") Then
+		dictList=File.ReadList(projectPath,"dictList.txt")
+	Else
+		dictList=File.ReadList(File.DirAssets,"dictList.txt")
+	End If
+	For Each line As String In dictList
+		dictMap.Put(Regex.Split("	",line)(0),Regex.Split("	",line)(1))
+	Next
+	For Each key As String In dictMap.Keys
+		dictComboBox.Items.Add(key)
+	Next
+
 End Sub
 
 Public Sub show
@@ -28,13 +46,16 @@ Sub OpenButton_MouseClicked (EventData As MouseEvent)
 End Sub
 
 Sub AddSelectedButton_MouseClicked (EventData As MouseEvent)
+	addTextFromDict(getSelectedText)
+End Sub
+
+Sub getSelectedText As String
 	Dim we As JavaObject
 	we = asJO(WebView1).RunMethod("getEngine",Null)
 	Dim jscode As String
 	jscode=$"document.getSelection()+"";"$
-	addTextFromDict(we.RunMethod("executeScript",Array As String(jscode)))
+	Return we.RunMethod("executeScript",Array As String(jscode))
 End Sub
-
 
 Sub addTextFromDict(text As String)
 	If Main.currentProject.IsInitialized Then
@@ -54,7 +75,9 @@ Sub addTextFromDict(text As String)
 	End If
 End Sub
 
-Public Sub loadUrl(url As String)
+Public Sub loadUrl(url As String,selectedText As String)
+	selected=selectedText
+	url=url.Replace("*",selectedText)
 	WebView1.LoadUrl(url)
 	currentUrl=url
 End Sub
@@ -69,4 +92,13 @@ End Sub
 
 Sub asJO(o As JavaObject) As JavaObject
 	Return o
+End Sub
+
+Sub dictComboBox_SelectedIndexChanged(Index As Int, Value As Object)
+	Log(Value)
+	loadUrl(dictMap.Get(Value),selected)
+End Sub
+
+Sub SetSelectedButton_MouseClicked (EventData As MouseEvent)
+	selected=getSelectedText
 End Sub

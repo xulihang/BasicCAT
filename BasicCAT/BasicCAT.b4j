@@ -60,14 +60,12 @@ File60=TermEditor.bjl
 File61=TermManager.bjl
 File62=termSetting.bjl
 File63=TMEditor.bjl
-File64=tmList.bjl
-File65=TMManager.bjl
-File66=TMsegment.bjl
-File67=tmSetting.bjl
-File68=upperRight.bjl
-File69=viewSegment.bjl
+File64=TMManager.bjl
+File65=tmSetting.bjl
+File66=upperRight.bjl
+File67=viewSegment.bjl
+File68=wordLookupSetting.bjl
 File7=checkList.bjl
-File70=wordLookupSetting.bjl
 File8=confirmReview.bjl
 File9=default_rules.srx
 FileGroup1=Default Group
@@ -135,9 +133,7 @@ FileGroup65=Default Group
 FileGroup66=Default Group
 FileGroup67=Default Group
 FileGroup68=Default Group
-FileGroup69=Default Group
 FileGroup7=Default Group
-FileGroup70=Default Group
 FileGroup8=Default Group
 FileGroup9=Default Group
 Group=Default Group
@@ -164,64 +160,64 @@ Library8=jrandomaccessfile
 Library9=jb4xencryption
 Module1=FileChooserUtils
 Module10=preTranslateDialog
-Module11=git
-Module12=PDF2TXT
-Module13=Utils
-Module14=ClientKVS
-Module15=InputBox
-Module16=MTParamsFiller
-Module17=Preferences
-Module18=TermManager
-Module19=xliffFilter
+Module11=dictWebView
+Module12=SegmentHistory
+Module13=HistoryViewer
+Module14=git
+Module15=PDF2TXT
+Module16=Utils
+Module17=ClientKVS
+Module18=InputBox
+Module19=MTParamsFiller
 Module2=Project
-Module20=searchAndReplaceDialog
-Module21=TMManager
-Module22=importDialog
-Module23=XMLUtils
-Module24=ITP
-Module25=progressDialog
-Module26=TermEditor
-Module27=filterGenericUtils
-Module28=TMX
-Module29=SRX
+Module20=Preferences
+Module21=TermManager
+Module22=xliffFilter
+Module23=searchAndReplaceDialog
+Module24=TMManager
+Module25=importDialog
+Module26=XMLUtils
+Module27=ITP
+Module28=progressDialog
+Module29=TermEditor
 Module3=segmentation
-Module30=TBX
-Module31=idmlUtils
-Module32=idmlFilter
-Module33=Xml2Map
-Module34=CallSubUtils
-Module35=FileUtils
-Module36=LanguageTool
-Module37=confirmReviewDialog
-Module38=Previewer
-Module39=viewSegment
+Module30=filterGenericUtils
+Module31=TMX
+Module32=SRX
+Module33=TBX
+Module34=idmlUtils
+Module35=idmlFilter
+Module36=Xml2Map
+Module37=CallSubUtils
+Module38=FileUtils
+Module39=LanguageTool
 Module4=CustomListView
-Module40=SearchView
-Module41=pdfbox
-Module42=serverLauncher
-Module43=MT
-Module44=Map2Xml
-Module45=dictWebView
-Module46=icu4j
-Module47=FontPicker
-Module48=zip4j
-Module49=languageChooser
+Module40=confirmReviewDialog
+Module41=Previewer
+Module42=viewSegment
+Module43=SearchView
+Module44=pdfbox
+Module45=serverLauncher
+Module46=MT
+Module47=Map2Xml
+Module48=icu4j
+Module49=FontPicker
 Module5=txtFilter
-Module50=POIWord
-Module51=InputTextAreaBox
-Module52=TMEditor
-Module53=TextFlow
-Module54=opennlp
-Module55=statistics
-Module56=coordinate
-Module57=editDistance
-Module58=SegmentHistory
-Module59=HistoryViewer
+Module50=zip4j
+Module51=languageChooser
+Module52=POIWord
+Module53=InputTextAreaBox
+Module54=TMEditor
+Module55=TextFlow
+Module56=opennlp
+Module57=statistics
+Module58=coordinate
+Module59=editDistance
 Module6=TM
 Module7=Term
 Module8=KeyValueStore
 Module9=ProjectSettings
-NumberOfFiles=70
+NumberOfFiles=68
 NumberOfLibraries=21
 NumberOfModules=59
 Version=6.8
@@ -778,8 +774,11 @@ Sub showDictDropdown
 		mi.Initialize(dictName, "dictLookupMi")
         Dim url As String
 		url=dictMap.Get(dictName)
-		url=url.Replace("*",selected)
-		mi.Tag=url
+		Dim tagList As List
+		tagList.Initialize
+		tagList.Add(url)
+		tagList.Add(selected)
+		mi.Tag=tagList
 		cm.MenuItems.Add(mi)
 	Next
 	Sleep(100)
@@ -795,12 +794,14 @@ Sub dictLookupMi_Action
 	Dim mi As MenuItem
 	mi=Sender
 	Log(Sender)
-
+	Dim tagList As List
+	tagList.Initialize
+	tagList=mi.Tag
 	If dw.IsInitialized=False Then
-		dw.Initialize
+		dw.Initialize(currentProject.path)
 	End If
 	dw.show
-	dw.loadUrl(mi.Tag)
+	dw.loadUrl(tagList.Get(0),tagList.Get(1))
 	
 End Sub
 

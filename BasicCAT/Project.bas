@@ -584,6 +584,9 @@ Sub createProjectFiles
 	If File.Exists(path,"segmentationRules.srx")=False Then
 		File.Copy(File.DirAssets,"default_rules.srx",path,"segmentationRules.srx")
 	End If
+	If File.Exists(path,"dictList.txt")=False Then
+		File.Copy(File.DirAssets,"dictList.txt",path,"dictList.txt")
+	End If
 End Sub
 
 
