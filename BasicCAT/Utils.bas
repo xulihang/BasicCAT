@@ -43,17 +43,98 @@ Sub getPureTextWithoutTrim(fullsource As String) As String
 	Return Regex.Replace("<.*?>",fullsource,"")
 End Sub
 
-Sub exportToBiParagraph(segments As List,path As String,filename As String)
+
+Sub shouldAddSpace(sourceLang As String,targetLang As String,index As Int,segmentsList As List) As Boolean
+	Dim bitext As List=segmentsList.Get(index)
+	Dim fullsource As String=bitext.Get(2)
+	If sourceLang="zh" And targetLang="en" Then
+		If index+1<=segmentsList.Size-1 Then
+			Dim nextBitext As List
+			nextBitext=segmentsList.Get(index+1)
+			Dim nextfullsource As String=nextBitext.Get(2)
+			If fullsource.EndsWith(CRLF)=False And nextfullsource.StartsWith(CRLF)=False Then
+				Try
+					If Regex.IsMatch("\s",nextfullsource.CharAt(0))=False And Regex.IsMatch("\s",fullsource.CharAt(fullsource.Length-1))=False Then
+						Return True
+					End If
+				Catch
+					Log(LastException)
+				End Try
+			End If
+		End If
+	End If
+	Return False
+End Sub
+
+Sub exportToMarkdownWithNotes(segments As List,path As String,filename As String,sourceLang As String,targetLang As String)
+	Dim text As StringBuilder
+	text.Initialize
+	Dim noteIndex As Int=0
+	Dim noteText As StringBuilder
+	noteText.Initialize
+	noteText.Append(CRLF).Append(CRLF)
+	Dim previousID As String="-1"
+	Dim index As Int=-1
+	For Each segment As List In segments
+		index=index+1
+		Dim source,target,fullsource As String
+		Dim translation As String
+		source=segment.Get(0)
+		target=segment.Get(1)
+		If target="" Then
+			target=source
+		Else
+			If shouldAddSpace(sourceLang,targetLang,index,segments) Then
+				target=target&" "
+			End If
+		End If
+		fullsource=segment.Get(2)
+		Dim extra As Map
+		extra=segment.Get(4)
+        If extra.ContainsKey("note") Then
+			Dim note As String
+			note=extra.Get("note")
+			Dim noteID As String
+			noteID="[^note"&noteIndex&"]"
+			target=target&noteID
+			noteText.Append(noteID).Append(": ").Append(note).Append(CRLF)
+        End If
+		If extra.ContainsKey("id") Then
+			Dim id As String
+			id=extra.Get("id")
+			If previousID<>id Then
+				fullsource=CRLF&fullsource
+				previousID=id
+			End If
+		End If
+		source=Regex.Replace2("<.*?>",32,source,"")
+		target=Regex.Replace2("<.*?>",32,target,"")
+		fullsource=Regex.Replace2("<.*?>",32,fullsource,"")
+		translation=fullsource.Replace(source,target)
+		text.Append(translation)
+	Next
+    Dim result As String
+	result=text.ToString.Replace(CRLF,CRLF&CRLF)
+	result=result&noteText.ToString
+	File.WriteString(path,"",result)
+End Sub
+
+Sub exportToBiParagraph(segments As List,path As String,filename As String,sourceLang As String,targetLang As String)
 	Dim text As StringBuilder
 	text.Initialize
 	Dim sourceText As String
 	Dim targetText As String
 	Dim previousID As String="-1"
+	Dim index As Int=-1
 	For Each segment As List In segments
+		index=index+1
 		Dim source,target,fullsource As String
 		Dim translation As String
 		source=segment.Get(0)
 		target=segment.Get(1)
+		If shouldAddSpace(sourceLang,targetLang,index,segments) Then
+			target=target&" "
+		End If
 		fullsource=segment.Get(2)
 		Dim extra As Map
 		extra=segment.Get(4)

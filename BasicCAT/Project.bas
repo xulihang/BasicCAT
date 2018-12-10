@@ -639,6 +639,26 @@ Sub exportReviewMi_Action
 	fx.Msgbox(Main.MainForm,"Done. File has been exported to the project folder.","")
 End Sub
 
+Sub exportMarkdownWithNotesMi_Action
+	Dim mi As MenuItem
+	mi=Sender
+	Dim filename As String
+	filename=mi.Tag
+	If currentFilename<>filename Then
+		fx.Msgbox(Main.MainForm,"Please first open this file.","")
+		Return
+	End If
+	Dim fc As FileChooser
+	fc.Initialize
+	fc.SetExtensionFilter("Markdown",Array As String("*.md"))
+	Dim exportPath As String
+	exportPath=fc.ShowSave(Main.MainForm)
+	If exportPath<>"" Then
+		Utils.exportToMarkdownWithNotes(segments,exportPath,currentFilename,projectFile.Get("source"),projectFile.Get("target"))
+		fx.Msgbox(Main.MainForm,"Done.","")
+	End If
+End Sub
+
 Sub exportBiParagraphMi_Action
 	Dim mi As MenuItem
 	mi=Sender
@@ -654,7 +674,7 @@ Sub exportBiParagraphMi_Action
 	Dim exportPath As String
 	exportPath=fc.ShowSave(Main.MainForm)
 	If exportPath<>"" Then
-		Utils.exportToBiParagraph(segments,exportPath,currentFilename)
+		Utils.exportToBiParagraph(segments,exportPath,currentFilename,projectFile.Get("source"),projectFile.Get("target"))
 		fx.Msgbox(Main.MainForm,"Done.","")
 	End If
 End Sub
@@ -785,15 +805,23 @@ Sub addFilesToTreeTable(filename As String)
 	Dim mi As MenuItem
 	mi.Initialize("Remove","removeFileMi")
 	Dim mi2 As MenuItem
-	mi2.Initialize("Export to docx for review","exportReviewMi")
+	mi2.Initialize("Import from review","importReviewMi")
 	Dim mi3 As MenuItem
-	mi3.Initialize("Import from review","importReviewMi")
+	mi3.Initialize("docx for review","exportReviewMi")
 	Dim mi4 As MenuItem
-	mi4.Initialize("Export to bi-paragraphs","exportBiParagraphMi")
+	mi4.Initialize("bi-paragraphs","exportBiParagraphMi")
+	Dim mi5 As MenuItem
+	mi5.Initialize("markdown with notes","exportMarkdownWithNotesMi")
+	
+	Dim exportMenu As Menu
+	exportMenu.Initialize("Export to","")
+	exportMenu.MenuItems.Add(mi3)
+	exportMenu.MenuItems.Add(mi4)
+	exportMenu.MenuItems.Add(mi5)
+
 	fileCM.MenuItems.Add(mi)
 	fileCM.MenuItems.Add(mi2)
-	fileCM.MenuItems.Add(mi3)
-	fileCM.MenuItems.Add(mi4)
+	fileCM.MenuItems.Add(exportMenu)
 
 	lbl.ContextMenu=fileCM
 	
@@ -802,6 +830,7 @@ Sub addFilesToTreeTable(filename As String)
 	mi2.Tag=filename
 	mi3.Tag=filename
 	mi4.Tag=filename
+	mi5.Tag=filename
 	subTreeTableItem.Children.Add(tti)
 End Sub
 
