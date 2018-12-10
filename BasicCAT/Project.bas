@@ -503,7 +503,7 @@ Sub updateWorkFile(filename As String) As Boolean
 		Dim localSegment,remoteSegment As List
 		localSegment=localFileSegments.Get(i)
 		remoteSegment=remoteFileSegments.Get(i)
-		If localSegment.Get(1)<>remoteSegment.Get(1) Then
+		If localSegment.Get(0)=remoteSegment.Get(0) And localSegment.Get(1)<>remoteSegment.Get(1) Then
 			Dim localExtra,remoteExtra As Map
 			localExtra=localSegment.Get(4)
 			remoteExtra=remoteSegment.Get(4)
