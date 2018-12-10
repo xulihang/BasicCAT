@@ -1185,7 +1185,7 @@ Sub sourceTextArea_KeyPressed_Event (MethodName As String, Args() As Object) As 
 			txtFilter.splitSegment(sourceTextArea)
 		Else if filenameLowercase.EndsWith(".idml") Then
 			idmlFilter.splitSegment(sourceTextArea)
-		Else if filenameLowercase.EndsWith(".xlf") Then
+		Else if filenameLowercase.EndsWith(".xlf") Or filenameLowercase.EndsWith(".xliff") Then
 			xliffFilter.splitSegment(sourceTextArea)
 		Else
 			Dim params As Map
@@ -1205,7 +1205,7 @@ Sub sourceTextArea_KeyPressed_Event (MethodName As String, Args() As Object) As 
 			txtFilter.mergeSegment(sourceTextArea)
 		Else if filenameLowercase.EndsWith(".idml") Then
 			idmlFilter.mergeSegment(sourceTextArea)
-		Else if filenameLowercase.EndsWith(".xlf") Then
+		Else if filenameLowercase.EndsWith(".xlf") Or filenameLowercase.EndsWith(".xliff") Then
 			xliffFilter.mergeSegment(sourceTextArea)
 		Else
 			Dim params As Map
@@ -1857,7 +1857,7 @@ Sub createWorkFileAccordingToExtension(filename As String)
 		txtFilter.createWorkFile(filename,path,projectFile.Get("source"))
 	Else if filenameLowercase.EndsWith(".idml") Then
 		idmlFilter.createWorkFile(filename,path,projectFile.Get("source"))
-	Else if filenameLowercase.EndsWith(".xlf") Then
+	Else if filenameLowercase.EndsWith(".xlf") Or filenameLowercase.EndsWith(".xliff") Then
 		xliffFilter.createWorkFile(filename,path,projectFile.Get("source"))
 	Else
 		Dim params As Map
@@ -1989,7 +1989,7 @@ Public Sub generateTargetFiles
 			txtFilter.generateFile(filename,path,projectFile)
 		Else if filenameLowercase.EndsWith(".idml") Then
 			idmlFilter.generateFile(filename,path,projectFile)
-		Else if filenameLowercase.EndsWith(".xlf") Then
+		Else if filenameLowercase.EndsWith(".xlf") Or filenameLowercase.EndsWith(".xliff") Then
 			xliffFilter.generateFile(filename,path,projectFile)
 		Else
 			Dim params As Map

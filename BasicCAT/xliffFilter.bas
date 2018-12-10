@@ -202,14 +202,17 @@ Sub generateFile(filename As String,path As String,projectFile As Map)
 					translation=fullsource.Replace(source,"")
 				End If
 			End If
+            
+			Dim segmentKey As String
+			segmentKey=extra.Get("id")&bitext.Get(3)
 
-			If translationMap.ContainsKey(extra.Get("id")) Then
+			If translationMap.ContainsKey(segmentKey) Then
 				Dim dataMap As Map
-				dataMap=translationMap.Get(extra.Get("id"))
+				dataMap=translationMap.Get(segmentKey)
 				translation=dataMap.Get("translation")&translation
-				translationMap.put(extra.Get("id"),CreateMap("translation":translation,"filename":innerfilename))
+				translationMap.put(segmentKey,CreateMap("translation":translation,"filename":innerfilename))
 			Else
-				translationMap.put(extra.Get("id"),CreateMap("translation":translation,"filename":innerfilename))
+				translationMap.put(segmentKey,CreateMap("translation":translation,"filename":innerfilename))
 			End If
 		Next
 	Next
@@ -254,21 +257,39 @@ Sub insertTranslation(translationMap As Map,filename As String,path As String) A
 			attributes=transUnit.Get("Attributes")
 			Dim id As String
 			id=attributes.Get("id")
-			Dim target As Map
-			target=transUnit.Get("target")
-			If translationMap.ContainsKey(id) Then
+			Log(transUnit)
+			Dim targetType As String="Map"
+			If transUnit.ContainsKey("target")=False Then
+				transUnit.Put("target","")
+				targetType="String"
+			Else
+				Try
+					Dim targetMap As Map
+					targetMap=transUnit.Get("target")
+				Catch
+					Log(LastException)
+					targetType="String"
+				End Try
+			End If
+            Dim segmentKey As String
+			segmentKey=id&originalFilename
+			If translationMap.ContainsKey(segmentKey) Then
 				Dim dataMap As Map
-				dataMap=translationMap.Get(id)
+				dataMap=translationMap.Get(segmentKey)
 				If originalFilename=dataMap.Get("filename") Then
-					For Each key As String In target.Keys
-						If key<>"Attributes" Then
-							target.Remove(key)
+					If targetType="Map" Then
+						For Each key As String In targetMap.Keys
+							If key<>"Attributes" Then
+								targetMap.Remove(key)
+							End If
+						Next
+						If targetMap.ContainsKey("Text") Then
+							targetMap.Remove("Text")
 						End If
-					Next
-					If target.ContainsKey("Text") Then
-						target.Remove("Text")
+						targetMap.Put("Text",dataMap.Get("translation"))
+					Else
+						transUnit.Put("target",dataMap.Get("translation"))
 					End If
-					target.Put("Text",dataMap.Get("translation"))
 					Log(dataMap.Get("translation"))
 				End If
 			End If
