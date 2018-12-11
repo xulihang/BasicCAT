@@ -3,6 +3,7 @@ iciba	http://www.iciba.com/*
 youdao	http://dict.youdao.com/w/*
 baidu	https://www.baidu.com/s?wd=*
 baidu baike	https://baike.baidu.com/item/*
+kekenet	http://dict.kekenet.com/en/*
 wikipedia-en	https://en.wikipedia.org/wiki/*
 wikipedia-zh	https://zh.wikipedia.org/wiki/*
 macmillan	https://www.macmillandictionary.com/us/dictionary/american/*

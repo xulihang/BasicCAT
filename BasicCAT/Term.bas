@@ -198,24 +198,27 @@ Sub termsInASentenceUsingHashMap(sentence As String,kvs As KeyValueStore) As Lis
 	result.Initialize
     Dim words As List
 	words.Initialize
-	If sourceLanguage="en" Then
+	If Utils.LanguageHasSpace(sourceLanguage) Then
 		'Log(sentence)
 		sentence=Regex.Replace("[\x21-\x2F\x3A-\x40\x5B-\x60\x7B-\x7E]",sentence,"") 'remove punctuations
 		words.AddAll(Regex.Split(" ",sentence))
-		addEnglishPhrases(words)
-		Dim lemmatized As List
-		lemmatized.Initialize
-		lemmatized.AddAll(Regex.Split(" ",Main.nlp.lemmatizedSentence(sentence)))
-		addEnglishPhrases(lemmatized)
-		For Each lemma As String In lemmatized 'here, lemma may be lemmatized phrases
-			If words.IndexOf(lemma)=-1 Then
-				words.Add(lemma)
-			End If
-		Next
+		addPhrases(words)
+		If sourceLanguage.StartsWith("en") Then 'only english opennlp model exists
+			Dim lemmatized As List
+			lemmatized.Initialize
+			lemmatized.AddAll(Regex.Split(" ",Main.nlp.lemmatizedSentence(sentence)))
+			addPhrases(lemmatized)
+			For Each lemma As String In lemmatized 'here, lemma may be lemmatized phrases
+				If words.IndexOf(lemma)=-1 Then
+					words.Add(lemma)
+				End If
+			Next
+		End If
 	Else
 	    words.AddAll(Regex.Split("",sentence))
-		words.AddAll(addChineseWords(sentence))
+		words.AddAll(addHanziWords(sentence))
 	End If
+	
 	For Each word As String In words
 		'Log(word)
 		If kvs.ContainsKey(word) Then
@@ -235,7 +238,7 @@ Sub termsInASentenceUsingHashMap(sentence As String,kvs As KeyValueStore) As Lis
 	Return result
 End Sub
 
-Sub addEnglishPhrases(words As List)
+Sub addPhrases(words As List)
 	Dim iterateList As List
 	iterateList.Initialize
 	iterateList.AddAll(words)
@@ -260,7 +263,7 @@ Sub addEnglishPhrases(words As List)
 	Next
 End Sub
 
-Sub addChineseWords(source As String) As List
+Sub addHanziWords(source As String) As List
 	Dim words As List
 	words.Initialize
 	For i=1 To 8
@@ -287,10 +290,10 @@ Sub termsInASentenceUsingIteration(sentence As String,kvs As KeyValueStore) As L
 	Dim lemmatizedSentence As String
 	lemmatizedSentence=Main.nlp.lemmatizedSentence(sentence)
 	For Each source As String In kvs.ListKeys
-		If sourceLanguage="en" Then
+		If Utils.LanguageHasSpace(sourceLanguage) Then
 			If Regex.Matcher("\b"&source&"\b",sentence).Find=False Then
 				If Regex.Matcher("\b"&source.ToLowerCase&"\b",sentence.ToLowerCase).Find=False Then
-					If Main.nlp.IsInitialized Then
+					If Main.nlp.IsInitialized And sourceLanguage.StartsWith("en") Then
 						Dim lemmatized As String
 						lemmatized=Main.nlp.lemmatizedSentence(source)
 						If Regex.Matcher("\b"&lemmatized&"\b",lemmatizedSentence).Find=False Then

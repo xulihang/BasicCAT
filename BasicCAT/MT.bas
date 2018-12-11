@@ -35,6 +35,8 @@ Sub getMT(source As String,sourceLang As String,targetLang As String,MTEngine As
 			source=Regex.Replace("<.*?>",source,"")
 		End If
 	End If
+	sourceLang=convertLangCode(sourceLang,MTEngine)
+	targetLang=convertLangCode(targetLang,MTEngine)
 	Select MTEngine
 		Case "baidu"
 			wait for (BaiduMT(source,sourceLang,targetLang)) Complete (result As String)
@@ -66,6 +68,20 @@ Sub getMT(source As String,sourceLang As String,targetLang As String,MTEngine As
 		Log("pluginMT"&result)
 		Return result
 	End If
+End Sub
+
+Sub convertLangCode(lang As String,engine As String) As String
+	Dim langcodes As Map
+	langcodes=Utils.readLanguageCode
+	Dim codeMap As Map
+	If langcodes.ContainsKey(lang)=False Then
+		Return lang
+	End If
+	codeMap=langcodes.Get(lang)
+	If codeMap.ContainsKey(engine) Then
+		lang=codeMap.Get(engine)
+	End If
+	Return lang
 End Sub
 
 Sub BaiduMT(source As String,sourceLang As String,targetLang As String) As ResumableSub
@@ -150,17 +166,17 @@ Sub microsoftMT(source As String,sourceLang As String,targetLang As String) As R
 	Dim jsong As JSONGenerator
 	jsong.Initialize2(sourceList)
 	source=jsong.ToString
-	
 	Dim job As HttpJob
 	job.Initialize("job",Me)
 	Dim params As String
 	params="&from="&sourceLang&"&to="&targetLang
 	
 	job.PostString("https://api.cognitive.microsofttranslator.com/translate?api-version=3.0"&params,source)
-	
+	job.GetRequest.SetContentType("application/json")
 	job.GetRequest.SetHeader("Ocp-Apim-Subscription-Key",key)
 	job.GetRequest.SetHeader("X-ClientTraceId",UUID)
 	job.GetRequest.SetHeader("Content-Type","application/json")
+	job.GetRequest.SetHeader("Accept","application/json")
 	wait For (job) JobDone(job As HttpJob)
 	If job.Success Then
 		Try

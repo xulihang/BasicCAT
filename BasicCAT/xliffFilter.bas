@@ -189,11 +189,14 @@ Sub generateFile(filename As String,path As String,projectFile As Map)
 			If target="" Then
 				translation=fullsource
 			Else
-				If shouldAddSpace(projectFile.Get("source"),index,segmentsList) Then
+				If shouldAddSpace(projectFile.Get("source"),projectFile.Get("target"),index,segmentsList) Then
 					target=target&" "
 				End If
 				target=addNecessaryTags(target,source)
 				translation=fullsource.Replace(source,target)
+				If Utils.LanguageHasSpace(projectFile.Get("target"))=False Then
+					translation=Utils.removeSpacesAtBothSides(translation)
+				End If
 			End If
 			Dim extra As Map
 			extra=bitext.Get(4)
@@ -326,14 +329,14 @@ Sub addNecessaryTags(target As String,source As String) As String
 End Sub
 
 
-Sub shouldAddSpace(sourceLang As String,index As Int,segmentsList As List) As Boolean
+Sub shouldAddSpace(sourceLang As String,targetLang As String,index As Int,segmentsList As List) As Boolean
 	Dim bitext As List=segmentsList.Get(index)
 	Dim fullsource As String=bitext.Get(2)
 	fullsource=Utils.getPureTextWithoutTrim(fullsource)
 	Dim extra As Map
 	extra=bitext.Get(4)
 	Dim id As String=extra.Get("id")
-	If sourceLang="zh" Then
+	If Utils.LanguageHasSpace(sourceLang)=False And Utils.LanguageHasSpace(targetLang)=True Then
 		If index+1<=segmentsList.Size-1 Then
 			Dim nextBitext As List
 			nextBitext=segmentsList.Get(index+1)
@@ -416,17 +419,20 @@ Sub mergeSegment(sourceTextArea As TextArea)
 	targetWhitespace=""
 	fullsourceWhitespace=""
 	
-	If Main.currentProject.projectFile.Get("source")="en" Then
+	Dim sourceLang,targetLang As String
+	sourceLang=Main.currentProject.projectFile.Get("source")
+	targetLang=Main.currentProject.projectFile.Get("target")
+	If Utils.LanguageHasSpace(sourceLang) Then
 		If Regex.IsMatch("\s",fullsource.CharAt(fullsource.Length-1)) Or Regex.IsMatch("\s",nextFullSource.CharAt(0)) Then
 			sourceWhitespace=" "
 		Else
 			sourceWhitespace=""
 		End If
-	else if Main.currentProject.projectFile.Get("target")="en" Then
+	else if Utils.LanguageHasSpace(targetLang) Then
 		targetWhitespace=" "
 	End If
 	
-	If Main.currentProject.projectFile.Get("source")="en" Then
+	If Utils.LanguageHasSpace(sourceLang) Then
 		If Regex.IsMatch("\s",fullsource.CharAt(fullsource.Length-1)) Or Regex.IsMatch("\s",nextFullSource.CharAt(0)) Then
 			fullsourceWhitespace=" "
 		End If
@@ -531,10 +537,13 @@ Sub previewText As String
 		If target="" Then
 			translation=fullsource
 		Else
-			If shouldAddSpace(Main.currentProject.projectFile.Get("source"),i,Main.currentProject.segments) Then
+			If shouldAddSpace(Main.currentProject.projectFile.Get("source"),Main.currentProject.projectFile.Get("target"),i,Main.currentProject.segments) Then
 				target=target&" "
 			End If
 			translation=fullsource.Replace(source,target)
+			If Utils.LanguageHasSpace(Main.currentProject.projectFile.Get("target"))=False Then
+				translation=Utils.removeSpacesAtBothSides(translation)
+			End If
 		End If
 
 		Dim id As String

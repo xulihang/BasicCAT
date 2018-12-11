@@ -227,7 +227,7 @@ Sub mergeSpecialTaggedContentAtBeginning(segmentsList As List)
 					Dim sourceShown As String
 					Dim nextSourceShown As String
 					nextSourceShown=nextSegment.Get(0)
-					If Main.currentproject.projectFile.Get("source")="en" And Regex.Matcher("\w",nextSourceShown.Trim.CharAt(0)).Find Then
+					If utils.LanguageHasSpace(Main.currentproject.projectFile.Get("source")) And Regex.Matcher("\w",nextSourceShown.Trim.CharAt(0)).Find Then
 						Dim pureText,nextPureText As String
 						pureText=idmlUtils.getPureTextwithouttrim(fullsource)
 						nextPureText=idmlUtils.getPureTextwithouttrim(nextFullSource)
@@ -286,7 +286,7 @@ Sub mergeInbetweenSpecialTaggedContent(segmentsList As List)
 						If previousFullSource.Trim.EndsWith("</c0>") And nextFullSource.Trim.StartsWith("<c0>") Then
 							Dim newSegment As List
 							newSegment.Initialize
-							If Main.currentproject.projectFile.Get("source")="en" Then
+							If utils.LanguageHasSpace(Main.currentproject.projectFile.Get("source")) Then
 								Dim new As String
 								Dim previousSourceShown,nextSourceShown As String
 								previousSourceShown=previousSegment.Get(0)
@@ -395,7 +395,7 @@ Sub mergeSpecialTaggedContentInTheEnd(segmentsList As List)
 				Dim sourceShown As String
 			    Dim previousSourceShown As String
 			    previousSourceShown=previousSegment.Get(0)
-				If Main.currentproject.projectFile.Get("source")="en" Then
+				If utils.LanguageHasSpace(Main.currentproject.projectFile.Get("source")) Then
 					Dim previousPureText,pureText As String
 					previousPureText=idmlUtils.getPureTextwithouttrim(previousFullSource)
 					pureText=idmlUtils.getPureTextwithouttrim(fullsource)
@@ -530,7 +530,9 @@ Sub taggedTextToXml(taggedText As String,storypath As String) As String
 				Try
 
 					characterMap=originalCharacterStyleRanges.Get(styleRankMatcher.Group(1))
-					If Main.currentProject.projectFile.Get("source")="en" Then
+					Dim targetLang As String
+					targetLang=Main.currentProject.projectFile.Get("target")
+					If targetLang.StartsWith("zh") Then
 						idmlUtils.changeFontsFromEnToZh(characterMap)
 					End If
 					
@@ -587,7 +589,9 @@ Sub generateFile(filename As String,path As String,projectFile As Map)
 	If paragraphStyles.IsInitialized=False Then
 		loadStyles(unzipedDirPath)
 	End If
-	If projectFile.Get("source")="en" Then
+	Dim targetLang As String
+	targetLang=projectFile.Get("target")
+	If targetLang.StartsWith("zh") Then
 		replaceStyleAndFontFileForZh(unzipedDirPath)
 	End If
 
@@ -630,7 +634,7 @@ Sub generateFile(filename As String,path As String,projectFile As Map)
 				pp=source
 				source=source.Replace("<br/>",CRLF)
 				target=target.Replace("<br/>",CRLF)
-				If shouldAddSpace(projectFile.Get("source"),index,segmentsList) Then
+				If shouldAddSpace(projectFile.Get("source"),projectFile.Get("target"),index,segmentsList) Then
 					target=target&" "
 				End If
 				If fullsource.Contains(C0TagAddedText(source,fullsource)) And idmlUtils.containsUnshownSpecialTaggedContent(target,source)=False Then
@@ -665,8 +669,8 @@ Sub generateFile(filename As String,path As String,projectFile As Map)
 					Log(translation)
 					'ExitApplication
 				End If
-				If projectFile.Get("source")="en" And Regex.Matcher("\w",translation).Find=False Then
-					translation=translation.Replace(" ","")
+				If Utils.LanguageHasSpace(projectFile.Get("target"))=False And Regex.Matcher("\w",translation).Find=False Then
+					translation=Utils.removeSpacesAtBothSides(translation)
 				End If
 
 
@@ -697,11 +701,11 @@ Sub generateFile(filename As String,path As String,projectFile As Map)
 End Sub
 
 
-Sub shouldAddSpace(sourceLang As String,index As Int,segmentsList As List) As Boolean
+Sub shouldAddSpace(sourceLang As String,targetLang as string,index As Int,segmentsList As List) As Boolean
 	Dim bitext As List=segmentsList.Get(index)
 	Dim fullsource As String=bitext.Get(2)
 	fullsource=Utils.getPureTextWithoutTrim(fullsource)
-	If sourceLang="zh" Then
+	If Utils.LanguageHasSpace(sourceLang)=False And Utils.LanguageHasSpace(targetLang)=True Then
 		If index+1<=segmentsList.Size-1 Then
 			Dim nextBitext As List
 			nextBitext=segmentsList.Get(index+1)
@@ -1263,7 +1267,10 @@ Sub mergeSegment(sourceTextArea As TextArea)
 	Dim pureText,nextPureText As String
 	pureText=idmlUtils.getPureTextWithoutTrim(fullsource)
 	nextPureText=idmlUtils.getPureTextWithoutTrim(nextFullsource)
-	If Main.currentProject.projectFile.Get("source")="en" Then
+	Dim sourceLang,targetLang As String
+	sourceLang=Main.currentProject.projectFile.Get("source")
+	targetLang=Main.currentProject.projectFile.Get("target")
+	If Utils.LanguageHasSpace(sourceLang) Then
 		If Regex.IsMatch("\s",pureText.CharAt(pureText.Length-1)) Or Regex.IsMatch("\s",nextPureText.CharAt(0)) Then
 			sourceWhitespace=" "
 		Else
@@ -1274,10 +1281,11 @@ Sub mergeSegment(sourceTextArea As TextArea)
 		'Else
 		'	sourceWhitespace=""
 		'End If
-	else if Main.currentProject.projectFile.Get("target")="en" Then
+	else if Utils.LanguageHasSpace(targetLang) Then
 		targetWhitespace=" "
 	End If
-	If Main.currentProject.projectFile.Get("source")="en" Then
+
+	If Utils.LanguageHasSpace(sourceLang) Then
 		If Regex.IsMatch("\s",pureText.CharAt(pureText.Length-1)) Or Regex.IsMatch("\s",nextPureText.CharAt(0)) Then
 			fullsourceWhitespace=" "
 		End If
@@ -1381,7 +1389,7 @@ Sub previewText As String
 		Else
 			source=source.Replace("<br/>",CRLF)
 			target=target.Replace("<br/>",CRLF)
-			If shouldAddSpace(Main.currentProject.projectFile.Get("source"),i,Main.currentProject.segments) Then
+			If shouldAddSpace(Main.currentProject.projectFile.Get("source"),Main.currentProject.projectFile.Get("target"),i,Main.currentProject.segments) Then
 				target=target&" "
 			End If
 			If fullsource.Contains(C0TagAddedText(source,fullsource)) And idmlUtils.containsUnshownSpecialTaggedContent(target,source)=False Then
@@ -1401,8 +1409,8 @@ Sub previewText As String
 			End If
 
 
-			If Main.currentProject.projectFile.Get("source")="en" And Regex.Matcher("\w",translation).Find=False Then
-				translation=translation.Replace(" ","")
+			If Utils.LanguageHasSpace(Main.currentProject.projectFile.Get("target"))=False And Regex.Matcher("\w",translation).Find=False Then
+				translation=Utils.removeSpacesAtBothSides(translation)
 			End If
 		End If
 

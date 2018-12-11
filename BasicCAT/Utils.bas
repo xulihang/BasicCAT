@@ -10,6 +10,59 @@ Sub Process_Globals
 	Private menus As Map
 End Sub
 
+Sub removeSpacesAtBothSides(text As String) As String
+	text=Regex.Replace2("\b( *)\b",32,text,"aplaceholder$1aplaceholder")
+	text=Regex.Replace2("(?<! *aplaceholder) *(?! *aplaceholder)",32,text,"")
+	text=Regex.Replace2("aplaceholder( *)aplaceholder",32,text,"$1")
+	Return text
+End Sub
+
+Sub LanguageHasSpace(lang As String) As Boolean
+	Dim languagesWithoutSpaceList As List
+	languagesWithoutSpaceList=File.ReadList(File.DirAssets,"languagesWithoutSpace.txt")
+	For Each code As String In languagesWithoutSpaceList
+		If lang.StartsWith(code) Then
+			Return False
+		End If
+	Next
+	Return True
+End Sub
+
+Sub readLanguageCode As Map
+	Dim linesList As List
+	linesList=File.ReadList(File.DirAssets,"langcodes.txt")
+	Dim headsList As List
+	headsList.Initialize
+	headsList.AddAll(Regex.Split("	",linesList.Get(0)))
+	Log(headsList)
+	
+	Dim langcodes As Map
+	langcodes.Initialize
+	Dim lineNum As Int=1
+	For Each line As String In linesList
+		If lineNum=1 Then
+			lineNum=lineNum+1
+			Continue
+		End If
+		Dim colIndex As Int=0
+		Dim code As String=Regex.Split("	",line)(0)
+		Dim codesMap As Map
+		codesMap.Initialize
+		For Each value As String In Regex.Split("	",line)
+			If colIndex=0 Then
+				colIndex=colIndex+1
+				Continue
+			End If
+			If value<>"" Then
+				codesMap.Put(headsList.Get(colIndex),value)
+			End If
+			colIndex=colIndex+1
+		Next
+		langcodes.Put(code,codesMap)
+	Next
+	Return langcodes
+End Sub
+
 Sub conflictsUnSolvedFilename(dirPath As String,filename As String) As String
 	If File.Exists(dirPath,filename) Then
 		Dim content As String
@@ -47,7 +100,8 @@ End Sub
 Sub shouldAddSpace(sourceLang As String,targetLang As String,index As Int,segmentsList As List) As Boolean
 	Dim bitext As List=segmentsList.Get(index)
 	Dim fullsource As String=bitext.Get(2)
-	If sourceLang="zh" And targetLang="en" Then
+
+	If LanguageHasSpace(sourceLang)=False And LanguageHasSpace(targetLang)=True Then
 		If index+1<=segmentsList.Size-1 Then
 			Dim nextBitext As List
 			nextBitext=segmentsList.Get(index+1)
@@ -111,6 +165,9 @@ Sub exportToMarkdownWithNotes(segments As List,path As String,filename As String
 		target=Regex.Replace2("<.*?>",32,target,"")
 		fullsource=Regex.Replace2("<.*?>",32,fullsource,"")
 		translation=fullsource.Replace(source,target)
+		If LanguageHasSpace(targetLang)=False Then
+			translation=removeSpacesAtBothSides(translation)
+		End If
 		text.Append(translation)
 	Next
     Dim result As String
@@ -150,6 +207,9 @@ Sub exportToBiParagraph(segments As List,path As String,filename As String,sourc
 		target=Regex.Replace2("<.*?>",32,target,"")
 		fullsource=Regex.Replace2("<.*?>",32,fullsource,"")
 		translation=fullsource.Replace(source,target)
+		If LanguageHasSpace(targetLang)=False Then
+			translation=removeSpacesAtBothSides(translation)
+		End If
 		sourceText=sourceText&fullsource
 		targetText=targetText&translation
 	Next

@@ -15,57 +15,60 @@ File2=appearance.bjl
 File20=inputbox.bjl
 File21=inputTextArea.bjl
 File22=lang.conf
-File23=languageChooser.bjl
-File24=leftProject.bjl
-File25=Log.bjl
-File26=lowerRight.bjl
-File27=main.bjl
-File28=menuText.txt
-File29=mtparamfiller.bjl
+File23=LangaugePairSelector.bjl
+File24=langcodes.txt
+File25=languageChooser.bjl
+File26=languagesWithoutSpace.txt
+File27=leftProject.bjl
+File28=Log.bjl
+File29=lowerRight.bjl
 File3=autocomplete.bjl
-File30=mtSetting.bjl
-File31=oneterm.bjl
-File32=pdf2txt.bjl
-File33=pluginsSetting.bjl
-File34=preferences.bjl
-File35=preferences.conf
-File36=pretranslate.bjl
-File37=preview.bjl
-File38=progress.bjl
-File39=projectSetting.bjl
+File30=main.bjl
+File31=menuText.txt
+File32=mtparamfiller.bjl
+File33=mtSetting.bjl
+File34=oneterm.bjl
+File35=pdf2txt.bjl
+File36=pluginsSetting.bjl
+File37=preferences.bjl
+File38=preferences.conf
+File39=pretranslate.bjl
 File4=autocorrectItem.bjl
-File40=quickfillSetting.bjl
-File41=right.bjl
-File42=searchandreplace.bjl
-File43=searchTableView.bjl
-File44=SearchView.bjl
-File45=segment.bjl
-File46=segmentation_en.conf
-File47=segmentation_en_exception.conf
-File48=segmentation_en_idml.conf
-File49=segmentation_zh.conf
+File40=preview.bjl
+File41=progress.bjl
+File42=projectSetting.bjl
+File43=quickfillSetting.bjl
+File44=right.bjl
+File45=searchandreplace.bjl
+File46=searchTableView.bjl
+File47=SearchView.bjl
+File48=segment.bjl
+File49=segmentation_en.conf
 File5=autocorrectSetting.bjl
-File50=segmentation_zh_exception.conf
-File51=serverLanucher.bjl
-File52=settingLanguagecheck.bjl
-File53=settingVersionControl.bjl
-File54=statistics.bjl
-File55=supportedFiles.txt
-File56=tableview.bjl
-File57=tabpane.bjl
-File58=teamSetting.bjl
-File59=term.bjl
+File50=segmentation_en_exception.conf
+File51=segmentation_en_idml.conf
+File52=segmentation_zh.conf
+File53=segmentation_zh_exception.conf
+File54=serverLanucher.bjl
+File55=settingLanguagecheck.bjl
+File56=settingVersionControl.bjl
+File57=statistics.bjl
+File58=supportedFiles.txt
+File59=tableview.bjl
 File6=basiccat.jpg
-File60=TermEditor.bjl
-File61=TermManager.bjl
-File62=termSetting.bjl
-File63=TMEditor.bjl
-File64=TMManager.bjl
-File65=tmSetting.bjl
-File66=upperRight.bjl
-File67=viewSegment.bjl
-File68=wordLookupSetting.bjl
+File60=tabpane.bjl
+File61=teamSetting.bjl
+File62=term.bjl
+File63=TermEditor.bjl
+File64=TermManager.bjl
+File65=termSetting.bjl
+File66=TMEditor.bjl
+File67=TMManager.bjl
+File68=tmSetting.bjl
+File69=upperRight.bjl
 File7=checkList.bjl
+File70=viewSegment.bjl
+File71=wordLookupSetting.bjl
 File8=confirmReview.bjl
 File9=default_rules.srx
 FileGroup1=Default Group
@@ -133,7 +136,10 @@ FileGroup65=Default Group
 FileGroup66=Default Group
 FileGroup67=Default Group
 FileGroup68=Default Group
+FileGroup69=Default Group
 FileGroup7=Default Group
+FileGroup70=Default Group
+FileGroup71=Default Group
 FileGroup8=Default Group
 FileGroup9=Default Group
 Group=Default Group
@@ -214,12 +220,13 @@ Module57=statistics
 Module58=coordinate
 Module59=editDistance
 Module6=TM
+Module60=LanguagePairSelector
 Module7=Term
 Module8=KeyValueStore
 Module9=ProjectSettings
-NumberOfFiles=68
+NumberOfFiles=71
 NumberOfLibraries=21
-NumberOfModules=59
+NumberOfModules=60
 Version=6.8
 @EndOfDesignText@
 #Region Project Attributes 
@@ -478,25 +485,17 @@ Sub MenuBar1_Action
 			End If
 			openProject(path)
 		Case "en to zh Project"
-			If currentProject.IsInitialized Then
-				fx.Msgbox(MainForm,"Please close the current project first.","")
-			    Return
-			End If
-			currentProject.Initialize
-			currentProject.newProjectSetting("en","zh")
-			MainForm.Title="Untitled-1"
-			addProjectTreeTableItem
-			Utils.enableMenuItems(MenuBar1,Array As String("_Save","_Close"))
+			newProject("en","zh")
 		Case "zh to en Project"
-			If currentProject.IsInitialized Then
-				fx.Msgbox(MainForm,"Please close the current project first.","")
-				Return
+			newProject("zh","en")
+		Case "other language pair"
+			Dim languageSelector As LanguagePairSelector
+			languageSelector.Initialize
+			Dim result As Map
+			result=languageSelector.ShowAndWait
+			If result.ContainsKey("source") Then
+				newProject(result.Get("source"),result.Get("target"))
 			End If
-			currentProject.Initialize
-			currentProject.newProjectSetting("zh","en")
-			MainForm.Title="Untitled-1"
-			addProjectTreeTableItem
-			Utils.enableMenuItems(MenuBar1,Array As String("_Save","_Close"))
 		Case "_Save"
 			If currentProject.IsInitialized=False Then
 				Return
@@ -624,6 +623,18 @@ Sub MenuBar1_Action
 		Case "_About"
 			fx.Msgbox(MainForm,"BasicCAT 1.0"&CRLF&"@xulihang 2018","BasicCAT")
 	End Select
+End Sub
+
+Sub newProject(sourceLang As String,targetLang As String)
+	If currentProject.IsInitialized Then
+		fx.Msgbox(MainForm,"Please close the current project first.","")
+		Return
+	End If
+	currentProject.Initialize
+	currentProject.newProjectSetting(sourceLang,targetLang)
+	MainForm.Title="Untitled-1"
+	addProjectTreeTableItem
+	Utils.enableMenuItems(MenuBar1,Array As String("_Save","_Close"))
 End Sub
 
 Sub fillWithTheNextTag

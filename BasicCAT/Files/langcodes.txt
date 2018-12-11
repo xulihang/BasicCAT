@@ -1,0 +1,22 @@
+basiccat	language name	yandex	google	mymemory	bing	youdao	tencent	niutrans	sogou	baidu
+de	Germany									
+fi	Finnish									fin
+el	Greek									
+da	Danish									dan
+cs	Czech									
+ca	Catalan									
+fr	French									fra
+it	Italian									
+sv	Swedish									swe
+pt	Portuguese									
+nl	Dutch									
+en	English									
+pl	Polish									
+es	Spanish									spa
+ja	Japanese									jp
+ko	Korean						kr			kor
+zh_wyw	Ancient Chinese									wyw
+ru	Russian									
+zh	default Chinese				zh-Hans	zh-CHS			zh-CHS	
+zh_CN	Simplified Chinese	zh	zh-CN	zh	zh-Hans	zh-CHS	zh	zh	zh-CHS	zh
+zh_TW	Traditional Chinese	zh	zh-TW	zh	zh-Hant	zh-CHS	zh	cht	zh-CHT	cht

@@ -41,7 +41,8 @@ Sub readRules(filepath As String,lang As String) As Map
 	Dim languageRuleNames As List
 	languageRuleNames.Initialize
 	Dim languageMaps As List
-	languageMaps=mapRules.Get("languagemap")
+	languageMaps.Initialize
+	languageMaps=XMLUtils.GetElements(mapRules,"languagemap")
 	For Each languageMap As Map In languageMaps
 
 		Dim attributes As Map

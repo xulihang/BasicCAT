@@ -896,13 +896,14 @@ Sub targetTextArea_TextChanged (Old As String, New As String)
 	Else
 		lastString=New
 	End If
-	If projectFile.Get("target")="zh" Then
+
+	If Utils.LanguageHasSpace(projectFile.Get("target"))=False Then
 		Old=Regex.Replace("[a-zA-Z]|[^\u4e00-\u9fa5]",Old,"")
 		New=Regex.Replace("[a-zA-Z]|[^\u4e00-\u9fa5]",New,"")
 		If New.Length>Old.Length Then
 			lastString=New.Replace(Old,"")
 		End If
-	else if projectFile.Get("target")="en" Then
+	Else
 		Dim wordList As List
 		wordList.Initialize
 		wordList.AddAll(Regex.Split(" ",New))
@@ -1099,7 +1100,8 @@ Sub onSelectionChanged(new As Object,ta As TextArea,isSource As Boolean)
 	'------------------ show word meaning
 	If Main.TabPane1.SelectedIndex=1 Then
 		
-		If projectFile.Get("source")="en" And isSource=True Then
+		
+		If Utils.LanguageHasSpace(projectFile.Get("source"))=True And isSource=True Then
 			If selectionEnd<>ta.Text.Length Then
 				Dim lastChar As String
 				lastChar=ta.Text.SubString2(selectionEnd,Min(ta.Text.Length,selectionEnd+1))
@@ -1108,7 +1110,7 @@ Sub onSelectionChanged(new As Object,ta As TextArea,isSource As Boolean)
 				End If
 			End If
 		End If
-		If projectFile.Get("target")="en" And isSource=False Then
+		If Utils.LanguageHasSpace(projectFile.Get("target"))=True And isSource=False Then
 			If selectionEnd<>ta.Text.Length Then
 				Dim lastChar As String
 				lastChar=ta.Text.SubString2(selectionEnd,Min(ta.Text.Length,selectionEnd+1))

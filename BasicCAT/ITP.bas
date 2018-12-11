@@ -9,11 +9,29 @@ Sub Process_Globals
 	Private fx As JFX
 End Sub
 
+Sub languageIsSupported(lang As String) As Boolean
+	Dim languagesList As List
+	languagesList.Initialize
+	languagesList.AddAll(Array As String("en","zh","fr","de","es","ar"))
+	For Each code As String In languagesList
+		If lang.StartsWith(code) Then
+			Return True
+		End If
+	Next
+	Return False
+End Sub
+
+Sub convertLanguageCodeForChinese(lang As String) As String
+	If lang.StartsWith("zh") Then
+		Return "zh"
+	End If
+End Sub
+
 Sub getAllSegmentTranslation(text As String,engine As String) As ResumableSub
 	Dim sourceLang,targetLang As String
 	sourceLang=Main.currentProject.projectFile.Get("source")
 	targetLang=Main.currentProject.projectFile.Get("target")
-	
+	sourceLang=convertLanguageCodeForChinese(sourceLang)
 	
 	'Log("text:"&text)
 	Dim translationList As List
@@ -30,7 +48,7 @@ Sub getAllSegmentTranslation(text As String,engine As String) As ResumableSub
 	wordList.Initialize
 	
 	Dim pattern As String
-	If sourceLang="zh" Then
+	If sourceLang.StartsWith("zh") Then
 		pattern=""
 		wait for (getStanfordTokenizedResult(text,address,sourceLang)) Complete (resultList As List)
 		wordList.AddAll(resultList)
@@ -47,16 +65,18 @@ Sub getAllSegmentTranslation(text As String,engine As String) As ResumableSub
 	Next
 	
 	If address<>"" Then
-		Dim grams As List
-		grams.Initialize
-		wait for (getStanfordParsedResult(text,address,sourceLang)) Complete (result As String)
-		grams.AddAll(getGramsFromStringViaRe(result))
-		duplicatedRemovedList2(grams,wordList)
-		Log("grams"&grams)
-		For Each gram As String In grams
-			wait for (MT.getMT(gram,sourceLang,targetLang,engine)) Complete (result As String)
-			translationList.Add(result)
-		Next
+		If languageIsSupported(sourceLang) Then
+			Dim grams As List
+			grams.Initialize
+			wait for (getStanfordParsedResult(text,address,sourceLang)) Complete (result As String)
+			grams.AddAll(getGramsFromStringViaRe(result))
+			duplicatedRemovedList2(grams,wordList)
+			Log("grams"&grams)
+			For Each gram As String In grams
+				wait for (MT.getMT(gram,sourceLang,targetLang,engine)) Complete (result As String)
+				translationList.Add(result)
+			Next
+		End If
 	End If
 
 	

@@ -113,19 +113,18 @@ Sub buildTable
 End Sub
 
 Sub calculateWords(text As String,lang As String) As Int
-	Select lang
-		Case "zh"
-			Return calculateChineseWords(text)
-		Case "en"
-			Return calculateEnglishWords(text)
-	End Select
+	If Utils.LanguageHasSpace(lang) Then
+		Return calculateWordsForLanguageWithSpace(text)
+	Else
+		Return calculateHanzi(text)
+	End If
 End Sub
 
-Sub calculateEnglishWords(text As String) As Int
+Sub calculateWordsForLanguageWithSpace(text As String) As Int
 	Return Regex.Split(" ",text).Length
 End Sub
 
-Sub calculateChineseWords(text As String) As Int
+Sub calculateHanzi(text As String) As Int
 	Return text.Length
 End Sub
 
