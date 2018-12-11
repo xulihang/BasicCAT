@@ -15,14 +15,14 @@ Module2=Xml2Map
 Module3=CustomListView
 Module4=Map2Xml
 Module5=filterGenericUtils
-Module6=Utils
-Module7=SRX
-Module8=XMLUtils
-Module9=segmentation
+Module6=SRX
+Module7=XMLUtils
+Module8=segmentation
+Module9=Utils
 NumberOfFiles=1
 NumberOfLibraries=7
 NumberOfModules=9
-Version=6.51
+Version=6.8
 @EndOfDesignText@
 #Region Project Attributes 
 	#MainFormWidth: 600

@@ -10,9 +10,82 @@ Sub Process_Globals
 	Private menus As Map
 End Sub
 
+Sub removeSpacesAtBothSides(text As String) As String
+	text=Regex.Replace2("\b( *)\b",32,text,"aplaceholder$1aplaceholder")
+	text=Regex.Replace2("(?<! *aplaceholder) *(?! *aplaceholder)",32,text,"")
+	text=Regex.Replace2("aplaceholder( *)aplaceholder",32,text,"$1")
+	Return text
+End Sub
+
+Sub LanguageHasSpace(lang As String) As Boolean
+	Dim languagesWithoutSpaceList As List
+	languagesWithoutSpaceList=File.ReadList(File.DirAssets,"languagesWithoutSpace.txt")
+	For Each code As String In languagesWithoutSpaceList
+		If lang.StartsWith(code) Then
+			Return False
+		End If
+	Next
+	Return True
+End Sub
+
+Sub readLanguageCode As Map
+	Dim linesList As List
+	linesList=File.ReadList(File.DirAssets,"langcodes.txt")
+	Dim headsList As List
+	headsList.Initialize
+	headsList.AddAll(Regex.Split("	",linesList.Get(0)))
+	Log(headsList)
+	
+	Dim langcodes As Map
+	langcodes.Initialize
+	Dim lineNum As Int=1
+	For Each line As String In linesList
+		If lineNum=1 Then
+			lineNum=lineNum+1
+			Continue
+		End If
+		Dim colIndex As Int=0
+		Dim code As String=Regex.Split("	",line)(0)
+		Dim codesMap As Map
+		codesMap.Initialize
+		For Each value As String In Regex.Split("	",line)
+			If colIndex=0 Then
+				colIndex=colIndex+1
+				Continue
+			End If
+			If value<>"" Then
+				codesMap.Put(headsList.Get(colIndex),value)
+			End If
+			colIndex=colIndex+1
+		Next
+		langcodes.Put(code,codesMap)
+	Next
+	Return langcodes
+End Sub
+
+Sub conflictsUnSolvedFilename(dirPath As String,filename As String) As String
+	If File.Exists(dirPath,filename) Then
+		Dim content As String
+		content=File.ReadString(dirPath,filename)
+		If content.Contains("<<<<<<<") And content.Contains("=======") And content.Contains(">>>>>>>") Then
+			Return filename
+		End If
+	End If
+	Return "conflictsSolved"
+End Sub
+
 Sub replaceOnce(text As String,match As String,replacement As String) As String
 	Try
 		text=text.SubString2(0,text.IndexOf(match))&replacement&text.SubString2(text.IndexOf(match)+match.Length,text.Length)
+	Catch
+		Log(LastException)
+	End Try
+	Return text
+End Sub
+
+Sub replaceOnceFromTheEnd(text As String,match As String,replacement As String) As String
+	Try
+		text=text.SubString2(0,text.LastIndexOf(match))&replacement&text.SubString2(text.LastIndexOf(match)+match.Length,text.Length)
 	Catch
 		Log(LastException)
 	End Try
@@ -23,17 +96,102 @@ Sub getPureTextWithoutTrim(fullsource As String) As String
 	Return Regex.Replace("<.*?>",fullsource,"")
 End Sub
 
-Sub exportToBiParagraph(segments As List,path As String,filename As String)
+
+Sub shouldAddSpace(sourceLang As String,targetLang As String,index As Int,segmentsList As List) As Boolean
+	Dim bitext As List=segmentsList.Get(index)
+	Dim fullsource As String=bitext.Get(2)
+
+	If LanguageHasSpace(sourceLang)=False And LanguageHasSpace(targetLang)=True Then
+		If index+1<=segmentsList.Size-1 Then
+			Dim nextBitext As List
+			nextBitext=segmentsList.Get(index+1)
+			Dim nextfullsource As String=nextBitext.Get(2)
+			If fullsource.EndsWith(CRLF)=False And nextfullsource.StartsWith(CRLF)=False Then
+				Try
+					If Regex.IsMatch("\s",nextfullsource.CharAt(0))=False And Regex.IsMatch("\s",fullsource.CharAt(fullsource.Length-1))=False Then
+						Return True
+					End If
+				Catch
+					Log(LastException)
+				End Try
+			End If
+		End If
+	End If
+	Return False
+End Sub
+
+Sub exportToMarkdownWithNotes(segments As List,path As String,filename As String,sourceLang As String,targetLang As String)
+	Dim text As StringBuilder
+	text.Initialize
+	Dim noteIndex As Int=0
+	Dim noteText As StringBuilder
+	noteText.Initialize
+	noteText.Append(CRLF).Append(CRLF)
+	Dim previousID As String="-1"
+	Dim index As Int=-1
+	For Each segment As List In segments
+		index=index+1
+		Dim source,target,fullsource As String
+		Dim translation As String
+		source=segment.Get(0)
+		target=segment.Get(1)
+		If target="" Then
+			target=source
+		Else
+			If shouldAddSpace(sourceLang,targetLang,index,segments) Then
+				target=target&" "
+			End If
+		End If
+		fullsource=segment.Get(2)
+		Dim extra As Map
+		extra=segment.Get(4)
+        If extra.ContainsKey("note") Then
+			Dim note As String
+			note=extra.Get("note")
+			Dim noteID As String
+			noteID="[^note"&noteIndex&"]"
+			target=target&noteID
+			noteText.Append(noteID).Append(": ").Append(note).Append(CRLF)
+        End If
+		If extra.ContainsKey("id") Then
+			Dim id As String
+			id=extra.Get("id")
+			If previousID<>id Then
+				fullsource=CRLF&fullsource
+				previousID=id
+			End If
+		End If
+		source=Regex.Replace2("<.*?>",32,source,"")
+		target=Regex.Replace2("<.*?>",32,target,"")
+		fullsource=Regex.Replace2("<.*?>",32,fullsource,"")
+		translation=fullsource.Replace(source,target)
+		If LanguageHasSpace(targetLang)=False Then
+			translation=removeSpacesAtBothSides(translation)
+		End If
+		text.Append(translation)
+	Next
+    Dim result As String
+	result=text.ToString.Replace(CRLF,CRLF&CRLF)
+	result=result&noteText.ToString
+	File.WriteString(path,"",result)
+End Sub
+
+Sub exportToBiParagraph(segments As List,path As String,filename As String,sourceLang As String,targetLang As String)
 	Dim text As StringBuilder
 	text.Initialize
 	Dim sourceText As String
 	Dim targetText As String
 	Dim previousID As String="-1"
+	Dim index As Int=-1
 	For Each segment As List In segments
+		index=index+1
 		Dim source,target,fullsource As String
 		Dim translation As String
 		source=segment.Get(0)
 		target=segment.Get(1)
+		If shouldAddSpace(sourceLang,targetLang,index,segments) Then
+			target=target&" "
+		End If
 		fullsource=segment.Get(2)
 		Dim extra As Map
 		extra=segment.Get(4)
@@ -49,6 +207,9 @@ Sub exportToBiParagraph(segments As List,path As String,filename As String)
 		target=Regex.Replace2("<.*?>",32,target,"")
 		fullsource=Regex.Replace2("<.*?>",32,fullsource,"")
 		translation=fullsource.Replace(source,target)
+		If LanguageHasSpace(targetLang)=False Then
+			translation=removeSpacesAtBothSides(translation)
+		End If
 		sourceText=sourceText&fullsource
 		targetText=targetText&translation
 	Next

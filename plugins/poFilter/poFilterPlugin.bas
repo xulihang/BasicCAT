@@ -33,7 +33,7 @@ public Sub Run(Tag As String, Params As Map) As Object
 		Case "splitSegment"
 			splitSegment(Params.Get("main"),Params.Get("sourceTextArea"),Params.Get("editorLV"),Params.Get("segments"),Params.Get("projectFile"))
 		Case "previewText"
-			Return previewText(Params.Get("editorLV"),Params.Get("segments"),Params.Get("lastEntry"),Params.Get("sourceLang"))
+			Return previewText(Params.Get("editorLV"),Params.Get("segments"),Params.Get("lastEntry"),Params.Get("sourceLang"),Params.Get("targetLang"))
 	End Select
 	Return ""
 End Sub
@@ -257,10 +257,13 @@ Sub generateFile(filename As String,path As String,projectFile As Map,BCATMain A
 			If target="" Then
 				translation=fullsource
 			Else
-				If shouldAddSpace(projectFile.Get("source"),index,segmentsList) Then
+				If shouldAddSpace(projectFile.Get("source"),projectFile.Get("target"),index,segmentsList) Then
 					target=target&" "
 				End If
 				translation=fullsource.Replace(source,target)
+				If Utils.LanguageHasSpace(projectFile.Get("target"))=False Then
+					translation=Utils.removeSpacesAtBothSides(translation)
+				End If
 			End If
 			'Log("translation"&translation)
 			Dim extra As Map
@@ -379,17 +382,21 @@ Sub mergeSegment(MainForm As Form,sourceTextArea As TextArea,editorLV As CustomL
 	targetWhitespace=""
 	fullsourceWhitespace=""
 	
-	If projectFile.Get("source")="en" Or Utils.isChinese(fullsource)=False Then
+	Dim sourceLang,targetLang As String
+	sourceLang=projectFile.Get("source")
+	targetLang=projectFile.Get("target")
+	If Utils.LanguageHasSpace(sourceLang) Or Utils.isChinese(fullsource)=False Then
 		If Regex.IsMatch("\s",fullsource.CharAt(fullsource.Length-1)) Or Regex.IsMatch("\s",nextFullSource.CharAt(0)) Then
 			sourceWhitespace=" "
 		Else
 			sourceWhitespace=""
 		End If
-	else if projectFile.Get("target")="en" Then
+	End If
+	If Utils.LanguageHasSpace(targetLang) Then
 		targetWhitespace=" "
 	End If
 	
-	If projectFile.Get("source")="en" Then
+	If Utils.LanguageHasSpace(sourceLang) Then
 		If Regex.IsMatch("\s",fullsource.CharAt(fullsource.Length-1)) Or Regex.IsMatch("\s",nextFullSource.CharAt(0)) Then
 			fullsourceWhitespace=" "
 		End If
@@ -465,14 +472,14 @@ Sub splitSegment(BCATMain As Object,sourceTextArea As TextArea,editorLV As Custo
 	editorLV.InsertAt(editorLV.GetItemFromView(sourceTextArea.Parent)+1,newSegmentPane,"")
 End Sub
 
-Sub shouldAddSpace(sourceLang As String,index As Int,segmentsList As List) As Boolean
+Sub shouldAddSpace(sourceLang As String,targetLang As String,index As Int,segmentsList As List) As Boolean
 	Dim bitext As List=segmentsList.Get(index)
 	Dim fullsource As String=bitext.Get(2)
 	fullsource=Utils.getPureTextWithoutTrim(fullsource)
 	Dim extra As Map
 	extra=bitext.Get(4)
 	Dim id As Int=extra.Get("id")
-	If sourceLang="zh" Then
+	If Utils.LanguageHasSpace(sourceLang)=False And Utils.LanguageHasSpace(targetLang)=True Then
 		If index+1<=segmentsList.Size-1 Then
 			Dim nextBitext As List
 			nextBitext=segmentsList.Get(index+1)
@@ -494,7 +501,7 @@ Sub shouldAddSpace(sourceLang As String,index As Int,segmentsList As List) As Bo
 	Return False
 End Sub
 
-Sub previewText(editorLV As CustomListView,segments As List,lastEntry As Int,sourceLang As String) As String
+Sub previewText(editorLV As CustomListView,segments As List,lastEntry As Int,sourceLang As String,targetLang As String) As String
 	Log("Po preview")
 	Dim text As String
 	If editorLV.Size<>segments.Size Then
@@ -523,10 +530,13 @@ Sub previewText(editorLV As CustomListView,segments As List,lastEntry As Int,sou
 		If target="" Then
 			translation=fullsource
 		Else
-			If shouldAddSpace(sourceLang,i,segments) Then
+			If shouldAddSpace(sourceLang,targetLang,i,segments) Then
 				target=target&" "
 			End If
 			translation=fullsource.Replace(source,target)
+			If Utils.LanguageHasSpace(targetLang)=False Then
+				translation=Utils.removeSpacesAtBothSides(translation)
+			End If
 		End If
 		If i=lastEntry Then
 			translation=$"<span id="current" name="current" >${translation}</span>"$

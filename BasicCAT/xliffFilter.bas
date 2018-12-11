@@ -428,7 +428,8 @@ Sub mergeSegment(sourceTextArea As TextArea)
 		Else
 			sourceWhitespace=""
 		End If
-	else if Utils.LanguageHasSpace(targetLang) Then
+	End If
+	if Utils.LanguageHasSpace(targetLang) Then
 		targetWhitespace=" "
 	End If
 	
