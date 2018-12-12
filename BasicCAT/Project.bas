@@ -14,7 +14,7 @@ Sub Class_Globals
 	Public segments As List
 	Public projectTM As TM
 	Public projectTerm As Term
-	Public projectHistory As SegmentHistory
+	Public projectHistory As HistoryRecord
 	Public lastEntry As Int
 	Private previousEntry As Int=-1
 	Private lastFilename As String
@@ -1598,6 +1598,18 @@ Sub showTerm(targetTextArea As TextArea)
 		Dim lbl2 As Label
 		lbl2=p.GetNode(1)
 		lbl2.Text=termList.Get(1)
+		Dim mi As MenuItem
+		mi.Initialize("View Info","viewInfoMI")
+		mi.Tag=termList
+		Dim mi2 As MenuItem
+		mi2.Initialize("View History","viewTermHistoryMI")
+		mi2.Tag=termList.Get(0)
+		Dim termCM As ContextMenu
+		termCM.Initialize("termCM")
+		termCM.MenuItems.Add(mi)
+		termCM.MenuItems.Add(mi2)
+		lbl2.ContextMenu=termCM
+		
 		Dim termInfo As Map
 		termInfo=termList.Get(2)
 		If termInfo.ContainsKey("description") Then 'description
@@ -1609,6 +1621,33 @@ Sub showTerm(targetTextArea As TextArea)
 		End If
 		Main.termLV.Items.Add(p)
 	Next
+End Sub
+
+Sub viewTermHistoryMI_Action
+	Dim mi As MenuItem
+	mi=Sender
+	Dim hisviewer As HistoryViewer
+	hisviewer.Initialize
+	hisviewer.Show(projectHistory.getTermHistory(mi.Tag))
+End Sub
+
+Sub viewInfoMI_Action
+	Dim mi As MenuItem
+	mi=Sender
+	Dim termList As List
+	termList=mi.Tag
+	Dim terminfo As Map
+	terminfo=termList.Get(2)
+	Dim infoBuilder As StringBuilder
+	infoBuilder.Initialize
+	infoBuilder.Append("note: ").Append(terminfo.GetDefault("note","")).Append(CRLF)
+	infoBuilder.Append("tag: ").Append(terminfo.GetDefault("tag","")).Append(CRLF)
+	infoBuilder.Append("creator: ").Append(terminfo.GetDefault("creator","")).Append(CRLF)
+	Dim createdTime As Long=terminfo.GetDefault("createdTime",0)
+	Dim time As String
+	time=DateTime.Date(createdTime)&" "&DateTime.Time(createdTime)
+	infoBuilder.Append("createdTime: ").Append(time).Append(CRLF)
+	fx.Msgbox(Main.MainForm,infoBuilder.ToString,"")
 End Sub
 
 
@@ -1633,7 +1672,7 @@ Sub saveOneTranslationToTM(bitext As List,index As Int)
 	
 	projectTM.addPair(bitext.Get(0),targetMap)
 	If settings.GetDefault("record_history",True)=True Then
-		projectHistory.addHistory(bitext.Get(0),targetMap)
+		projectHistory.addSegmentHistory(bitext.Get(0),targetMap)
 	End If
 End Sub
 

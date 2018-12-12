@@ -25,7 +25,11 @@ End Sub
 Sub loadHistoryList(historyList As List)
 	For Each item As Map In historyList
 		Dim text As String
-		text=item.Get("text")
+		If item.ContainsKey("text") Then
+			text=item.Get("text")
+		Else if item.ContainsKey("target") Then
+			text=item.Get("target")
+		End If
 		Dim creator As String
 		creator=item.Get("creator")
 		Dim createdTime As Long

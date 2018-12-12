@@ -103,13 +103,29 @@ Sub sharedTerm_NewData(changedItems As List)
 			
 			If terminology.ContainsKey(item1.KeyField) Then
 				If terminology.Get(item1.KeyField)<>map1.Get(item1.KeyField) Then
-					terminology.Put(item1.KeyField,map1.Get(item1.KeyField))
+					addTermFromShared(item1.KeyField,map1.Get(item1.KeyField))
 				End If
 			Else
-				terminology.Put(item1.KeyField,map1.Get(item1.KeyField))
+				addTermFromShared(item1.KeyField,map1.Get(item1.KeyField))
 			End If
 		End If
 	Next
+End Sub
+
+Sub addTermFromShared(key As String,targetMap As Map)
+	If Main.currentProject.settings.GetDefault("record_history",True)=True Then
+		Dim previousMap As Map
+		previousMap.Initialize
+		If terminology.ContainsKey(key) Then
+			previousMap=terminology.Get(key)
+		End If
+		For Each target As String In targetMap.Keys
+			If previousMap.ContainsKey(target)=False Then
+				addHistory(key,target,targetMap.Get(target))
+			End If
+		Next
+	End If
+	terminology.Put(key,targetMap)
 End Sub
 
 Public Sub deleteExternalTerminology
@@ -362,8 +378,30 @@ Sub addTerm(source As String,target As String)
 	Dim termInfo As Map
 	termInfo.Initialize
 	targetMap.Put(target,termInfo)
+	addCreatingInfo(termInfo)
 	terminology.Put(source,targetMap)
 	addPairToSharedTerm(source,targetMap)
+	addHistory(source,target,termInfo)
+End Sub
+
+Sub addHistory(source As String,target As String,terminfo As Map)
+	If Main.currentProject.settings.GetDefault("record_history",True)=True Then
+		Main.currentProject.projectHistory.addTermHistory(source,target,terminfo)
+	End If
+End Sub
+
+Sub addCreatingInfo(termInfo As Map)
+	Dim time As String=DateTime.Now
+	termInfo.Put("createdTime",time)
+	If Main.currentProject.settings.GetDefault("sharingTM_enabled",False)=True Then
+		termInfo.Put("creator",Main.preferencesMap.GetDefault("vcs_username","anonymous"))
+	Else
+		If Main.currentProject.settings.GetDefault("git_enabled",False)=False Then
+			termInfo.Put("creator",Main.preferencesMap.GetDefault("vcs_username","me"))
+		Else
+			termInfo.Put("creator",Main.preferencesMap.GetDefault("vcs_username","anonymous"))
+		End If
+	End If
 End Sub
 
 Public Sub addPairToSharedTerm(source As String,targetMap As Map)
