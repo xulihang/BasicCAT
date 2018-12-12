@@ -114,6 +114,9 @@ End Sub
 
 Sub calculateWords(text As String,lang As String) As Int
 	If Utils.LanguageHasSpace(lang) Then
+		If lang.StartsWith("ko") Then
+			Return calculateHanzi(text)
+		End If
 		Return calculateWordsForLanguageWithSpace(text)
 	Else
 		Return calculateHanzi(text)
@@ -125,6 +128,7 @@ Sub calculateWordsForLanguageWithSpace(text As String) As Int
 End Sub
 
 Sub calculateHanzi(text As String) As Int
+	text=text.Replace(" ","")
 	Return text.Length
 End Sub
 
