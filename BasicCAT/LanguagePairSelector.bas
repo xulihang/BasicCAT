@@ -22,7 +22,7 @@ Public Sub Initialize
 	frm.RootPane.LoadLayout("LangaugePairSelector")
 	result.Initialize
 	LanguageNames.Initialize
-	langcodes=Utils.readLanguageCode
+	langcodes=Utils.readLanguageCode(File.Combine(File.DirData("BasicCAT"),"langcodes.txt"))
 	fillComboBox
 End Sub
 

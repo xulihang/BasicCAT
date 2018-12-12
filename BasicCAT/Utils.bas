@@ -28,9 +28,15 @@ Sub LanguageHasSpace(lang As String) As Boolean
 	Return True
 End Sub
 
-Sub readLanguageCode As Map
+Sub readLanguageCode(codesfilePath As String) As Map
 	Dim linesList As List
 	linesList=File.ReadList(File.DirAssets,"langcodes.txt")
+	If codesfilePath<>"" Then
+		If File.Exists(codesfilePath,"") Then
+			linesList=File.ReadList(codesfilePath,"")
+		End If
+	End If
+	
 	Dim headsList As List
 	headsList.Initialize
 	headsList.AddAll(Regex.Split("	",linesList.Get(0)))

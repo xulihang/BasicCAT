@@ -56,9 +56,7 @@ Public Sub setTranslation(index As String,translation As String)
 			Else
 				extra.Put("creator",Main.preferencesMap.GetDefault("vcs_username","anonymous"))
 			End If
-			
 		End If
-		
 	End If
 End Sub
 
@@ -575,18 +573,23 @@ Sub createProjectFiles
 	dirList.Add("Term")
 	dirList.Add("History")
 	dirList.Add("bak")
+	dirList.Add("config")
 	For Each dirname As String In dirList
 		If File.Exists(path,dirname)=False Then
 			Log(dirname)
 			File.MakeDir(path,dirname)
 		End If
 	Next
-	If File.Exists(path,"segmentationRules.srx")=False Then
-		File.Copy(File.DirAssets,"default_rules.srx",path,"segmentationRules.srx")
-	End If
-	If File.Exists(path,"dictList.txt")=False Then
-		File.Copy(File.DirAssets,"dictList.txt",path,"dictList.txt")
-	End If
+	Dim configPath As String=File.Combine(path,"config")
+	Dim configsList As List
+	configsList.Initialize
+	configsList.Add("segmentationRules.srx")
+	configsList.Add("dictList.txt")
+	For Each filename As String In configsList
+		If File.Exists(configPath,filename)=False Then
+			File.Copy(File.DirAssets,filename,configPath,filename)
+		End If
+	Next
 End Sub
 
 
@@ -622,6 +625,17 @@ Sub exportReviewMi_Action
 	mi=Sender
 	Dim filename As String
 	filename=mi.Tag
+	
+	Dim fc As FileChooser
+	fc.Initialize
+	fc.SetExtensionFilter("docx files",Array As String("*.docx"))
+	fc.InitialFileName=filename&".docx"
+	Dim exportPath As String
+	exportPath=fc.ShowSave(Main.MainForm)
+	If exportPath="" Then
+		Return
+	End If
+
 	Dim rows As List
 	rows.Initialize
 	For Each bitext As List In getAllSegments(filename)
@@ -635,8 +649,8 @@ Sub exportReviewMi_Action
 	Next
 	Dim poiw As POIWord
 	poiw.Initialize("","write")
-	poiw.createTable(rows,File.Combine(path,filename&".docx"))
-	fx.Msgbox(Main.MainForm,"Done. File has been exported to the project folder.","")
+	poiw.createTable(rows,exportPath)
+	fx.Msgbox(Main.MainForm,"Done.","")
 End Sub
 
 Sub exportMarkdownWithNotesMi_Action
@@ -703,7 +717,7 @@ Sub importReviewMi_Action
 			fx.Msgbox(Main.MainForm,"Unmatched segments size.","")
 			Return
 		End If
-		crDialog.Initialize(rows,segments)
+		crDialog.Initialize(rows,Me)
 		crDialog.ShowAndWait
 	End If
 

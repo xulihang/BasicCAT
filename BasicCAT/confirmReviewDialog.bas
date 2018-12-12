@@ -10,15 +10,17 @@ Sub Class_Globals
 	Private WebView1 As WebView
 	Private thisReviews As List
 	Private thisSegments As List
+	Private thisProject As Project
 	Private index As Int
 End Sub
 
 'Initializes the object. You can add parameters to this method if needed.
-Public Sub Initialize(reviews As List,currentSegments As List)
+Public Sub Initialize(reviews As List,currentProject As Project)
 	frm.Initialize("frm",600,300)
 	frm.RootPane.LoadLayout("confirmReview")
 	thisReviews=reviews
-	thisSegments=currentSegments
+	thisSegments=currentProject.segments
+	thisProject=currentProject
 	index=-1
 End Sub
 
@@ -84,46 +86,36 @@ End Sub
 Sub confirmButton_MouseClicked (EventData As MouseEvent)
 	Dim onerow() As String
 	onerow=thisReviews.Get(index)
+
 	Dim target As String
 	target=onerow(1)
 	If target.Contains("--------note:") Then
 		target=target.SubString2(0,target.IndexOf("--------note:"))
 		target=target.Trim
 	End If
-	Dim segment As List
-	segment=thisSegments.Get(index)
-	segment.Set(1,target)
-	fillOne(target)
+	thisProject.setTranslation(index,target)
+    thisProject.fillOne(index,target)
 	loadNextOne
 End Sub
 
 Sub confirmAllButton_MouseClicked (EventData As MouseEvent)
-	index=-1
-	For Each row() As String In thisReviews
-		index=index+1
+	'index=-1
+	For i=index To thisReviews.Size-1
+		Dim row() As String=thisReviews.Get(index)
 		Dim segment As List
 		segment=thisSegments.Get(index)
-		Dim target As String
-		target=row(1)
-		If target.Contains("--------note:") Then
-			target=target.SubString2(0,target.IndexOf("--------note:"))
-			target=target.Trim
+		If row(0)=segment.Get(0) Then
+			Dim target As String
+			target=row(1)
+			If target.Contains("--------note:") Then
+				target=target.SubString2(0,target.IndexOf("--------note:"))
+				target=target.Trim
+			End If
+			thisProject.setTranslation(index,target)
+			thisProject.fillOne(index,target)
 		End If
-		segment.Set(1,target)
-		fillOne(target)
+		index=index+1
 	Next
 	fx.Msgbox(frm,"Done","")
 	frm.Close
-End Sub
-
-Sub fillOne(text As String)
-	Dim p As Pane
-	p=Main.editorLV.GetPanel(index)
-	If p.NumberOfNodes=0 Then
-		Return
-	End If
-	Dim targetTextArea As TextArea
-	targetTextArea=p.GetNode(1)
-	targetTextArea.Text=text
-	Main.currentProject.contentIsChanged
 End Sub

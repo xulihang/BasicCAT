@@ -28,8 +28,9 @@ Public Sub initSharedTM(projectPath As String)
 		Log("projectName"&projectName)
 		Dim address As String=Main.currentProject.settings.GetDefault("server_address","http://127.0.0.1:51042")
 		Dim key As String
-		If File.Exists(Main.currentProject.path,"accesskey") Then
-			key=File.ReadString(Main.currentProject.path,"accesskey")
+		Dim configPath As String=File.Combine(Main.currentProject.path,"config")
+		If File.Exists(configPath,"accesskey") Then
+			key=File.ReadString(configPath,"accesskey")
 		Else
 			key="put your key in this file"
 		End If

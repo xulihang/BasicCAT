@@ -21,8 +21,9 @@ Public Sub Initialize(projectPath As String)
 
 	dictMap.Initialize
 	Dim dictList As List
-	If File.Exists(projectPath,"dictList.txt") Then
-		dictList=File.ReadList(projectPath,"dictList.txt")
+	Dim configPath As String=File.Combine(projectPath,"config")
+	If File.Exists(configPath,"dictList.txt") Then
+		dictList=File.ReadList(configPath,"dictList.txt")
 	Else
 		dictList=File.ReadList(File.DirAssets,"dictList.txt")
 	End If

@@ -23,10 +23,8 @@ Sub check(text As String,entry As Int,langcode As String) As ResumableSub
 	End If
 	
 
-	Select langcode
-		Case "en"
-			langcode="en-US"
-	End Select
+	langcode="auto" 'use auto detection
+	
 	Dim su As StringUtils
 	Dim params As String
 	params="?language="&langcode&"&text="&su.EncodeUrl(text,"UTF-8")

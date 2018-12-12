@@ -390,13 +390,14 @@ End Sub
 
 Sub setKeyButton_MouseClicked (EventData As MouseEvent)
 	Dim key As String
-	If File.Exists(Main.currentProject.path,"accesskey") Then
-		key=File.ReadString(Main.currentProject.path,"accesskey")
+	Dim configPath As String=File.Combine(Main.currentProject.path,"config")
+	If File.Exists(configPath,"accesskey") Then
+		key=File.ReadString(configPath,"accesskey")
 	End If
 	Dim inp As InputBox
 	inp.Initialize
 	key=inp.showAndWait(key)
 	If key<>"" Then
-		File.WriteString(Main.currentProject.path,"accesskey",key)
+		File.WriteString(configPath,"accesskey",key)
 	End If
 End Sub

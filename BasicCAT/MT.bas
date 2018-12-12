@@ -71,8 +71,11 @@ Sub getMT(source As String,sourceLang As String,targetLang As String,MTEngine As
 End Sub
 
 Sub convertLangCode(lang As String,engine As String) As String
+	If File.Exists(File.DirData("BasicCAT"),"langcodes.txt")=False Then
+		File.Copy(File.DirAssets,"langcodes.txt",File.DirData("BasicCAT"),"langcodes.txt")
+	End If
 	Dim langcodes As Map
-	langcodes=Utils.readLanguageCode
+	langcodes=Utils.readLanguageCode(File.Combine(File.DirData("BasicCAT"),"langcodes.txt"))
 	Dim codeMap As Map
 	If langcodes.ContainsKey(lang)=False Then
 		Return lang

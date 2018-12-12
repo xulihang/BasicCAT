@@ -18,10 +18,11 @@ Sub segmentedTxt(text As String,Trim As Boolean,sourceLang As String,path As Str
 	End If
 	If previousLang<>sourceLang Then
 		previousLang=sourceLang
-		If File.Exists(path,"segmentationRules.srx") Then
-			rules=SRX.readRules(File.Combine(path,"segmentationRules.srx"),sourceLang)
+		Dim configPath As String=File.Combine(path,"config")
+		If File.Exists(configPath,"segmentationRules.srx") Then
+			rules=SRX.readRules(File.Combine(configPath,"segmentationRules.srx"),sourceLang)
 		Else
-			rules=SRX.readRules(File.Combine(File.DirAssets,"default_rules.srx"),sourceLang)
+			rules=SRX.readRules(File.Combine(File.DirAssets,"segmentationRules.srx"),sourceLang)
 		End If
 	End If
 
