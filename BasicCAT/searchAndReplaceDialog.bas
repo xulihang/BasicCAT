@@ -367,3 +367,12 @@ End Sub
 
 
 
+
+
+Sub replaceTextField_TextChanged (Old As String, New As String)
+	resultListView.Items.Clear
+End Sub
+
+Sub findTextField_TextChanged (Old As String, New As String)
+	resultListView.Items.Clear
+End Sub
