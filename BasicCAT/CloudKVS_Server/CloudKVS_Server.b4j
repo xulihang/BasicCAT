@@ -20,10 +20,10 @@ Version=6.8
 	#CommandLineArgs:
 	#MergeLibraries: True 
 #End Region
-#AdditionalJar: sqlite-jdbc-3.7.2
+#AdditionalJar: sqlite-jdbc-3.23.1
 Sub Process_Globals
 	Type Item (UserField As String, KeyField As String, ValueField() As Byte, IdField As Long, TimeField As Long)
-	Type Task (TaskName As String, TaskItem As Item, TaskKey as String)
+	Type Task (TaskName As String, TaskItem As Item, TaskKey As String)
 	Public server As Server
 	Private const VERSION As String = "0.9"
 End Sub

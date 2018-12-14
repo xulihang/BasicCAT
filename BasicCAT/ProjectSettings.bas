@@ -399,7 +399,5 @@ Sub setKeyButton_MouseClicked (EventData As MouseEvent)
 	key=inp.showAndWait(key)
 	If key<>"" Then
 		File.WriteString(configPath,"accesskey",key)
-		Main.currentProject.projectTM.initSharedTM(Main.currentProject.path)
-		Main.currentProject.projectTerm.initSharedTerm(Main.currentProject.path)
 	End If
 End Sub
