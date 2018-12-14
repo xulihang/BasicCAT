@@ -11,9 +11,9 @@ Sub Process_Globals
 End Sub
 
 Sub removeSpacesAtBothSides(text As String) As String
-	text=Regex.Replace2("\b( *)\b",32,text,"aplaceholder$1aplaceholder")
-	text=Regex.Replace2("(?<! *aplaceholder) *(?! *aplaceholder)",32,text,"")
-	text=Regex.Replace2("aplaceholder( *)aplaceholder",32,text,"$1")
+	text=Regex.Replace2("\b( *)\b",32,text,"placeholder<$1>placeholder")
+	text=Regex.Replace2("(?<! *placeholder<) *(?! *>placeholder)",32,text,"")
+	text=Regex.Replace2("placeholder<( *)>placeholder",32,text,"$1")
 	Return text
 End Sub
 

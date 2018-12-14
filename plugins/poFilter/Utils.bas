@@ -11,9 +11,9 @@ Sub Process_Globals
 End Sub
 
 Sub removeSpacesAtBothSides(text As String) As String
-	text=Regex.Replace2("\b( *)\b",32,text,"aplaceholder$1aplaceholder")
-	text=Regex.Replace2("(?<! *aplaceholder) *(?! *aplaceholder)",32,text,"")
-	text=Regex.Replace2("aplaceholder( *)aplaceholder",32,text,"$1")
+	text=Regex.Replace2("\b( *)\b",32,text,"placeholder<$1>placeholder")
+	text=Regex.Replace2("(?<! *placeholder<) *(?! *>placeholder)",32,text,"")
+	text=Regex.Replace2("placeholder<( *)>placeholder",32,text,"$1")
 	Return text
 End Sub
 
@@ -28,9 +28,15 @@ Sub LanguageHasSpace(lang As String) As Boolean
 	Return True
 End Sub
 
-Sub readLanguageCode As Map
+Sub readLanguageCode(codesfilePath As String) As Map
 	Dim linesList As List
 	linesList=File.ReadList(File.DirAssets,"langcodes.txt")
+	If codesfilePath<>"" Then
+		If File.Exists(codesfilePath,"") Then
+			linesList=File.ReadList(codesfilePath,"")
+		End If
+	End If
+	
 	Dim headsList As List
 	headsList.Initialize
 	headsList.AddAll(Regex.Split("	",linesList.Get(0)))
