@@ -190,9 +190,15 @@ Public Sub saveSettings(newsettings As Map)
 	End If
 	If newsettings.Get("sharingTM_enabled")=True Then
 		projectTM.initSharedTM(path)
+		projectTM.changedRefreshStatus(True)
+	Else
+		projectTM.changedRefreshStatus(False)
 	End If
 	If newsettings.Get("sharingTerm_enabled")=True Then
 		projectTerm.initSharedTerm(path)
+		projectTerm.changedRefreshStatus(True)
+	Else
+		projectTerm.changedRefreshStatus(False)
 	End If
 End Sub
 

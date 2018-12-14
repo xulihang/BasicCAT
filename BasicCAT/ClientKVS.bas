@@ -60,10 +60,9 @@ Private Sub HandleQueue
 		Dim Job As HttpJob
 		Job.Initialize("job", Me)
 		Job.PostBytes(url,rs.GetBlob("task"))
-		Job.Tag = CreateMap("queue_id": queue_id, "taskname": rs.GetString("taskname"))
+		Job.Tag = CreateMap("queue_id": queue_id, "taskname": rs.GetString("taskname"),"task":rs.GetBlob("task"))
 		SendingJob = True
 	End If
-	
 	rs.Close
 End Sub
 
@@ -83,7 +82,18 @@ Private Sub JobDone(job As HttpJob)
 		End If
 	Else
 		Log($"Error sending task: ${job.ErrorMessage}"$)
-		csu.CallSubDelayedPlus(Me, "HandleQueue", 30000)
+		If job.ErrorMessage.Contains("wrong key") Then
+			Dim m As Map = job.Tag
+			Dim queue_id As Long = m.Get("queue_id")
+			Dim serializator As B4XSerializator
+			Dim task As Task = serializator.ConvertBytesToObject(m.Get("task"))
+			task.TaskKey=TaskKey
+			DeleteFromQueue(queue_id)
+			AddTaskToQueue(task)
+			csu.CallSubDelayedPlus(Me, "HandleQueue", 3000)
+		Else
+			csu.CallSubDelayedPlus(Me, "HandleQueue", 30000)
+		End If
 	End If
 	job.Release
 End Sub
@@ -247,6 +257,10 @@ Public Sub SetAutoRefresh(users As List, IntervalMinutes As Double)
 	autoRefreshTimer.Interval = IntervalMinutes * DateTime.TicksPerMinute
 	autoRefreshTimer.Enabled = True
 	AutoRefresh_Tick
+End Sub
+
+Public Sub changedRefreshStatus(status As Boolean)
+	autoRefreshTimer.Enabled=status
 End Sub
 
 Private Sub AutoRefresh_Tick

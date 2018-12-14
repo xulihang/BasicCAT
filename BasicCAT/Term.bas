@@ -27,7 +27,7 @@ Public Sub initSharedTerm(projectPath As String)
 		Log("projectName"&projectName)
 		Dim address As String=Main.currentProject.settings.GetDefault("server_address","http://127.0.0.1:51042")
 		Dim key As String
-		Dim configPath As String=File.Combine(Main.currentProject.path,"config")
+		Dim configPath As String=File.Combine(projectPath,"config")
 		If File.Exists(configPath,"accesskey") Then
 			key=File.ReadString(configPath,"accesskey")
 		Else
@@ -53,6 +53,12 @@ Public Sub initSharedTerm(projectPath As String)
 			End Try
 		End If
 		job.Release
+	End If
+End Sub
+
+Public Sub changedRefreshStatus(status As Boolean)
+	If sharedTerm.IsInitialized Then
+		sharedTerm.changedRefreshStatus(status)
 	End If
 End Sub
 
