@@ -195,7 +195,7 @@ Sub generateFile(filename As String,path As String,projectFile As Map)
 				target=addNecessaryTags(target,source)
 				translation=fullsource.Replace(source,target)
 				If Utils.LanguageHasSpace(projectFile.Get("target"))=False Then
-					translation=Utils.removeSpacesAtBothSides(translation)
+					translation=segmentation.removeSpacesAtBothSides(Main.currentProject.path,Main.currentProject.projectFile.Get("target"),translation)
 				End If
 			End If
 			Dim extra As Map
@@ -543,7 +543,7 @@ Sub previewText As String
 			End If
 			translation=fullsource.Replace(source,target)
 			If Utils.LanguageHasSpace(Main.currentProject.projectFile.Get("target"))=False Then
-				translation=Utils.removeSpacesAtBothSides(translation)
+				translation=segmentation.removeSpacesAtBothSides(Main.currentProject.path,Main.currentProject.projectFile.Get("target"),translation)
 			End If
 		End If
 

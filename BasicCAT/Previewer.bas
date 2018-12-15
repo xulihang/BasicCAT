@@ -49,7 +49,7 @@ Public Sub loadText
 		params.Put("targetLang",Main.currentProject.projectFile.Get("target"))
 		text=Main.currentProject.runFilterPluginAccordingToExtension(currentFilename,"previewText",params)
 	End If
-	Log("preview"&text)
+	'Log("preview"&text)
 	loadHtml(text)
 End Sub
 
@@ -101,7 +101,7 @@ Sub loadHtml(text As String)
 
 	WebView1.LoadHtml(text)
 	
-	Log(text)
+	'Log(text)
 End Sub
 
 Sub getFontSize As Int

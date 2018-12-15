@@ -10,12 +10,7 @@ Sub Process_Globals
 	Private menus As Map
 End Sub
 
-Sub removeSpacesAtBothSides(text As String) As String
-	text=Regex.Replace2("\b( *)\b",32,text,"placeholder<$1>placeholder")
-	text=Regex.Replace2("(?<! *placeholder<) *(?! *>placeholder)",32,text,"")
-	text=Regex.Replace2("placeholder<( *)>placeholder",32,text,"$1")
-	Return text
-End Sub
+
 
 Sub LanguageHasSpace(lang As String) As Boolean
 	Dim languagesWithoutSpaceList As List
@@ -172,7 +167,7 @@ Sub exportToMarkdownWithNotes(segments As List,path As String,filename As String
 		fullsource=Regex.Replace2("<.*?>",32,fullsource,"")
 		translation=fullsource.Replace(source,target)
 		If LanguageHasSpace(targetLang)=False Then
-			translation=removeSpacesAtBothSides(translation)
+			translation=segmentation.removeSpacesAtBothSides(Main.currentProject.path,Main.currentProject.projectFile.Get("target"),translation)
 		End If
 		text.Append(translation)
 	Next
@@ -214,7 +209,7 @@ Sub exportToBiParagraph(segments As List,path As String,filename As String,sourc
 		fullsource=Regex.Replace2("<.*?>",32,fullsource,"")
 		translation=fullsource.Replace(source,target)
 		If LanguageHasSpace(targetLang)=False Then
-			translation=removeSpacesAtBothSides(translation)
+			translation=segmentation.removeSpacesAtBothSides(Main.currentProject.path,Main.currentProject.projectFile.Get("target"),translation)
 		End If
 		sourceText=sourceText&fullsource
 		targetText=targetText&translation

@@ -227,7 +227,7 @@ Sub mergeSpecialTaggedContentAtBeginning(segmentsList As List)
 					Dim sourceShown As String
 					Dim nextSourceShown As String
 					nextSourceShown=nextSegment.Get(0)
-					If utils.LanguageHasSpace(Main.currentproject.projectFile.Get("source")) And Regex.Matcher("\w",nextSourceShown.Trim.CharAt(0)).Find Then
+					If Utils.LanguageHasSpace(Main.currentproject.projectFile.Get("source")) And Regex.Matcher("\w",nextSourceShown.Trim.CharAt(0)).Find Then
 						Dim pureText,nextPureText As String
 						pureText=idmlUtils.getPureTextwithouttrim(fullsource)
 						nextPureText=idmlUtils.getPureTextwithouttrim(nextFullSource)
@@ -286,7 +286,7 @@ Sub mergeInbetweenSpecialTaggedContent(segmentsList As List)
 						If previousFullSource.Trim.EndsWith("</c0>") And nextFullSource.Trim.StartsWith("<c0>") Then
 							Dim newSegment As List
 							newSegment.Initialize
-							If utils.LanguageHasSpace(Main.currentproject.projectFile.Get("source")) Then
+							If Utils.LanguageHasSpace(Main.currentproject.projectFile.Get("source")) Then
 								Dim new As String
 								Dim previousSourceShown,nextSourceShown As String
 								previousSourceShown=previousSegment.Get(0)
@@ -395,7 +395,7 @@ Sub mergeSpecialTaggedContentInTheEnd(segmentsList As List)
 				Dim sourceShown As String
 			    Dim previousSourceShown As String
 			    previousSourceShown=previousSegment.Get(0)
-				If utils.LanguageHasSpace(Main.currentproject.projectFile.Get("source")) Then
+				If Utils.LanguageHasSpace(Main.currentproject.projectFile.Get("source")) Then
 					Dim previousPureText,pureText As String
 					previousPureText=idmlUtils.getPureTextwithouttrim(previousFullSource)
 					pureText=idmlUtils.getPureTextwithouttrim(fullsource)
@@ -669,8 +669,8 @@ Sub generateFile(filename As String,path As String,projectFile As Map)
 					Log(translation)
 					'ExitApplication
 				End If
-				If Utils.LanguageHasSpace(projectFile.Get("target"))=False And Regex.Matcher("\w",translation).Find=False Then
-					translation=Utils.removeSpacesAtBothSides(translation)
+				If Utils.LanguageHasSpace(projectFile.Get("target"))=False Then
+					translation=segmentation.removeSpacesAtBothSides(Main.currentProject.path,Main.currentProject.projectFile.Get("target"),translation)
 				End If
 
 
@@ -701,7 +701,7 @@ Sub generateFile(filename As String,path As String,projectFile As Map)
 End Sub
 
 
-Sub shouldAddSpace(sourceLang As String,targetLang as string,index As Int,segmentsList As List) As Boolean
+Sub shouldAddSpace(sourceLang As String,targetLang As String,index As Int,segmentsList As List) As Boolean
 	Dim bitext As List=segmentsList.Get(index)
 	Dim fullsource As String=bitext.Get(2)
 	fullsource=Utils.getPureTextWithoutTrim(fullsource)
@@ -1410,8 +1410,8 @@ Sub previewText As String
 			End If
 
 
-			If Utils.LanguageHasSpace(Main.currentProject.projectFile.Get("target"))=False And Regex.Matcher("\w",translation).Find=False Then
-				translation=Utils.removeSpacesAtBothSides(translation)
+			If Utils.LanguageHasSpace(Main.currentProject.projectFile.Get("target"))=False Then
+				translation=segmentation.removeSpacesAtBothSides(Main.currentProject.path,Main.currentProject.projectFile.Get("target"),translation)
 			End If
 		End If
 

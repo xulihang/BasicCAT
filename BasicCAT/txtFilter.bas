@@ -83,13 +83,15 @@ Sub generateFile(filename As String,path As String,projectFile As Map)
 			If target="" Then
 				translation=fullsource
 			Else
-				If shouldAddSpace(projectFile.Get("source"),projectFile.Get("target"),index,segmentsList) Then
+				If shouldAddSpace(projectFile.Get("source"), _ 
+				                  projectFile.Get("target"), _ 
+				                  index,segmentsList) Then
 					target=target&" "
 				End If
 				translation=fullsource.Replace(source,target)
 				
 				If Utils.LanguageHasSpace(projectFile.Get("target"))=False Then
-					translation=Utils.removeSpacesAtBothSides(translation)
+					translation=segmentation.removeSpacesAtBothSides(Main.currentProject.path,Main.currentProject.projectFile.Get("target"),translation)
 				End If
 			End If
 
@@ -167,7 +169,7 @@ Sub mergeSegment(sourceTextArea As TextArea)
 			sourceWhitespace=""
 		End If
 	End If
-	if Utils.LanguageHasSpace(targetLang)=True Then
+	If Utils.LanguageHasSpace(targetLang)=True Then
 		targetWhitespace=" "
 	End If
 	
@@ -263,7 +265,7 @@ Sub previewText As String
 			End If
 			translation=fullsource.Replace(source,target)
 			If Utils.LanguageHasSpace(Main.currentProject.projectFile.Get("target"))=False Then
-				translation=Utils.removeSpacesAtBothSides(translation)
+				translation=segmentation.removeSpacesAtBothSides(Main.currentProject.path,Main.currentProject.projectFile.Get("target"),translation)
 			End If
 		End If
 

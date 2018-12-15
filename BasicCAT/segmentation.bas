@@ -11,24 +11,24 @@ Sub Process_Globals
 	Private previousLang As String
 End Sub
 
-Sub segmentedTxt(text As String,Trim As Boolean,sourceLang As String,path As String) As List
-	'Log("text"&text)
+Sub readRules(lang As String,path As String)
 	If rules.IsInitialized=False Then
 		rules.Initialize
 	End If
-	If previousLang<>sourceLang Then
-		previousLang=sourceLang
+	If previousLang<>lang Then
+		previousLang=lang
 		Dim configPath As String=File.Combine(path,"config")
 		If File.Exists(configPath,"segmentationRules.srx") Then
-			rules=SRX.readRules(File.Combine(configPath,"segmentationRules.srx"),sourceLang)
+			rules=SRX.readRules(File.Combine(configPath,"segmentationRules.srx"),lang)
 		Else
-			rules=SRX.readRules(File.Combine(File.DirAssets,"segmentationRules.srx"),sourceLang)
+			rules=SRX.readRules(File.Combine(File.DirAssets,"segmentationRules.srx"),lang)
 		End If
 	End If
+End Sub
 
-
-	
-
+Sub segmentedTxt(text As String,Trim As Boolean,sourceLang As String,path As String) As List
+	'Log("text"&text)
+	readRules(sourceLang,path)
 	Dim segments As List
 	segments.Initialize
     If text.Trim="" Then
@@ -284,6 +284,36 @@ Sub getPositions(rulesList As List,text As String) As List
 	Next
 	
 	Return breakPositions
+End Sub
+
+Sub removeSpacesAtBothSides(path As String,targetLang As String,text As String) As String
+	readRules(targetLang,path)
+	Dim breakRules As List=rules.Get("breakRules")
+	Dim breakPositions As List
+	breakPositions=getPositions(breakRules,text)
+	breakPositions.Sort(True)
+	removeDuplicated(breakPositions)
+	For Each position As Int In breakPositions
+		Try
+			'Log(position)
+			'Log(text)
+			'Log("charat"&text.CharAt(position))
+			'Log("remove space:")
+			'Log(text.CharAt(position)=" ")
+			If position<=text.Length-1 Then
+				If text.CharAt(position)=" " Then
+					Dim rightText As String
+					If position+1<=text.Length-1 Then
+						rightText=text.SubString2(position+1,text.Length)
+					End If
+					text=text.SubString2(0,position)&rightText
+				End If
+			End If
+		Catch
+			Log(LastException)
+		End Try
+	Next
+	Return text
 End Sub
 
 Public Sub segmentedTxtSimpleway(text As String,Trim As Boolean,sourceLang As String,filetype As String) As List
