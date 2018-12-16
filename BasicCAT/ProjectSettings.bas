@@ -32,6 +32,7 @@ Sub Class_Globals
 	Private SaveAndCommitCheckBox As CheckBox
 	Private TermMatchAlgorithmComboBox As ComboBox
 	Private HistoryCheckBox As CheckBox
+	Private removeSpacesCheckBox As CheckBox
 End Sub
 
 'Initializes the object. You can add parameters to this method if needed.
@@ -82,6 +83,7 @@ Sub loadGeneral
 	End If
 	SaveAndCommitCheckBox.checked=settings.GetDefault("save_and_commit",False)
 	HistoryCheckBox.checked=settings.GetDefault("record_history",True)
+	removeSpacesCheckBox.checked=settings.GetDefault("remove_space",True)
 End Sub
 
 Sub loadQuickfill
@@ -231,6 +233,7 @@ Sub applyButton_MouseClicked (EventData As MouseEvent)
 		settings.Put("git_enabled",enableGitCollaborationCheckBox.Checked)
 		settings.Put("updateWorkFile_enabled",updateWorkFileCheckBox.Checked)
 		settings.Put("record_history",HistoryCheckBox.Checked)
+		settings.Put("remove_space",removeSpacesCheckBox.Checked)
 		Select TermMatchAlgorithmComboBox.SelectedIndex
 			Case 0
 				settings.Put("termMatch_algorithm","hashmap")

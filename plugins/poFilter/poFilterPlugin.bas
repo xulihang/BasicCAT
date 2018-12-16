@@ -33,7 +33,7 @@ public Sub Run(Tag As String, Params As Map) As Object
 		Case "splitSegment"
 			splitSegment(Params.Get("main"),Params.Get("sourceTextArea"),Params.Get("editorLV"),Params.Get("segments"),Params.Get("projectFile"))
 		Case "previewText"
-			Return previewText(Params.Get("editorLV"),Params.Get("segments"),Params.Get("lastEntry"),Params.Get("sourceLang"),Params.Get("targetLang"))
+			Return previewText(Params.Get("editorLV"),Params.Get("segments"),Params.Get("lastEntry"),Params.Get("sourceLang"),Params.Get("targetLang"),Params.Get("path"),Params.Get("settings"))
 	End Select
 	Return ""
 End Sub
@@ -262,7 +262,7 @@ Sub generateFile(filename As String,path As String,projectFile As Map,BCATMain A
 				End If
 				translation=fullsource.Replace(source,target)
 				If Utils.LanguageHasSpace(projectFile.Get("target"))=False Then
-					translation=Utils.removeSpacesAtBothSides(translation)
+					translation=segmentation.removeSpacesAtBothSides(path,projectFile.Get("target"),translation,Utils.getMap("settings",projectFile).GetDefault("remove_space",True))
 				End If
 			End If
 			'Log("translation"&translation)
@@ -501,7 +501,7 @@ Sub shouldAddSpace(sourceLang As String,targetLang As String,index As Int,segmen
 	Return False
 End Sub
 
-Sub previewText(editorLV As CustomListView,segments As List,lastEntry As Int,sourceLang As String,targetLang As String) As String
+Sub previewText(editorLV As CustomListView,segments As List,lastEntry As Int,sourceLang As String,targetLang As String,path As String,settings As Map) As String
 	Log("Po preview")
 	Dim text As String
 	If editorLV.Size<>segments.Size Then
@@ -535,7 +535,7 @@ Sub previewText(editorLV As CustomListView,segments As List,lastEntry As Int,sou
 			End If
 			translation=fullsource.Replace(source,target)
 			If Utils.LanguageHasSpace(targetLang)=False Then
-				translation=Utils.removeSpacesAtBothSides(translation)
+				translation=segmentation.removeSpacesAtBothSides(path,targetLang,translation,settings.GetDefault("remove_space",True))
 			End If
 		End If
 		If i=lastEntry Then

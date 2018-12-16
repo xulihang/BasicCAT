@@ -674,7 +674,7 @@ Sub exportMarkdownWithNotesMi_Action
 	Dim exportPath As String
 	exportPath=fc.ShowSave(Main.MainForm)
 	If exportPath<>"" Then
-		Utils.exportToMarkdownWithNotes(segments,exportPath,currentFilename,projectFile.Get("source"),projectFile.Get("target"))
+		Utils.exportToMarkdownWithNotes(segments,exportPath,currentFilename,projectFile.Get("source"),projectFile.Get("target"),settings)
 		fx.Msgbox(Main.MainForm,"Done.","")
 	End If
 End Sub
@@ -694,7 +694,7 @@ Sub exportBiParagraphMi_Action
 	Dim exportPath As String
 	exportPath=fc.ShowSave(Main.MainForm)
 	If exportPath<>"" Then
-		Utils.exportToBiParagraph(segments,exportPath,currentFilename,projectFile.Get("source"),projectFile.Get("target"))
+		Utils.exportToBiParagraph(segments,exportPath,currentFilename,projectFile.Get("source"),projectFile.Get("target"),settings)
 		fx.Msgbox(Main.MainForm,"Done.","")
 	End If
 End Sub

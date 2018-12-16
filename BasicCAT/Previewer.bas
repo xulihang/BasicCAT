@@ -47,6 +47,8 @@ Public Sub loadText
 		params.Put("lastEntry",Main.currentProject.lastEntry)
 		params.Put("sourceLang",Main.currentProject.projectFile.Get("source"))
 		params.Put("targetLang",Main.currentProject.projectFile.Get("target"))
+		params.Put("path",Main.currentProject.path)
+		params.Put("settings",Main.currentProject.projectFile.Get("settings"))
 		text=Main.currentProject.runFilterPluginAccordingToExtension(currentFilename,"previewText",params)
 	End If
 	'Log("preview"&text)

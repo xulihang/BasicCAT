@@ -10,12 +10,7 @@ Sub Process_Globals
 	Private menus As Map
 End Sub
 
-Sub removeSpacesAtBothSides(text As String) As String
-	text=Regex.Replace2("\b( *)\b",32,text,"placeholder<$1>placeholder")
-	text=Regex.Replace2("(?<! *placeholder<) *(?! *>placeholder)",32,text,"")
-	text=Regex.Replace2("placeholder<( *)>placeholder",32,text,"$1")
-	Return text
-End Sub
+
 
 Sub LanguageHasSpace(lang As String) As Boolean
 	Dim languagesWithoutSpaceList As List
@@ -126,7 +121,7 @@ Sub shouldAddSpace(sourceLang As String,targetLang As String,index As Int,segmen
 	Return False
 End Sub
 
-Sub exportToMarkdownWithNotes(segments As List,path As String,filename As String,sourceLang As String,targetLang As String)
+Sub exportToMarkdownWithNotes(segments As List,path As String,filename As String,sourceLang As String,targetLang As String,settings as Map)
 	Dim text As StringBuilder
 	text.Initialize
 	Dim noteIndex As Int=0
@@ -172,7 +167,7 @@ Sub exportToMarkdownWithNotes(segments As List,path As String,filename As String
 		fullsource=Regex.Replace2("<.*?>",32,fullsource,"")
 		translation=fullsource.Replace(source,target)
 		If LanguageHasSpace(targetLang)=False Then
-			translation=removeSpacesAtBothSides(translation)
+			translation=segmentation.removeSpacesAtBothSides(path,targetLang,translation,settings.GetDefault("remove_space",True))
 		End If
 		text.Append(translation)
 	Next
@@ -182,7 +177,7 @@ Sub exportToMarkdownWithNotes(segments As List,path As String,filename As String
 	File.WriteString(path,"",result)
 End Sub
 
-Sub exportToBiParagraph(segments As List,path As String,filename As String,sourceLang As String,targetLang As String)
+Sub exportToBiParagraph(segments As List,path As String,filename As String,sourceLang As String,targetLang As String,settings as Map)
 	Dim text As StringBuilder
 	text.Initialize
 	Dim sourceText As String
@@ -214,7 +209,7 @@ Sub exportToBiParagraph(segments As List,path As String,filename As String,sourc
 		fullsource=Regex.Replace2("<.*?>",32,fullsource,"")
 		translation=fullsource.Replace(source,target)
 		If LanguageHasSpace(targetLang)=False Then
-			translation=removeSpacesAtBothSides(translation)
+			translation=segmentation.removeSpacesAtBothSides(path,targetLang,translation,settings.GetDefault("remove_space",True))
 		End If
 		sourceText=sourceText&fullsource
 		targetText=targetText&translation
