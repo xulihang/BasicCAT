@@ -24,6 +24,8 @@ End Sub
 Sub convertLanguageCodeForChinese(lang As String) As String
 	If lang.StartsWith("zh") Then
 		Return "zh"
+	Else
+		Return lang
 	End If
 End Sub
 

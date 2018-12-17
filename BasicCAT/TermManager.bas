@@ -49,7 +49,7 @@ Sub setItems
 			
 			If terminfo.ContainsKey("tag") Then
 				tag=terminfo.Get("tag")
-				If tag.Trim<>"" Then
+				If tag.Trim<>"" and tagList.IndexOf(tag)=-1 Then
 					tagList.Add(tag)
 				End If
 			End If
@@ -69,8 +69,11 @@ Sub addContextMenuToLV
 	mi.Initialize("Edit","mi")
 	Dim mi2 As MenuItem
 	mi2.Initialize("Remove","mi")
+	Dim mi3 As MenuItem
+	mi3.Initialize("View History","mi")
 	cm.MenuItems.Add(mi)
 	cm.MenuItems.Add(mi2)
+	cm.MenuItems.Add(mi3)
 	SearchView1.addContextMenuToLV(cm)
 End Sub
 
@@ -101,7 +104,6 @@ Sub mi_Action
 			Dim targetMap As Map
 			targetMap.Initialize
 			targetMap=kvs.Get(source)
-			targetMap.Remove(target)
 			Dim termEd As TermEditor
 			termEd.Initialize(source,target,note,tag,tagList)
 			Dim termData As Map
@@ -111,9 +113,7 @@ Sub mi_Action
 			terminfo.Initialize
 			terminfo.Put("tag",termData.Get("tag"))
 			terminfo.Put("note",termData.Get("note"))
-			targetMap.Put(termData.Get("target"),terminfo)
-			kvs.Put(termData.Get("source"),targetMap)
-			Main.currentProject.projectTerm.addPairToSharedTerm(termData.Get("source"),targetMap)
+			Main.currentProject.projectTerm.editTerm(termData.Get("source"),target,termData.Get("target"),terminfo)
 			setItems
 			SearchView1.replaceItem(buildItemText(termData.Get("source"),termData.Get("target"),termData.Get("note"),termData.Get("tag")),SearchView1.GetSelectedIndex)
 		Case "Remove"
@@ -128,10 +128,8 @@ Sub mi_Action
 				target=Regex.Split(CRLF&"- ",text)(1).Replace("target: ","")
 				Dim targetMap As Map
 				targetMap=kvs.Get(source)
-				targetMap.Remove(target)
-				If targetMap.Size<>0 Then
-					kvs.Put(source,targetMap)
-					Main.currentProject.projectTerm.addPairToSharedTerm(source,targetMap)
+				If targetMap.Size>1 Then
+					Main.currentProject.projectTerm.removeOneTarget(source,target,True)
 				Else
 					kvs.Remove(source)
 					Main.currentProject.projectTerm.removeFromSharedTerm(source)
@@ -139,6 +137,16 @@ Sub mi_Action
 				setItems
 				SearchView1.GetItems.RemoveAt(SearchView1.GetSelectedIndex)
 			End If
+		Case "View History"
+			Dim p As Pane
+			p=SearchView1.GetSelected
+			Dim text As String
+			text=p.Tag
+			Dim source,target As String
+			source=Regex.Split(CRLF&"- ",text)(0).Replace("- source: ","")
+			Dim hisViewer As HistoryViewer
+			hisViewer.Initialize
+			hisViewer.Show(Main.currentProject.projectHistory.getTermHistory(source))
 	End Select
 End Sub
 

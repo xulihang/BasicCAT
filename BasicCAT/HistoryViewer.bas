@@ -24,12 +24,6 @@ End Sub
 
 Sub loadHistoryList(historyList As List)
 	For Each item As Map In historyList
-		Dim text As String
-		If item.ContainsKey("text") Then
-			text=item.Get("text")
-		Else if item.ContainsKey("target") Then
-			text=item.Get("target")
-		End If
 		Dim creator As String
 		creator=item.Get("creator")
 		Dim createdTime As Long
@@ -39,11 +33,23 @@ Sub loadHistoryList(historyList As List)
 		p.LoadLayout("HistoryItem")
 		Dim ta As TextArea
 		ta=p.GetNode(0)
-		ta.Text=text
+
 		Dim infoLabel As Label
 		infoLabel=p.GetNode(1)
 		infoLabel.Text=creator&" "&DateTime.Date(createdTime)&" "&DateTime.Time(createdTime)
 		HistoryListView.Items.Add(p)
 		p.SetSize(HistoryListView.Width,100dip)
+		
+		Dim result As StringBuilder
+		result.Initialize
+		If item.ContainsKey("text") Then 'translation memory
+			result.Append("target: ").Append(item.Get("text")).Append(CRLF)
+			result.Append("note: ").Append(item.GetDefault("note",""))
+		Else if item.ContainsKey("target") Then 'term
+			result.Append("target: ").Append(item.Get("target")).Append(CRLF)
+			result.Append("tag: ").Append(item.GetDefault("tag","")).Append(CRLF)
+			result.Append("note: ").Append(item.GetDefault("note",""))
+		End If
+		ta.Text=result.ToString
 	Next
 End Sub

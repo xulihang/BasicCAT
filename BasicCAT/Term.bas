@@ -119,19 +119,45 @@ Sub sharedTerm_NewData(changedItems As List)
 End Sub
 
 Sub addTermFromShared(key As String,targetMap As Map)
+	verifyAndAddHistory(key,targetMap)
+	terminology.Put(key,targetMap)
+End Sub
+
+Sub verifyAndAddHistory(key As String,targetMap As Map)
 	If Main.currentProject.settings.GetDefault("record_history",True)=True Then
-		Dim previousMap As Map
-		previousMap.Initialize
+		Dim previousTargetMap As Map
+		previousTargetMap.Initialize
 		If terminology.ContainsKey(key) Then
-			previousMap=terminology.Get(key)
+			previousTargetMap=terminology.Get(key)
 		End If
 		For Each target As String In targetMap.Keys
-			If previousMap.ContainsKey(target)=False Then
+			Log("target"&target)
+			If previousTargetMap.ContainsKey(target)=False Then
+				Log("does not exist")
 				addHistory(key,target,targetMap.Get(target))
+			Else
+				Log("does exist")
+				Dim previousTerminfo As Map
+				previousTerminfo=previousTargetMap.Get(target)
+				Dim terminfo As Map
+				terminfo=targetMap.Get(target)
+				If terminfo.GetDefault("note","")<>previousTerminfo.GetDefault("note","") And terminfo.GetDefault("note","")<>"" Then
+					addHistory(key,target,targetMap.Get(target))
+					Continue
+				End If
+				If terminfo.GetDefault("tag","")<>previousTerminfo.GetDefault("tag","") And terminfo.GetDefault("tag","")<>"" Then
+					addHistory(key,target,targetMap.Get(target))
+					Continue
+				End If
 			End If
 		Next
 	End If
-	terminology.Put(key,targetMap)
+End Sub
+
+Sub addHistory(source As String,target As String,terminfo As Map)
+	If Main.currentProject.settings.GetDefault("record_history",True)=True Then
+		Main.currentProject.projectHistory.addTermHistory(source,target,terminfo)
+	End If
 End Sub
 
 Public Sub deleteExternalTerminology
@@ -375,24 +401,46 @@ Sub termsInASentenceOld(sentence As String) As List
 	Return result
 End Sub
 
-Sub addTerm(source As String,target As String)
+Public Sub addTerm(source As String,target As String)
 	Dim targetMap As Map
 	targetMap.Initialize
 	If terminology.ContainsKey(source) Then
 		targetMap=terminology.Get(source)
 	End If
-	Dim termInfo As Map
-	termInfo.Initialize
-	targetMap.Put(target,termInfo)
-	addCreatingInfo(termInfo)
-	terminology.Put(source,targetMap)
-	addPairToSharedTerm(source,targetMap)
-	addHistory(source,target,termInfo)
+	If targetMap.ContainsKey(target)=False Then
+		Dim termInfo As Map
+		termInfo.Initialize
+		addCreatingInfo(termInfo)
+		targetMap.Put(target,termInfo)
+		verifyAndAddHistory(source,targetMap)
+		terminology.Put(source,targetMap)
+		addTermToSharedTerm(source,targetMap)
+	End If
 End Sub
 
-Sub addHistory(source As String,target As String,terminfo As Map)
-	If Main.currentProject.settings.GetDefault("record_history",True)=True Then
-		Main.currentProject.projectHistory.addTermHistory(source,target,terminfo)
+Public Sub editTerm(source As String,previousTarget As String,target As String,terminfo As Map)
+	Dim targetMap As Map
+	targetMap.Initialize
+	If terminology.ContainsKey(source) Then
+		If previousTarget<>target Then
+			removeOneTarget(source,previousTarget,False)
+		End If
+		targetMap=terminology.Get(source)
+	End If
+	addCreatingInfo(terminfo)
+	targetMap.Put(target,terminfo)
+	verifyAndAddHistory(source,targetMap)
+	terminology.Put(source,targetMap)
+	addTermToSharedTerm(source,targetMap)
+End Sub
+
+Public Sub removeOneTarget(source As String,target As String,isAddingToSharedTerm As Boolean)
+	Dim targetMap As Map
+	targetMap=terminology.Get(source)
+	targetMap.Remove(target)
+	terminology.Put(source,targetMap)
+	If isAddingToSharedTerm Then
+		addTermToSharedTerm(source,targetMap)
 	End If
 End Sub
 
@@ -410,7 +458,7 @@ Sub addCreatingInfo(termInfo As Map)
 	End If
 End Sub
 
-Public Sub addPairToSharedTerm(source As String,targetMap As Map)
+Public Sub addTermToSharedTerm(source As String,targetMap As Map)
 	If Main.currentProject.settings.GetDefault("sharingTerm_enabled",False)=True Then
 		sharedTerm.Put(projectName&"Term",source,targetMap)
 	End If

@@ -1675,6 +1675,7 @@ Sub saveOneTranslationToTM(bitext As List,index As Int)
 	targetMap.Put("creator",creator)
 	targetMap.Put("filename",currentFilename)
 	targetMap.Put("index",index)
+	targetMap.Put("note",extra.GetDefault("note",""))
 	
 	projectTM.addPair(bitext.Get(0),targetMap)
 	If settings.GetDefault("record_history",True)=True Then

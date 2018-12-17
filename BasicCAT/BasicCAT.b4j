@@ -168,33 +168,33 @@ Library8=jrandomaccessfile
 Library9=jb4xencryption
 Module1=FileChooserUtils
 Module10=preTranslateDialog
-Module11=Utils
-Module12=Previewer
-Module13=idmlFilter
-Module14=xliffFilter
-Module15=SRX
-Module16=ClientKVS
-Module17=MT
-Module18=HistoryRecord
-Module19=HistoryViewer
+Module11=TermManager
+Module12=TMManager
+Module13=Utils
+Module14=Previewer
+Module15=idmlFilter
+Module16=xliffFilter
+Module17=SRX
+Module18=ClientKVS
+Module19=MT
 Module2=Project
-Module20=statistics
-Module21=searchAndReplaceDialog
-Module22=dictWebView
-Module23=LanguageTool
-Module24=confirmReviewDialog
-Module25=LanguagePairSelector
-Module26=git
-Module27=ITP
-Module28=idmlUtils
-Module29=editDistance
+Module20=HistoryRecord
+Module21=HistoryViewer
+Module22=statistics
+Module23=searchAndReplaceDialog
+Module24=dictWebView
+Module25=LanguageTool
+Module26=confirmReviewDialog
+Module27=LanguagePairSelector
+Module28=git
+Module29=ITP
 Module3=segmentation
-Module30=PDF2TXT
-Module31=InputBox
-Module32=MTParamsFiller
-Module33=Preferences
-Module34=TermManager
-Module35=TMManager
+Module30=idmlUtils
+Module31=editDistance
+Module32=PDF2TXT
+Module33=InputBox
+Module34=MTParamsFiller
+Module35=Preferences
 Module36=importDialog
 Module37=XMLUtils
 Module38=progressDialog
@@ -879,6 +879,11 @@ Sub exportTermToTXTMi_Action
 			Else
 				bitext.Add("")
 			End If
+			If terminfo.ContainsKey("tag") Then
+				bitext.Add(terminfo.Get("tag"))
+			Else
+				bitext.Add("")
+			End If
 			segments.Add(bitext)
 		Next
 		currentProject.projectTerm.exportToTXT(segments,path)
@@ -900,11 +905,17 @@ Sub exportTMXMi_Action
 		segments.Initialize
 		Dim tmKVS As KeyValueStore
 		tmKVS=currentProject.projectTM.translationMemory
+
 		For Each key As String In tmKVS.ListKeys
 			Dim bitext As List
 			bitext.Initialize
 			bitext.Add(key)
-			bitext.Add(tmKVS.Get(key))
+			
+			Dim targetMap As Map=tmKVS.Get(key)
+			Dim translation As String
+			translation=targetMap.Get("text")
+			bitext.Add(translation)
+			
 			segments.Add(bitext)
 		Next
 		Dim result As Int
