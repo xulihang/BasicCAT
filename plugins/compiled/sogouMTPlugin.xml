@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <doclet-version-NOT-library-version>1.00</doclet-version-NOT-library-version>
+  <b4x_version>6.51</b4x_version>
+  <dependsOn>jcore</dependsOn>
+  <dependsOn>jfx</dependsOn>
+  <dependsOn>json</dependsOn>
+  <dependsOn>jxmlsax</dependsOn>
+  <dependsOn>xmlbuilder</dependsOn>
+  <dependsOn>jxui</dependsOn>
+  <dependsOn>javaobject</dependsOn>
+  <dependsOn includesSingletonModules="true">jokhttputils2</dependsOn>
+  <dependsOn>jstringutils</dependsOn>
+  <dependsOn>okhttp</dependsOn>
+  <dependsOn>encryption</dependsOn>
+  <dependsOn>okhttp-3.5.0</dependsOn>
+  <dependsOn>okio-1.11.0</dependsOn>
+  <class>
+    <name>org.xulihang.basiccat.sogoumtplugin</name>
+    <shortname>sogouMTPlugin</shortname>
+    <method>
+      <name>IsInitialized</name>
+      <comment>Tests whether the object has been initialized.</comment>
+      <returntype>boolean</returntype>
+    </method>
+    <method>
+      <name DesignerName="Class_Globals">_class_globals</name>
+      <returntype>String</returntype>
+    </method>
+    <method>
+      <name DesignerName="getMap">_getmap</name>
+      <returntype>anywheresoftware.b4a.objects.collections.Map</returntype>
+      <parameter>
+        <name>key</name>
+        <type>String</type>
+      </parameter>
+      <parameter>
+        <name>parentmap</name>
+        <type>anywheresoftware.b4a.objects.collections.Map</type>
+      </parameter>
+    </method>
+    <method>
+      <name DesignerName="GetNiceName">_getnicename</name>
+      <comment> must be available
+</comment>
+      <returntype>String</returntype>
+    </method>
+    <method>
+      <name DesignerName="getSignature">_getsignature</name>
+      <returntype>String</returntype>
+      <parameter>
+        <name>prefix</name>
+        <type>String</type>
+      </parameter>
+      <parameter>
+        <name>secretKey</name>
+        <type>String</type>
+      </parameter>
+      <parameter>
+        <name>params</name>
+        <type>String</type>
+      </parameter>
+    </method>
+    <method>
+      <name DesignerName="Initialize">_initialize</name>
+      <comment>Initializes the object. You can NOT add parameters to this method!
+</comment>
+      <returntype>String</returntype>
+      <parameter>
+        <name>ba</name>
+        <type>anywheresoftware.b4a.BA</type>
+      </parameter>
+    </method>
+    <method>
+      <name DesignerName="Run">_run</name>
+      <comment> must be available
+</comment>
+      <returntype>anywheresoftware.b4a.keywords.Common.ResumableSubWrapper</returntype>
+      <parameter>
+        <name>Tag</name>
+        <type>String</type>
+      </parameter>
+      <parameter>
+        <name>Params</name>
+        <type>anywheresoftware.b4a.objects.collections.Map</type>
+      </parameter>
+    </method>
+    <method>
+      <name DesignerName="translate">_translate</name>
+      <returntype>anywheresoftware.b4a.keywords.Common.ResumableSubWrapper</returntype>
+      <parameter>
+        <name>source</name>
+        <type>String</type>
+      </parameter>
+      <parameter>
+        <name>sourceLang</name>
+        <type>String</type>
+      </parameter>
+      <parameter>
+        <name>targetLang</name>
+        <type>String</type>
+      </parameter>
+      <parameter>
+        <name>preferencesMap</name>
+        <type>anywheresoftware.b4a.objects.collections.Map</type>
+      </parameter>
+    </method>
+  </class>
+  <version>1</version>
+</root>
