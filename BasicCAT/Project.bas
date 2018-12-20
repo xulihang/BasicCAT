@@ -792,7 +792,13 @@ Sub openFile(filename As String,onOpeningProject As Boolean)
 	If lastFilename=currentFilename And segments.Size<>0 Then
 		Log("ddd"&True)
 		Log(lastEntry)
-		Main.editorLV.JumpToItem(lastEntry)
+		Try
+			Main.editorLV.JumpToItem(lastEntry)
+		Catch
+			lastEntry=0
+			Log(LastException)
+		End Try
+
 		fillPane(Main.editorLV.FirstVisibleIndex,Main.editorLV.LastVisibleIndex)
 		'Wait For(fillPaneAsync(lastEntry,lastEntry+10)) Complete (Result As Object)
 		'Dim pane As Pane
@@ -1724,14 +1730,14 @@ Public Sub fillPane(FirstIndex As Int, LastIndex As Int)
 	End If
 	Dim ExtraSize As Int
 	ExtraSize=15
-	For i = 0 To Main.editorLV.Size - 1
+	For i = Max(0,FirstIndex-ExtraSize*2) To Min(Main.editorLV.Size - 1,LastIndex+ExtraSize*2)
 		Dim segmentPane As Pane
 		segmentPane=Main.editorLV.GetPanel(i)
 		If i > FirstIndex - ExtraSize And i < LastIndex + ExtraSize Then
 			'visible+
-
+			segmentPane.Enabled=True
 			If segmentPane.NumberOfNodes = 0 Then
-                
+
 				Dim bitext As List
 				bitext=segments.Get(i)
 				addTextAreaToSegmentPane(segmentPane,bitext.Get(0),bitext.Get(1))
@@ -1755,8 +1761,9 @@ Public Sub fillPane(FirstIndex As Int, LastIndex As Int)
 			End If
 		Else
 			'not visible
+			segmentPane.Enabled=False
 			If segmentPane.NumberOfNodes > 0 Then
-				segmentPane.RemoveAllNodes '<--- remove the layout
+				'segmentPane.RemoveAllNodes '<--- remove the layout
 			End If
 		End If
 	Next
@@ -1950,17 +1957,9 @@ Sub readWorkFile(filename As String,filesegments As List,fillUI As Boolean,root 
 		segmentsList=sourceFileMap.Get(innerFilename)
 		filesegments.AddAll(segmentsList)
 		If fillUI Then
-			Dim index As Int=0
 			For Each bitext As List In segmentsList
 				'Sleep(0) 'should not use coroutine as when change file, it will be a problem.
-				If index<=20 Then
-					Main.currentProject.createSegmentPane(bitext)
-				
-					index=index+1
-				Else
-					Main.currentProject.createEmptyPane(bitext)
-					index=index+1
-				End If
+				createEmptyPane(bitext)
 			Next
 		End If
 	Next

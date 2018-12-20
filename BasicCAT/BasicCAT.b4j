@@ -168,37 +168,37 @@ Library8=jrandomaccessfile
 Library9=jb4xencryption
 Module1=FileChooserUtils
 Module10=preTranslateDialog
-Module11=TermManager
-Module12=TMManager
-Module13=Utils
-Module14=Previewer
-Module15=idmlFilter
-Module16=xliffFilter
-Module17=SRX
-Module18=ClientKVS
-Module19=MT
+Module11=ITP
+Module12=TermEditor
+Module13=TermManager
+Module14=HistoryViewer
+Module15=HistoryRecord
+Module16=TMManager
+Module17=Utils
+Module18=Previewer
+Module19=idmlFilter
 Module2=Project
-Module20=HistoryRecord
-Module21=HistoryViewer
-Module22=statistics
-Module23=searchAndReplaceDialog
-Module24=dictWebView
-Module25=LanguageTool
-Module26=confirmReviewDialog
-Module27=LanguagePairSelector
-Module28=git
-Module29=ITP
+Module20=xliffFilter
+Module21=SRX
+Module22=ClientKVS
+Module23=MT
+Module24=statistics
+Module25=searchAndReplaceDialog
+Module26=dictWebView
+Module27=LanguageTool
+Module28=confirmReviewDialog
+Module29=LanguagePairSelector
 Module3=segmentation
-Module30=idmlUtils
-Module31=editDistance
-Module32=PDF2TXT
-Module33=InputBox
-Module34=MTParamsFiller
-Module35=Preferences
-Module36=importDialog
-Module37=XMLUtils
-Module38=progressDialog
-Module39=TermEditor
+Module30=git
+Module31=idmlUtils
+Module32=editDistance
+Module33=PDF2TXT
+Module34=InputBox
+Module35=MTParamsFiller
+Module36=Preferences
+Module37=importDialog
+Module38=XMLUtils
+Module39=progressDialog
 Module4=CustomListView
 Module40=filterGenericUtils
 Module41=TMX
@@ -1117,23 +1117,33 @@ Sub ListViewParent_Resize
 		If calculatedHeight.ContainsKey(sourceTa.Text&"	"&targetTa.Text)=False Then
 			Dim sourcelbl,targetlbl As Label
 			sourcelbl.Initialize("")
-			'sourcelbl.Font = fx.CreateFont("Tahoma",16,False,False)
-			setLabelFont(sourcelbl,"sourceFont")
-			p.AddNode(sourcelbl,0, 0, itemWidth/2-15dip, -1)
 			targetlbl.Initialize("")
-			'targetlbl.Font = fx.CreateFont("Tahoma",16,False,False)
+			setLabelFont(sourcelbl,"sourceFont")
 			setLabelFont(targetlbl,"targetFont")
-			p.AddNode(targetlbl, 0, 0, itemWidth/2-15dip, -1)
+			Dim sourceHeight,targetHeight As Int
+			sourceHeight=Utils.MeasureMultilineTextHeight(sourcelbl.Font,itemWidth/2-15dip,sourceTa.Text&CRLF)
+			targetHeight=Utils.MeasureMultilineTextHeight(targetlbl.Font,itemWidth/2-15dip,targetTa.Text&CRLF)
+			Dim h As Int = Max(Max(20, sourceHeight + 10), targetHeight + 10)
+			
+			'------ old way of calculating text height 
+			'sourcelbl.Font = fx.CreateFont("Tahoma",16,False,False)
 
-			sourcelbl.Text = "ex"&sourceTa.Text&CRLF&"tra"
-			sourcelbl.WrapText = True
-			targetlbl.Text = "ex"&targetTa.Text&CRLF&"tra"
-			targetlbl.WrapText = True
-			Dim jo As JavaObject = p
+			'p.AddNode(sourcelbl,0, 0, itemWidth/2-15dip, -1)
+
+			'targetlbl.Font = fx.CreateFont("Tahoma",16,False,False)
+
+			'p.AddNode(targetlbl, 0, 0, itemWidth/2-15dip, -1)
+
+			'sourcelbl.Text = "ex"&sourceTa.Text&CRLF&"tra"
+			'sourcelbl.WrapText = True
+			'targetlbl.Text = "ex"&targetTa.Text&CRLF&"tra"
+			'targetlbl.WrapText = True
+			'Dim jo As JavaObject = p
 			'force the label to refresh its layout.
-			jo.RunMethod("applyCss", Null)
-			jo.RunMethod("layout", Null)
-			Dim h As Int = Max(Max(20, sourcelbl.Height + 10), targetlbl.Height + 10)
+			'jo.RunMethod("applyCss", Null)
+			'jo.RunMethod("layout", Null)
+			
+			
 			calculatedHeight.Put(sourceTa.Text&"	"&targetTa.Text,h)
 			setLayout(p,i,h)
 			sourcelbl.RemoveNodeFromParent

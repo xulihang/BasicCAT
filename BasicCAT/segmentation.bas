@@ -263,8 +263,8 @@ Sub getPositions(rulesList As List,text As String) As List
 				abm=Regex.Matcher2(afterBreak,32,textLeft)
 				Do While abm.Find
 					If bbm.GetEnd(0)=abm.GetStart(0) Then
-						breakPositions.Add(abm.GetEnd(0)+text.Length-textLeft.Length)
-						textLeft=textLeft.SubString2(abm.GetEnd(0),textLeft.Length)
+						breakPositions.Add(bbm.GetEnd(0)+text.Length-textLeft.Length)
+						textLeft=textLeft.SubString2(bbm.GetEnd(0),textLeft.Length)
 						abm=Regex.Matcher2(afterBreak,32,textLeft)
 						bbm=Regex.Matcher2(beforeBreak,32,textLeft)
 

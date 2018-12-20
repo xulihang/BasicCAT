@@ -134,8 +134,16 @@
             
 <languagerule languagerulename="zh">
 				<rule break="yes">
-					<beforebreak>[。！？……；\t.!?]</beforebreak>
+					<beforebreak>[。！？……；\t]+</beforebreak>
 					<afterbreak/>
+				</rule>
+                <rule break="yes">
+		        	<beforebreak>\S[。！？……；\t]+["'”\)]+</beforebreak>
+					<afterbreak/>
+				</rule>
+                <rule break="no">
+					<beforebreak>[。！？……；\t]</beforebreak>
+					<afterbreak>["'”\)]+</afterbreak>
 				</rule>
 				<rule break="no">
 					<beforebreak>&lt;\?</beforebreak>
