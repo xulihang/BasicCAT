@@ -1763,7 +1763,7 @@ Public Sub fillPane(FirstIndex As Int, LastIndex As Int)
 			'not visible
 			segmentPane.Enabled=False
 			If segmentPane.NumberOfNodes > 0 Then
-				'segmentPane.RemoveAllNodes '<--- remove the layout
+				segmentPane.RemoveAllNodes '<--- remove the layout
 			End If
 		End If
 	Next
