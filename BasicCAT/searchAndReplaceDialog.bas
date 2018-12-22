@@ -358,7 +358,7 @@ Sub resultListView_Action
 	p=resultListView.Items.Get(resultListView.SelectedIndex)
 	Dim taglist As List
 	taglist=p.Tag
-	Main.editorLV.JumpToItem(taglist.get(0))
+	Main.editorLV.ScrollTo(taglist.get(0))
 	Main.MainForm.AlwaysOnTop=True
 	Main.MainForm.AlwaysOnTop=False
 End Sub

@@ -60,11 +60,11 @@ End Sub
 
 Sub addTextFromDict(text As String)
 	If Main.currentProject.IsInitialized Then
-		If Main.editorLV.Size=0 Then
+		If Main.editorLV.Items.Size=0 Then
 			Return
 		End If
 		Dim p As Pane
-		p=Main.editorLV.GetPanel(Main.currentProject.lastEntry)
+		p=Main.editorLV.Items.Get(Main.currentProject.lastEntry)
 		If p.NumberOfNodes=0 Then
 			Return
 		End If

@@ -748,7 +748,7 @@ Sub removeFileMi_Action
 		Return
 	End If 
 	If currentFilename=filename Then
-		Main.editorLV.Clear
+		Main.editorLV.Items.Clear
 		segments.Clear
 		currentFilename=""
 	End If
@@ -779,7 +779,7 @@ Sub openFile(filename As String,onOpeningProject As Boolean)
 	    fx.Msgbox(Main.MainForm,"The workfile does not exist."&CRLF&"Maybe it's still in building.","")
 		Return
 	End If
-	Main.editorLV.Clear
+	Main.editorLV.Items.Clear
 	Main.tmTableView.Items.Clear
 	Main.LogWebView.LoadHtml("")
 	Main.searchTableView.Items.Clear
@@ -793,25 +793,20 @@ Sub openFile(filename As String,onOpeningProject As Boolean)
 		Log("ddd"&True)
 		Log(lastEntry)
 		Try
-			Main.editorLV.JumpToItem(lastEntry)
+			Main.editorLV.ScrollTo(lastEntry)
 		Catch
 			lastEntry=0
 			Log(LastException)
 		End Try
-
-		fillPane(Main.editorLV.FirstVisibleIndex,Main.editorLV.LastVisibleIndex)
-		'Wait For(fillPaneAsync(lastEntry,lastEntry+10)) Complete (Result As Object)
-		'Dim pane As Pane
-		'pane=Main.editorLV.GetPanel(lastEntry)
-		'Dim ta As TextArea
-		'ta=pane.GetNode(1)
-		'ta.RequestFocus
-		
 	End If
+	Dim visibleRange As Range
+	visibleRange=Main.getVisibleRange(Main.editorLV)
+	fillPane(visibleRange.firstIndex,visibleRange.lastIndex)
+	Main.addScrollChangedEvent(Main.editorLV)
 End Sub
 
 Sub closeFile
-	Main.editorLV.Clear
+	Main.editorLV.Items.Clear
 	Main.tmTableView.Items.Clear
 	Main.LogWebView.LoadHtml("")
 	Main.searchTableView.Items.Clear
@@ -992,17 +987,16 @@ Sub sourceTextArea_TextChanged (Old As String, New As String)
 End Sub
 
 Sub segmentPane_MouseClicked (EventData As MouseEvent)
-	lastEntry=Main.editorLV.GetItemFromView(Sender)
+	lastEntry=Main.editorLV.Items.IndexOf(Sender)
 	Log(lastEntry)
 End Sub
 
-Public Sub createSegmentPane(bitext As List)
+Public Sub createSegmentPane(bitext As List) As Pane
 	Dim extra As Map
 	extra=bitext.Get(4)
 	Dim segmentPane As Pane
 	segmentPane.Initialize("segmentPane")
 	addTextAreaToSegmentPane(segmentPane,bitext.Get(0),bitext.Get(1))
-	Main.editorLV.Add(segmentPane,"")
 	If extra.ContainsKey("translate") Then
 		If extra.Get("translate")="no" Then
 			Utils.disableTextArea(segmentPane)
@@ -1013,20 +1007,19 @@ Public Sub createSegmentPane(bitext As List)
 			CSSUtils.SetStyleProperty(segmentPane.GetNode(1),"-fx-background-color","green")
 		End If
 	End If
+	Return segmentPane
 End Sub
 
-Public Sub createEmptyPane(bitext As List)
-
+Public Sub createEmptyPane As Pane
 	Dim segmentPane As Pane
 	segmentPane.Initialize("segmentPane")
-	segmentPane.SetSize(Main.editorLV.AsView.Width,50dip)
-	Main.editorLV.Add(segmentPane,"")
-
+	segmentPane.SetSize(Main.editorLV.Width,50dip)
+	Return segmentPane
 End Sub
 
 Public Sub addTextAreaToSegmentPane(segmentpane As Pane,source As String,target As String)
 	segmentpane.LoadLayout("segment")
-	segmentpane.SetSize(Main.editorLV.AsView.Width,50dip)
+	segmentpane.SetSize(Main.editorLV.Width,50dip)
 	Dim sourceTextArea As TextArea
 	sourceTextArea=segmentpane.GetNode(0)
 	sourceTextArea.Text=source
@@ -1046,9 +1039,9 @@ Public Sub addTextAreaToSegmentPane(segmentpane As Pane,source As String,target 
 	addSelectionChangedEvent(targetTextArea,"targetTextAreaSelection")
 	
 	sourceTextArea.Left=5dip
-	sourceTextArea.SetSize(Main.editorLV.AsView.Width/2-15dip,50dip)
+	sourceTextArea.SetSize(Main.editorLV.Width/2-15dip,50dip)
 	targetTextArea.Left=targetTextArea.Left+targetTextArea.Width
-	targetTextArea.SetSize(Main.editorLV.AsView.Width/2-15dip,50dip)
+	targetTextArea.SetSize(Main.editorLV.Width/2-15dip,50dip)
 End Sub
 
 Sub addKeyEvent(textarea1 As TextArea,eventName As String)
@@ -1177,19 +1170,24 @@ Sub mi_Action
 	cmClicked=True
 	Dim mi As MenuItem
 	mi=Sender
-	Dim p As Pane
-	p=Main.editorLV.GetPanel(lastEntry)
-	Dim targetTextArea As TextArea
-	targetTextArea=p.GetNode(1)
-	targetTextArea.Text=targetTextArea.Text.SubString2(0,targetTextArea.SelectionStart)&Utils.replaceOnce(mi.Text,mi.Tag,"")&targetTextArea.Text.SubString2(targetTextArea.SelectionStart,targetTextArea.Text.Length)
-	Sleep(0)
-	targetTextArea.SetSelection(targetTextArea.Text.Length,targetTextArea.Text.Length)
+	Try
+		Dim p As Pane
+		p=Main.editorLV.Items.Get(lastEntry)
+		Dim targetTextArea As TextArea
+		targetTextArea=p.GetNode(1)
+		targetTextArea.Text=targetTextArea.Text.SubString2(0,targetTextArea.SelectionStart)&Utils.replaceOnce(mi.Text,mi.Tag,"")&targetTextArea.Text.SubString2(targetTextArea.SelectionStart,targetTextArea.Text.Length)
+		Sleep(0)
+		targetTextArea.SetSelection(targetTextArea.Text.Length,targetTextArea.Text.Length)
+	Catch
+		Log(LastException)
+	End Try
+	
 End Sub
 
 Sub sourceTextArea_MouseClicked (EventData As MouseEvent)
 	Dim ta As TextArea
 	ta=Sender
-	lastEntry=Main.editorLV.GetItemFromView(ta.Parent)
+	lastEntry=Main.editorLV.Items.IndexOf(ta.Parent)
 	If ta.SelectionEnd=ta.SelectionStart Then
 		Dim jo As JavaObject = cm
 		jo.RunMethod("hide", Null)
@@ -1279,26 +1277,28 @@ Sub changeSegment(offset As Int,targetTextArea As TextArea)
 		Dim pane As Pane
 		pane=targetTextArea.Parent
 		Dim index As Int
-		index=Main.editorLV.GetItemFromView(pane)
-		If index+offset>=Main.editorLV.Size Or index+offset<0 Then
+		index=Main.editorLV.Items.IndexOf(pane)
+		If index+offset>=Main.editorLV.Items.Size Or index+offset<0 Then
 			Return
 		End If
 		Dim nextPane As Pane
-		nextPane=Main.editorLV.GetPanel(index+offset)
+		nextPane=Main.editorLV.Items.Get(index+offset)
 		Dim nextTA As TextArea
 		nextTA=nextPane.GetNode(1)
 		nextTA.RequestFocus
-		lastEntry=Main.editorLV.GetItemFromView(nextPane)
+		lastEntry=Main.editorLV.Items.IndexOf(nextPane)
 		lastFilename=currentFilename
 		showTM(nextTA)
 		showTerm(nextTA)
 		languagecheck(targetTextArea,index)
 		Main.updateSegmentLabel(lastEntry,segments.Size)
-		If index+offset<Main.editorLV.FirstVisibleIndex+1 Or index+offset>Main.editorLV.LastVisibleIndex-1 Then
+		Dim visibleRange As Range
+		visibleRange=Main.getVisibleRange(Main.editorLV)
+		If index+offset<visibleRange.firstIndex+1 Or index+offset>visibleRange.lastIndex-1 Then
 			If offset<0 Then
-				Main.editorLV.ScrollToItem(index+offset)
+				Main.editorLV.ScrollTo(index+offset)
 			Else
-				Main.editorLV.ScrollToItem(index+offset-Main.editorLV.LastVisibleIndex+Main.editorLV.FirstVisibleIndex+1)
+				Main.editorLV.ScrollTo(index+offset-visibleRange.lastIndex+visibleRange.firstIndex+1)
 			End If
 		End If
 	Catch
@@ -1332,7 +1332,7 @@ Sub targetTextArea_FocusChanged (HasFocus As Boolean)
 		Log("Null,Textarea Parent")
 		Return
 	End If
-	lastEntry=Main.editorLV.GetItemFromView(TextArea1.Parent)
+	lastEntry=Main.editorLV.Items.IndexOf(TextArea1.Parent)
 	lastFilename=currentFilename
 	If HasFocus Then
 		
@@ -1342,7 +1342,7 @@ Sub targetTextArea_FocusChanged (HasFocus As Boolean)
 		'Log(lastEntry)
 		showTM(TextArea1)
 		showTerm(TextArea1)
-		Main.updateSegmentLabel(Main.editorLV.GetItemFromView(TextArea1.Parent),segments.Size)
+		Main.updateSegmentLabel(Main.editorLV.Items.IndexOf(TextArea1.Parent),segments.Size)
 
 	Else
 		Log("loseFocus")
@@ -1422,7 +1422,7 @@ Sub replacementMi_Action
 		replacement=tagList.Get(2)
 		Log(replacement)
 		Dim p As Pane
-		p=Main.editorLV.GetPanel(thisPreviousEntry)
+		p=Main.editorLV.Items.Get(thisPreviousEntry)
 		Dim targetTextArea As TextArea
 		targetTextArea=p.GetNode(1)
 		targetTextArea.Text=targetTextArea.Text.SubString2(0,offset)&replacement&targetTextArea.Text.SubString2(offset+length,targetTextArea.Text.Length)
@@ -1698,13 +1698,16 @@ Public Sub saveAlltheTranslationToTM
 End Sub
 
 Public Sub saveAlltheTranslationToSegmentsInVisibleArea(FirstIndex As Int, LastIndex As Int)
-	For i=Max(0,FirstIndex) To Min(LastIndex,Main.editorLV.Size-1)
+	For i=Max(0,FirstIndex) To Min(LastIndex,Main.editorLV.Items.Size-1)
 		Dim targetTextArea As TextArea
-		Dim p As Pane
-		p=Main.editorLV.GetPanel(i)
-		If p.NumberOfNodes=0 Then
+		Try
+			Dim p As Pane
+			p=Main.editorLV.Items.Get(i)
+		Catch
+			Log(LastException)
 			Continue
-		End If
+		End Try
+
 		targetTextArea=p.GetNode(1)
 		setTranslation(i,targetTextArea.Text)
 		
@@ -1714,7 +1717,7 @@ End Sub
 
 Sub saveTranslation(targetTextArea As TextArea)
 	Dim index As Int
-	index=Main.editorLV.GetItemFromView(targetTextArea.Parent)
+	index=Main.editorLV.Items.IndexOf(targetTextArea.Parent)
 	Dim bitext As List
 	bitext=segments.Get(index)
 	setTranslation(index,targetTextArea.Text)
@@ -1730,16 +1733,18 @@ Public Sub fillPane(FirstIndex As Int, LastIndex As Int)
 	End If
 	Dim ExtraSize As Int
 	ExtraSize=15
-	For i = Max(0,FirstIndex-ExtraSize*2) To Min(Main.editorLV.Size - 1,LastIndex+ExtraSize*2)
-		Dim segmentPane As Pane
-		segmentPane=Main.editorLV.GetPanel(i)
+	For i = Max(0,FirstIndex-ExtraSize*2) To Min(Main.editorLV.Items.Size - 1,LastIndex+ExtraSize*2)
+
 		If i > FirstIndex - ExtraSize And i < LastIndex + ExtraSize Then
 			'visible+
-			segmentPane.Enabled=True
-			If segmentPane.NumberOfNodes = 0 Then
+			If Main.editorLV.Items.Get(i)="" Then
 
+				Dim segmentPane As Pane
+				segmentPane=createEmptyPane
+				
 				Dim bitext As List
 				bitext=segments.Get(i)
+
 				addTextAreaToSegmentPane(segmentPane,bitext.Get(0),bitext.Get(1))
 				Dim extra As Map
 				extra=bitext.Get(4)
@@ -1757,46 +1762,13 @@ Public Sub fillPane(FirstIndex As Int, LastIndex As Int)
 					Dim h As Int=Main.calculatedHeight.Get(bitext.Get(0)&"	"&bitext.Get(1))
 					Main.setLayout(segmentPane,i,h)
 				End If
-				
+				Main.editorLV.Items.Set(i,segmentPane)
 			End If
 		Else
 			'not visible
-			segmentPane.Enabled=False
-			If segmentPane.NumberOfNodes > 0 Then
-				segmentPane.RemoveAllNodes '<--- remove the layout
-			End If
+			Main.editorLV.Items.Set(i,"")
 		End If
 	Next
-End Sub
-
-Public Sub fillPaneAsync(FirstIndex As Int, LastIndex As Int) As ResumableSub
-	
-	Dim ExtraSize As Int
-	ExtraSize=15
-	For i = 0 To Main.editorLV.Size - 1
-		Dim segmentPane As Pane
-		segmentPane=Main.editorLV.GetPanel(i)
-		If i > FirstIndex - ExtraSize And i < LastIndex + ExtraSize Then
-			'visible+
-			Sleep(0)
-			If segmentPane.NumberOfNodes = 0 Then
-                
-				Dim bitext As List
-				bitext=segments.Get(i)
-				addTextAreaToSegmentPane(segmentPane,bitext.Get(0),bitext.Get(1))
-				If Main.calculatedHeight.ContainsKey(bitext.Get(0)&"	"&bitext.Get(1)) Then
-					Dim h As Int=Main.calculatedHeight.Get(bitext.Get(0)&"	"&bitext.Get(1))
-					Main.setLayout(segmentPane,i,h)
-				End If
-			End If
-		Else
-			'not visible
-			If segmentPane.NumberOfNodes > 0 Then
-				segmentPane.RemoveAllNodes '<--- remove the layout
-			End If
-		End If
-	Next
-	Return Null
 End Sub
 
 Sub preTranslate(options As Map)
@@ -1872,11 +1844,13 @@ Sub preTranslate(options As Map)
 End Sub
 
 Sub fillOne(index As Int,translation As String)
-	Dim p As Pane
-	p=Main.editorLV.GetPanel(index)
-	If p.NumberOfNodes=0 Then
+	Try
+		Dim p As Pane
+		p=Main.editorLV.Items.Get(index)
+	Catch
+		Log(LastException)
 		Return
-	End If
+	End Try
 	Dim targetTextArea As TextArea
 	targetTextArea=p.GetNode(1)
 	targetTextArea.Text=translation
@@ -1884,15 +1858,17 @@ Sub fillOne(index As Int,translation As String)
 End Sub
 
 Public Sub fillVisibleTargetTextArea
+	Dim visibleRange As Range
+	visibleRange=Main.getVisibleRange(Main.editorLV)
 	Log("fill")
-	Log(Main.editorLV.FirstVisibleIndex)
-	Log(Main.editorLV.LastVisibleIndex)
-	For i=Max(0,Main.editorLV.FirstVisibleIndex-15) To Min(Main.editorLV.Size-1,Main.editorLV.LastVisibleIndex+14)
-		Dim p As Pane
-		p=Main.editorLV.GetPanel(i)
-		If p.NumberOfNodes=0 Then
+	For i=Max(0,visibleRange.firstIndex-15) To Min(Main.editorLV.Items.Size-1,visibleRange.lastIndex+14)
+		Try
+			Dim p As Pane
+			p=Main.editorLV.Items.Get(i)
+		Catch
+			Log(LastException)
 			Continue
-		End If
+		End Try
 		Dim targetTextArea As TextArea
 		targetTextArea=p.GetNode(1)
 		Dim bitext As List
@@ -1957,9 +1933,9 @@ Sub readWorkFile(filename As String,filesegments As List,fillUI As Boolean,root 
 		segmentsList=sourceFileMap.Get(innerFilename)
 		filesegments.AddAll(segmentsList)
 		If fillUI Then
-			For Each bitext As List In segmentsList
+			For i=0 To segmentsList.Size-1
 				'Sleep(0) 'should not use coroutine as when change file, it will be a problem.
-				createEmptyPane(bitext)
+				Main.editorLV.Items.Add("")
 			Next
 		End If
 	Next
@@ -2014,7 +1990,9 @@ Sub saveFile(filename As String)
 	If filename="" Then
 		Return
 	End If
-	saveAlltheTranslationToSegmentsInVisibleArea(Main.editorLV.FirstVisibleIndex,Main.editorLV.LastVisibleIndex)
+	Dim visibleRange As Range
+	visibleRange=Main.getVisibleRange(Main.editorLV)
+	saveAlltheTranslationToSegmentsInVisibleArea(visibleRange.firstIndex,visibleRange.lastIndex)
 	saveAlltheTranslationToTM
 	saveWorkFile(filename,segments,path)
 	contentChanged=False

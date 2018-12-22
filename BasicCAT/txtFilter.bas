@@ -128,7 +128,7 @@ End Sub
 
 Sub mergeSegment(sourceTextArea As TextArea)
 	Dim index As Int
-	index=Main.editorLV.GetItemFromView(sourceTextArea.Parent)
+	index=Main.editorLV.Items.IndexOf(sourceTextArea.Parent)
 	If index+1>Main.currentProject.segments.Size-1 Then
 		Return
 	End If
@@ -145,8 +145,8 @@ Sub mergeSegment(sourceTextArea As TextArea)
 		
 	Dim pane,nextPane As Pane
 
-	pane=Main.editorLV.GetPanel(index)
-	nextPane=Main.editorLV.GetPanel(index+1)
+	pane=Main.editorLV.Items.Get(index)
+	nextPane=Main.editorLV.Items.Get(index+1)
 	Dim targetTa,nextSourceTa,nextTargetTa As TextArea
 	nextSourceTa=nextPane.GetNode(0)
 	nextTargetTa=nextPane.GetNode(1)
@@ -195,12 +195,12 @@ Sub mergeSegment(sourceTextArea As TextArea)
 
 		
 	Main.currentProject.segments.RemoveAt(index+1)
-	Main.editorLV.RemoveAt(Main.editorLV.GetItemFromView(sourceTextArea.Parent)+1)
+	Main.editorLV.Items.RemoveAt(Main.editorLV.Items.IndexOf(sourceTextArea.Parent)+1)
 End Sub
 
 Sub splitSegment(sourceTextArea As TextArea)
 	Dim index As Int
-	index=Main.editorLV.GetItemFromView(sourceTextArea.Parent)
+	index=Main.editorLV.Items.IndexOf(sourceTextArea.Parent)
 	Dim source As String
 	Dim newSegmentPane As Pane
 	newSegmentPane.Initialize("segmentPane")
@@ -232,21 +232,25 @@ Sub splitSegment(sourceTextArea As TextArea)
 	Main.currentProject.segments.InsertAt(index+1,newBiText)
 
 
-	Main.editorLV.InsertAt(Main.editorLV.GetItemFromView(sourceTextArea.Parent)+1,newSegmentPane,"")
+	Main.editorLV.Items.InsertAt(Main.editorLV.Items.IndexOf(sourceTextArea.Parent)+1,newSegmentPane)
 End Sub
 
 Sub previewText As String
 	Dim text As String
-	If Main.editorLV.Size<>Main.currentProject.segments.Size Then
+	If Main.editorLV.Items.Size<>Main.currentProject.segments.Size Then
 		Return ""
 	End If
 	For i=Max(0,Main.currentProject.lastEntry-3) To Min(Main.currentProject.lastEntry+7,Main.currentProject.segments.Size-1)
 
-		Dim p As Pane
-		p=Main.editorLV.GetPanel(i)
-		If p.NumberOfNodes=0 Then
+        Try
+			Dim p As Pane
+			p=Main.editorLV.Items.Get(i)
+		Catch
+			Log(LastException)
 			Continue
-		End If
+		End Try
+
+
 		Dim sourceTextArea As TextArea
 		Dim targetTextArea As TextArea
 		sourceTextArea=p.GetNode(0)

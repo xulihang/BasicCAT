@@ -271,7 +271,7 @@ Sub Process_Globals
 	Private mainSplitPane As SplitPane
 	Private upperRightSplitPane As SplitPane
 	Private rightSplitPane As SplitPane
-	Public editorLV As CustomListView
+	Public editorLV As ListView
 	Public projectTreeTableView As TreeTableView
 	Public currentProject As Project
 	Private lowerRightSplitPane As SplitPane
@@ -300,6 +300,8 @@ Sub Process_Globals
 	Private dw As dictWebView
 	Type Item (UserField As String, KeyField As String, ValueField() As Byte, IdField As Long, TimeField As Long)
 	Type Task (TaskName As String, TaskItem As Item, TaskKey As String)
+	Type Range(firstIndex As Int,lastIndex As Int)
+	Private previousRange As Range
 End Sub
 
 Sub AppStart (Form1 As Form, Args() As String)
@@ -327,7 +329,6 @@ End Sub
 Sub MainForm_Resize (Width As Double, Height As Double)
 	adjustDividerPositions
 	calculatedHeight.Clear
-
 	CallSubDelayed(Me,"ListViewParent_Resize")
 End Sub
 
@@ -391,6 +392,7 @@ Sub init
 	End If
 	autosaveTimer.Enabled=False
 	loadPlugins
+
 End Sub
 
 Public Sub initializeNLP(sourcelang As String)
@@ -536,7 +538,7 @@ Sub MenuBar1_Action
 				Dim bitext As List
 				bitext=currentProject.segments.Get(i)
 				If bitext.Get(1)="" Then
-					editorLV.JumpToItem(i)
+					editorLV.ScrollTo(i)
 					Return
 				End If
 			Next
@@ -582,7 +584,7 @@ Sub MenuBar1_Action
 				fx.Msgbox(MainForm,"Please open a project first.","")
 				Return
 			End If
-			If editorLV.Size=0 Then
+			If editorLV.Items.Size=0 Then
 				fx.Msgbox(MainForm,"Please open a file first.","")
 				Return
 			End If
@@ -642,14 +644,16 @@ Sub newProject(sourceLang As String,targetLang As String)
 End Sub
 
 Sub fillWithTheNextTag
-	If editorLV.Size=0 Then
+	If editorLV.Items.Size=0 Then
 		Return
 	End If
-	Dim p As Pane
-	p=editorLV.GetPanel(currentProject.lastEntry)
-	If p.NumberOfNodes=0 Then
+	Try
+		Dim p As Pane
+		p=editorLV.Items.Get(currentProject.lastEntry)
+	Catch
 		Return
-	End If
+		Log(LastException)
+	End Try
 
 	Dim sourceTextArea As TextArea=p.GetNode(0)
 	Dim targetTextArea As TextArea=p.GetNode(1)
@@ -684,16 +688,19 @@ Sub fillWithTheNextTag
 End Sub
 
 Sub showQuickfillDropdown
-	If editorLV.Size=0 Then
+	If editorLV.Items.Size=0 Then
 		Return
 	End If
-
 	
-	Dim p As Pane
-	p=editorLV.GetPanel(currentProject.lastEntry)
-	If p.NumberOfNodes=0 Then
+	Try
+		Dim p As Pane
+		p=editorLV.Items.Get(currentProject.lastEntry)
+	Catch
+		Log(LastException)
 		Return
-	End If
+	End Try
+
+
 	Dim ta As TextArea=p.GetNode(1)
 	Dim cm As ContextMenu
 	cm.Initialize("")
@@ -733,11 +740,13 @@ Sub quickFillMi_Action
 	mi=Sender
 	Log(mi.Text)
 	Log(mi.Tag)
-	Dim p As Pane
-	p=editorLV.GetPanel(currentProject.lastEntry)
-	If p.NumberOfNodes=0 Then
+	Try
+		Dim p As Pane
+		p=editorLV.Items.Get(currentProject.lastEntry)
+	Catch
+		Log(LastException)
 		Return
-	End If
+	End Try
 	Dim ta As TextArea=p.GetNode(1)
 	Dim selectionEnd As Int=ta.selectionEnd
 	ta.Text=ta.Text.SubString2(0,ta.SelectionEnd)&mi.Text&ta.Text.SubString2(ta.SelectionEnd,ta.Text.Length)
@@ -745,14 +754,17 @@ Sub quickFillMi_Action
 End Sub
 
 Sub showSegmentHistory
-	If editorLV.Size=0 Then
+	If editorLV.Items.Size=0 Then
 		Return
 	End If
-	Dim p As Pane
-	p=editorLV.GetPanel(currentProject.lastEntry)
-	If p.NumberOfNodes=0 Then
+	Try
+		Dim p As Pane
+		p=editorLV.Items.Get(currentProject.lastEntry)
+	Catch
+		Log(LastException)
 		Return
-	End If
+	End Try
+
 	Dim ta As TextArea=p.GetNode(0)
     Dim hisViewer As HistoryViewer
 	hisViewer.Initialize
@@ -762,14 +774,16 @@ Sub showSegmentHistory
 End Sub
 
 Sub showDictDropdown
-	If editorLV.Size=0 Then
+	If editorLV.Items.Size=0 Then
 		Return
 	End If
-	Dim p As Pane
-	p=editorLV.GetPanel(currentProject.lastEntry)
-	If p.NumberOfNodes=0 Then
+	Try
+		Dim p As Pane
+		p=editorLV.Items.Get(currentProject.lastEntry)
+	Catch
+		Log(LastException)
 		Return
-	End If
+	End Try
 	Dim ta As TextArea=p.GetNode(0)
 	Dim selected As String
 	selected=ta.Text.SubString2(ta.SelectionStart,ta.SelectionEnd)
@@ -835,8 +849,13 @@ Sub changeTranslatable(isTranslatable As String)
 		Dim extra As Map
 		extra=segment.Get(4)
 		extra.Put("translate",isTranslatable)
-		Dim p As Pane
-		p=editorLV.GetPanel(currentProject.lastEntry)
+		Try
+			Dim p As Pane
+			p=editorLV.Items.Get(currentProject.lastEntry)
+		Catch
+			Return
+			Log(LastException)
+		End Try
 		Dim sourceTa As TextArea=p.GetNode(0)
 		Dim targetTa As TextArea=p.GetNode(1)
 		Select isTranslatable
@@ -1094,24 +1113,26 @@ End Sub
 
 Sub ListViewParent_Resize
 
-	Dim clv As CustomListView
-	clv=editorLV
-	clv.AsView.Width=clv.AsView.Parent.Width
-	clv.AsView.Height=clv.AsView.Parent.Height
-	If clv.Size=0 Then
+	Dim lv As ListView
+	lv=editorLV
+	Dim visibleRange As Range=getVisibleRange(lv)
+	Dim FirstVisibleIndex,LastVisibleIndex As Int
+	FirstVisibleIndex=visibleRange.firstIndex
+	LastVisibleIndex=visibleRange.lastIndex
+	If lv.Items.Size=0 Then
 		Return
 	End If
-	Dim itemWidth As Double = clv.AsView.Width
+	Dim itemWidth As Double = lv.Width
 	Dim ExtraSize As Int
 	ExtraSize=3
-	For i = Max(0, editorLV.FirstVisibleIndex - ExtraSize) To Min(editorLV.LastVisibleIndex + ExtraSize,editorLV.Size - 1)
-	'For i =  clv.FirstVisibleIndex To clv.LastVisibleIndex
-		Dim p As Pane
-		p=clv.GetPanel(i)
-		If p.NumberOfNodes=0 Then
+	For i = Max(0, FirstVisibleIndex - ExtraSize) To Min(LastVisibleIndex + ExtraSize,editorLV.Items.Size - 1)
+        Try
+			Dim p As Pane
+			p=lv.Items.Get(i)
+        Catch
+	        Log(LastException)
 			Continue
-		End If
-		
+        End Try
 		Dim sourceTa As TextArea = p.GetNode(0)
 		Dim targetTa As TextArea = p.GetNode(1)
 		If calculatedHeight.ContainsKey(sourceTa.Text&"	"&targetTa.Text)=False Then
@@ -1121,29 +1142,9 @@ Sub ListViewParent_Resize
 			setLabelFont(sourcelbl,"sourceFont")
 			setLabelFont(targetlbl,"targetFont")
 			Dim sourceHeight,targetHeight As Int
-			sourceHeight=Utils.MeasureMultilineTextHeight(sourcelbl.Font,itemWidth/2-15dip,sourceTa.Text&CRLF)
-			targetHeight=Utils.MeasureMultilineTextHeight(targetlbl.Font,itemWidth/2-15dip,targetTa.Text&CRLF)
+			sourceHeight=Utils.MeasureMultilineTextHeight(sourcelbl.Font,itemWidth/2-20dip,sourceTa.Text&CRLF&"	")
+			targetHeight=Utils.MeasureMultilineTextHeight(targetlbl.Font,itemWidth/2-20dip,targetTa.Text&CRLF&"	")
 			Dim h As Int = Max(Max(20, sourceHeight + 10), targetHeight + 10)
-			
-			'------ old way of calculating text height 
-			'sourcelbl.Font = fx.CreateFont("Tahoma",16,False,False)
-
-			'p.AddNode(sourcelbl,0, 0, itemWidth/2-15dip, -1)
-
-			'targetlbl.Font = fx.CreateFont("Tahoma",16,False,False)
-
-			'p.AddNode(targetlbl, 0, 0, itemWidth/2-15dip, -1)
-
-			'sourcelbl.Text = "ex"&sourceTa.Text&CRLF&"tra"
-			'sourcelbl.WrapText = True
-			'targetlbl.Text = "ex"&targetTa.Text&CRLF&"tra"
-			'targetlbl.WrapText = True
-			'Dim jo As JavaObject = p
-			'force the label to refresh its layout.
-			'jo.RunMethod("applyCss", Null)
-			'jo.RunMethod("layout", Null)
-			
-			
 			calculatedHeight.Put(sourceTa.Text&"	"&targetTa.Text,h)
 			setLayout(p,i,h)
 			sourcelbl.RemoveNodeFromParent
@@ -1157,31 +1158,70 @@ End Sub
 
 Public Sub setLayout(p As Pane,index As Int,h As Int)
 	Dim itemwidth As Double
-	itemwidth=editorLV.AsView.Width
+	itemwidth=editorLV.Width
 	p.Left=0
-	p.SetSize(itemwidth,h+10dip)
+	p.SetSize(itemwidth-40dip,h)
 	Dim sourceTa As TextArea = p.GetNode(0)
 	Dim targetTa As TextArea = p.GetNode(1)
-	sourceTa.Left=5dip
-	sourceTa.SetSize(itemwidth/2-15dip,h+5dip)
-	targetTa.Left=5dip+itemwidth/2-15dip
-	targetTa.SetSize(itemwidth/2-15dip,h+5dip)
-
-	editorLV.ResizeItem(index,h+10dip)
-End Sub
-
-Sub editorLV_VisibleRangeChanged (FirstIndex As Int, LastIndex As Int)
-	If editorLV.Size=0 Then
-		Return
-	End If
-	currentProject.fillPane(FirstIndex,LastIndex)
-	CallSubDelayed(Me,"ListViewParent_Resize")
-	currentProject.saveAlltheTranslationToSegmentsInVisibleArea(FirstIndex,LastIndex)
+	sourceTa.Left=0
+	sourceTa.SetSize(itemwidth/2-20dip,h)
+	targetTa.Left=itemwidth/2-20dip
+	targetTa.SetSize(itemwidth/2-20dip,h)
 End Sub
 
 
-Sub TabPane1_TabChanged (SelectedTab As TabPage)
-    	
+Sub ListView1_ScrollPosition_Changed(OldVal As Object,NewVal As Object)
+	CallSubDelayed(Me,"checkVisibleRange")
+End Sub
+
+Sub checkVisibleRange
+	Try
+		Dim currentVisibleRange As Range
+		currentVisibleRange=getVisibleRange(editorLV)
+		If previousRange.lastIndex<>currentVisibleRange.lastIndex Or previousRange.firstIndex<>currentVisibleRange.firstIndex Then
+			Log("visible range changed")
+			previousRange=currentVisibleRange
+			currentProject.fillPane(currentVisibleRange.firstIndex,currentVisibleRange.lastIndex)
+			CallSubDelayed(Me,"ListViewParent_Resize")
+			currentProject.saveAlltheTranslationToSegmentsInVisibleArea(currentVisibleRange.firstIndex,currentVisibleRange.lastIndex)
+		End If
+	Catch
+		Log(LastException)
+	End Try
+End Sub
+
+Sub addScrollChangedEvent(lv As ListView)
+	Try
+		Dim jo As JavaObject
+		jo=lv
+		Dim ListViewScrollBar As JavaObject
+		ListViewScrollBar=jo.RunMethodJO("lookup",Array(".scroll-bar:vertical"))
+		Dim r As Reflector
+		r.Target=ListViewScrollBar
+		r.AddChangeListener("ListView1_ScrollPosition","valueProperty")
+	Catch
+		Log(LastException)
+	End Try
+End Sub
+
+Sub getVisibleRange(lv As ListView) As Range
+	Dim visibleRange As Range
+	visibleRange.Initialize
+	Try
+		Dim jo As JavaObject
+		jo=lv
+		Dim VirtualFlow As JavaObject
+		VirtualFlow=jo.RunMethodJO("getSkin",Null).RunMethodJO("getChildren",Null).RunMethodJO("get",Array(0))
+		Dim lastVisibleCell As JavaObject
+		lastVisibleCell=VirtualFlow.RunMethodJO("getLastVisibleCell",Null)
+		Dim firstVisibleCell As JavaObject
+		firstVisibleCell=VirtualFlow.RunMethodJO("getFirstVisibleCell",Null)
+		visibleRange.firstIndex=firstVisibleCell.RunMethod("getIndex",Null)
+		visibleRange.lastIndex=lastVisibleCell.RunMethod("getIndex",Null)
+	Catch
+		Log(LastException)
+	End Try
+	Return visibleRange
 End Sub
 
 Sub searchTableView_MouseClicked (EventData As MouseEvent)
@@ -1219,9 +1259,14 @@ Sub fillWithTM
 		If tmTableView.SelectedRow=-1 Then
 			tmTableView.SelectedRow=0
 		End If
-		If tmTableView.SelectedRowValues<>Null And editorLV.Size<>0 Then
-			Dim pane As Pane
-			pane=editorLV.GetPanel(currentProject.lastEntry)
+		If tmTableView.SelectedRowValues<>Null And editorLV.Items.Size<>0 Then
+			Try
+				Dim pane As Pane
+				pane=editorLV.Items.Get(currentProject.lastEntry)
+			Catch
+				Log(LastException)
+				Return
+			End Try
 			Dim targetTextArea As TextArea
 			targetTextArea=pane.GetNode(1)
 			targetTextArea.Text=tmTableView.SelectedRowValues(2)
@@ -1243,8 +1288,13 @@ Sub termLV_MouseClicked (EventData As MouseEvent)
 		p=termLV.SelectedItem
 		Dim lbl As Label
 		lbl=p.GetNode(1)
-		Dim pane As Pane
-		pane=editorLV.GetPanel(currentProject.lastEntry)
+		Try
+			Dim pane As Pane
+			pane=editorLV.Items.Get(currentProject.lastEntry)
+		Catch
+			Log(LastException)
+			Return
+		End Try
 		Dim targetTextArea As TextArea
 		targetTextArea=pane.GetNode(1)
 		targetTextArea.Text=targetTextArea.Text.SubString2(0,targetTextArea.SelectionStart)&lbl.Text&targetTextArea.Text.SubString2(targetTextArea.SelectionStart,targetTextArea.Text.Length)
@@ -1253,11 +1303,14 @@ End Sub
 
 Sub tmTableView_SelectedRowChanged(Index As Int, Row() As Object)
 	If Row<>Null And Row.Length<>0 Then
-		Dim pane As Pane
-		pane=editorLV.GetPanel(currentProject.lastEntry)
-		If pane.NumberOfNodes=0 Then
+		Try
+			Dim pane As Pane
+			pane=editorLV.Items.Get(currentProject.lastEntry)
+		Catch
+			Log(LastException)
 			Return
-		End If
+		End Try
+
 		Dim sourceTextArea As TextArea
 		sourceTextArea=pane.GetNode(0)
 		If Row(1)="" Then
@@ -1279,7 +1332,7 @@ Sub searchTableView_Action
 			If searchTableView.SelectedRowValues<>Null Then
 				Dim index As Int
 				index=searchTableView.SelectedRowValues(0)
-				editorLV.JumpToItem(index)
+				editorLV.ScrollTo(index)
 			End If
 	End Select
 End Sub
@@ -1304,7 +1357,7 @@ Public Sub closeProject
 		tmTableView.Items.Clear
 		projectTreeTableView.ClearSelection
 		projectTreeTableView.Root.Children.Clear
-		editorLV.Clear
+		editorLV.Items.Clear
 		termLV.Items.Clear
 		MainForm.Title="BasicCAT"
 		Utils.disableMenuItems(MenuBar1,Array As String("_Save","_Close"))
@@ -1481,7 +1534,7 @@ Sub checkLV_ItemClick (Index As Int, Value As Object)
 			Dim replacement As String
 			replacement=tagList.Get(0)
 			Dim p As Pane
-			p=editorLV.GetPanel(entry)
+			p=editorLV.Items.Get(entry)
 			Dim targetTextArea As TextArea
 			targetTextArea=p.GetNode(1)
 			targetTextArea.Text=targetTextArea.Text.SubString2(0,offset)&replacement&targetTextArea.Text.SubString2(offset+length,targetTextArea.Text.Length)

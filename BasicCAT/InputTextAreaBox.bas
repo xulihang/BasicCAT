@@ -36,7 +36,7 @@ Sub Button1_MouseClicked (EventData As MouseEvent)
 		extra=segment.Get(4)
 		extra.Put("note",TextArea1.Text)
 		Main.currentProject.contentIsChanged
-		Dim p As Pane=Main.editorLV.GetPanel(Main.currentProject.lastEntry)
+		Dim p As Pane=Main.editorLV.Items.Get(Main.currentProject.lastEntry)
 		If p.NumberOfNodes<>0 Then
 			CSSUtils.SetStyleProperty(p.GetNode(1),"-fx-background-color","green")
 		End If
@@ -45,7 +45,7 @@ Sub Button1_MouseClicked (EventData As MouseEvent)
 		extra=segment.Get(4)
 		extra.Remove("note")
 		Main.currentProject.contentIsChanged
-		Dim p As Pane=Main.editorLV.GetPanel(Main.currentProject.lastEntry)
+		Dim p As Pane=Main.editorLV.Items.Get(Main.currentProject.lastEntry)
 		If p.NumberOfNodes<>0 Then
 			CSSUtils.SetStyleProperty(p.GetNode(1),"-fx-background-color","")
 		End If
