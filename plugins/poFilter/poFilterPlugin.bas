@@ -320,9 +320,9 @@ Sub generateFile(filename As String,path As String,projectFile As Map,BCATMain A
 	CallSub2(BCATMain,"updateOperation",filename&" generated!")
 End Sub
 
-Sub mergeSegment(MainForm As Form,sourceTextArea As TextArea,editorLV As CustomListView,segments As List,projectFile As Map)
+Sub mergeSegment(MainForm As Form,sourceTextArea As TextArea,editorLV As ListView,segments As List,projectFile As Map)
 	Dim index As Int
-	index=editorLV.GetItemFromView(sourceTextArea.Parent)
+	index=editorLV.Items.IndexOf(sourceTextArea.Parent)
 	If index+1>segments.Size-1 Then
 		Return
 	End If
@@ -369,8 +369,8 @@ Sub mergeSegment(MainForm As Form,sourceTextArea As TextArea,editorLV As CustomL
 	
 	Dim pane,nextPane As Pane
 
-	pane=editorLV.GetPanel(index)
-	nextPane=editorLV.GetPanel(index+1)
+	pane=editorLV.Items.Get(index)
+	nextPane=editorLV.Items.Get(index+1)
 	Dim targetTa,nextSourceTa,nextTargetTa As TextArea
 	nextSourceTa=nextPane.GetNode(0)
 	nextTargetTa=nextPane.GetNode(1)
@@ -432,12 +432,12 @@ Sub mergeSegment(MainForm As Form,sourceTextArea As TextArea,editorLV As CustomL
 
 		
 	segments.RemoveAt(index+1)
-	editorLV.RemoveAt(editorLV.GetItemFromView(sourceTextArea.Parent)+1)
+	editorLV.Items.RemoveAt(editorLV.Items.IndexOf(sourceTextArea.Parent)+1)
 End Sub
 
-Sub splitSegment(BCATMain As Object,sourceTextArea As TextArea,editorLV As CustomListView,segments As List,projectFile As Map)
+Sub splitSegment(BCATMain As Object,sourceTextArea As TextArea,editorLV As ListView,segments As List,projectFile As Map)
 	Dim index As Int
-	index=editorLV.GetItemFromView(sourceTextArea.Parent)
+	index=editorLV.Items.IndexOf(sourceTextArea.Parent)
 	Dim source As String
 	Dim newSegmentPane As Pane
 	newSegmentPane.Initialize("segmentPane")
@@ -469,7 +469,7 @@ Sub splitSegment(BCATMain As Object,sourceTextArea As TextArea,editorLV As Custo
 	segments.InsertAt(index+1,newBiText)
 
 
-	editorLV.InsertAt(editorLV.GetItemFromView(sourceTextArea.Parent)+1,newSegmentPane,"")
+	editorLV.Items.InsertAt(editorLV.Items.IndexOf(sourceTextArea.Parent)+1,newSegmentPane)
 End Sub
 
 Sub shouldAddSpace(sourceLang As String,targetLang As String,index As Int,segmentsList As List) As Boolean
@@ -501,19 +501,21 @@ Sub shouldAddSpace(sourceLang As String,targetLang As String,index As Int,segmen
 	Return False
 End Sub
 
-Sub previewText(editorLV As CustomListView,segments As List,lastEntry As Int,sourceLang As String,targetLang As String,path As String,settings As Map) As String
+Sub previewText(editorLV As ListView,segments As List,lastEntry As Int,sourceLang As String,targetLang As String,path As String,settings As Map) As String
 	Log("Po preview")
 	Dim text As String
-	If editorLV.Size<>segments.Size Then
+	If editorLV.Items.Size<>segments.Size Then
 		Return ""
 	End If
 	Dim previousID As Int=-1
 	For i=Max(0,lastEntry-3) To Min(lastEntry+7,segments.Size-1)
-		Dim p As Pane
-		p=editorLV.GetPanel(i)
-		If p.NumberOfNodes=0 Then
+		Try
+			Dim p As Pane
+			p=editorLV.Items.Get(i)
+		Catch
+			Log(LastException)
 			Continue
-		End If
+		End Try
 		Dim sourceTextArea As TextArea
 		Dim targetTextArea As TextArea
 		sourceTextArea=p.GetNode(0)

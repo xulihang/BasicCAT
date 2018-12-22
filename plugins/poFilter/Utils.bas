@@ -35,7 +35,7 @@ Sub readLanguageCode(codesfilePath As String) As Map
 	Dim headsList As List
 	headsList.Initialize
 	headsList.AddAll(Regex.Split("	",linesList.Get(0)))
-	Log(headsList)
+	'Log(headsList)
 	
 	Dim langcodes As Map
 	langcodes.Initialize
@@ -121,7 +121,7 @@ Sub shouldAddSpace(sourceLang As String,targetLang As String,index As Int,segmen
 	Return False
 End Sub
 
-Sub exportToMarkdownWithNotes(segments As List,path As String,filename As String,sourceLang As String,targetLang As String,settings as Map)
+Sub exportToMarkdownWithNotes(segments As List,path As String,filename As String,sourceLang As String,targetLang As String,settings As Map)
 	Dim text As StringBuilder
 	text.Initialize
 	Dim noteIndex As Int=0
@@ -177,7 +177,7 @@ Sub exportToMarkdownWithNotes(segments As List,path As String,filename As String
 	File.WriteString(path,"",result)
 End Sub
 
-Sub exportToBiParagraph(segments As List,path As String,filename As String,sourceLang As String,targetLang As String,settings as Map)
+Sub exportToBiParagraph(segments As List,path As String,filename As String,sourceLang As String,targetLang As String,settings As Map)
 	Dim text As StringBuilder
 	text.Initialize
 	Dim sourceText As String
@@ -284,37 +284,6 @@ Sub CollectMenuItems(Items As List)
 			Dim mn As Menu = mi
 			CollectMenuItems(mn.MenuItems)
 		End If
-	Next
-End Sub
-
-Sub ListViewParent_Resize(clv As CustomListView)
-	If clv.Size=0 Then
-		Return
-	End If
-	Dim itemWidth As Double = clv.AsView.Width
-	Log(itemWidth)
-	For i =  0 To clv.Size-1
-		Dim p As Pane
-		p=clv.GetPanel(i)
-		If p.NumberOfNodes=0 Then
-			Continue
-		End If
-		Dim sourcelbl,targetlbl As Label
-		sourcelbl=p.GetNode(0)
-		sourcelbl.SetSize(itemWidth/2,10)
-		sourcelbl.WrapText=True
-		targetlbl=p.GetNode(1)
-		targetlbl.SetSize(itemWidth/2,10)
-		targetlbl.WrapText=True
-		Dim jo As JavaObject = p
-		'force the label to refresh its layout.
-		jo.RunMethod("applyCss", Null)
-		jo.RunMethod("layout", Null)
-		Dim h As Int = Max(Max(50, sourcelbl.Height + 20), targetlbl.Height + 20)
-		p.SetLayoutAnimated(0, 0, 0, itemWidth, h + 10dip)
-		sourcelbl.SetLayoutAnimated(0, 0, 0, itemWidth/2, h+5dip)
-		targetlbl.SetLayoutAnimated(0, itemWidth/2, 0, itemWidth/2, h+5dip)
-		clv.ResizeItem(i,h+10dip)
 	Next
 End Sub
 

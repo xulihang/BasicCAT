@@ -12,16 +12,15 @@ Library6=jxui
 Library7=javaobject
 Module1=poFilterPlugin
 Module2=Xml2Map
-Module3=CustomListView
-Module4=Map2Xml
-Module5=filterGenericUtils
-Module6=SRX
-Module7=XMLUtils
-Module8=segmentation
-Module9=Utils
+Module3=Map2Xml
+Module4=filterGenericUtils
+Module5=SRX
+Module6=XMLUtils
+Module7=segmentation
+Module8=Utils
 NumberOfFiles=1
 NumberOfLibraries=7
-NumberOfModules=9
+NumberOfModules=8
 Version=6.8
 @EndOfDesignText@
 #Region Project Attributes 
