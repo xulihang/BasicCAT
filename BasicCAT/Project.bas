@@ -986,9 +986,9 @@ Public Sub addTextAreaToSegmentPane(segmentpane As Pane,source As String,target 
 	addKeyEvent(targetTextArea,"targetTextArea")
 	addSelectionChangedEvent(targetTextArea,"targetTextAreaSelection")
 	
-	sourceTextArea.Left=5dip
+	sourceTextArea.Left=0
 	sourceTextArea.SetSize(Main.editorLV.Width/2-20dip,50dip)
-	targetTextArea.Left=targetTextArea.Left+targetTextArea.Width
+	targetTextArea.Left=sourceTextArea.Left+sourceTextArea.Width
 	targetTextArea.SetSize(Main.editorLV.Width/2-20dip,50dip)
 End Sub
 
