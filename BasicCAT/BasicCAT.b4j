@@ -643,6 +643,59 @@ Sub newProject(sourceLang As String,targetLang As String)
 	Utils.enableMenuItems(MenuBar1,Array As String("_Save","_Close"))
 End Sub
 
+
+Sub openProject(path As String)
+	currentProject.Initialize
+	currentProject.open(path)
+	autosaveTimer.Enabled=True
+	MainForm.Title=getProjectname(path)
+	Utils.enableMenuItems(MenuBar1,Array As String("_Save","_Close"))
+	Utils.enableMenuItems(MenuBar1,File.ReadList(File.DirAssets,"menuText.txt"))
+End Sub
+
+Public Sub closeProject
+	autosaveTimer.Enabled=False
+	If currentProject.IsInitialized Then
+		If currentProject.projectTM.IsInitialized Then
+			currentProject.projectTM.close
+		End If
+		Dim currentProject As Project
+		tmTableView.ClearSelection
+		tmTableView.Items.Clear
+		projectTreeTableView.ClearSelection
+		projectTreeTableView.Root.Children.Clear
+		editorLV.Items.Clear
+		termLV.Items.Clear
+		MainForm.Title="BasicCAT"
+		Utils.disableMenuItems(MenuBar1,Array As String("_Save","_Close"))
+		Utils.disableMenuItems(MenuBar1,File.ReadList(File.DirAssets,"menuText.txt"))
+	End If
+End Sub
+
+
+
+Sub fillWithTM
+	If tmTableView.Items.Size<>0 Then
+		Log(tmTableView.SelectedRow)
+		If tmTableView.SelectedRow=-1 Then
+			tmTableView.SelectedRow=0
+		End If
+		If tmTableView.SelectedRowValues<>Null And editorLV.Items.Size<>0 Then
+			Try
+				Dim pane As Pane
+				pane=editorLV.Items.Get(currentProject.lastEntry)
+			Catch
+				Log(LastException)
+				Return
+			End Try
+			Dim targetTextArea As TextArea
+			targetTextArea=pane.GetNode(1)
+			targetTextArea.Text=tmTableView.SelectedRowValues(2)
+			currentProject.contentIsChanged
+		End If
+	End If
+End Sub
+
 Sub fillWithTheNextTag
 	If editorLV.Items.Size=0 Then
 		Return
@@ -1111,6 +1164,12 @@ Public Sub getProjectname(path As String) As String
 	Return Projectname
 End Sub
 
+'menu actions end
+'-----------------------------
+
+'editor relevant
+'-----------------------------
+
 Sub ListViewParent_Resize
 
 	Dim lv As ListView
@@ -1224,6 +1283,9 @@ Sub getVisibleRange(lv As ListView) As Range
 	Return visibleRange
 End Sub
 
+'other controls
+'------------------------------
+
 Sub searchTableView_MouseClicked (EventData As MouseEvent)
 	If EventData.PrimaryButtonPressed Then
 		If searchTableView.SelectedRowValues<>Null Then
@@ -1251,29 +1313,6 @@ Sub tmTableView_MouseClicked (EventData As MouseEvent)
 	If EventData.ClickCount=2 Then
 		fillWithTM
 	End If
-End Sub
-
-Sub fillWithTM
-	If tmTableView.Items.Size<>0 Then
-		Log(tmTableView.SelectedRow)
-		If tmTableView.SelectedRow=-1 Then
-			tmTableView.SelectedRow=0
-		End If
-		If tmTableView.SelectedRowValues<>Null And editorLV.Items.Size<>0 Then
-			Try
-				Dim pane As Pane
-				pane=editorLV.Items.Get(currentProject.lastEntry)
-			Catch
-				Log(LastException)
-				Return
-			End Try
-			Dim targetTextArea As TextArea
-			targetTextArea=pane.GetNode(1)
-			targetTextArea.Text=tmTableView.SelectedRowValues(2)
-			currentProject.contentIsChanged
-		End If
-	End If
-
 End Sub
 
 Sub addTermButton_MouseClicked (EventData As MouseEvent)
@@ -1337,35 +1376,6 @@ Sub searchTableView_Action
 	End Select
 End Sub
 
-Sub openProject(path As String)
-	currentProject.Initialize
-	currentProject.open(path)
-	autosaveTimer.Enabled=True
-	MainForm.Title=getProjectname(path)
-	Utils.enableMenuItems(MenuBar1,Array As String("_Save","_Close"))
-	Utils.enableMenuItems(MenuBar1,File.ReadList(File.DirAssets,"menuText.txt"))
-End Sub
-
-Public Sub closeProject
-	autosaveTimer.Enabled=False
-	If currentProject.IsInitialized Then
-		If currentProject.projectTM.IsInitialized Then
-			currentProject.projectTM.close
-		End If
-		Dim currentProject As Project
-		tmTableView.ClearSelection
-		tmTableView.Items.Clear
-		projectTreeTableView.ClearSelection
-		projectTreeTableView.Root.Children.Clear
-		editorLV.Items.Clear
-		termLV.Items.Clear
-		MainForm.Title="BasicCAT"
-		Utils.disableMenuItems(MenuBar1,Array As String("_Save","_Close"))
-		Utils.disableMenuItems(MenuBar1,File.ReadList(File.DirAssets,"menuText.txt"))
-	End If
-End Sub
-
-
 Sub segmentSearchToggleButton_SelectedChange(Selected As Boolean)
 	'toggleTableOrTextArea(Selected,segmentSearchToggleButton,contextWebView,searchTableView)
 	toggleTableOrWebView(Selected,segmentSearchToggleButton,contextWebView,searchTableView)
@@ -1386,7 +1396,6 @@ Public Sub changeWhenSegmentOrSelectionChanges
 		End If
 	End If
 End Sub
-
 
 Sub toggleTableOrWebView(selected As Boolean,tb As ToggleButton, wv As WebView,tv As TableView)
 	If selected Then

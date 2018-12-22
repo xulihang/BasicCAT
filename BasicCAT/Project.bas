@@ -36,30 +36,6 @@ Public Sub Initialize
 	cm.Initialize("cm")
 End Sub
 
-Public Sub setTranslation(index As String,translation As String)
-	If segments.Size=0 Then
-		Return 
-	End If
-	Dim bitext As List
-	bitext=segments.Get(index)
-	If translation<>bitext.Get(1) Then
-		bitext.Set(1,translation)
-		Dim time As String=DateTime.Now
-		Dim extra As Map
-		extra=bitext.Get(4)
-		extra.Put("createdTime",time)
-		If settings.GetDefault("sharingTM_enabled",False)=True Then
-			extra.Put("creator",Main.preferencesMap.GetDefault("vcs_username","anonymous"))
-		Else
-			If settings.GetDefault("git_enabled",False)=False Then
-				extra.Put("creator",Main.preferencesMap.GetDefault("vcs_username",""))
-			Else
-				extra.Put("creator",Main.preferencesMap.GetDefault("vcs_username","anonymous"))
-			End If
-		End If
-	End If
-End Sub
-
 Sub initializeTM(projectPath As String,isExistingProject As Boolean)
 	projectTM.Initialize(projectPath)
 	Dim externalTMList As List
@@ -95,8 +71,6 @@ Sub initializeHistory(projectPath As String)
 	projectHistory.Initialize(projectPath)
 End Sub
 
-
-
 Public Sub open(jsonPath As String)
 	If Utils.conflictsUnSolvedFilename(jsonPath,"")<>"conflictsSolved" Then
 		fx.Msgbox(Main.MainForm,jsonPath&" has unresolved conflicts.","")
@@ -125,15 +99,6 @@ Public Sub open(jsonPath As String)
 			commitAndPush("")
 		End If
 	End If
-
-	'jumpToLastEntry
-End Sub
-
-Sub jumpToLastEntry
-	If projectFile.Get("lastFile")="" Then
-		Return
-	End If
-	openFile(projectFile.Get("lastFile"),True)
 End Sub
 
 Public Sub newProjectSetting(source As String,target As String)
@@ -174,7 +139,6 @@ Public Sub addFileInFolder(folderPath As String,filename As String)
 		createWorkFileAccordingToExtension(filename)
 	End If
 End Sub
-
 
 Public Sub saveSettings(newsettings As Map)
 	projectFile.Put("settings",newsettings)
@@ -224,12 +188,149 @@ public Sub save
 	
 	If contentChanged Then
 		saveFile(currentFilename)
-        gitcommit(False,True)
+		gitcommit(False,True)
 		
 	End If
 	
 	Main.updateSavedTime
 End Sub
+
+
+Sub openFile(filename As String,onOpeningProject As Boolean)
+	If onOpeningProject=False Then
+		save
+	End If
+	If File.Exists(File.Combine(path,"work"),filename&".json")=False Then
+		fx.Msgbox(Main.MainForm,"The workfile does not exist."&CRLF&"Maybe it's still in building.","")
+		Return
+	End If
+	Main.editorLV.Items.Clear
+	Main.tmTableView.Items.Clear
+	Main.LogWebView.LoadHtml("")
+	Main.searchTableView.Items.Clear
+	segments.Clear
+	currentFilename=filename
+
+	readWorkFile(currentFilename,segments,True,path)
+
+	Log("currentFilename:"&currentFilename)
+	If lastFilename=currentFilename And segments.Size<>0 Then
+		Log("ddd"&True)
+		Log(lastEntry)
+		Try
+			Main.editorLV.ScrollTo(lastEntry)
+		Catch
+			lastEntry=0
+			Log(LastException)
+		End Try
+	End If
+	Dim visibleRange As Range
+	visibleRange=Main.getVisibleRange(Main.editorLV)
+	fillPane(visibleRange.firstIndex,visibleRange.lastIndex)
+	Main.addScrollChangedEvent(Main.editorLV)
+End Sub
+
+Sub closeFile
+	Main.editorLV.Items.Clear
+	Main.tmTableView.Items.Clear
+	Main.LogWebView.LoadHtml("")
+	Main.searchTableView.Items.Clear
+	segments.Clear
+	currentFilename=""
+End Sub
+
+Sub addFilesToTreeTable(filename As String)
+	Dim subTreeTableItem As TreeTableItem
+	subTreeTableItem=Main.projectTreeTableView.Root.Children.Get(0)
+	Dim tti As TreeTableItem
+	Dim lbl As Label
+	lbl.Initialize("lbl")
+	lbl.Text=filename
+	Dim fileCM As ContextMenu
+	fileCM.Initialize("fileCM")
+	Dim mi As MenuItem
+	mi.Initialize("Remove","removeFileMi")
+	Dim mi2 As MenuItem
+	mi2.Initialize("Import from review","importReviewMi")
+	Dim mi3 As MenuItem
+	mi3.Initialize("docx for review","exportReviewMi")
+	Dim mi4 As MenuItem
+	mi4.Initialize("bi-paragraphs","exportBiParagraphMi")
+	Dim mi5 As MenuItem
+	mi5.Initialize("markdown with notes","exportMarkdownWithNotesMi")
+	
+	Dim exportMenu As Menu
+	exportMenu.Initialize("Export to","")
+	exportMenu.MenuItems.Add(mi3)
+	exportMenu.MenuItems.Add(mi4)
+	exportMenu.MenuItems.Add(mi5)
+
+	fileCM.MenuItems.Add(mi)
+	fileCM.MenuItems.Add(mi2)
+	fileCM.MenuItems.Add(exportMenu)
+
+	lbl.ContextMenu=fileCM
+	
+	tti.Initialize("tti",Array As Object(lbl))
+	mi.Tag=tti
+	mi2.Tag=filename
+	mi3.Tag=filename
+	mi4.Tag=filename
+	mi5.Tag=filename
+	subTreeTableItem.Children.Add(tti)
+End Sub
+
+Sub showPreView
+	If Main.pre.IsInitialized And Main.pre.isShowing Then
+		Main.pre.loadText
+	End If
+End Sub
+
+Sub createProjectFiles
+	Dim dirList As List
+	dirList.Initialize
+	dirList.Add("")
+	dirList.Add("source")
+	dirList.Add("work")
+	dirList.Add("target")
+	dirList.Add("TM")
+	dirList.Add("Term")
+	dirList.Add("History")
+	dirList.Add("bak")
+	dirList.Add("config")
+	For Each dirname As String In dirList
+		If File.Exists(path,dirname)=False Then
+			Log(dirname)
+			File.MakeDir(path,dirname)
+		End If
+	Next
+	Dim configPath As String=File.Combine(path,"config")
+	Dim configsList As List
+	configsList.Initialize
+	configsList.Add("segmentationRules.srx")
+	configsList.Add("dictList.txt")
+	For Each filename As String In configsList
+		If File.Exists(configPath,filename)=False Then
+			File.Copy(File.DirAssets,filename,configPath,filename)
+		End If
+	Next
+End Sub
+
+Sub getProjectPath(jsonPath As String) As String
+	Dim ProjectPath As String
+	Try
+		ProjectPath=jsonPath.SubString2(0,jsonPath.LastIndexOf("\"))
+	Catch
+		ProjectPath=jsonPath.SubString2(0,jsonPath.LastIndexOf("/"))
+		Log(LastException)
+	End Try
+	Return ProjectPath
+End Sub
+
+
+'project action end
+'--------------------
+'git relevant
 
 Sub gitcommit(local As Boolean,isSaving As Boolean) As Boolean
 	Dim configured As Boolean=False
@@ -325,7 +426,6 @@ Public Sub initAndPush
 		fx.Msgbox(Main.MainForm,"Push Failed","")
 	End If
 End Sub
-
 
 Public Sub commitAndPush(commitMessage As String)
 	gitinit
@@ -434,7 +534,6 @@ Sub samelocalHeadAndRemoteHead(username As String,password As String,fetch As Bo
 	End If
 	Return result
 End Sub
-
 
 Sub updateLocalFileBasedonFetch(username As String,password As String,email As String)
 	If samelocalHeadAndRemoteHead(username,password,True)=False Then
@@ -561,56 +660,10 @@ Sub checkWorkfile
 	End If
 End Sub
 
+'git end
+'-------------------
+'ui relevant
 
-Sub showPreView
-	If Main.pre.IsInitialized And Main.pre.isShowing Then
-		Main.pre.loadText
-	End If
-End Sub
-
-Sub createProjectFiles
-	Dim dirList As List
-	dirList.Initialize
-	dirList.Add("")
-	dirList.Add("source")
-	dirList.Add("work")
-	dirList.Add("target")
-	dirList.Add("TM")
-	dirList.Add("Term")
-	dirList.Add("History")
-	dirList.Add("bak")
-	dirList.Add("config")
-	For Each dirname As String In dirList
-		If File.Exists(path,dirname)=False Then
-			Log(dirname)
-			File.MakeDir(path,dirname)
-		End If
-	Next
-	Dim configPath As String=File.Combine(path,"config")
-	Dim configsList As List
-	configsList.Initialize
-	configsList.Add("segmentationRules.srx")
-	configsList.Add("dictList.txt")
-	For Each filename As String In configsList
-		If File.Exists(configPath,filename)=False Then
-			File.Copy(File.DirAssets,filename,configPath,filename)
-		End If
-	Next
-End Sub
-
-
-
-
-Sub getProjectPath(jsonPath As String) As String
-	Dim ProjectPath As String
-	Try
-		ProjectPath=jsonPath.SubString2(0,jsonPath.LastIndexOf("\"))
-	Catch
-		ProjectPath=jsonPath.SubString2(0,jsonPath.LastIndexOf("/"))
-		Log(LastException)
-	End Try
-	Return ProjectPath
-End Sub
 
 Sub lbl_MouseClicked (EventData As MouseEvent)
 	If EventData.PrimaryButtonPressed Then
@@ -624,7 +677,6 @@ Sub lbl_MouseClicked (EventData As MouseEvent)
 		End If
 	End If
 End Sub
-
 
 Sub exportReviewMi_Action
 	Dim mi As MenuItem
@@ -771,90 +823,6 @@ Sub removeFileMi_Action
 	fx.Msgbox(Main.MainForm,"Done","")
 End Sub
 
-Sub openFile(filename As String,onOpeningProject As Boolean)
-	If onOpeningProject=False Then
-		save
-	End If
-	If File.Exists(File.Combine(path,"work"),filename&".json")=False Then
-	    fx.Msgbox(Main.MainForm,"The workfile does not exist."&CRLF&"Maybe it's still in building.","")
-		Return
-	End If
-	Main.editorLV.Items.Clear
-	Main.tmTableView.Items.Clear
-	Main.LogWebView.LoadHtml("")
-	Main.searchTableView.Items.Clear
-	segments.Clear
-	currentFilename=filename
-
-	readWorkFile(currentFilename,segments,True,path)
-
-	Log("currentFilename:"&currentFilename)
-	If lastFilename=currentFilename And segments.Size<>0 Then
-		Log("ddd"&True)
-		Log(lastEntry)
-		Try
-			Main.editorLV.ScrollTo(lastEntry)
-		Catch
-			lastEntry=0
-			Log(LastException)
-		End Try
-	End If
-	Dim visibleRange As Range
-	visibleRange=Main.getVisibleRange(Main.editorLV)
-	fillPane(visibleRange.firstIndex,visibleRange.lastIndex)
-	Main.addScrollChangedEvent(Main.editorLV)
-End Sub
-
-Sub closeFile
-	Main.editorLV.Items.Clear
-	Main.tmTableView.Items.Clear
-	Main.LogWebView.LoadHtml("")
-	Main.searchTableView.Items.Clear
-	segments.Clear
-	currentFilename=""
-End Sub
-
-Sub addFilesToTreeTable(filename As String)
-	Dim subTreeTableItem As TreeTableItem
-	subTreeTableItem=Main.projectTreeTableView.Root.Children.Get(0)
-	Dim tti As TreeTableItem
-	Dim lbl As Label
-	lbl.Initialize("lbl")
-	lbl.Text=filename
-	Dim fileCM As ContextMenu
-	fileCM.Initialize("fileCM")
-	Dim mi As MenuItem
-	mi.Initialize("Remove","removeFileMi")
-	Dim mi2 As MenuItem
-	mi2.Initialize("Import from review","importReviewMi")
-	Dim mi3 As MenuItem
-	mi3.Initialize("docx for review","exportReviewMi")
-	Dim mi4 As MenuItem
-	mi4.Initialize("bi-paragraphs","exportBiParagraphMi")
-	Dim mi5 As MenuItem
-	mi5.Initialize("markdown with notes","exportMarkdownWithNotesMi")
-	
-	Dim exportMenu As Menu
-	exportMenu.Initialize("Export to","")
-	exportMenu.MenuItems.Add(mi3)
-	exportMenu.MenuItems.Add(mi4)
-	exportMenu.MenuItems.Add(mi5)
-
-	fileCM.MenuItems.Add(mi)
-	fileCM.MenuItems.Add(mi2)
-	fileCM.MenuItems.Add(exportMenu)
-
-	lbl.ContextMenu=fileCM
-	
-	tti.Initialize("tti",Array As Object(lbl))
-	mi.Tag=tti
-	mi2.Tag=filename
-	mi3.Tag=filename
-	mi4.Tag=filename
-	mi5.Tag=filename
-	subTreeTableItem.Children.Add(tti)
-End Sub
-
 Sub targetTextArea_TextChanged (Old As String, New As String)
 	If Old<>New  Then
 		If Old="" And New.Length<=1 Then
@@ -991,25 +959,6 @@ Sub segmentPane_MouseClicked (EventData As MouseEvent)
 	Log(lastEntry)
 End Sub
 
-Public Sub createSegmentPane(bitext As List) As Pane
-	Dim extra As Map
-	extra=bitext.Get(4)
-	Dim segmentPane As Pane
-	segmentPane.Initialize("segmentPane")
-	addTextAreaToSegmentPane(segmentPane,bitext.Get(0),bitext.Get(1))
-	If extra.ContainsKey("translate") Then
-		If extra.Get("translate")="no" Then
-			Utils.disableTextArea(segmentPane)
-		End If
-	End If
-	If extra.ContainsKey("note") Then
-		If extra.Get("note")<>"" Then
-			CSSUtils.SetStyleProperty(segmentPane.GetNode(1),"-fx-background-color","green")
-		End If
-	End If
-	Return segmentPane
-End Sub
-
 Public Sub createEmptyPane As Pane
 	Dim segmentPane As Pane
 	segmentPane.Initialize("segmentPane")
@@ -1032,16 +981,15 @@ Public Sub addTextAreaToSegmentPane(segmentpane As Pane,source As String,target 
 	targetTextArea=segmentpane.GetNode(1)
 	targetTextArea.Text=target
 
-
 	'targetTextArea.Style = "-fx-font-family: Arial Unicode MS;"
 	Main.setTextAreaFont(targetTextArea,"targetFont")
 	addKeyEvent(targetTextArea,"targetTextArea")
 	addSelectionChangedEvent(targetTextArea,"targetTextAreaSelection")
 	
 	sourceTextArea.Left=5dip
-	sourceTextArea.SetSize(Main.editorLV.Width/2-15dip,50dip)
+	sourceTextArea.SetSize(Main.editorLV.Width/2-20dip,50dip)
 	targetTextArea.Left=targetTextArea.Left+targetTextArea.Width
-	targetTextArea.SetSize(Main.editorLV.Width/2-15dip,50dip)
+	targetTextArea.SetSize(Main.editorLV.Width/2-20dip,50dip)
 End Sub
 
 Sub addKeyEvent(textarea1 As TextArea,eventName As String)
@@ -1663,69 +1611,6 @@ Sub viewInfoMI_Action
 End Sub
 
 
-Sub saveOneTranslationToTM(bitext As List,index As Int)
-	If bitext.Get(1)="" Or bitext.Get(0)=bitext.Get(1) Then
-		Return
-	End If
-	Dim createdTime As Long
-	Dim creator As String
-	Dim extra As Map
-	extra=bitext.Get(4)
-	createdTime=extra.GetDefault("createdTime",0)
-	creator=extra.GetDefault("creator","anonymous")
-	
-	Dim targetMap As Map
-	targetMap.Initialize
-	targetMap.Put("text",bitext.Get(1))
-	targetMap.Put("createdTime",createdTime)
-	targetMap.Put("creator",creator)
-	targetMap.Put("filename",currentFilename)
-	targetMap.Put("index",index)
-	targetMap.Put("note",extra.GetDefault("note",""))
-	
-	projectTM.addPair(bitext.Get(0),targetMap)
-	If settings.GetDefault("record_history",True)=True Then
-		projectHistory.addSegmentHistory(bitext.Get(0),targetMap)
-	End If
-End Sub
-
-Public Sub saveAlltheTranslationToTM
-	Dim index As Int=0
-	For Each bitext As List In segments
-		saveOneTranslationToTM(bitext,index)
-		index=index+1
-    Next
-End Sub
-
-Public Sub saveAlltheTranslationToSegmentsInVisibleArea(FirstIndex As Int, LastIndex As Int)
-	For i=Max(0,FirstIndex) To Min(LastIndex,Main.editorLV.Items.Size-1)
-		Dim targetTextArea As TextArea
-		Try
-			Dim p As Pane
-			p=Main.editorLV.Items.Get(i)
-		Catch
-			Log(LastException)
-			Continue
-		End Try
-
-		targetTextArea=p.GetNode(1)
-		setTranslation(i,targetTextArea.Text)
-		
-		'projectTM.addPair(bitext.Get(0),bitext.Get(1))
-	Next
-End Sub
-
-Sub saveTranslation(targetTextArea As TextArea)
-	Dim index As Int
-	index=Main.editorLV.Items.IndexOf(targetTextArea.Parent)
-	Dim bitext As List
-	bitext=segments.Get(index)
-	setTranslation(index,targetTextArea.Text)
-	If targetTextArea.Text<>"" Then
-		saveOneTranslationToTM(bitext,index)
-	End If
-End Sub
-
 Public Sub fillPane(FirstIndex As Int, LastIndex As Int)
 	Log("fillPane")
 	If segments.Size=0 Then
@@ -1796,7 +1681,7 @@ Sub preTranslate(options As Map)
 					progressDialog.close
 					Return
 				End If
-	            Dim resultList As List
+				Dim resultList As List
 				Log("rate"&options.Get("rate"))
 				Wait For (projectTM.getOneUseMemory(bitext.Get(0),options.Get("rate"))) Complete (Result As List)
 				resultList=Result
@@ -1875,6 +1760,96 @@ Public Sub fillVisibleTargetTextArea
 		bitext=segments.Get(i)
 		targetTextArea.Text=bitext.Get(1)
 	Next
+End Sub
+
+'impl
+'--------------------------
+
+Public Sub setTranslation(index As String,translation As String)
+	If segments.Size=0 Then
+		Return
+	End If
+	Dim bitext As List
+	bitext=segments.Get(index)
+	If translation<>bitext.Get(1) Then
+		bitext.Set(1,translation)
+		Dim time As String=DateTime.Now
+		Dim extra As Map
+		extra=bitext.Get(4)
+		extra.Put("createdTime",time)
+		If settings.GetDefault("sharingTM_enabled",False)=True Then
+			extra.Put("creator",Main.preferencesMap.GetDefault("vcs_username","anonymous"))
+		Else
+			If settings.GetDefault("git_enabled",False)=False Then
+				extra.Put("creator",Main.preferencesMap.GetDefault("vcs_username",""))
+			Else
+				extra.Put("creator",Main.preferencesMap.GetDefault("vcs_username","anonymous"))
+			End If
+		End If
+	End If
+End Sub
+
+Sub saveOneTranslationToTM(bitext As List,index As Int)
+	If bitext.Get(1)="" Or bitext.Get(0)=bitext.Get(1) Then
+		Return
+	End If
+	Dim createdTime As Long
+	Dim creator As String
+	Dim extra As Map
+	extra=bitext.Get(4)
+	createdTime=extra.GetDefault("createdTime",0)
+	creator=extra.GetDefault("creator","anonymous")
+	
+	Dim targetMap As Map
+	targetMap.Initialize
+	targetMap.Put("text",bitext.Get(1))
+	targetMap.Put("createdTime",createdTime)
+	targetMap.Put("creator",creator)
+	targetMap.Put("filename",currentFilename)
+	targetMap.Put("index",index)
+	targetMap.Put("note",extra.GetDefault("note",""))
+	
+	projectTM.addPair(bitext.Get(0),targetMap)
+	If settings.GetDefault("record_history",True)=True Then
+		projectHistory.addSegmentHistory(bitext.Get(0),targetMap)
+	End If
+End Sub
+
+Public Sub saveAlltheTranslationToTM
+	Dim index As Int=0
+	For Each bitext As List In segments
+		saveOneTranslationToTM(bitext,index)
+		index=index+1
+    Next
+End Sub
+
+Public Sub saveAlltheTranslationToSegmentsInVisibleArea(FirstIndex As Int, LastIndex As Int)
+	For i=Max(0,FirstIndex) To Min(LastIndex,Main.editorLV.Items.Size-1)
+		Dim targetTextArea As TextArea
+		Try
+			Dim p As Pane
+			p=Main.editorLV.Items.Get(i)
+		Catch
+			Log(LastException)
+			Continue
+		End Try
+
+		targetTextArea=p.GetNode(1)
+		setTranslation(i,targetTextArea.Text)
+		
+		'projectTM.addPair(bitext.Get(0),bitext.Get(1))
+	Next
+End Sub
+
+Sub saveTranslation(targetTextArea As TextArea)
+	Dim index As Int
+	index=Main.editorLV.Items.IndexOf(targetTextArea.Parent)
+	Dim bitext As List
+	bitext=segments.Get(index)
+	setTranslation(index,targetTextArea.Text)
+	If targetTextArea.Text<>"" Then
+		saveOneTranslationToTM(bitext,index)
+	End If
 End Sub
 
 Sub runFilterPluginAccordingToExtension(filename As String,task As String,params As Map) As Object
