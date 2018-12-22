@@ -159,6 +159,7 @@ Library19=abplugin
 Library2=jfx
 Library20=jokhttputils2
 Library21=cssutils
+Library22=b4jdragtome
 Library3=javaobject
 Library4=json
 Library5=apachestringutilsb4j
@@ -168,56 +169,56 @@ Library8=jrandomaccessfile
 Library9=jb4xencryption
 Module1=FileChooserUtils
 Module10=preTranslateDialog
-Module11=Utils
-Module12=FontPicker
-Module13=SRX
-Module14=ITP
-Module15=TermEditor
-Module16=TermManager
-Module17=HistoryViewer
-Module18=HistoryRecord
-Module19=TMManager
+Module11=idmlFilter
+Module12=xliffFilter
+Module13=dictWebView
+Module14=InputTextAreaBox
+Module15=searchAndReplaceDialog
+Module16=Utils
+Module17=FontPicker
+Module18=SRX
+Module19=ITP
 Module2=Project
-Module20=Previewer
-Module21=idmlFilter
-Module22=xliffFilter
-Module23=ClientKVS
-Module24=MT
-Module25=statistics
-Module26=searchAndReplaceDialog
-Module27=dictWebView
-Module28=LanguageTool
-Module29=confirmReviewDialog
+Module20=TermEditor
+Module21=TermManager
+Module22=HistoryViewer
+Module23=HistoryRecord
+Module24=TMManager
+Module25=Previewer
+Module26=ClientKVS
+Module27=MT
+Module28=statistics
+Module29=LanguageTool
 Module3=segmentation
-Module30=LanguagePairSelector
-Module31=git
-Module32=idmlUtils
-Module33=editDistance
-Module34=PDF2TXT
-Module35=InputBox
-Module36=MTParamsFiller
-Module37=Preferences
-Module38=importDialog
-Module39=XMLUtils
+Module30=confirmReviewDialog
+Module31=LanguagePairSelector
+Module32=git
+Module33=idmlUtils
+Module34=editDistance
+Module35=PDF2TXT
+Module36=InputBox
+Module37=MTParamsFiller
+Module38=Preferences
+Module39=importDialog
 Module4=CustomListView
-Module40=progressDialog
-Module41=filterGenericUtils
-Module42=TMX
-Module43=TBX
-Module44=Xml2Map
-Module45=CallSubUtils
-Module46=FileUtils
-Module47=viewSegment
-Module48=SearchView
-Module49=pdfbox
+Module40=XMLUtils
+Module41=progressDialog
+Module42=filterGenericUtils
+Module43=TMX
+Module44=TBX
+Module45=Xml2Map
+Module46=CallSubUtils
+Module47=FileUtils
+Module48=viewSegment
+Module49=SearchView
 Module5=txtFilter
-Module50=serverLauncher
-Module51=Map2Xml
-Module52=icu4j
-Module53=zip4j
-Module54=languageChooser
-Module55=POIWord
-Module56=InputTextAreaBox
+Module50=pdfbox
+Module51=serverLauncher
+Module52=Map2Xml
+Module53=icu4j
+Module54=zip4j
+Module55=languageChooser
+Module56=POIWord
 Module57=TMEditor
 Module58=TextFlow
 Module59=opennlp
@@ -227,7 +228,7 @@ Module7=Term
 Module8=KeyValueStore
 Module9=ProjectSettings
 NumberOfFiles=72
-NumberOfLibraries=21
+NumberOfLibraries=22
 NumberOfModules=60
 Version=6.8
 @EndOfDesignText@
@@ -302,6 +303,7 @@ Sub Process_Globals
 	Type Task (TaskName As String, TaskItem As Item, TaskKey As String)
 	Type Range(firstIndex As Int,lastIndex As Int)
 	Private previousRange As Range
+	Private Drag As B4JDragToMe
 End Sub
 
 Sub AppStart (Form1 As Form, Args() As String)
@@ -391,6 +393,7 @@ Sub init
 		autosaveTimer.Initialize("autosaveTimer",60000)
 	End If
 	autosaveTimer.Enabled=False
+	Drag.Initialize(projectTreeTableView, "Drag")
 	loadPlugins
 
 End Sub
@@ -420,6 +423,18 @@ Sub plugin_PluginsChanged()
 	Log("plugins have changed!")
 	Log(plugin.GetAvailablePlugins)
 	plugin.Stop
+End Sub
+
+Sub Drag_ReceivedFilePath (Filepath As String)
+	If currentProject.IsInitialized=False Then
+		fx.Msgbox(MainForm,"Please first open a project.","")
+		Return
+	End If
+	If currentProject.path="" Then
+		fx.Msgbox(MainForm,"Please first save the project.","")
+		Return
+	End If
+	addFile(Filepath)
 End Sub
 
 Sub adjustDividerPositions
@@ -1121,6 +1136,10 @@ Sub addFileMi_Action
 	FileChooserUtils.AddExtensionFilters4(fc,descriptionList,filterList,True,"All",True)
 	Dim path As String
 	path=fc.ShowOpen(MainForm)
+	addFile(path)
+End Sub
+
+Sub addFile(path As String)
 	Log(path)
 	Log(getFilename(path))
 	If path="" Then
@@ -1133,9 +1152,7 @@ Sub addFileMi_Action
 		fx.Msgbox(MainForm,"This file format is not supported.","")
 	Else
 		currentProject.addFile(path)
-		Log(path)
 	End If
-
 End Sub
 
 Public Sub getFilename(path As String) As String
