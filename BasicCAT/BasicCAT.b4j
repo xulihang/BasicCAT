@@ -1218,8 +1218,10 @@ Sub ListViewParent_Resize
 			setLabelFont(sourcelbl,"sourceFont")
 			setLabelFont(targetlbl,"targetFont")
 			Dim sourceHeight,targetHeight As Int
-			sourceHeight=Utils.MeasureMultilineTextHeight(sourcelbl.Font,itemWidth/2-20dip,sourceTa.Text&CRLF&"	")
-			targetHeight=Utils.MeasureMultilineTextHeight(targetlbl.Font,itemWidth/2-20dip,targetTa.Text&CRLF&"	")
+			Dim sourceLineHeight As Int=Utils.MeasureMultilineTextHeight(sourcelbl.Font,itemWidth/2-20dip,CRLF)
+			Dim targetLineHeight As Int=Utils.MeasureMultilineTextHeight(targetlbl.Font,itemWidth/2-20dip,CRLF)
+			sourceHeight=Utils.MeasureMultilineTextHeight(sourcelbl.Font,itemWidth/2-20dip,sourceTa.Text)+sourceLineHeight*2/3
+			targetHeight=Utils.MeasureMultilineTextHeight(targetlbl.Font,itemWidth/2-20dip,targetTa.Text)+targetLineHeight*2/3
 			Dim h As Int = Max(Max(20, sourceHeight + 10), targetHeight + 10)
 			calculatedHeight.Put(sourceTa.Text&"	"&targetTa.Text,h)
 			setLayout(p,i,h)
@@ -1254,13 +1256,13 @@ Sub checkVisibleRange
 	Try
 		Dim currentVisibleRange As Range
 		currentVisibleRange=getVisibleRange(editorLV)
-		If previousRange.lastIndex<>currentVisibleRange.lastIndex Or previousRange.firstIndex<>currentVisibleRange.firstIndex Then
+		'If previousRange.lastIndex<>currentVisibleRange.lastIndex Or previousRange.firstIndex<>currentVisibleRange.firstIndex Then
 			Log("visible range changed")
-			previousRange=currentVisibleRange
+		'	previousRange=currentVisibleRange
 			currentProject.fillPane(currentVisibleRange.firstIndex,currentVisibleRange.lastIndex)
 			CallSubDelayed(Me,"ListViewParent_Resize")
 			currentProject.saveAlltheTranslationToSegmentsInVisibleArea(currentVisibleRange.firstIndex,currentVisibleRange.lastIndex)
-		End If
+		'End If
 	Catch
 		Log(LastException)
 	End Try

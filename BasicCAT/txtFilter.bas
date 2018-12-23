@@ -77,9 +77,9 @@ Sub generateFile(filename As String,path As String,projectFile As Map)
 					translation=fullsource.Replace(source,"")
 				End If
 			End If
-			Log(source)
-			Log(target)
-			Log(fullsource)
+			'Log(source)
+			'Log(target)
+			'Log(fullsource)
 			If target="" Then
 				translation=fullsource
 			Else
