@@ -133,16 +133,15 @@ Sub ocrButton_MouseClicked (EventData As MouseEvent)
 		Return
 	End If
 
-	Label2.Text="Convert pdf to images..."
+	Label2.Text="Converting pdf to images..."
 	Dim files As List
 	wait for (pdfbox.getImage(File.GetFileParent(label1.Text),File.GetName(label1.Text))) complete (result As List)
 	files=result
 	Label2.Text="OCRing..."
 	If IncludePageNumCheckBox.Checked Then
-
-		wait for (scanWithPagenum(files,langsParam,PageAffixTextField.Text,offsetTextField.Text)) complete (text As String)
+		wait for (ocrWithPagenum(files,langsParam,PageAffixTextField.Text,offsetTextField.Text)) complete (text As String)
 	Else
-		wait for (scan(files,langsParam)) complete (text As String)
+		wait for (ocr(files,langsParam)) complete (text As String)
 	End If
 	Label2.Text="Completed"
 	TextArea1.Text=text
@@ -190,7 +189,7 @@ Sub testTesseractPath As ResumableSub
 	Return exist
 End Sub
 
-Sub scanWithPagenum(files As List,langsParam As String,affix As String,offset As Int) As ResumableSub
+Sub ocrWithPagenum(files As List,langsParam As String,affix As String,offset As Int) As ResumableSub
 	Dim dir As String
 	dir=File.GetFileParent(label1.Text)
 	Dim pdfFilename As String
@@ -240,7 +239,7 @@ Sub scanWithPagenum(files As List,langsParam As String,affix As String,offset As
 	Return content
 End Sub
 
-Sub scan(files As List,langsParam As String) As ResumableSub
+Sub ocr(files As List,langsParam As String) As ResumableSub
 	Dim dir As String
 	dir=File.GetFileParent(label1.Text)
 	Dim pdfFilename As String

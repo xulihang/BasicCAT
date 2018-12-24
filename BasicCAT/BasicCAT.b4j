@@ -302,7 +302,6 @@ Sub Process_Globals
 	Type Item (UserField As String, KeyField As String, ValueField() As Byte, IdField As Long, TimeField As Long)
 	Type Task (TaskName As String, TaskItem As Item, TaskKey As String)
 	Type Range(firstIndex As Int,lastIndex As Int)
-	Private previousRange As Range
 	Private Drag As B4JDragToMe
 End Sub
 

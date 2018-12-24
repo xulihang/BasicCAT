@@ -60,19 +60,23 @@ Sub getImage(dir As String,filename As String) As ResumableSub
 	For i=0 To pageNum-1
 		Log(i)
 		Sleep(0)
-		Dim bi As JavaObject
-		Dim dpi As Float
-		dpi=150
-		bi=PDFRenderer.RunMethodJO("renderImageWithDPI",Array(i,dpi))
-		Dim out As OutputStream
-		out=File.OpenOutput(dir,i&".jpg",False)
-		Dim imageIO As JavaObject
-		imageIO.InitializeStatic("javax.imageio.ImageIO")
-		imageIO.RunMethod("write",Array(bi,"jpg",out))
-		out.Close
-		files.Add(File.Combine(dir,i&".jpg"))
+		renderImageToFile(PDFRenderer,files,dir,i)
 	Next
 	Return files
+End Sub
+
+Sub renderImageToFile(PDFRenderer As JavaObject,files As List,dir As String,i As Int)
+	Dim bi As JavaObject
+	Dim dpi As Float
+	dpi=150
+	bi=PDFRenderer.RunMethodJO("renderImageWithDPI",Array(i,dpi))
+	Dim out As OutputStream
+	out=File.OpenOutput(dir,i&".jpg",False)
+	Dim imageIO As JavaObject
+	imageIO.InitializeStatic("javax.imageio.ImageIO")
+	imageIO.RunMethod("write",Array(bi,"jpg",out))
+	out.Close
+	files.Add(File.Combine(dir,i&".jpg"))
 End Sub
 
 Sub getFile(path As String) As JavaObject
