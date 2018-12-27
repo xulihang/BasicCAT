@@ -161,12 +161,16 @@ Sub exportToMarkdownWithNotes(segments As List,path As String,filename As String
 			Dim id As String
 			id=extra.Get("id")
 			If previousID<>id Then
-				fullsource=CRLF&fullsource
+				If id<>-1 Then
+					fullsource=CRLF&fullsource
+				End If
 				previousID=id
 			End If
 		End If
 		If innerFilename<>previousInnerFilename Then
-			fullsource=CRLF&fullsource
+			If previousInnerFilename<>"" Then
+				fullsource=CRLF&fullsource
+			End If
 			previousInnerFilename=innerFilename
 		End If
 		source=Regex.Replace2("<.*?>",32,source,"")
@@ -214,12 +218,16 @@ Sub exportToBiParagraph(segments As List,path As String,filename As String,sourc
 			Dim id As String
 			id=extra.Get("id")
 			If previousID<>id Then
-				fullsource=CRLF&fullsource
+				If previousID<>-1 Then
+					fullsource=CRLF&fullsource
+				End If
 				previousID=id
 			End If
 		End If
 		If innerFilename<>previousInnerFilename Then
-			fullsource=CRLF&fullsource
+			If previousInnerFilename<>"" Then
+				fullsource=CRLF&fullsource
+			End If
 			previousInnerFilename=innerFilename
 		End If
 		source=Regex.Replace2("<.*?>",32,source,"")
