@@ -181,7 +181,8 @@ Sub countMsgStr(path As String,filename As String) As Int
 End Sub
 
 Sub fillPO(msgstrList As List,path As String,filename As String) As String
-	Dim content As String
+	Dim content As StringBuilder
+	content.Initialize
 	
 
 	Dim textReader As TextReader
@@ -195,7 +196,7 @@ Sub fillPO(msgstrList As List,path As String,filename As String) As String
 			msgstr=msgstrList.Get(0)
 			If msgstr="" Then
 				msgstrList.RemoveAt(0)
-				content=content&line&CRLF
+				content.Append(line).Append(CRLF)
 				line=textReader.ReadLine
 				Continue
 			End If
@@ -203,15 +204,15 @@ Sub fillPO(msgstrList As List,path As String,filename As String) As String
 				'Log(True)
 				msgstr=handleMultiline(msgstr)
 			End If
-			content=content&"msgstr "&Chr(34)&msgstr&Chr(34)&CRLF&CRLF
+			content.Append("msgstr ").Append(Chr(34)).Append(msgstr).Append(Chr(34)).Append(CRLF).Append(CRLF)
 			msgstrList.RemoveAt(0)
 		Else
-			content=content&line&CRLF
+			content.Append(line).Append(CRLF)
 		End If
 		line=textReader.ReadLine
 	Loop
 	textReader.Close
-	Return content
+	Return content.ToString
 End Sub
 
 Sub handleMultiline(text As String) As String
@@ -503,7 +504,8 @@ End Sub
 
 Sub previewText(editorLV As ListView,segments As List,lastEntry As Int,sourceLang As String,targetLang As String,path As String,settings As Map) As String
 	Log("Po preview")
-	Dim text As String
+	Dim text As StringBuilder
+	text.Initialize
 	If editorLV.Items.Size<>segments.Size Then
 		Return ""
 	End If
@@ -547,10 +549,10 @@ Sub previewText(editorLV As ListView,segments As List,lastEntry As Int,sourceLan
 		id=extra.Get("id")
 
 		If previousID<>id Then
-			text=text&CRLF
+			text.Append(CRLF)
 			previousID=id
 		End If
-		text=text&translation
+		text.Append(translation)
 	Next
-	Return text
+	Return text.ToString
 End Sub

@@ -14,7 +14,7 @@ Sub readRules(filepath As String,lang As String) As Map
 	Dim srxString As String
 	
 	
-	If filepath="" Then
+	If filepath="" or File.Exists(filepath,"")=False Then
 		srxString=File.ReadString(File.DirAssets,"segmentationRules.srx")
 	Else
 		srxString=File.ReadString(filepath,"")

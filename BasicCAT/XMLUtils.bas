@@ -63,13 +63,15 @@ Sub escapedText(xmlstring As String,tagName As String,filetype As String) As Str
 		End If
 	Loop
 	Log(replaceList)
+	
+
 	For Each replacement As Map In replaceList
 		Dim startIndex,endIndex As Int
 		Dim group As String
 		startIndex=replacement.Get("start")
 		endIndex=replacement.Get("end")
 		group=replacement.Get("group")
-		Dim sb As StringBuilder
+	    Dim sb As StringBuilder
 		sb.Initialize
 		sb.Append(new.SubString2(0,startIndex))
 		sb.Append(group)

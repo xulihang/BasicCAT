@@ -121,7 +121,7 @@ Sub shouldAddSpace(sourceLang As String,targetLang As String,index As Int,segmen
 	Return False
 End Sub
 
-Sub exportToMarkdownWithNotes(segments As List,path As String,filename As String,sourceLang As String,targetLang As String,settings As Map)
+Sub exportToMarkdownWithNotes(segments As List,path As String,filename As String,sourceLang As String,targetLang As String,settings As Map,projectPath As String)
 	Dim text As StringBuilder
 	text.Initialize
 	Dim noteIndex As Int=0
@@ -129,13 +129,16 @@ Sub exportToMarkdownWithNotes(segments As List,path As String,filename As String
 	noteText.Initialize
 	noteText.Append(CRLF).Append(CRLF)
 	Dim previousID As String="-1"
+	Dim previousInnerFilename As String=""
 	Dim index As Int=-1
 	For Each segment As List In segments
 		index=index+1
 		Dim source,target,fullsource As String
 		Dim translation As String
+		Dim innerFilename As String
 		source=segment.Get(0)
 		target=segment.Get(1)
+		innerFilename=segment.Get(3)
 		If target="" Then
 			target=source
 		Else
@@ -162,12 +165,18 @@ Sub exportToMarkdownWithNotes(segments As List,path As String,filename As String
 				previousID=id
 			End If
 		End If
+		If innerFilename<>previousInnerFilename Then
+			fullsource=CRLF&fullsource
+			previousInnerFilename=innerFilename
+		End If
 		source=Regex.Replace2("<.*?>",32,source,"")
 		target=Regex.Replace2("<.*?>",32,target,"")
 		fullsource=Regex.Replace2("<.*?>",32,fullsource,"")
 		translation=fullsource.Replace(source,target)
 		If LanguageHasSpace(targetLang)=False Then
-			translation=segmentation.removeSpacesAtBothSides(path,targetLang,translation,settings.GetDefault("remove_space",True))
+			If source<>target Then
+				translation=segmentation.removeSpacesAtBothSides(projectPath,targetLang,translation,settings.GetDefault("remove_space",True))
+			End If
 		End If
 		text.Append(translation)
 	Next
@@ -177,19 +186,24 @@ Sub exportToMarkdownWithNotes(segments As List,path As String,filename As String
 	File.WriteString(path,"",result)
 End Sub
 
-Sub exportToBiParagraph(segments As List,path As String,filename As String,sourceLang As String,targetLang As String,settings As Map)
+Sub exportToBiParagraph(segments As List,path As String,filename As String,sourceLang As String,targetLang As String,settings As Map,projectPath As String)
 	Dim text As StringBuilder
 	text.Initialize
-	Dim sourceText As String
-	Dim targetText As String
+	Dim sourceText As StringBuilder
+	sourceText.Initialize
+	Dim targetText As StringBuilder
+	targetText.Initialize
 	Dim previousID As String="-1"
+	Dim previousInnerFilename As String=""
 	Dim index As Int=-1
 	For Each segment As List In segments
 		index=index+1
 		Dim source,target,fullsource As String
 		Dim translation As String
+		Dim innerFilename As String
 		source=segment.Get(0)
 		target=segment.Get(1)
+		innerFilename=segment.Get(3)
 		If shouldAddSpace(sourceLang,targetLang,index,segments) Then
 			target=target&" "
 		End If
@@ -204,21 +218,27 @@ Sub exportToBiParagraph(segments As List,path As String,filename As String,sourc
 				previousID=id
 			End If
 		End If
+		If innerFilename<>previousInnerFilename Then
+			fullsource=CRLF&fullsource
+			previousInnerFilename=innerFilename
+		End If
 		source=Regex.Replace2("<.*?>",32,source,"")
 		target=Regex.Replace2("<.*?>",32,target,"")
 		fullsource=Regex.Replace2("<.*?>",32,fullsource,"")
 		translation=fullsource.Replace(source,target)
 		If LanguageHasSpace(targetLang)=False Then
-			translation=segmentation.removeSpacesAtBothSides(path,targetLang,translation,settings.GetDefault("remove_space",True))
+			If source<>target Then
+				translation=segmentation.removeSpacesAtBothSides(projectPath,targetLang,translation,settings.GetDefault("remove_space",True))
+			End If
 		End If
-		sourceText=sourceText&fullsource
-		targetText=targetText&translation
+		sourceText.Append(fullsource)
+		targetText.Append(translation)
 	Next
 	Dim sourceList,targetList As List
 	sourceList.Initialize
 	targetList.Initialize
-	sourceList.AddAll(Regex.Split(CRLF,sourceText))
-	targetList.AddAll(Regex.Split(CRLF,targetText))
+	sourceList.AddAll(Regex.Split(CRLF,sourceText.ToString))
+	targetList.AddAll(Regex.Split(CRLF,targetText.ToString))
 	For i=0 To Min(sourceList.Size,targetList.Size)-1
 		text.Append(sourceList.Get(i)).Append(CRLF)
 		text.Append(targetList.Get(i)).Append(CRLF).Append(CRLF)

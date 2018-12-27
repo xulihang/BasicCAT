@@ -53,7 +53,8 @@ End Sub
 
 Sub generateFile(filename As String,path As String,projectFile As Map)
 	Dim innerfilename As String=filename
-	Dim result As String
+	Dim result As StringBuilder
+	result.Initialize
 	Dim workfile As Map
 	Dim json As JSONParser
 	json.Initialize(File.ReadString(File.Combine(path,"work"),filename&".json"))
@@ -95,11 +96,12 @@ Sub generateFile(filename As String,path As String,projectFile As Map)
 				End If
 			End If
 
-			result=result&translation
+			'result=result&translation
+			result.Append(translation)
 		Next
 	Next
 	
-	File.WriteString(File.Combine(path,"target"),filename,result)
+	File.WriteString(File.Combine(path,"target"),filename,result.ToString)
 	Main.updateOperation(filename&" generated!")
 End Sub
 
@@ -236,7 +238,8 @@ Sub splitSegment(sourceTextArea As TextArea)
 End Sub
 
 Sub previewText As String
-	Dim text As String
+	Dim text As StringBuilder
+	text.Initialize
 	If Main.editorLV.Items.Size<>Main.currentProject.segments.Size Then
 		Return ""
 	End If
@@ -276,7 +279,8 @@ Sub previewText As String
 		If i=Main.currentProject.lastEntry Then
 			translation=$"<span id="current" name="current" >${translation}</span>"$
 		End If
-		text=text&translation
+		'text=text&translation
+		text.Append(translation)
 	Next
-	Return text
+	Return text.ToString
 End Sub

@@ -829,38 +829,6 @@ Sub replaceStyleAndFontFileForZh(unzipedDirPath As String)
 	File.Copy(File.DirAssets,"Fonts.xml",File.Combine(unzipedDirPath,"Resources"),"Fonts.xml")
 End Sub
 
-Sub isTagMissing(translation As String,source As String) As Boolean
-	Dim su As ApacheSU
-	Dim matcher As Matcher
-	matcher=Regex.Matcher("</*c[1-9]>",translation)
-	Do While matcher.Find
-		source=su.RemoveFirst(source,matcher.Match)
-	Loop
-	Dim matcher2 As Matcher
-	matcher2=Regex.Matcher("</*c[1-9]>",source)
-	If matcher2.Find Then
-		Return True
-	Else
-		Return False
-	End If
-End Sub
-
-Sub MissingTagAddedText(translation As String,source As String) As String
-
-	Dim su As ApacheSU
-	Dim matcher As Matcher
-	matcher=Regex.Matcher("</*c[1-9]>",translation)
-	Do While matcher.Find
-		source=su.RemoveFirst(source,matcher.Match)
-	Loop
-	Dim matcher2 As Matcher
-	matcher2=Regex.Matcher("</*c[1-9]>",source)
-	Do While matcher2.Find
-		translation=translation&matcher2.Match
-	Loop
-	Return translation
-End Sub
-
 Sub textToListInOrder(pureText As String) As List
 
 	Dim result As List
@@ -1162,15 +1130,6 @@ Sub NextIsLower(XY1 As coordinate,XY2 As coordinate) As Boolean
 	End If
 End Sub
 
-Sub stripContent(content As String) As String
-	content=Regex.Replace(" +", content," ")
-	content=content.Replace(" ","")
-	content=content.Replace("  "," ")
-	content=Regex.Replace("\n\n+",content,CRLF&CRLF)
-	Return content
-End Sub
-
-
 Sub TextFramesListOfEachSpread(spreadMap As Map) As List
 	Dim root As Map
 	root=spreadMap.Get("idPkg:Spread")
@@ -1360,15 +1319,14 @@ End Sub
 
 
 Sub previewText As String
-	Dim text As String
+	Dim text As StringBuilder
+	text.Initialize
 	If Main.editorLV.Items.Size<>Main.currentProject.segments.Size Then
 		Return ""
 	End If
+	Dim previousStory as String
 	For i=Max(0,Main.currentProject.lastEntry-3) To Min(Main.currentProject.lastEntry+7,Main.currentProject.segments.Size-1)
-
-
 		Try
-			
 			Dim p As Pane
 			p=Main.editorLV.Items.Get(i)
 		Catch
@@ -1417,11 +1375,16 @@ Sub previewText As String
 				translation=segmentation.removeSpacesAtBothSides(Main.currentProject.path,Main.currentProject.projectFile.Get("target"),translation,Utils.getMap("settings",Main.currentProject.projectFile).GetDefault("remove_space",True))
 			End If
 		End If
-
+		Dim story As String=bitext.Get(3)
+		If previousStory<>story Then
+			text.Append(CRLF)
+			previousStory=story
+		End If
 		If i=Main.currentProject.lastEntry Then
 			translation=$"<span id="current" name="current" >${translation}</span>"$
 		End If
-		text=text&translation
+		'text=text&translation
+		text.Append(translation)
 	Next
-	Return text
+	Return text.ToString
 End Sub
