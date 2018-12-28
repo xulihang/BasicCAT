@@ -7,8 +7,7 @@ Show quickfill dropdown
 Show online dictionary dropdown
 Show segment history
 Show/Edit notes of the current segmnet
-Mark the current segment as non-translatable
-Mark the current segment as translatable
+Mark the current segment as neglected/not neglected
 Project _Settings
 Pre-_translate
 Git _Commit

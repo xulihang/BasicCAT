@@ -1633,8 +1633,8 @@ Public Sub fillPane(FirstIndex As Int, LastIndex As Int)
 				addTextAreaToSegmentPane(segmentPane,bitext.Get(0),bitext.Get(1))
 				Dim extra As Map
 				extra=bitext.Get(4)
-				If extra.ContainsKey("translate") Then
-					If extra.Get("translate")="no" Then
+				If extra.ContainsKey("neglected") Then
+					If extra.Get("neglected")="yes" Then
 						Utils.disableTextArea(segmentPane)
 					End If
 				End If

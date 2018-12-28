@@ -73,9 +73,9 @@ Sub generateFile(filename As String,path As String,projectFile As Map)
 			fullsource=bitext.Get(2)
 			Dim extra As Map
 			extra=bitext.Get(4)
-			If extra.ContainsKey("translate") Then
-				If extra.get("translate")="no" Then
-					translation=fullsource.Replace(source,"")
+			If extra.ContainsKey("neglected") Then
+				If extra.get("neglected")="yes" Then
+					Continue
 				End If
 			End If
 			'Log(source)

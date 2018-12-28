@@ -169,56 +169,56 @@ Library8=jrandomaccessfile
 Library9=jb4xencryption
 Module1=FileChooserUtils
 Module10=preTranslateDialog
-Module11=Utils
-Module12=PDF2TXT
-Module13=pdfbox
-Module14=git
-Module15=idmlFilter
-Module16=xliffFilter
-Module17=dictWebView
-Module18=InputTextAreaBox
-Module19=searchAndReplaceDialog
+Module11=idmlFilter
+Module12=xliffFilter
+Module13=XMLUtils
+Module14=Utils
+Module15=SRX
+Module16=SearchView
+Module17=POIWord
+Module18=PDF2TXT
+Module19=pdfbox
 Module2=Project
-Module20=FontPicker
-Module21=SRX
-Module22=ITP
-Module23=TermEditor
-Module24=TermManager
-Module25=HistoryViewer
-Module26=HistoryRecord
-Module27=TMManager
-Module28=Previewer
-Module29=ClientKVS
+Module20=git
+Module21=dictWebView
+Module22=InputTextAreaBox
+Module23=searchAndReplaceDialog
+Module24=FontPicker
+Module25=ITP
+Module26=TermEditor
+Module27=TermManager
+Module28=HistoryViewer
+Module29=HistoryRecord
 Module3=segmentation
-Module30=MT
-Module31=statistics
-Module32=LanguageTool
-Module33=confirmReviewDialog
-Module34=LanguagePairSelector
-Module35=idmlUtils
-Module36=editDistance
-Module37=InputBox
-Module38=MTParamsFiller
-Module39=Preferences
+Module30=TMManager
+Module31=Previewer
+Module32=ClientKVS
+Module33=MT
+Module34=statistics
+Module35=LanguageTool
+Module36=confirmReviewDialog
+Module37=LanguagePairSelector
+Module38=idmlUtils
+Module39=editDistance
 Module4=CustomListView
-Module40=importDialog
-Module41=XMLUtils
-Module42=progressDialog
-Module43=filterGenericUtils
-Module44=TMX
-Module45=TBX
-Module46=Xml2Map
-Module47=CallSubUtils
-Module48=FileUtils
-Module49=viewSegment
+Module40=InputBox
+Module41=MTParamsFiller
+Module42=Preferences
+Module43=importDialog
+Module44=progressDialog
+Module45=filterGenericUtils
+Module46=TMX
+Module47=TBX
+Module48=Xml2Map
+Module49=CallSubUtils
 Module5=txtFilter
-Module50=SearchView
-Module51=serverLauncher
-Module52=Map2Xml
-Module53=icu4j
-Module54=zip4j
-Module55=languageChooser
-Module56=POIWord
+Module50=FileUtils
+Module51=viewSegment
+Module52=serverLauncher
+Module53=Map2Xml
+Module54=icu4j
+Module55=zip4j
+Module56=languageChooser
 Module57=TMEditor
 Module58=TextFlow
 Module59=opennlp
@@ -576,10 +576,8 @@ Sub MenuBar1_Action
 				inp.Initialize
 				inp.showAndWait
 			End If
-		Case "Mark the current segment as non-translatable"
-			changeTranslatable("no")
-		Case "Mark the current segment as translatable"
-			changeTranslatable("yes")
+		Case "Mark the current segment as neglected/not neglected"
+			changeNeglectedStatus
 		Case "Project _Settings"
 			If currentProject.IsInitialized=False Then
 				fx.Msgbox(MainForm,"Please open a project first.","")
@@ -909,13 +907,24 @@ Sub dictLookupMi_Action
 	
 End Sub
 
-Sub changeTranslatable(isTranslatable As String)
+Sub changeNeglectedStatus
 	If currentProject.segments.Size<>0 Then
+		Dim isNeglected As String="no"
 		Dim segment As List
 		segment=currentProject.segments.Get(currentProject.lastEntry)
 		Dim extra As Map
 		extra=segment.Get(4)
-		extra.Put("translate",isTranslatable)
+		If extra.ContainsKey("neglected") Then
+			Select extra.Get("neglected")
+				Case "yes"
+					isNeglected="no"
+				Case "no"
+					isNeglected="yes"
+			End Select
+		Else
+			isNeglected="yes"
+		End If
+		extra.Put("neglected",isNeglected)
 		Try
 			Dim p As Pane
 			p=editorLV.Items.Get(currentProject.lastEntry)
@@ -925,11 +934,11 @@ Sub changeTranslatable(isTranslatable As String)
 		End Try
 		Dim sourceTa As TextArea=p.GetNode(0)
 		Dim targetTa As TextArea=p.GetNode(1)
-		Select isTranslatable
-			Case "yes"
+		Select isNeglected
+			Case "no"
 				sourceTa.Enabled=True
 				targetTa.Enabled=True
-			Case "no"
+			Case "yes"
 				sourceTa.Enabled=False
 				targetTa.Enabled=False
 		End Select

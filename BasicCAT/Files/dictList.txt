@@ -6,8 +6,12 @@ baidu baike	https://baike.baidu.com/item/*
 kekenet	http://dict.kekenet.com/en/*
 wikipedia-en	https://en.wikipedia.org/wiki/*
 wikipedia-zh	https://zh.wikipedia.org/wiki/*
+thefreedictionary	https://www.thefreedictionary.com/*
+thefreethesaurus	https://www.thefreedictionary.com/*
 macmillan	https://www.macmillandictionary.com/us/dictionary/american/*
 collins en-zh	https://www.collinsdictionary.com/dictionary/english-chinese/*
 collins zh-en	https://www.collinsdictionary.com/dictionary/chinese-english/*
 merriam-webster	https://www.merriam-webster.com/dictionary/*
 cambridge	https://dictionary.cambridge.org/dictionary/english-chinese-simplified/*
+thesaurus.com	https://www.thesaurus.com/browse/*
+dictionary.com	https://www.dictionary.com/browse/*
