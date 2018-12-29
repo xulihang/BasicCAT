@@ -1,0 +1,102 @@
+﻿AppType=StandardJava
+Build1=Default,b4j.example
+Group=Default Group
+Library1=jcore
+Library2=javaobject
+Library3=jstringutils
+NumberOfFiles=0
+NumberOfLibraries=3
+NumberOfModules=0
+Version=6.8
+@EndOfDesignText@
+'Non-UI application (console / server application)
+#Region Project Attributes 
+	#CommandLineArgs:
+	#MergeLibraries: True
+	#AdditionalJar: aws-java-sdk-translate-1.11.475
+	#AdditionalJar: aws-java-sdk-core-1.11.475
+	#AdditionalJar: httpclient-4.5.6
+	#AdditionalJar: commons-logging-1.2
+	#AdditionalJar: jackson-databind-2.6.7.2
+	#AdditionalJar: jackson-core-2.6.7
+	#AdditionalJar: jackson-annotations-2.6.0
+	#AdditionalJar: httpcore-4.4.9
+	#AdditionalJar: joda-time-2.8.1
+#End Region
+
+Sub Process_Globals
+	
+End Sub
+
+Sub AppStart (Args() As String)
+	Try
+		Dim source, sourceLang, targetLang,key,secretKey,region As String
+		source=Args(0)
+		sourceLang=Args(1)
+		targetLang=Args(2)
+		key=Args(3)
+		secretKey=Args(4)
+		region=Args(5)
+		Dim su As StringUtils
+		source=su.DecodeUrl(source,"UTF-8")
+		SetSystemProperty("aws.accessKeyId",key)
+		SetSystemProperty("aws.secretKey", secretKey)
+		SetSystemProperty("aws.region", region)
+		Dim params As Map
+		params.Initialize
+		params.Put("source",source)
+		params.Put("sourceLang",sourceLang)
+		params.Put("targetLang",targetLang)
+		translate(params)
+	Catch
+		Dim params As Map
+		params.Initialize
+		params.Put("source","The arguments are wrong!")
+		params.Put("sourceLang","en")
+		params.Put("targetLang","zh")
+		translate(params)
+		Log(LastException)
+	End Try
+	
+End Sub
+
+'Return true to allow the default exceptions handler to handle the uncaught exception.
+Sub Application_Error (Error As Exception, StackTrace As String) As Boolean
+	Return True
+End Sub
+
+Sub translate(params As Map)
+	Dim source, sourceLang, targetLang As String
+	source=params.Get("source")
+	sourceLang=params.Get("sourceLang")
+	targetLang=params.Get("targetLang")
+
+
+	Dim SystemPropertiesCredentialsProvider As JavaObject
+	SystemPropertiesCredentialsProvider.InitializeNewInstance("com.amazonaws.auth.SystemPropertiesCredentialsProvider",Null)
+	'Log(SystemPropertiesCredentialsProvider)
+	
+	Dim AmazonTranslateAsyncClient As JavaObject
+	AmazonTranslateAsyncClient.InitializeStatic("com.amazonaws.services.translate.AmazonTranslateAsyncClient")
+	Dim AmazonTranslateAsync As JavaObject
+	Dim builder As JavaObject
+	builder=AmazonTranslateAsyncClient.RunMethodJO("asyncBuilder",Null)
+	
+	AmazonTranslateAsync=builder.RunMethodJO("withCredentials",Array(SystemPropertiesCredentialsProvider)).RunMethodJO("build",Null)
+	
+	Dim TranslateTextRequest As JavaObject
+	TranslateTextRequest.InitializeNewInstance("com.amazonaws.services.translate.model.TranslateTextRequest",Null)
+	TranslateTextRequest.RunMethodJO("withText",Array(source))
+	TranslateTextRequest.RunMethodJO("withSourceLanguageCode",Array(sourceLang))
+	TranslateTextRequest.RunMethodJO("withTargetLanguageCode",Array(targetLang))
+	
+	Dim Future As JavaObject
+	Future=AmazonTranslateAsync.RunMethodJO("translateTextAsync",Array(TranslateTextRequest))
+	Dim TranslateTextResult As JavaObject
+	TranslateTextResult=Future.RunMethodJO("get",Null)
+	Dim result As String
+	result=TranslateTextResult.RunMethod("getTranslatedText",Null)
+	Log(result)
+	File.WriteString(File.DirTemp,"amazon",result)
+	ExitApplication2(0)
+End Sub

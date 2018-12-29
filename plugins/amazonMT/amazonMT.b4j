@@ -1,0 +1,62 @@
+﻿AppType=JavaFX
+Build1=Default,org.xulihang.basiccat
+Group=Default Group
+Library1=jcore
+Library10=byteconverter
+Library2=jfx
+Library3=json
+Library4=jokhttputils2
+Library5=jstringutils
+Library6=okhttp
+Library7=javaobject
+Library8=threading
+Library9=jshell
+Module1=amazonMTPlugin
+NumberOfFiles=0
+NumberOfLibraries=10
+NumberOfModules=1
+Version=6.8
+@EndOfDesignText@
+#Region Project Attributes 
+	#MainFormWidth: 600
+	#MainFormHeight: 600 
+	#MergeLibraries: True
+
+#End Region
+
+Sub Process_Globals
+	Private fx As JFX
+	Public MainForm As Form
+
+End Sub
+
+Sub AppStart (Form1 As Form, Args() As String)
+	MainForm = Form1
+	'MainForm.RootPane.LoadLayout("Layout1") 'Load the layout file.
+	MainForm.Show
+	Dim p As Map
+	p.Initialize
+    Dim n As amazonMTPlugin
+	n.Initialize
+
+	n.translate($""She made sure the laundry was spotless and smelled like spring flowers.""$,"en","zh",p)
+	'wait for (n.translate("One man's meat is another man's poison","en","zh",Null)) complete (result As String)
+	'Log(result)
+
+End Sub
+
+'Return true to allow the default exceptions handler to handle the uncaught exception.
+Sub Application_Error (Error As Exception, StackTrace As String) As Boolean
+	Return True
+End Sub
+
+
+
+
+
+
+
+
+
+
+

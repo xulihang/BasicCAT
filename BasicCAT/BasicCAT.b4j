@@ -234,7 +234,7 @@ Version=6.8
 @EndOfDesignText@
 #Region Project Attributes 
 	#MainFormWidth: 600
-	#MainFormHeight: 600 
+	#MainFormHeight: 600
 #End Region
 
 
@@ -265,6 +265,8 @@ Version=6.8
 #AdditionalJar: pdfbox-2.0.12
 #AdditionalJar: fontbox-2.0.12
 #AdditionalJar: commons-logging-1.2
+
+'--- for
 
 Sub Process_Globals
 	Private fx As JFX
