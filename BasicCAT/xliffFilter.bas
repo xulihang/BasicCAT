@@ -7,6 +7,7 @@ Version=6.51
 'Static code module
 Sub Process_Globals
 	Private fx As JFX
+	Private addedMid As Int
 End Sub
 
 Sub createWorkFile(filename As String,path As String,sourceLang As String)
@@ -20,8 +21,8 @@ Sub createWorkFile(filename As String,path As String,sourceLang As String)
 	Dim files As List
 	Dim xmlstring As String
 	xmlstring=XMLUtils.escapedText(File.ReadString(File.Combine(path,"source"),filename),"source","xliff")
-	xmlstring=XMLUtils.escapedText(File.ReadString(File.Combine(path,"source"),filename),"mrk","xliff")
-	
+	xmlstring=XMLUtils.escapedText(xmlstring,"mrk","xliff")
+	Log("done")
 
 	
 	files=getFilesList(xmlstring)
@@ -154,8 +155,26 @@ Sub getTransUnits(fileMap As Map) As List
 	body=fileMap.Get("body")
 	Dim tidyTransUnits As List
 	tidyTransUnits.Initialize
+	Dim groups As List
+	groups.Initialize
 	Dim transUnits As List
-	transUnits=XMLUtils.GetElements(body,"trans-unit")
+	If body.ContainsKey("group") Then
+		groups=XMLUtils.GetElements(body,"group")
+		Dim groupIndex As Int=0
+		For Each group As Map In groups
+			transUnits=XMLUtils.GetElements(group,"trans-unit")
+			addTransUnit(transUnits,tidyTransUnits,groupIndex)
+			groupIndex=groupIndex+1
+		Next
+	Else
+		transUnits=XMLUtils.GetElements(body,"trans-unit")
+		addTransUnit(transUnits,tidyTransUnits,-1)
+	End If
+	
+	Return tidyTransUnits
+End Sub
+
+Sub addTransUnit(transUnits As List,tidyTransUnits As List,groupIndex As Int)
 	For Each transUnit As Map In transUnits
 		Log(transUnit)
 		Dim attributes As Map
@@ -186,9 +205,9 @@ Sub getTransUnits(fileMap As Map) As List
 		oneTransUnit.Add(text)
 		oneTransUnit.Add(id)
 		oneTransUnit.Add(mrkList)
+		oneTransUnit.Add(groupIndex)
 		tidyTransUnits.Add(oneTransUnit)
 	Next
-	Return tidyTransUnits
 End Sub
 
 Sub getFilesList(xmlstring As String) As List
@@ -303,9 +322,9 @@ End Sub
 Sub insertTranslation(translationMap As Map,filename As String,path As String,isSegEnabled As Boolean) As Map
 	Dim xmlstring As String
 	xmlstring=File.ReadString(File.Combine(path,"source"),filename)
-	xmlstring=XMLUtils.escapedText(xmlstring,"source","xliff")
-	xmlstring=XMLUtils.escapedText(xmlstring,"target","xliff")
-	xmlstring=XMLUtils.escapedText(xmlstring,"mrk","xliff")
+	'xmlstring=XMLUtils.escapedText(xmlstring,"source","xliff")
+	'xmlstring=XMLUtils.escapedText(xmlstring,"target","xliff")
+	'xmlstring=XMLUtils.escapedText(xmlstring,"mrk","xliff")
 	'Log("xml"&xmlstring)
 	Dim isSegContinuous As Boolean=False
 	isSegContinuous=checkSegContinuous(xmlstring)
@@ -317,7 +336,7 @@ Sub insertTranslation(translationMap As Map,filename As String,path As String,is
 	xliffMap=xmlMap.Get("xliff")
 	Dim filesList As List
 	filesList=XMLUtils.GetElements(xliffMap,"file")
-	Dim addedMid As Int=1
+	addedMid=1
 	For Each innerFile As Map In filesList
 		Dim body As Map
 		Try
@@ -331,97 +350,116 @@ Sub insertTranslation(translationMap As Map,filename As String,path As String,is
 		Dim originalFilename As String
 		originalFilename=fileAttributes.Get("original")
 		Dim transUnits As List
-		transUnits=XMLUtils.GetElements(body,"trans-unit")
-		For Each transUnit As Map In transUnits
-			Dim attributes As Map
-			attributes=transUnit.Get("Attributes")
-			'Dim segSource As Map
-			'If transUnit.ContainsKey("seg-source") Then
-			'	segSource=transUnit.Get("seg-source")	
-			'End If
-			Dim id As String
-			id=attributes.Get("id")
-			Log(transUnit)
-			Dim targetType As String="Map"
-			If transUnit.ContainsKey("target")=False Then
-				transUnit.Put("target","")
-				targetType="String"
-			Else
-				Try
-					Dim targetMap As Map
-					targetMap=transUnit.Get("target")
-				Catch
-					Log(LastException)
-					targetType="String"
-				End Try
-			End If
-            Dim segmentKey As String
-			segmentKey=id&originalFilename
-			If translationMap.ContainsKey(segmentKey) Then
-				Dim dataMap As Map
-				dataMap=translationMap.Get(segmentKey)
-				Dim segList As List
-				segList=dataMap.Get("seg")
-				If originalFilename=dataMap.Get("filename") Then
-					If targetType="Map" Then
-						For Each key As String In targetMap.Keys
-							If key<>"Attributes" Then
-								targetMap.Remove(key)
-							End If
-						Next
-						Dim bitext As List
-						If isSegEnabled Then
-							If segList.Size=1 Then
-								bitext=segList.Get(0)
-								If isSegContinuous Then
-									'segSource.Put("mrk",buildMrk(addedMid,bitext.Get(0)))
-									targetMap.Put("mrk",buildMrk(addedMid,bitext.Get(1)))
-									addedMid=addedMid+1
-								Else
-									'segSource.Put("mrk",buildMrk(0,bitext.Get(0)))
-									targetMap.Put("mrk",buildMrk(0,bitext.Get(1)))
-								End If
-							Else
-								Dim mrkList As List
-								mrkList.Initialize
-								'Dim sourceMrkList As List
-								'sourceMrkList.Initialize
-								Dim mid As Int=0
+		If body.ContainsKey("group") Then
+			Dim groups As List
+			groups=XMLUtils.GetElements(body,"group")
+			For Each group As Map In groups
+				transUnits=XMLUtils.GetElements(group,"trans-unit")
+				updateTransUnits(transUnits,originalFilename,translationMap,isSegEnabled,isSegContinuous)
+			Next
+			body.Put("group",groups)
+		Else
+			transUnits=XMLUtils.GetElements(body,"trans-unit")
+			updateTransUnits(transUnits,originalFilename,translationMap,isSegEnabled,isSegContinuous)
+			body.Put("trans-unit",transUnits)
+		End If
 
-								For Each bitext As List In segList
-									If isSegContinuous Then
-										'sourceMrkList.Add(buildMrk(addedMid,bitext.Get(0)))
-										mrkList.Add(buildMrk(addedMid,bitext.Get(1)))
-										addedMid=addedMid+1
-									Else
-										'sourceMrkList.Add(buildMrk(mid,bitext.Get(0)))
-										mrkList.Add(buildMrk(mid,bitext.Get(1)))
-										mid=mid+1
-									End If
-
-								Next
-								'segSource.Put("mrk",sourceMrkList)
-								targetMap.Put("mrk",mrkList)
-							End If
-						Else
-							targetMap.Put("Text",dataMap.Get("translation"))
-						End If
-						
-					Else
-						transUnit.Put("target",dataMap.Get("translation"))
-					End If
-					Log("translation"&dataMap.Get("translation"))
-				End If
-			End If
-		Next
-
-		body.Put("trans-unit",transUnits)
+		
 	Next
 
 	xliffMap.Put("file",filesList)
 	xmlMap.Put("xliff",xliffMap)
 	Log("xmlmap"&xmlMap)
 	Return xmlMap
+End Sub
+
+Sub updateTransUnits(transUnits As List,originalFilename As String,translationMap As Map,isSegEnabled As Boolean,isSegContinuous As Boolean)
+	For Each transUnit As Map In transUnits
+		Dim attributes As Map
+		attributes=transUnit.Get("Attributes")
+		'Dim segSource As Map
+		'If transUnit.ContainsKey("seg-source") Then
+		'	segSource=transUnit.Get("seg-source")
+		'End If
+		Dim id As String
+		id=attributes.Get("id")
+		Log(transUnit)
+		Dim targetType As String="Map"
+		If transUnit.ContainsKey("target")=False Then
+			transUnit.Put("target","")
+			targetType="String"
+		Else
+			Try
+				Dim targetMap As Map
+				targetMap=transUnit.Get("target")
+			Catch
+				Log(LastException)
+				targetType="String"
+			End Try
+		End If
+		Dim segmentKey As String
+		segmentKey=id&originalFilename
+		If translationMap.ContainsKey(segmentKey) Then
+			Dim dataMap As Map
+			dataMap=translationMap.Get(segmentKey)
+			Dim segList As List
+			segList=dataMap.Get("seg")
+			If originalFilename=dataMap.Get("filename") Then
+				If targetType="Map" Then
+
+					Dim bitext As List
+					If isSegEnabled Then
+						If targetMap.ContainsKey("Text") Then
+							targetMap.Remove("Text")
+						End If
+						If segList.Size=1 Then
+							bitext=segList.Get(0)
+							If isSegContinuous Then
+								'segSource.Put("mrk",buildMrk(addedMid,bitext.Get(0)))
+								targetMap.Put("mrk",buildMrk(addedMid,bitext.Get(1)))
+								addedMid=addedMid+1
+							Else
+								'segSource.Put("mrk",buildMrk(0,bitext.Get(0)))
+								targetMap.Put("mrk",buildMrk(0,bitext.Get(1)))
+							End If
+						Else
+							Dim mrkList As List
+							mrkList.Initialize
+							'Dim sourceMrkList As List
+							'sourceMrkList.Initialize
+							Dim mid As Int=0
+
+							For Each bitext As List In segList
+								If isSegContinuous Then
+									'sourceMrkList.Add(buildMrk(addedMid,bitext.Get(0)))
+									mrkList.Add(buildMrk(addedMid,bitext.Get(1)))
+									addedMid=addedMid+1
+								Else
+									'sourceMrkList.Add(buildMrk(mid,bitext.Get(0)))
+									mrkList.Add(buildMrk(mid,bitext.Get(1)))
+									mid=mid+1
+								End If
+
+							Next
+							'segSource.Put("mrk",sourceMrkList)
+							targetMap.Put("mrk",mrkList)
+						End If
+					Else
+						For Each key As String In targetMap.Keys
+							If key<>"Attributes" Then
+								targetMap.Remove(key)
+							End If
+						Next
+						targetMap.Put("Text",dataMap.Get("translation"))
+					End If
+						
+				Else
+					transUnit.Put("target",dataMap.Get("translation"))
+				End If
+				Log("translation"&dataMap.Get("translation"))
+			End If
+		End If
+	Next
 End Sub
 
 Sub buildMrk(mid As Int,text As String) As Map

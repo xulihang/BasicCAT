@@ -26,7 +26,6 @@ Sub Class_Globals
 	Private projectGit As git
 	Public contentChanged As Boolean=False
 	Private SegEnabledFiles As List
-	Private isSegContinus As Boolean
 End Sub
 
 'Initializes the object. You can add parameters to this method if needed.
