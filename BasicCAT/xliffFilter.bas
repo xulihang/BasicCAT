@@ -20,6 +20,7 @@ Sub createWorkFile(filename As String,path As String,sourceLang As String)
 	Dim files As List
 	Dim xmlstring As String
 	xmlstring=XMLUtils.escapedText(File.ReadString(File.Combine(path,"source"),filename),"source","xliff")
+	xmlstring=XMLUtils.escapedText(File.ReadString(File.Combine(path,"source"),filename),"mrk","xliff")
 	
 
 	
@@ -137,10 +138,10 @@ Sub getSegmentedSourceList(mrkList As List) As List
 	Dim segmentedSourceList As List
 	segmentedSourceList.Initialize
 	For Each mrk As Map In mrkList
-		Dim attributes As Map
-		attributes=mrk.Get("Attributes")
-		Dim mid As Int
-		mid=attributes.Get("mid")
+		'Dim attributes As Map
+		'attributes=mrk.Get("Attributes")
+		'Dim mid As Int
+		'mid=attributes.Get("mid")
 		Dim text As String
 		text=mrk.Get("Text")
 		segmentedSourceList.Add(text)
@@ -254,18 +255,26 @@ Sub generateFile(filename As String,path As String,projectFile As Map)
 				Dim dataMap As Map
 				dataMap=translationMap.Get(segmentKey)
 				Dim segList As List
-				segList=dataMap.Get("seg")
+				segList=dataMap.Get("seg") 'get previous
 				If isSegEnabled Then
-					segList.Add(translation)
+					Dim bitext As List
+					bitext.Initialize
+					bitext.Add(fullsource)
+					bitext.Add(translation)
+					segList.Add(bitext)
 				End If
 
 				translation=dataMap.Get("translation")&translation
 				translationMap.put(segmentKey,CreateMap("translation":translation,"filename":innerfilename,"seg":segList))
 			Else
 				Dim segList As List
-				segList.Initialize
+				segList.Initialize 'init
 				If isSegEnabled Then
-					segList.Add(translation)
+					Dim bitext As List
+					bitext.Initialize
+					bitext.Add(fullsource)
+					bitext.Add(translation)
+					segList.Add(bitext)
 				End If
 				
 				translationMap.put(segmentKey,CreateMap("translation":translation,"filename":innerfilename,"seg":segList))
@@ -276,6 +285,7 @@ Sub generateFile(filename As String,path As String,projectFile As Map)
 	xmlString=XMLUtils.getXmlFromMapWithoutIndent(insertTranslation(translationMap,filename,path,isSegEnabled))
 	xmlString=XMLUtils.unescapedText(xmlString,"source","xliff")
 	xmlString=XMLUtils.unescapedText(xmlString,"target","xliff")
+	xmlString=XMLUtils.unescapedText(xmlString,"mrk","xliff")
 	Log(xmlString)
 	File.WriteString(File.Combine(path,"target"),filename,xmlString)
 	Main.updateOperation(filename&" generated!")
@@ -295,6 +305,7 @@ Sub insertTranslation(translationMap As Map,filename As String,path As String,is
 	xmlstring=File.ReadString(File.Combine(path,"source"),filename)
 	xmlstring=XMLUtils.escapedText(xmlstring,"source","xliff")
 	xmlstring=XMLUtils.escapedText(xmlstring,"target","xliff")
+	xmlstring=XMLUtils.escapedText(xmlstring,"mrk","xliff")
 	'Log("xml"&xmlstring)
 	Dim isSegContinuous As Boolean=False
 	isSegContinuous=checkSegContinuous(xmlstring)
@@ -324,6 +335,10 @@ Sub insertTranslation(translationMap As Map,filename As String,path As String,is
 		For Each transUnit As Map In transUnits
 			Dim attributes As Map
 			attributes=transUnit.Get("Attributes")
+			'Dim segSource As Map
+			'If transUnit.ContainsKey("seg-source") Then
+			'	segSource=transUnit.Get("seg-source")	
+			'End If
 			Dim id As String
 			id=attributes.Get("id")
 			Log(transUnit)
@@ -354,27 +369,38 @@ Sub insertTranslation(translationMap As Map,filename As String,path As String,is
 								targetMap.Remove(key)
 							End If
 						Next
+						Dim bitext As List
 						If isSegEnabled Then
 							If segList.Size=1 Then
+								bitext=segList.Get(0)
 								If isSegContinuous Then
-									targetMap.Put("mrk",buildMrk(addedMid,segList.Get(0)))
+									'segSource.Put("mrk",buildMrk(addedMid,bitext.Get(0)))
+									targetMap.Put("mrk",buildMrk(addedMid,bitext.Get(1)))
 									addedMid=addedMid+1
+								Else
+									'segSource.Put("mrk",buildMrk(0,bitext.Get(0)))
+									targetMap.Put("mrk",buildMrk(0,bitext.Get(1)))
 								End If
 							Else
 								Dim mrkList As List
 								mrkList.Initialize
+								'Dim sourceMrkList As List
+								'sourceMrkList.Initialize
 								Dim mid As Int=0
 
-								For Each seg As String In segList
+								For Each bitext As List In segList
 									If isSegContinuous Then
-										mrkList.Add(buildMrk(addedMid,seg))
+										'sourceMrkList.Add(buildMrk(addedMid,bitext.Get(0)))
+										mrkList.Add(buildMrk(addedMid,bitext.Get(1)))
 										addedMid=addedMid+1
 									Else
-										mrkList.Add(buildMrk(mid,seg))
+										'sourceMrkList.Add(buildMrk(mid,bitext.Get(0)))
+										mrkList.Add(buildMrk(mid,bitext.Get(1)))
 										mid=mid+1
 									End If
 
 								Next
+								'segSource.Put("mrk",sourceMrkList)
 								targetMap.Put("mrk",mrkList)
 							End If
 						Else

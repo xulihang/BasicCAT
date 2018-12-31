@@ -26,6 +26,7 @@ Sub Class_Globals
 	Private projectGit As git
 	Public contentChanged As Boolean=False
 	Private SegEnabledFiles As List
+	Private isSegContinus As Boolean
 End Sub
 
 'Initializes the object. You can add parameters to this method if needed.
@@ -1154,6 +1155,10 @@ Sub sourceTextArea_KeyPressed_Event (MethodName As String, Args() As Object) As 
 	result=KEvt.RunMethod("getCode",Null)
 	Log(result)
     If result="ENTER" Then
+		If SegEnabledFiles.IndexOf(currentFilename)<>-1 Then
+			fx.Msgbox(Main.MainForm,"This file does not support spliting and merging segments","")
+			Return Null
+		End If
 		contentIsChanged
 		Dim filenameLowercase As String
 		filenameLowercase=currentFilename.ToLowerCase
@@ -1174,6 +1179,10 @@ Sub sourceTextArea_KeyPressed_Event (MethodName As String, Args() As Object) As 
 			runFilterPluginAccordingToExtension(currentFilename,"splitSegment",params)
 		End If
 	Else if result="DELETE" Then
+		If SegEnabledFiles.IndexOf(currentFilename)<>-1 Then
+			fx.Msgbox(Main.MainForm,"This file does not support spliting and merging segments","")
+			Return Null
+		End If
 		contentIsChanged
 		Dim filenameLowercase As String
 		filenameLowercase=currentFilename.ToLowerCase
