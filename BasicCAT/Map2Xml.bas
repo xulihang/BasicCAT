@@ -31,6 +31,24 @@ Public Sub MapToXml (m As Map) As String
 #end if
 End Sub
 
+Public Sub MapToXmlWithoutIndent (m As Map) As String
+	For Each k As String In m.Keys
+		builder = builder.create(k)
+		HandleElement("", m.Get(k))
+		Exit
+	Next
+	builder = builder.up
+#if B4J or B4A
+	Dim props As Map
+	props.Initialize
+	props.Put("{http://xml.apache.org/xslt}indent-amount", "4")
+	props.Put("indent", "no")
+	Return builder.asString2(props)
+#else
+	Return builder.AsString
+#end if
+End Sub
+
 Private Sub HandleMapElement (m As Map)
 	Dim attributes As Map = m.Get("Attributes")
 	If attributes.IsInitialized Then

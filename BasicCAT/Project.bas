@@ -25,6 +25,7 @@ Sub Class_Globals
 	Private cursorReachEnd As Boolean=False
 	Private projectGit As git
 	Public contentChanged As Boolean=False
+	Private SegEnabledFiles As List
 End Sub
 
 'Initializes the object. You can add parameters to this method if needed.
@@ -33,6 +34,7 @@ Public Sub Initialize
 	projectFile.Initialize
 	segments.Initialize
 	settings.Initialize
+	SegEnabledFiles.Initialize
 	cm.Initialize("cm")
 End Sub
 
@@ -1899,6 +1901,9 @@ Sub readWorkFile(filename As String,filesegments As List,fillUI As Boolean,root 
 	Dim json As JSONParser
 	json.Initialize(File.ReadString(File.Combine(root,"work"),filename&".json"))
 	workfile=json.NextObject
+	If workfile.GetDefault("seg_enabled",False)=True Then
+		SegEnabledFiles.Add(filename)
+	End If
 	Dim sourceFiles As List
 	sourceFiles=workfile.Get("files")
 	For Each sourceFileMap As Map In sourceFiles
@@ -1919,7 +1924,15 @@ End Sub
 Sub saveWorkFile(filename As String,fileSegments As List,root As String)
 	Dim workfile As Map
 	workfile.Initialize
-	workfile.Put("filename",filename)
+    workfile.Put("filename",filename)
+	If SegEnabledFiles.IndexOf(filename)<>-1 Then
+		workfile.Put("seg_enabled",True)
+	Else
+		workfile.Put("seg_enabled",False)
+	End If
+
+
+	
 	Dim sourceFiles As List
 	sourceFiles.Initialize
 	

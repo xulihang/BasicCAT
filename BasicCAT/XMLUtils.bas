@@ -24,6 +24,12 @@ Sub getXmlFromMap(map1 As Map) As String
 	Return mx.MapToXml(map1)
 End Sub
 
+Sub getXmlFromMapWithoutIndent(map1 As Map) As String
+	Dim mx As Map2Xml
+	mx.Initialize
+	Return mx.MapToXmlWithoutIndent(map1)
+End Sub
+
 Sub GetElements (m As Map, key As String) As List
 	Dim res As List
 	If m.ContainsKey(key) = False Then
@@ -39,7 +45,7 @@ Sub GetElements (m As Map, key As String) As List
 End Sub
 
 Sub escapedText(xmlstring As String,tagName As String,filetype As String) As String
-	Log("es"&tagName)
+	'Log("es"&tagName)
 	Dim pattern As String
 	pattern="<"&tagName&"\b.*?>(.*?)</"&tagName&">"
 	Dim new As String
@@ -50,7 +56,7 @@ Sub escapedText(xmlstring As String,tagName As String,filetype As String) As Str
 	replaceList.Initialize
 
 	Do While sourceMatcher.Find
-		Log("match"&sourceMatcher.Match)
+		'Log("match"&sourceMatcher.Match)
 		Dim group As String=sourceMatcher.Group(1)
 		Dim escapedGroup As String=escapeInlineTag(group,filetype)
 		If escapedGroup<>group Then
@@ -62,7 +68,7 @@ Sub escapedText(xmlstring As String,tagName As String,filetype As String) As Str
 			replaceList.InsertAt(0,replacement)
 		End If
 	Loop
-	Log(replaceList)
+	'Log(replaceList)
 	
 
 	For Each replacement As Map In replaceList
@@ -78,7 +84,7 @@ Sub escapedText(xmlstring As String,tagName As String,filetype As String) As Str
 		sb.Append(new.SubString2(endIndex,new.Length))
 		new=sb.ToString
 	Next
-	Log("esd"&tagName)
+	'Log("esd"&tagName)
 	'Log(new)
 	Return new
 End Sub
@@ -105,7 +111,7 @@ Sub unescapedText(xmlstring As String,tagName As String,filetype As String) As S
 			replaceList.InsertAt(0,replacement)
 		End If
 	Loop
-	Log(replaceList)
+	'Log(replaceList)
 	For Each replacement As Map In replaceList
 		Dim startIndex,endIndex As Int
 		Dim group As String

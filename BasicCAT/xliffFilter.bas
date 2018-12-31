@@ -13,12 +13,17 @@ Sub createWorkFile(filename As String,path As String,sourceLang As String)
 	Dim workfile As Map
 	workfile.Initialize
 	workfile.Put("filename",filename)
-	
+	Dim isSegEnabled As Boolean
 	Dim sourceFiles As List
 	sourceFiles.Initialize
 	
 	Dim files As List
-	files=getFilesList(XMLUtils.escapedText(File.ReadString(File.Combine(path,"source"),filename),"source","xliff"))
+	Dim xmlstring As String
+	xmlstring=XMLUtils.escapedText(File.ReadString(File.Combine(path,"source"),filename),"source","xliff")
+	
+
+	
+	files=getFilesList(xmlstring)
 	
 	For Each fileMap As Map In files
 		Try
@@ -36,6 +41,7 @@ Sub createWorkFile(filename As String,path As String,sourceLang As String)
 		Dim innerfileName As String
 		innerfileName=attributes.Get("original")
 		
+		
 		For Each tu As List In getTransUnits(fileMap)
 			Dim inbetweenContent As String=""
 			Dim text As String
@@ -44,16 +50,27 @@ Sub createWorkFile(filename As String,path As String,sourceLang As String)
 			id=tu.Get(1)
 			Dim index As Int=-1
 			Dim segmentedText As List
-			segmentedText=segmentation.segmentedTxt(text,False,sourceLang,path)
+			Dim mrkList As List
+			mrkList=tu.Get(2)
+
+
+			If mrkList.Size<>0 Then
+				isSegEnabled=True
+				segmentedText=getSegmentedSourceList(mrkList)
+			Else
+				isSegEnabled=False
+				segmentedText=segmentation.segmentedTxt(text,False,sourceLang,path)
+			End If
+
 			For Each source As String In segmentedText
 				Log("source"&source)
 				index=index+1
 				Dim bitext As List
 				bitext.Initialize
-				If source.Trim="" And index<>segmentedText.Size-1 Then 'newline or empty space
+				If source.Trim="" And index<>segmentedText.Size-1 And isSegEnabled=False Then 'newline or empty space
 					inbetweenContent=inbetweenContent&source
 					Continue
-				else if filterGenericUtils.tagsRemovedText(source).Trim="" And index<>segmentedText.Size-1 Then
+				else if filterGenericUtils.tagsRemovedText(source).Trim="" And index<>segmentedText.Size-1 And isSegEnabled=False Then
 					inbetweenContent=inbetweenContent&source
 					Continue
 				Else
@@ -72,11 +89,12 @@ Sub createWorkFile(filename As String,path As String,sourceLang As String)
 					Dim extra As Map
 					extra.Initialize
 					extra.Put("id",id)
+					
 					bitext.Add(extra)
 					inbetweenContent=""
 
 				End If
-				If index=segmentedText.Size-1 And filterGenericUtils.tagsRemovedText(sourceShown).Trim="" And segmentsList.Size>0 Then 'last segment contains tags but no text
+				If index=segmentedText.Size-1 And filterGenericUtils.tagsRemovedText(sourceShown).Trim="" And segmentsList.Size>0 And isSegEnabled=False Then 'last segment contains tags but no text
 					Dim previousBitext As List
 					previousBitext=segmentsList.Get(segmentsList.Size-1) 
 					Dim previousExtra As Map
@@ -109,14 +127,26 @@ Sub createWorkFile(filename As String,path As String,sourceLang As String)
 	Next
 
 	workfile.Put("files",sourceFiles)
-	
+	workfile.Put("seg_enabled",isSegEnabled)
 	Dim json As JSONGenerator
 	json.Initialize(workfile)
 	File.WriteString(File.Combine(path,"work"),filename&".json",json.ToPrettyString(4))
 End Sub
 
-
-
+Sub getSegmentedSourceList(mrkList As List) As List
+	Dim segmentedSourceList As List
+	segmentedSourceList.Initialize
+	For Each mrk As Map In mrkList
+		Dim attributes As Map
+		attributes=mrk.Get("Attributes")
+		Dim mid As Int
+		mid=attributes.Get("mid")
+		Dim text As String
+		text=mrk.Get("Text")
+		segmentedSourceList.Add(text)
+	Next
+	Return segmentedSourceList
+End Sub
 
 Sub getTransUnits(fileMap As Map) As List
 	Dim body As Map
@@ -141,11 +171,20 @@ Sub getTransUnits(fileMap As Map) As List
 			Dim text As String
 			text=transUnit.Get("source")
 		End Try
-
+		Dim segSource As Map
+		segSource.Initialize
+		Dim mrkList As List
+		mrkList.Initialize
+		If transUnit.ContainsKey("seg-source") Then
+			segSource=transUnit.Get("seg-source")
+			mrkList=XMLUtils.GetElements(segSource,"mrk")
+		End If
+		
 		Dim oneTransUnit As List
 		oneTransUnit.Initialize
 		oneTransUnit.Add(text)
 		oneTransUnit.Add(id)
+		oneTransUnit.Add(mrkList)
 		tidyTransUnits.Add(oneTransUnit)
 	Next
 	Return tidyTransUnits
@@ -167,6 +206,7 @@ Sub generateFile(filename As String,path As String,projectFile As Map)
 	Dim json As JSONParser
 	json.Initialize(File.ReadString(File.Combine(path,"work"),filename&".json"))
 	workfile=json.NextObject
+	Dim isSegEnabled As Boolean=workfile.GetDefault("seg_enabled",False)
 	Dim sourceFiles As List
 	sourceFiles=workfile.Get("files")
 	Dim translationMap As Map
@@ -210,17 +250,30 @@ Sub generateFile(filename As String,path As String,projectFile As Map)
 			segmentKey=extra.Get("id")&bitext.Get(3)
 
 			If translationMap.ContainsKey(segmentKey) Then
+
 				Dim dataMap As Map
 				dataMap=translationMap.Get(segmentKey)
+				Dim segList As List
+				segList=dataMap.Get("seg")
+				If isSegEnabled Then
+					segList.Add(translation)
+				End If
+
 				translation=dataMap.Get("translation")&translation
-				translationMap.put(segmentKey,CreateMap("translation":translation,"filename":innerfilename))
+				translationMap.put(segmentKey,CreateMap("translation":translation,"filename":innerfilename,"seg":segList))
 			Else
-				translationMap.put(segmentKey,CreateMap("translation":translation,"filename":innerfilename))
+				Dim segList As List
+				segList.Initialize
+				If isSegEnabled Then
+					segList.Add(translation)
+				End If
+				
+				translationMap.put(segmentKey,CreateMap("translation":translation,"filename":innerfilename,"seg":segList))
 			End If
 		Next
 	Next
 	Dim xmlString As String
-	xmlString=XMLUtils.getXmlFromMap(insertTranslation(translationMap,filename,path))
+	xmlString=XMLUtils.getXmlFromMapWithoutIndent(insertTranslation(translationMap,filename,path,isSegEnabled))
 	xmlString=XMLUtils.unescapedText(xmlString,"source","xliff")
 	xmlString=XMLUtils.unescapedText(xmlString,"target","xliff")
 	Log(xmlString)
@@ -228,19 +281,32 @@ Sub generateFile(filename As String,path As String,projectFile As Map)
 	Main.updateOperation(filename&" generated!")
 End Sub
 
-Sub insertTranslation(translationMap As Map,filename As String,path As String) As Map
+Sub checkSegContinuous(xmlstring As String) As Boolean
+	Dim firstMID0Index As Int=xmlstring.IndexOf($"mid="0""$)
+	If firstMID0Index=-1 Then
+		Return True
+	Else
+		Return False
+	End If
+End Sub
+
+Sub insertTranslation(translationMap As Map,filename As String,path As String,isSegEnabled As Boolean) As Map
 	Dim xmlstring As String
 	xmlstring=File.ReadString(File.Combine(path,"source"),filename)
 	xmlstring=XMLUtils.escapedText(xmlstring,"source","xliff")
 	xmlstring=XMLUtils.escapedText(xmlstring,"target","xliff")
-	Log("xml"&xmlstring)
+	'Log("xml"&xmlstring)
+	Dim isSegContinuous As Boolean=False
+	isSegContinuous=checkSegContinuous(xmlstring)
+	Log("iscontinuous"&isSegContinuous)
 	Dim xmlMap As Map
 	xmlMap=XMLUtils.getXmlMap(xmlstring)
-	Log("map"&xmlMap)
+	'Log("map"&xmlMap)
 	Dim xliffMap As Map
 	xliffMap=xmlMap.Get("xliff")
 	Dim filesList As List
 	filesList=XMLUtils.GetElements(xliffMap,"file")
+	Dim addedMid As Int=1
 	For Each innerFile As Map In filesList
 		Dim body As Map
 		Try
@@ -279,6 +345,8 @@ Sub insertTranslation(translationMap As Map,filename As String,path As String) A
 			If translationMap.ContainsKey(segmentKey) Then
 				Dim dataMap As Map
 				dataMap=translationMap.Get(segmentKey)
+				Dim segList As List
+				segList=dataMap.Get("seg")
 				If originalFilename=dataMap.Get("filename") Then
 					If targetType="Map" Then
 						For Each key As String In targetMap.Keys
@@ -286,14 +354,37 @@ Sub insertTranslation(translationMap As Map,filename As String,path As String) A
 								targetMap.Remove(key)
 							End If
 						Next
-						If targetMap.ContainsKey("Text") Then
-							targetMap.Remove("Text")
+						If isSegEnabled Then
+							If segList.Size=1 Then
+								If isSegContinuous Then
+									targetMap.Put("mrk",buildMrk(addedMid,segList.Get(0)))
+									addedMid=addedMid+1
+								End If
+							Else
+								Dim mrkList As List
+								mrkList.Initialize
+								Dim mid As Int=0
+
+								For Each seg As String In segList
+									If isSegContinuous Then
+										mrkList.Add(buildMrk(addedMid,seg))
+										addedMid=addedMid+1
+									Else
+										mrkList.Add(buildMrk(mid,seg))
+										mid=mid+1
+									End If
+
+								Next
+								targetMap.Put("mrk",mrkList)
+							End If
+						Else
+							targetMap.Put("Text",dataMap.Get("translation"))
 						End If
-						targetMap.Put("Text",dataMap.Get("translation"))
+						
 					Else
 						transUnit.Put("target",dataMap.Get("translation"))
 					End If
-					Log(dataMap.Get("translation"))
+					Log("translation"&dataMap.Get("translation"))
 				End If
 			End If
 		Next
@@ -303,8 +394,21 @@ Sub insertTranslation(translationMap As Map,filename As String,path As String) A
 
 	xliffMap.Put("file",filesList)
 	xmlMap.Put("xliff",xliffMap)
-	Log(xmlMap)
+	Log("xmlmap"&xmlMap)
 	Return xmlMap
+End Sub
+
+Sub buildMrk(mid As Int,text As String) As Map
+	Dim mrkMap As Map
+	mrkMap.Initialize
+	Dim attributes As Map
+	attributes.Initialize
+	attributes.Put("mid",mid)
+	Log("mid"&mid)
+	attributes.Put("mtype","seg")
+	mrkMap.Put("Attributes",attributes)
+	mrkMap.Put("Text",text)
+	Return mrkMap
 End Sub
 
 Sub addNecessaryTags(target As String,source As String) As String
