@@ -169,31 +169,31 @@ Library8=jrandomaccessfile
 Library9=jb4xencryption
 Module1=FileChooserUtils
 Module10=preTranslateDialog
-Module11=idmlFilter
-Module12=xliffFilter
-Module13=XMLUtils
-Module14=Utils
-Module15=SRX
-Module16=SearchView
-Module17=POIWord
-Module18=PDF2TXT
-Module19=pdfbox
+Module11=MT
+Module12=idmlFilter
+Module13=xliffFilter
+Module14=XMLUtils
+Module15=Utils
+Module16=SRX
+Module17=SearchView
+Module18=POIWord
+Module19=PDF2TXT
 Module2=Project
-Module20=git
-Module21=dictWebView
-Module22=InputTextAreaBox
-Module23=searchAndReplaceDialog
-Module24=FontPicker
-Module25=ITP
-Module26=TermEditor
-Module27=TermManager
-Module28=HistoryViewer
-Module29=HistoryRecord
+Module20=pdfbox
+Module21=git
+Module22=dictWebView
+Module23=InputTextAreaBox
+Module24=searchAndReplaceDialog
+Module25=FontPicker
+Module26=ITP
+Module27=TermEditor
+Module28=TermManager
+Module29=HistoryViewer
 Module3=segmentation
-Module30=TMManager
-Module31=Previewer
-Module32=ClientKVS
-Module33=MT
+Module30=HistoryRecord
+Module31=TMManager
+Module32=Previewer
+Module33=ClientKVS
 Module34=statistics
 Module35=LanguageTool
 Module36=confirmReviewDialog
@@ -265,8 +265,6 @@ Version=6.8
 #AdditionalJar: pdfbox-2.0.12
 #AdditionalJar: fontbox-2.0.12
 #AdditionalJar: commons-logging-1.2
-
-'--- for
 
 Sub Process_Globals
 	Private fx As JFX
@@ -427,6 +425,10 @@ Sub plugin_PluginsChanged()
 End Sub
 
 Sub Drag_ReceivedFilePath (Filepath As String)
+	If Filepath.EndsWith(".bcp") Then
+		openProject(Filepath)
+		Return
+	End If
 	If currentProject.IsInitialized=False Then
 		fx.Msgbox(MainForm,"Please first open a project.","")
 		Return
@@ -435,6 +437,7 @@ Sub Drag_ReceivedFilePath (Filepath As String)
 		fx.Msgbox(MainForm,"Please first save the project.","")
 		Return
 	End If
+	
 	addFile(Filepath)
 End Sub
 
@@ -659,6 +662,10 @@ End Sub
 
 
 Sub openProject(path As String)
+	If currentProject.IsInitialized Then
+		fx.Msgbox(MainForm,"Please close the current project first.","")
+		Return
+	End If
 	currentProject.Initialize
 	currentProject.open(path)
 	autosaveTimer.Enabled=True
@@ -1109,7 +1116,14 @@ Sub supportedFilesList As List
 	Dim supportedFiles As List
 	supportedFiles=File.ReadList(File.DirAssets,"supportedFiles.txt")
 	For Each line As String In supportedFiles
-		extensions.Add(Regex.Split("	",line)(1).Replace("*.",""))
+		Dim data As List
+		data.Initialize
+		data.AddAll(Regex.Split("	",line))
+		For i=1 To data.Size-1
+			Dim extension As String
+			extension=data.Get(i)
+			extensions.Add(extension.Replace("*.",""))
+		Next
 	Next
 	For Each pluginName As String In plugin.GetAvailablePlugins
 		If pluginName.EndsWith("Filter") Then
@@ -1140,9 +1154,15 @@ Sub addFileMi_Action
 	descriptionList.Initialize
 	filterList.Initialize
 	For Each filetype As String In supportedFiles
-		descriptionList.Add(Regex.Split("	",filetype)(0))
-		filterList.add(Regex.Split("	",filetype)(1))
+		Dim data As List
+		data.Initialize
+		data.AddAll(Regex.Split("	",filetype))
+		For i=1 To data.Size-1
+			descriptionList.Add(data.Get(0))
+			filterList.Add(data.Get(i))
+		Next
 	Next
+	Log(filterList)
 	FileChooserUtils.AddExtensionFilters4(fc,descriptionList,filterList,True,"All",True)
 	Dim path As String
 	path=fc.ShowOpen(MainForm)

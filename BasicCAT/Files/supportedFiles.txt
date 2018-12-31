@@ -1,4 +1,4 @@
 Text Files	*.txt
 InDesign Markup Language	*.idml
-XLIFF v1.2	*.xlf
+XLIFF v1.2	*.xlf	*.xliff
 Po	*.po
