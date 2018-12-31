@@ -322,9 +322,9 @@ End Sub
 Sub insertTranslation(translationMap As Map,filename As String,path As String,isSegEnabled As Boolean) As Map
 	Dim xmlstring As String
 	xmlstring=File.ReadString(File.Combine(path,"source"),filename)
-	'xmlstring=XMLUtils.escapedText(xmlstring,"source","xliff")
+	xmlstring=XMLUtils.escapedText(xmlstring,"source","xliff")
 	'xmlstring=XMLUtils.escapedText(xmlstring,"target","xliff")
-	'xmlstring=XMLUtils.escapedText(xmlstring,"mrk","xliff")
+	xmlstring=XMLUtils.escapedText(xmlstring,"mrk","xliff")
 	'Log("xml"&xmlstring)
 	Dim isSegContinuous As Boolean=False
 	isSegContinuous=checkSegContinuous(xmlstring)
