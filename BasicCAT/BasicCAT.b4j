@@ -169,44 +169,44 @@ Library8=jrandomaccessfile
 Library9=jb4xencryption
 Module1=FileChooserUtils
 Module10=preTranslateDialog
-Module11=tikal
-Module12=xliffFilter
-Module13=idmlFilter
-Module14=PDF2TXT
-Module15=FileUtils
-Module16=XMLUtils
-Module17=Map2Xml
-Module18=MT
-Module19=Utils
+Module11=Preferences
+Module12=tikal
+Module13=xliffFilter
+Module14=idmlFilter
+Module15=PDF2TXT
+Module16=FileUtils
+Module17=XMLUtils
+Module18=Map2Xml
+Module19=MT
 Module2=Project
-Module20=SRX
-Module21=SearchView
-Module22=POIWord
-Module23=pdfbox
-Module24=git
-Module25=dictWebView
-Module26=InputTextAreaBox
-Module27=searchAndReplaceDialog
-Module28=FontPicker
-Module29=ITP
+Module20=Utils
+Module21=SRX
+Module22=SearchView
+Module23=POIWord
+Module24=pdfbox
+Module25=git
+Module26=dictWebView
+Module27=InputTextAreaBox
+Module28=searchAndReplaceDialog
+Module29=FontPicker
 Module3=segmentation
-Module30=TermEditor
-Module31=TermManager
-Module32=HistoryViewer
-Module33=HistoryRecord
-Module34=TMManager
-Module35=Previewer
-Module36=ClientKVS
-Module37=statistics
-Module38=LanguageTool
-Module39=confirmReviewDialog
+Module30=ITP
+Module31=TermEditor
+Module32=TermManager
+Module33=HistoryViewer
+Module34=HistoryRecord
+Module35=TMManager
+Module36=Previewer
+Module37=ClientKVS
+Module38=statistics
+Module39=LanguageTool
 Module4=CustomListView
-Module40=LanguagePairSelector
-Module41=idmlUtils
-Module42=editDistance
-Module43=InputBox
-Module44=MTParamsFiller
-Module45=Preferences
+Module40=confirmReviewDialog
+Module41=LanguagePairSelector
+Module42=idmlUtils
+Module43=editDistance
+Module44=InputBox
+Module45=MTParamsFiller
 Module46=importDialog
 Module47=progressDialog
 Module48=filterGenericUtils
@@ -1287,20 +1287,45 @@ Sub ListViewParent_Resize
 			setLabelFont(sourcelbl,"sourceFont")
 			setLabelFont(targetlbl,"targetFont")
 			Dim sourceHeight,targetHeight As Int
-			Dim sourceLineHeight As Int=Utils.MeasureMultilineTextHeight(sourcelbl.Font,itemWidth/2-25dip,CRLF)
-			Dim targetLineHeight As Int=Utils.MeasureMultilineTextHeight(targetlbl.Font,itemWidth/2-25dip,CRLF)
-			sourceHeight=Utils.MeasureMultilineTextHeight(sourcelbl.Font,itemWidth/2-25dip,sourceTa.Text)+sourceLineHeight*3/4
-			targetHeight=Utils.MeasureMultilineTextHeight(targetlbl.Font,itemWidth/2-25dip,targetTa.Text)+targetLineHeight*3/4
+			Dim sourceLineHeight As Int=Utils.MeasureMultilineTextHeight(sourcelbl.Font,itemWidth/2-20dip,CRLF)
+			Dim targetLineHeight As Int=Utils.MeasureMultilineTextHeight(targetlbl.Font,itemWidth/2-20dip,CRLF)
+			Dim lineHeightTimes As Double
+			lineHeightTimes=preferencesMap.GetDefault("lineheight",2/3)
+			sourceHeight=Utils.MeasureMultilineTextHeight(sourcelbl.Font,itemWidth/2-20dip,sourceTa.Text)+sourceLineHeight*lineHeightTimes
+			targetHeight=Utils.MeasureMultilineTextHeight(targetlbl.Font,itemWidth/2-20dip,targetTa.Text)+targetLineHeight*lineHeightTimes
 			Dim h As Int = Max(Max(20, sourceHeight + 10), targetHeight + 10)
 			calculatedHeight.Put(sourceTa.Text&"	"&targetTa.Text,h)
 			setLayout(p,i,h)
 			sourcelbl.RemoveNodeFromParent
 			targetlbl.RemoveNodeFromParent
+			'Do While isScrollBarVisible(sourceTa)
+			'	Sleep(50)
+			'	h = h+5dip
+			'	calculatedHeight.Put(sourceTa.Text&"	"&targetTa.Text,h)
+			'	setLayout(p,i,h)
+			'Loop
 		Else
 			Dim h As Int =calculatedHeight.get(sourceTa.Text&"	"&targetTa.Text)
 			setLayout(p,i,h)
 		End If
 	Next
+End Sub
+
+Sub isScrollBarVisible(ta As TextArea) As Boolean
+	Try
+		Dim jo As JavaObject
+		jo=ta
+		Dim ScrollBar As JavaObject
+		ScrollBar=jo.RunMethodJO("lookup",Array(".scroll-bar:vertical"))
+		If ScrollBar=Null Then
+			Return False
+		Else
+			Return ScrollBar.RunMethod("isVisible",Null)
+		End If
+	Catch
+		Log(LastException)
+		Return False
+	End Try
 End Sub
 
 Public Sub setLayout(p As Pane,index As Int,h As Int)

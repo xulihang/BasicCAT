@@ -35,6 +35,7 @@ Sub Class_Globals
 	Private ExcludeTagsCheckBox As CheckBox
 	Private maxSuggestionNumSpinner As Spinner
 	Private maxCheckDropdownNumSpinner As Spinner
+	Private lineHeightTextField As TextField
 End Sub
 
 'Initializes the object. You can add parameters to this method if needed.
@@ -103,6 +104,7 @@ Sub categoryListView_SelectedIndexChanged(Index As Int)
 			SettingPane.RemoveAllNodes
 			SettingPane.LoadLayout("appearance")
 			loadFont
+			lineHeightTextField.Text=unsavedPreferences.GetDefault("lineheight",0.6)
 		Case 2
 			'mt
 			SettingPane.RemoveAllNodes
@@ -399,4 +401,20 @@ End Sub
 
 Sub maxCheckDropdownNumSpinner_ValueChanged (Value As Object)
 	unsavedPreferences.Put("maxCheckDropdownNum",Value)
+End Sub
+
+Sub lineHeightTextField_TextChanged (Old As String, New As String)
+	Dim times As Double
+	If New="" Then
+		Return
+	End If
+	Try
+	    times=New 	
+		unsavedPreferences.Put("lineheight",times)
+	Catch
+		Log(LastException)
+	    lineHeightTextField.Text=""
+		fx.Msgbox(frm,"Wrong Value","")	
+	End Try
+
 End Sub
