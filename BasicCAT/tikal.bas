@@ -23,7 +23,11 @@ Sub extract(sl As String,tl As String,filepath As String,outputDir As String) As
 	Dim fcConfMap As Map
 	fcConfMap=getfcConfMap
 	If fcConfMap.ContainsKey(extension) Then
-		args.AddAll(Array As String("-jar",tikalPath,"-x","-sl",sl,"-tl",tl,filepath,"-fc",fcConfMap.Get(extension),"-od",outputDir))
+		Dim settings As Map
+		settings=fcConfMap.Get(extension)
+		Dim configId As String
+		configId=settings.Get("configId")
+		args.AddAll(Array As String("-jar",tikalPath,"-x","-sl",sl,"-tl",tl,filepath,"-fc",configId,"-od",outputDir))
 	Else
 		args.AddAll(Array As String("-jar",tikalPath,"-x","-sl",sl,"-tl",tl,filepath,"-od",outputDir))
 	End If
@@ -49,15 +53,28 @@ Sub merge(filepath As String,sourceDir As String,outputDir As String) As Resumab
 	Dim extension As String
 	Dim filename As String
 	filename=File.GetName(filepath)
-	extension=getExtension(filename)
-	
+	Dim originalFilename As String
+	originalFilename=filename.SubString2(0,filename.LastIndexOf("."))
+	extension=getExtension(originalFilename)
 	Dim fcConfMap As Map
 	fcConfMap=getfcConfMap
+	
 	If fcConfMap.ContainsKey(extension) Then
-		args.AddAll(Array As String("-jar",tikalPath,"-m",filepath,"-fc",fcConfMap.Get(extension),"-sd",sourceDir,"-od",outputDir))
+		Dim settings As Map
+		settings=fcConfMap.Get(extension)
+		Dim configId As String
+		configId=settings.Get("configId")
+		If settings.ContainsKey("oe") Then
+			Dim outPutEncoding As String=settings.Get("oe")
+			args.AddAll(Array As String("-jar",tikalPath,"-m",filepath,"-fc",configId,"-sd",sourceDir,"-od",outputDir,"-oe",outPutEncoding))
+		Else	
+			args.AddAll(Array As String("-jar",tikalPath,"-m",filepath,"-fc",configId,"-sd",sourceDir,"-od",outputDir))
+		End If
+		
 	Else
 		args.AddAll(Array As String("-jar",tikalPath,"-m",filepath,"-sd",sourceDir,"-od",outputDir))
 	End If
+	Log(args)
 	sh.Initialize("sh","java",args)
 	sh.Run(-1)
 	wait for sh_ProcessCompleted (Success As Boolean, ExitCode As Int, StdOut As String, StdErr As String)
@@ -92,10 +109,21 @@ Sub getfcConfMap As Map
 		Dim conf As List
 		conf=File.ReadList(File.Combine(File.DirApp,"okapi"),"fc.conf")
 		For Each line In conf
+			Dim settings As Map
+			settings.Initialize
 			Dim extension,configId As String
 			extension=Regex.Split("	",line)(0)
 			configId=Regex.Split("	",line)(1)
-			result.Put(extension,configId)
+			settings.Put("configId",configId)
+			
+            Try
+				Dim outputEncoding As String
+				outputEncoding=Regex.Split("	",line)(2)
+				settings.Put("oe",outputEncoding)
+			Catch
+				Log(LastException)
+			End Try
+			result.Put(extension,settings)
 		Next
 	Catch
 		Log(LastException)

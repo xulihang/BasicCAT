@@ -630,8 +630,8 @@ Sub generateFile(filename As String,path As String,projectFile As Map)
 			If target="" Then
 				translation=fullsource
 			Else
-				Dim pp As String
-				pp=source
+				'Dim pp As String
+				'pp=source
 				source=source.Replace("<br/>",CRLF)
 				target=target.Replace("<br/>",CRLF)
 				If shouldAddSpace(projectFile.Get("source"),projectFile.Get("target"),index,segmentsList) Then
@@ -662,13 +662,13 @@ Sub generateFile(filename As String,path As String,projectFile As Map)
 
 				End If
 
-				If pp.StartsWith("<c0><br/></c0><c4>Ca") Then
-					Log(source)
-					Log(target)
-					Log(fullsource)
-					Log(translation)
+				'If pp.StartsWith("<c0><br/></c0><c4>Ca") Then
+				'	Log(source)
+				'	Log(target)
+				'	Log(fullsource)
+				'	Log(translation)
 					'ExitApplication
-				End If
+				'End If
 				If Utils.LanguageHasSpace(projectFile.Get("target"))=False Then
 					translation=segmentation.removeSpacesAtBothSides(Main.currentProject.path,Main.currentProject.projectFile.Get("target"),translation,Utils.getMap("settings",projectFile).GetDefault("remove_space",True))
 				End If

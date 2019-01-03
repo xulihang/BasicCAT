@@ -22,7 +22,7 @@ Sub createWorkFile(filename As String,path As String,sourceLang As String)
 	Dim xmlstring As String
 	xmlstring=XMLUtils.escapedText(File.ReadString(File.Combine(path,"source"),filename),"source","xliff")
 	xmlstring=XMLUtils.escapedText(xmlstring,"mrk","xliff")
-	Log("done")
+	'Log("done")
 
 	
 	files=getFilesList(xmlstring)
@@ -65,7 +65,7 @@ Sub createWorkFile(filename As String,path As String,sourceLang As String)
 			End If
 
 			For Each source As String In segmentedText
-				Log("source"&source)
+				'Log("source"&source)
 				index=index+1
 				Dim bitext As List
 				bitext.Initialize
@@ -176,7 +176,7 @@ End Sub
 
 Sub addTransUnit(transUnits As List,tidyTransUnits As List,groupIndex As Int)
 	For Each transUnit As Map In transUnits
-		Log(transUnit)
+		'Log(transUnit)
 		Dim attributes As Map
 		attributes=transUnit.Get("Attributes")
 		Dim id As String
@@ -187,7 +187,7 @@ Sub addTransUnit(transUnits As List,tidyTransUnits As List,groupIndex As Int)
 			Dim text As String
 			text=source.Get("Text")
 		Catch
-			Log(LastException)
+			'Log(LastException)
 			Dim text As String
 			text=transUnit.Get("source")
 		End Try
@@ -211,10 +211,10 @@ Sub addTransUnit(transUnits As List,tidyTransUnits As List,groupIndex As Int)
 End Sub
 
 Sub getFilesList(xmlstring As String) As List
-	Log("read")
+	'Log("read")
 	Dim xmlMap As Map
 	xmlMap=XMLUtils.getXmlMap(xmlstring)
-	Log(xmlMap)
+	'Log(xmlMap)
 	Dim xliffMap As Map
 	xliffMap=xmlMap.Get("xliff")
 	Return XMLUtils.GetElements(xliffMap,"file")
@@ -305,7 +305,7 @@ Sub generateFile(filename As String,path As String,projectFile As Map)
 	xmlString=XMLUtils.unescapedText(xmlString,"source","xliff")
 	xmlString=XMLUtils.unescapedText(xmlString,"target","xliff")
 	xmlString=XMLUtils.unescapedText(xmlString,"mrk","xliff")
-	Log(xmlString)
+	'Log(xmlString)
 	File.WriteString(File.Combine(path,"target"),filename,xmlString)
 	Main.updateOperation(filename&" generated!")
 End Sub
@@ -328,7 +328,7 @@ Sub insertTranslation(translationMap As Map,filename As String,path As String,is
 	'Log("xml"&xmlstring)
 	Dim isSegContinuous As Boolean=False
 	isSegContinuous=checkSegContinuous(xmlstring)
-	Log("iscontinuous"&isSegContinuous)
+	'Log("iscontinuous"&isSegContinuous)
 	Dim xmlMap As Map
 	xmlMap=XMLUtils.getXmlMap(xmlstring)
 	'Log("map"&xmlMap)
@@ -342,7 +342,7 @@ Sub insertTranslation(translationMap As Map,filename As String,path As String,is
 		Try
 			body=innerFile.Get("body")
 		Catch
-			Log(LastException)
+			'Log(LastException)
 			Continue
 		End Try
 		Dim fileAttributes As Map
@@ -369,7 +369,7 @@ Sub insertTranslation(translationMap As Map,filename As String,path As String,is
 
 	xliffMap.Put("file",filesList)
 	xmlMap.Put("xliff",xliffMap)
-	Log("xmlmap"&xmlMap)
+	'Log("xmlmap"&xmlMap)
 	Return xmlMap
 End Sub
 
@@ -383,7 +383,7 @@ Sub updateTransUnits(transUnits As List,originalFilename As String,translationMa
 		'End If
 		Dim id As String
 		id=attributes.Get("id")
-		Log(transUnit)
+		'Log(transUnit)
 		Dim targetType As String="Map"
 		If transUnit.ContainsKey("target")=False Then
 			transUnit.Put("target","")
@@ -393,7 +393,7 @@ Sub updateTransUnits(transUnits As List,originalFilename As String,translationMa
 				Dim targetMap As Map
 				targetMap=transUnit.Get("target")
 			Catch
-				Log(LastException)
+				'Log(LastException)
 				targetType="String"
 			End Try
 		End If
@@ -456,7 +456,7 @@ Sub updateTransUnits(transUnits As List,originalFilename As String,translationMa
 				Else
 					transUnit.Put("target",dataMap.Get("translation"))
 				End If
-				Log("translation"&dataMap.Get("translation"))
+				'Log("translation"&dataMap.Get("translation"))
 			End If
 		End If
 	Next
@@ -468,7 +468,7 @@ Sub buildMrk(mid As Int,text As String) As Map
 	Dim attributes As Map
 	attributes.Initialize
 	attributes.Put("mid",mid)
-	Log("mid"&mid)
+	'Log("mid"&mid)
 	attributes.Put("mtype","seg")
 	mrkMap.Put("Attributes",attributes)
 	mrkMap.Put("Text",text)
@@ -518,7 +518,7 @@ Sub shouldAddSpace(sourceLang As String,targetLang As String,index As Int,segmen
 						Return True
 					End If
 				Catch
-					Log(LastException)
+					'Log(LastException)
 				End Try
 			End If
 		End If
@@ -559,7 +559,7 @@ Sub mergeSegment(sourceTextArea As TextArea)
 	If filterGenericUtils.tagsNum(source&nextsource)<>filterGenericUtils.tagsNum(fullsource&nextFullSource) And filterGenericUtils.tagsNum(fullsource&nextFullSource)>0 Then
 		Dim result As Int
 		result=fx.Msgbox2(Main.MainForm,"Segments contain unshown tags, continue?","","Yes","Cancel","No",fx.MSGBOX_CONFIRMATION)
-		Log(result)
+		'Log(result)
 		'yes -1, no -2, cancel -3
 		Select result
 			Case -1
@@ -690,7 +690,7 @@ Sub previewText As String
 			Dim p As Pane
 			p=Main.editorLV.Items.Get(i)
 		Catch
-			Log(LastException)
+			'Log(LastException)
 			Continue
 		End Try
 
