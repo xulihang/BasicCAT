@@ -26,6 +26,7 @@ Sub Class_Globals
 	Private projectGit As git
 	Public contentChanged As Boolean=False
 	Private SegEnabledFiles As List
+	Private currentWorkFileFrame As Map
 End Sub
 
 'Initializes the object. You can add parameters to this method if needed.
@@ -115,27 +116,50 @@ Public Sub newProjectSetting(source As String,target As String)
 	settings.Put("termList",termList)
 End Sub
 
-Public Sub addFile(filepath As String)
+Public Sub addFile(filepath As String,isExtractedByOkapi As Boolean)
 	Dim filename As String
 	filename=Main.getFilename(filepath)
 	Log("fp"&filepath)
 	Log("fn"&filename)
-	Wait For (File.CopyAsync(filepath,"",File.Combine(path,"source"),filename)) Complete (Success As Boolean)
-	Log("Success: " & Success)
+	If isExtractedByOkapi Then
+		filename=filename&".xlf"
+		addToOkapiExtractedList(filename)
+	Else
+		Wait For (File.CopyAsync(filepath,"",File.Combine(path,"source"),filename)) Complete (Success As Boolean)
+		Log("Success: " & Success)
+	End If
 	files.Add(filename)
 	addFilesToTreeTable(filename)
 	createWorkFileAccordingToExtension(filename)
 	save
 End Sub
 
-Public Sub addFileInFolder(folderPath As String,filename As String)
+Sub addToOkapiExtractedList(filename As String)
+	Dim okapiExtractedFiles As List
+	okapiExtractedFiles.Initialize
+	If projectFile.ContainsKey("okapiExtractedFiles") Then
+		okapiExtractedFiles=projectFile.Get("okapiExtractedFiles")
+	End If
+	If okapiExtractedFiles.IndexOf(filename)=-1 Then
+		okapiExtractedFiles.Add(filename)
+	End If
+	projectFile.Put("okapiExtractedFiles",okapiExtractedFiles)
+End Sub
+
+Public Sub addFileInFolder(folderPath As String,filename As String,isExtractedbyOkapi As Boolean)
 	filename=filename.Replace("/",GetSystemProperty("file.separator","/"))
 	If files.IndexOf(filename)=-1 Then
 		FileUtils.createNonExistingDir(File.Combine(File.Combine(path,"source"),filename))
 		FileUtils.createNonExistingDir(File.Combine(File.Combine(path,"work"),filename))
 		FileUtils.createNonExistingDir(File.Combine(File.Combine(path,"target"),filename))
-		Wait For (File.CopyAsync(folderPath,filename,File.Combine(path,"source"),filename)) Complete (Success As Boolean)
-		Log("Success: " & Success)
+		
+		If isExtractedbyOkapi Then
+			filename=filename&".xlf"
+			addToOkapiExtractedList(filename)
+		Else
+			Wait For (File.CopyAsync(folderPath,filename,File.Combine(path,"source"),filename)) Complete (Success As Boolean)
+			Log("Success: " & Success)
+		End If
 		files.Add(filename)
 		addFilesToTreeTable(filename)
 		createWorkFileAccordingToExtension(filename)
@@ -814,6 +838,14 @@ Sub removeFileMi_Action
 
 	subTreeTableItem.Children.RemoveAt(subTreeTableItem.Children.IndexOf(mi.Tag))
 	files.RemoveAt(files.IndexOf(filename))
+	Dim okapiExtractedFiles As List
+	If projectFile.ContainsKey("okapiExtractedFiles") Then
+		okapiExtractedFiles=projectFile.Get("okapiExtractedFiles")
+		Dim index As Int = okapiExtractedFiles.IndexOf(filename)
+		If index<>-1 Then
+			okapiExtractedFiles.RemoveAt(index)
+		End If
+	End If
 	filename=filename.Replace("/",GetSystemProperty("file.separator","/"))
 	File.Delete(File.Combine(path,"source"),filename)
 	Try
@@ -1910,8 +1942,19 @@ Sub readWorkFile(filename As String,filesegments As List,fillUI As Boolean,root 
 	json.Initialize(File.ReadString(File.Combine(root,"work"),filename&".json"))
 	workfile=json.NextObject
 	If workfile.GetDefault("seg_enabled",False)=True Then
-		SegEnabledFiles.Add(filename)
+		If SegEnabledFiles.IndexOf(filename)=-1 Then
+			SegEnabledFiles.Add(filename)
+		End If
 	End If
+	If filename=currentFilename Then
+		currentWorkFileFrame.Initialize
+		For Each key As String In workfile.Keys
+			If key<>"files" Then
+				currentWorkFileFrame.Put(key,workfile.Get(key))
+			End If
+		Next
+	End If
+	
 	Dim sourceFiles As List
 	sourceFiles=workfile.Get("files")
 	For Each sourceFileMap As Map In sourceFiles
@@ -1931,8 +1974,7 @@ End Sub
 
 Sub saveWorkFile(filename As String,fileSegments As List,root As String)
 	Dim workfile As Map
-	workfile.Initialize
-    workfile.Put("filename",filename)
+	workfile=currentWorkFileFrame
 	If SegEnabledFiles.IndexOf(filename)<>-1 Then
 		workfile.Put("seg_enabled",True)
 	Else
@@ -2016,24 +2058,43 @@ Sub getAllSegments(filename As String) As List
 End Sub
 
 Public Sub generateTargetFiles
+	
 	For Each filename As String In files
 		Sleep(0)
 		Dim filenameLowercase As String
 		filenameLowercase=filename.ToLowerCase
-		If filenameLowercase.EndsWith(".txt") Then
-			txtFilter.generateFile(filename,path,projectFile)
-		Else if filenameLowercase.EndsWith(".idml") Then
-			idmlFilter.generateFile(filename,path,projectFile)
-		Else if filenameLowercase.EndsWith(".xlf") Or filenameLowercase.EndsWith(".xliff") Then
-			xliffFilter.generateFile(filename,path,projectFile)
+		Dim okapiExtractedFiles As List
+		okapiExtractedFiles.Initialize
+		If projectFile.ContainsKey("okapiExtractedFiles") Then
+			okapiExtractedFiles.AddAll(projectFile.Get("okapiExtractedFiles"))
+		End If
+		If okapiExtractedFiles.IndexOf(filename)<>-1 Then
+			Dim outputDir As String
+			outputDir=File.GetFileParent(File.Combine(File.Combine(path,"target"),filename))
+			If filenameLowercase.EndsWith(".xlf") Or filenameLowercase.EndsWith(".xliff") Then
+				xliffFilter.generateFile(filename,path,projectFile)
+				Dim targetPath As String
+				targetPath=File.Combine(File.Combine(path,"target"),filename)
+				Dim sourceDir As String
+				sourceDir=File.Combine(path,"source")
+				tikal.merge(targetPath,sourceDir,outputDir)
+			End If
 		Else
-			Dim params As Map
-			params.Initialize
-			params.Put("filename",filename)
-			params.Put("path",path)
-			params.Put("projectFile",projectFile)
-			params.Put("main",Main)
-			runFilterPluginAccordingToExtension(filename,"generateFile",params)
+			If filenameLowercase.EndsWith(".txt") Then
+				txtFilter.generateFile(filename,path,projectFile)
+			Else if filenameLowercase.EndsWith(".idml") Then
+				idmlFilter.generateFile(filename,path,projectFile)
+			Else if filenameLowercase.EndsWith(".xlf") Or filenameLowercase.EndsWith(".xliff") Then
+				xliffFilter.generateFile(filename,path,projectFile)
+			Else
+				Dim params As Map
+				params.Initialize
+				params.Put("filename",filename)
+				params.Put("path",path)
+				params.Put("projectFile",projectFile)
+				params.Put("main",Main)
+				runFilterPluginAccordingToExtension(filename,"generateFile",params)
+			End If
 		End If
 	Next
 End Sub

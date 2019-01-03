@@ -224,12 +224,13 @@ Module58=TextFlow
 Module59=opennlp
 Module6=TM
 Module60=coordinate
+Module61=tikal
 Module7=Term
 Module8=KeyValueStore
 Module9=ProjectSettings
 NumberOfFiles=72
 NumberOfLibraries=22
-NumberOfModules=60
+NumberOfModules=61
 Version=6.8
 @EndOfDesignText@
 #Region Project Attributes 
@@ -437,8 +438,11 @@ Sub Drag_ReceivedFilePath (Filepath As String)
 		fx.Msgbox(MainForm,"Please first save the project.","")
 		Return
 	End If
-	
-	addFile(Filepath)
+	If File.IsDirectory(Filepath,"")=False Then
+		addFile(Filepath)
+	Else
+		addFolder(Filepath)
+	End If
 End Sub
 
 Sub adjustDividerPositions
@@ -1062,36 +1066,63 @@ Sub addFolderMi_Action
 	If path="" Then
 		Return
 	End If
-	Dim files As List
+	addFolder(path)
+End Sub
+
+Sub addFolder(path As String)
+	Dim files,okapiExtractedFiles As List
 	files.Initialize
-	addFiles(path,files,"")
+	okapiExtractedFiles.Initialize
+	wait for (addFiles(path,files,"",okapiExtractedFiles)) complete (success As Boolean)
 	For Each subfolder As String In FileUtils.GetSubFolders(path)
 		Dim unixLikePath As String=path.Replace("\","/")
 		Dim unixSubfolderPath As String=subfolder.Replace("\","/")
-		addFiles(subfolder,files,unixSubfolderPath.Replace(unixLikePath&"/","")&"/")
+		wait for (addFiles(subfolder,files,unixSubfolderPath.Replace(unixLikePath&"/","")&"/",okapiExtractedFiles)) complete (success As Boolean)
 	Next
+	Log("files"&files)
 	Dim imported As Int=0
 	progressDialog.Show("Importing...","import")
-    For Each filename As String In files
+	For Each filename As String In files
 		Log(filename)
+		Dim isExtractedbyOkapi As Boolean
+		If okapiExtractedFiles.IndexOf(filename)<>-1 Then
+			isExtractedbyOkapi=True
+		Else
+			isExtractedbyOkapi=False
+		End If
 		imported=imported+1
 		Sleep(0)
 		progressDialog.update(imported,files.Size)
-		currentProject.addFileInFolder(path,filename)
-    Next
+		currentProject.addFileInFolder(path,filename,isExtractedbyOkapi)
+	Next
 	currentProject.save
 	progressDialog.close
 End Sub
 
-Sub addFiles(path As String,files As List,prefix As String)
+Sub addFiles(path As String,files As List,prefix As String,okapiExtractedFiles As List) As ResumableSub
 	For Each filename As String In File.ListFiles(path)
-		Log(filename)
 		If File.IsDirectory(path,filename)=False Then
-            If isFiletypeSupported(filename) Then
+			If isFiletypeSupported(filename) Then
 				files.Add(prefix&filename)
+			Else
+				prefix=prefix.Replace("/",GetSystemProperty("file.separator","/"))
+				Dim targetFilename As String
+				targetFilename=File.Combine(File.Combine(File.Combine(currentProject.path,"source"),prefix),filename)
+				FileUtils.createNonExistingDir(File.Combine(File.Combine(path,"source"),targetFilename))
+				Dim outputDir As String
+				outputDir=File.GetFileParent(targetFilename)
+				Dim sl,tl As String
+				sl=currentProject.projectFile.Get("source")
+				tl=currentProject.projectFile.Get("target")
+				wait for (tikal.extract(sl,tl,File.Combine(path,filename),outputDir)) complete (success As Boolean)
+				If success=True Then
+					files.Add(prefix&filename)
+					okapiExtractedFiles.Add(prefix&filename)
+                End If
             End If
 		End If
 	Next
+	Return True
 End Sub
 
 Sub isFiletypeSupported(filename As String) As Boolean
@@ -1179,9 +1210,17 @@ Sub addFile(path As String)
 		Return
 	End If
 	If isFiletypeSupported(File.GetName(path))=False Then
-		fx.Msgbox(MainForm,"This file format is not supported.","")
+		Dim sl,tl As String
+		sl=currentProject.projectFile.Get("source")
+		tl=currentProject.projectFile.Get("target")
+		wait for (tikal.extract(sl,tl,path,File.Combine(currentProject.path,"source"))) complete (success As Boolean)
+		If success=True Then
+			currentProject.addFile(path,True)
+		Else
+			fx.Msgbox(MainForm,"This file format is not supported.","")
+		End If
 	Else
-		currentProject.addFile(path)
+		currentProject.addFile(path,False)
 	End If
 End Sub
 
