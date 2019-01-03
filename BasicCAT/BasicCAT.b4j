@@ -169,14 +169,14 @@ Library8=jrandomaccessfile
 Library9=jb4xencryption
 Module1=FileChooserUtils
 Module10=preTranslateDialog
-Module11=PDF2TXT
-Module12=tikal
-Module13=xliffFilter
-Module14=FileUtils
-Module15=XMLUtils
-Module16=Map2Xml
-Module17=MT
-Module18=idmlFilter
+Module11=tikal
+Module12=xliffFilter
+Module13=idmlFilter
+Module14=PDF2TXT
+Module15=FileUtils
+Module16=XMLUtils
+Module17=Map2Xml
+Module18=MT
 Module19=Utils
 Module2=Project
 Module20=SRX
@@ -1287,10 +1287,10 @@ Sub ListViewParent_Resize
 			setLabelFont(sourcelbl,"sourceFont")
 			setLabelFont(targetlbl,"targetFont")
 			Dim sourceHeight,targetHeight As Int
-			Dim sourceLineHeight As Int=Utils.MeasureMultilineTextHeight(sourcelbl.Font,itemWidth/2-20dip,CRLF)
-			Dim targetLineHeight As Int=Utils.MeasureMultilineTextHeight(targetlbl.Font,itemWidth/2-20dip,CRLF)
-			sourceHeight=Utils.MeasureMultilineTextHeight(sourcelbl.Font,itemWidth/2-20dip,sourceTa.Text)+sourceLineHeight*2/3
-			targetHeight=Utils.MeasureMultilineTextHeight(targetlbl.Font,itemWidth/2-20dip,targetTa.Text)+targetLineHeight*2/3
+			Dim sourceLineHeight As Int=Utils.MeasureMultilineTextHeight(sourcelbl.Font,itemWidth/2-25dip,CRLF)
+			Dim targetLineHeight As Int=Utils.MeasureMultilineTextHeight(targetlbl.Font,itemWidth/2-25dip,CRLF)
+			sourceHeight=Utils.MeasureMultilineTextHeight(sourcelbl.Font,itemWidth/2-25dip,sourceTa.Text)+sourceLineHeight*3/4
+			targetHeight=Utils.MeasureMultilineTextHeight(targetlbl.Font,itemWidth/2-25dip,targetTa.Text)+targetLineHeight*3/4
 			Dim h As Int = Max(Max(20, sourceHeight + 10), targetHeight + 10)
 			calculatedHeight.Put(sourceTa.Text&"	"&targetTa.Text,h)
 			setLayout(p,i,h)
@@ -1318,6 +1318,7 @@ End Sub
 
 
 Sub ListView1_ScrollPosition_Changed(OldVal As Object,NewVal As Object)
+	'Log(NewVal)
 	CallSubDelayed(Me,"checkVisibleRange")
 End Sub
 
@@ -1702,7 +1703,7 @@ Public Sub setLabelFont(lbl As Label,name As String)
 		size=fontPreference.get("Size")
 		lbl.Font=fx.CreateFont(familyName,size,False,False)
 	Else
-		lbl.Font=fx.CreateFont("Tahoma",16,False,False)
+		lbl.Font=fx.DefaultFont(16)
 	End If
 	Log(lbl.font.Size)
 End Sub
