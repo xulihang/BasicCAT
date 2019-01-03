@@ -1105,20 +1105,22 @@ Sub addFiles(path As String,files As List,prefix As String,okapiExtractedFiles A
 			If isFiletypeSupported(filename) Then
 				files.Add(prefix&filename)
 			Else
-				prefix=prefix.Replace("/",GetSystemProperty("file.separator","/"))
-				Dim targetFilename As String
-				targetFilename=File.Combine(File.Combine(File.Combine(currentProject.path,"source"),prefix),filename)
-				FileUtils.createNonExistingDir(File.Combine(File.Combine(path,"source"),targetFilename))
-				Dim outputDir As String
-				outputDir=File.GetFileParent(targetFilename)
-				Dim sl,tl As String
-				sl=currentProject.projectFile.Get("source")
-				tl=currentProject.projectFile.Get("target")
-				wait for (tikal.extract(sl,tl,File.Combine(path,filename),outputDir)) complete (success As Boolean)
-				If success=True Then
-					files.Add(prefix&filename)
-					okapiExtractedFiles.Add(prefix&filename)
-                End If
+				If currentProject.files.IndexOf(prefix&filename&".xlf")=-1 Then
+					prefix=prefix.Replace("/",GetSystemProperty("file.separator","/"))
+					Dim targetFilename As String
+					targetFilename=File.Combine(File.Combine(File.Combine(currentProject.path,"source"),prefix),filename)
+					FileUtils.createNonExistingDir(File.Combine(File.Combine(path,"source"),targetFilename))
+					Dim outputDir As String
+					outputDir=File.GetFileParent(targetFilename)
+					Dim sl,tl As String
+					sl=currentProject.projectFile.Get("source")
+					tl=currentProject.projectFile.Get("target")
+					wait for (tikal.extract(sl,tl,File.Combine(path,filename),outputDir)) complete (success As Boolean)
+					If success=True Then
+						files.Add(prefix&filename)
+						okapiExtractedFiles.Add(prefix&filename)
+					End If
+				End If
             End If
 		End If
 	Next
@@ -1210,6 +1212,10 @@ Sub addFile(path As String)
 		Return
 	End If
 	If isFiletypeSupported(File.GetName(path))=False Then
+		If currentProject.files.IndexOf(File.GetName(path)&".xlf")<>-1 Then
+			fx.Msgbox(MainForm,"A file with the same name already exists.","")
+			Return
+		End If
 		Dim sl,tl As String
 		sl=currentProject.projectFile.Get("source")
 		tl=currentProject.projectFile.Get("target")
