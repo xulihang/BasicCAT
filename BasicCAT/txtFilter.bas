@@ -10,7 +10,13 @@ Sub Process_Globals
 End Sub
 
 Sub createWorkFile(filename As String,path As String,sourceLang As String)
-	icu4j.convert(File.Combine(path,"source"),filename)
+	Dim textContent As String
+	Dim encoding As String
+	encoding=icu4j.getEncoding(File.Combine(path,"source"),filename)
+	Dim textReader As TextReader
+	textReader.Initialize2(File.OpenInput(File.Combine(path,"source"),filename),encoding)
+	textContent=textReader.ReadAll
+	textReader.Close
 	Dim workfile As Map
 	workfile.Initialize
 	workfile.Put("filename",filename)
@@ -23,7 +29,7 @@ Sub createWorkFile(filename As String,path As String,sourceLang As String)
 	Dim segmentsList As List
 	segmentsList.Initialize
 	Dim inbetweenContent As String
-	For Each source As String In segmentation.segmentedTxt(File.ReadString(File.Combine(path,"source"),filename),False,sourceLang,path)
+	For Each source As String In segmentation.segmentedTxt(textContent,False,sourceLang,path)
 		Dim bitext As List
 		bitext.Initialize
 		If source.Trim="" Then 'newline or empty space

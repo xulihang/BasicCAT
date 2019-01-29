@@ -9,7 +9,7 @@ Sub Process_Globals
 	Private fx As JFX
 End Sub
 
-Sub convert(dir As String,filename As String)
+Sub getEncoding(dir As String,filename As String) As String
     Log(dir)
 	Log(filename)
 	Try
@@ -18,10 +18,9 @@ Sub convert(dir As String,filename As String)
 		charsetDetector.RunMethodJO("setText",Array(File.OpenInput(dir,filename)))
 		Dim charsetMatch As JavaObject
 		charsetMatch=charsetDetector.RunMethodJO("detect",Null)
-		If charsetMatch.RunMethod("getName",Null)<>"UTF-8" Then
-			File.WriteString(dir,filename,charsetMatch.RunMethod("getString",Null))
-		End If
+		Return charsetMatch.RunMethod("getName",Null)
 	Catch
 		Log(LastException)
+		Return "UTF-8"
 	End Try
 End Sub
