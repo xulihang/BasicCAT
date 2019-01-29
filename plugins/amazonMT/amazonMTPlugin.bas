@@ -32,6 +32,7 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 			paramsList.Add("secretKey")
 			Return paramsList
 		Case "translate"
+			translation=""
 			Try
 				wait for (translate(Params.Get("source"),Params.Get("sourceLang"),Params.Get("targetLang"),Params.Get("preferencesMap"))) Complete (result As String)
 				Return result
@@ -78,6 +79,7 @@ Sub translate(source As String, sourceLang As String, targetLang As String,prefe
 	Loop
 	If translation="" Then
 		Log("timed out")
+		return ""
 	End If
 	Dim text As String
 	Try
