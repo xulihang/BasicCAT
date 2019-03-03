@@ -169,10 +169,10 @@ Library8=jrandomaccessfile
 Library9=jb4xencryption
 Module1=FileChooserUtils
 Module10=preTranslateDialog
-Module11=icu4j
-Module12=Preferences
-Module13=tikal
-Module14=xliffFilter
+Module11=xliffFilter
+Module12=icu4j
+Module13=Preferences
+Module14=tikal
 Module15=idmlFilter
 Module16=PDF2TXT
 Module17=FileUtils
@@ -225,12 +225,13 @@ Module59=TextFlow
 Module6=TM
 Module60=opennlp
 Module61=coordinate
+Module62=AutoSaver
 Module7=Term
 Module8=KeyValueStore
 Module9=ProjectSettings
 NumberOfFiles=72
 NumberOfLibraries=22
-NumberOfModules=61
+NumberOfModules=62
 Version=7
 @EndOfDesignText@
 #Region Project Attributes 
@@ -294,7 +295,6 @@ Sub Process_Globals
 	Private segmentLabel As Label
 	Private MenuBar1 As MenuBar
 	Public pre As Previewer
-    Private autosaveTimer As Timer
 	Private operationLabel As Label
 	Private checkLV As CustomListView
 	Public nlp As opennlp
@@ -304,6 +304,7 @@ Sub Process_Globals
 	Type Task (TaskName As String, TaskItem As Item, TaskKey As String)
 	Type Range(firstIndex As Int,lastIndex As Int)
 	Private Drag As B4JDragToMe
+	Private projectAutoSaver As AutoSaver
 End Sub
 
 Sub AppStart (Form1 As Form, Args() As String)
@@ -385,14 +386,6 @@ Sub init
 	tmTableView.SetColumnWidth(2,200)
 	Utils.disableMenuItems(MenuBar1,Array As String("_Save","_Close"))
 	Utils.disableMenuItems(MenuBar1,File.ReadList(File.DirAssets,"menuText.txt"))
-	If preferencesMap.ContainsKey("autosaveInterval") Then
-		Dim mseconds As Int
-		mseconds=preferencesMap.Get("autosaveInterval")*1000
-		autosaveTimer.Initialize("autosaveTimer",mseconds)
-	Else
-		autosaveTimer.Initialize("autosaveTimer",60000)
-	End If
-	autosaveTimer.Enabled=False
 	Drag.Initialize(projectTreeTableView, "Drag")
 	loadPlugins
 
@@ -527,7 +520,7 @@ Sub MenuBar1_Action
 			If currentProject.IsInitialized=False Then
 				Return
 			End If
-			autosaveTimer.Enabled=True
+            setAutosave(True)
 			If currentProject.path="" Then
 				Dim fc As FileChooser
 				fc.Initialize
@@ -672,14 +665,14 @@ Sub openProject(path As String)
 	End If
 	currentProject.Initialize
 	currentProject.open(path)
-	autosaveTimer.Enabled=True
+	setAutosave(True)
 	MainForm.Title=getProjectname(path)
 	Utils.enableMenuItems(MenuBar1,Array As String("_Save","_Close"))
 	Utils.enableMenuItems(MenuBar1,File.ReadList(File.DirAssets,"menuText.txt"))
 End Sub
 
 Public Sub closeProject
-	autosaveTimer.Enabled=False
+	setAutosave(False)
 	If currentProject.IsInitialized Then
 		If currentProject.projectTM.IsInitialized Then
 			currentProject.projectTM.close
@@ -697,7 +690,12 @@ Public Sub closeProject
 	End If
 End Sub
 
-
+Sub setAutosave(enabled As Boolean)
+	If projectAutoSaver.IsInitialized=False Then
+		projectAutoSaver.Initialize
+	End If
+	projectAutoSaver.Enabled=enabled
+End Sub
 
 Sub fillWithTM
 	If tmTableView.Items.Size<>0 Then
@@ -1575,27 +1573,6 @@ Public Sub getTop As Double
 	Return robot.RobotMouseCurrentLocation(1)-MainForm.WindowTop
 End Sub
 
-Sub autosaveTimer_Tick
-	If currentProject.IsInitialized=False Then
-		Return
-	End If
-	If currentProject.path="" Then
-		Return
-	Else
-		createBakupFiles
-		currentProject.save
-	End If
-End Sub
-
-Sub createBakupFiles
-	Log(File.Exists(currentProject.path,"bak"))
-    If File.Exists(currentProject.path,"bak")=False Then
-		File.MakeDir(currentProject.path,"bak")
-    End If
-	Utils.CopyWorkFolderAsync(File.Combine(currentProject.path, "work"),File.Combine(currentProject.path, "bak"))
-	File.Copy(currentProject.path,"project.bcp",File.Combine(currentProject.path,"bak"),"project.bcp")
-End Sub
-
 Public Sub updateSavedTime
 	operationLabel.Text="Project saved at "&DateTime.Time(DateTime.Now)
 End Sub
@@ -1760,11 +1737,11 @@ Public Sub addTextAreaToSegmentPane(segmentpane As Pane,source As String)
 End Sub
 
 Public Sub changeAutoSaveInterval(seconds As Int)
-	autosaveTimer.Interval=seconds*1000
+	projectAutoSaver.Interval=seconds*1000
 End Sub
 
 Public Sub enableAutosaveTimer(enabled As Boolean)
-	autosaveTimer.Enabled=enabled
+	projectAutoSaver.Enabled=enabled
 End Sub
 
 
