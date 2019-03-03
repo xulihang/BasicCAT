@@ -162,9 +162,7 @@ Sub getTransUnits(fileMap As Map) As List
 		groups=XMLUtils.GetElements(body,"group")
 		Dim groupIndex As Int=0
 		For Each group As Map In groups
-			transUnits=XMLUtils.GetElements(group,"trans-unit")
-			addTransUnit(transUnits,tidyTransUnits,groupIndex)
-			groupIndex=groupIndex+1
+			addFromGroups(group,transUnits,tidyTransUnits,groupIndex)
 		Next
 	Else
 		transUnits=XMLUtils.GetElements(body,"trans-unit")
@@ -172,6 +170,22 @@ Sub getTransUnits(fileMap As Map) As List
 	End If
 	
 	Return tidyTransUnits
+End Sub
+
+Sub addFromGroups(group As Map,transUnits As List,tidyTransUnits As List,groupIndex As Int)
+	If group.ContainsKey("trans-unit") Then
+		transUnits=XMLUtils.GetElements(group,"trans-unit")
+		addTransUnit(transUnits,tidyTransUnits,groupIndex)
+		groupIndex=groupIndex+1
+	Else If group.ContainsKey("group") Then
+		Dim groups As List
+		groups=XMLUtils.GetElements(group,"group")
+		Dim groupIndex As Int=0
+		For Each innergroup As Map In groups
+			addFromGroups(innergroup,transUnits,tidyTransUnits,groupIndex)
+			groupIndex=groupIndex+1
+		Next
+	End If
 End Sub
 
 Sub addTransUnit(transUnits As List,tidyTransUnits As List,groupIndex As Int)
@@ -354,8 +368,7 @@ Sub insertTranslation(translationMap As Map,filename As String,path As String,is
 			Dim groups As List
 			groups=XMLUtils.GetElements(body,"group")
 			For Each group As Map In groups
-				transUnits=XMLUtils.GetElements(group,"trans-unit")
-				updateTransUnits(transUnits,originalFilename,translationMap,isSegEnabled,isSegContinuous)
+				updateGroups(group,transUnits,originalFilename,translationMap,isSegEnabled,isSegContinuous)
 			Next
 			body.Put("group",groups)
 		Else
@@ -363,14 +376,25 @@ Sub insertTranslation(translationMap As Map,filename As String,path As String,is
 			updateTransUnits(transUnits,originalFilename,translationMap,isSegEnabled,isSegContinuous)
 			body.Put("trans-unit",transUnits)
 		End If
-
-		
 	Next
 
 	xliffMap.Put("file",filesList)
 	xmlMap.Put("xliff",xliffMap)
 	'Log("xmlmap"&xmlMap)
 	Return xmlMap
+End Sub
+
+Sub updateGroups(group As Map,transUnits As List,originalFilename As String,translationMap As Map,isSegEnabled As Boolean,isSegContinuous As Boolean)
+	If group.ContainsKey("trans-unit") Then
+		transUnits=XMLUtils.GetElements(group,"trans-unit")
+		updateTransUnits(transUnits,originalFilename,translationMap,isSegEnabled,isSegContinuous)
+	Else
+		Dim groups As List
+		groups=XMLUtils.GetElements(group,"group")
+		For Each innerGroup As Map In groups
+			updateGroups(innerGroup,transUnits,originalFilename,translationMap,isSegEnabled,isSegContinuous)
+		Next
+	End If
 End Sub
 
 Sub updateTransUnits(transUnits As List,originalFilename As String,translationMap As Map,isSegEnabled As Boolean,isSegContinuous As Boolean)
