@@ -322,7 +322,12 @@ Sub removeSpacesAtBothSides(path As String,targetLang As String,text As String,r
 	If removeRedundantSpaces Then
 		text=Regex.Replace2("\b *\B",32,text,"")
 		text=Regex.Replace2("\B *\b",32,text,"")
+	Else
+		If text.StartsWith(" ") Then
+			text=text.SubString2(1,text.Length)
+		End If
 	End If
+
 	Return text
 End Sub
 
