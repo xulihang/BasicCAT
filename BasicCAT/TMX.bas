@@ -16,7 +16,7 @@ Sub importedList(dir As String,filename As String,sourceLang As String,targetLan
 	tmxString=XMLUtils.escapedText(File.ReadString(dir,filename),"seg","tmx")
 	Dim tmxMap As Map
 	tmxMap=XMLUtils.getXmlMap(tmxString)
-	Log(tmxMap)
+	'Log(tmxMap)
 	Dim tmxroot As Map
 	tmxroot=tmxMap.Get("tmx")
 	Dim body As Map

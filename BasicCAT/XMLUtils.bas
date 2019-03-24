@@ -59,7 +59,7 @@ Sub escapedText(xmlstring As String,tagName As String,filetype As String) As Str
 		'Log("match"&sourceMatcher.Match)
 		Dim group As String=sourceMatcher.Group(1)
 		Dim escapedGroup As String=escapeInlineTag(group,filetype)
-		If escapedGroup<>group Then
+		If escapedGroup.EqualsIgnoreCase(group)=False Then
 			Dim replacement As Map
 			replacement.Initialize
 			replacement.Put("start",sourceMatcher.GetStart(1))
@@ -102,7 +102,7 @@ Sub unescapedText(xmlstring As String,tagName As String,filetype As String) As S
 	Do While sourceMatcher.Find
 		Dim group As String=sourceMatcher.Group(1)
 		Dim unescapedGroup As String=unescapeInlineTag(group,filetype)
-		If unescapedGroup<>group Then
+		If unescapedGroup.EqualsIgnoreCase(group)=False Then
 			Dim replacement As Map
 			replacement.Initialize
 			replacement.Put("start",sourceMatcher.GetStart(1))
@@ -152,4 +152,28 @@ Sub unescapeInlineTag(text As String,filetype As String) As String
 	text=text.Replace("&quot;",$"""$)
 	text=Regex.Replace2("&lt;(/?\b"&tags&"\b.*?)&gt;",32,text,"<$1>")
 	Return text
+End Sub
+
+Sub pickSmallerXML(text As String,tag As String,trailTag As String) As String
+	Dim xml As String
+	Dim matcher As Matcher
+	matcher=Regex.Matcher("</\b"&tag&"\b.*?>",text)
+	Dim index As Int
+	Dim endIndex As Int
+	Do While matcher.Find
+		index=index+1
+		If index>5 Then
+			Exit
+		End If
+		endIndex=matcher.GetEnd(0)+1
+	Loop
+	xml=text.SubString2(0,endIndex)
+	
+	matcher=Regex.Matcher("</\b"&trailTag&"\b.*?>",text)
+	Dim startIndex As Int
+	Do While matcher.Find
+		startIndex=matcher.GetStart(0)
+	Loop
+	xml=xml&text.SubString2(startIndex,text.Length)
+	Return xml
 End Sub

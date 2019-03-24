@@ -39,6 +39,7 @@ End Sub
 Public Sub show
 	If lv.IsInitialized Then
 		lv.Items.Clear
+		Dim addedNumber As Int
 		For Each item As String In loadedItems
 			tf.Reset.AddMonoText(item).SetColor(textColor)
 			Dim p As Pane = tf.CreateTextFlowWithWidth(lv.PrefWidth-40)
@@ -47,6 +48,10 @@ Public Sub show
 			p.PrefHeight=Utils.MeasureMultilineTextHeight(fx.CreateFont("monospace",15,False,False),lv.PrefWidth,p.Tag)+ROWHEIGHT
 			Log(p.PrefHeight)
 			lv.Items.Add(p)
+			addedNumber=addedNumber+1
+			If addedNumber>150 Then
+				Exit
+			End If
 		Next
 	End If
 End Sub
@@ -189,8 +194,13 @@ Sub showMatch(new As String)
 End Sub
 
 Private Sub AddItemsToList(li As List, full As String)
+	Dim addedNumber As Int
 	If li.IsInitialized = False Then Return
 	For i = 0 To li.Size - 1
+		addedNumber=addedNumber+1
+		If addedNumber>100 Then
+			Exit
+		End If
 		Dim item As String = li.Get(i)
 		Dim x As Int = item.ToLowerCase.IndexOf(full)
 		If x = -1 Then

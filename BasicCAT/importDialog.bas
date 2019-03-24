@@ -70,11 +70,14 @@ End Sub
 Sub importTMX(path As String,sourceLang As String,targetLang As String)
 	Try
 		Dim tmxString As String
-		tmxString=XMLUtils.escapedText(File.ReadString(path,""),"seg","tmx")
-		Log(tmxstring)
+		tmxString=File.ReadString(path,"")
+		tmxString=XMLUtils.pickSmallerXML(tmxString,"tu","body")
+
+		tmxString=XMLUtils.escapedText(tmxString,"seg","tmx")
+
 		Dim tmxMap As Map
 		tmxMap=XMLUtils.getXmlMap(tmxString)
-		Log(tmxMap)
+
 		Dim tmxroot As Map
 		tmxroot=tmxMap.Get("tmx")
 		Dim body As Map
@@ -91,7 +94,7 @@ Sub importTMX(path As String,sourceLang As String,targetLang As String)
 			For Each tuv As Map In tuvList
 				Dim attributes As Map
 				attributes=tuv.Get("Attributes")
-				Log(attributes)
+
 				Dim lang As String
 				If attributes.ContainsKey("lang") Then
 					lang=attributes.Get("lang")
