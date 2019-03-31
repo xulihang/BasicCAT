@@ -42,7 +42,6 @@ Sub getAllSegmentTranslation(text As String,engine As String) As ResumableSub
 	Dim address As String=""
 	If Main.preferencesMap.ContainsKey("corenlp_address") Then
 		address=Main.preferencesMap.Get("corenlp_address")
-		
 	End If
 	'Log("address:"&address)
 
@@ -81,6 +80,9 @@ Sub getAllSegmentTranslation(text As String,engine As String) As ResumableSub
 		End If
 	End If
 
+	If Main.preferencesMap.GetDefault("addSourceWords",False) Then
+		translationList.AddAll(wordList)
+	End If
 	
 	Return duplicatedRemovedList(translationList)
 End Sub

@@ -290,11 +290,15 @@ Sub addFilesToTreeTable(filename As String)
 	exportMenu.MenuItems.Add(mi3)
 	exportMenu.MenuItems.Add(mi4)
 	exportMenu.MenuItems.Add(mi5)
+	
+	Dim mi6 As MenuItem
+	mi6.Initialize("Update with existing workfile","updateWithWorkfileMi")
 
 	fileCM.MenuItems.Add(mi)
 	fileCM.MenuItems.Add(mi2)
 	fileCM.MenuItems.Add(exportMenu)
-
+	fileCM.MenuItems.Add(mi6)
+	
 	lbl.ContextMenu=fileCM
 	
 	tti.Initialize("tti",Array As Object(lbl))
@@ -303,6 +307,7 @@ Sub addFilesToTreeTable(filename As String)
 	mi3.Tag=filename
 	mi4.Tag=filename
 	mi5.Tag=filename
+	mi6.Tag=filename
 	subTreeTableItem.Children.Add(tti)
 End Sub
 
@@ -805,6 +810,77 @@ Sub importReviewMi_Action
 		crDialog.ShowAndWait
 	End If
 
+End Sub
+
+Sub updateWithWorkfileMI_Action
+	Dim mi As MenuItem=Sender
+	Dim selectedFilename As String=mi.tag
+	If selectedFilename<>currentFilename Then
+		fx.Msgbox(Main.MainForm,"Please first open this file","")
+		Return
+	End If
+	
+	Dim fc As FileChooser
+	fc.Initialize
+	fc.SetExtensionFilter("workfile",Array("*.json"))
+	Dim workFilePath As String
+	workFilePath=fc.ShowOpen(Main.MainForm)
+	If workFilePath="" Then
+		Return
+	End If
+
+	Dim fileSegments As List
+	fileSegments.Initialize
+	
+	Dim workfile As Map
+	Dim json As JSONParser
+	json.Initialize(File.ReadString(workFilePath,""))
+	workfile=json.NextObject
+	Dim sourceFiles As List
+	sourceFiles=workfile.Get("files")
+	For Each sourceFileMap As Map In sourceFiles
+		Dim innerFilename As String
+		innerFilename=sourceFileMap.GetKeyAt(0)
+		Dim segmentsList As List
+		segmentsList=sourceFileMap.Get(innerFilename)
+		fileSegments.AddAll(segmentsList)
+	Next
+
+	Dim sourceMap As Map
+	sourceMap.Initialize
+	For Each segment As List In fileSegments
+		Dim source As String
+		source=segment.Get(0)
+		sourceMap.Put(source,segment)
+	Next
+	
+	progressDialog.Show("Updating","update")
+    Dim size As Int=segments.Size
+	Dim index As Int
+	progressDialog.update(index,size)
+	Sleep(0)
+	For Each segment As List In segments
+		index=index+1
+		progressDialog.update(index,size)
+		Dim source As String
+		source=segment.Get(0)
+		If sourceMap.ContainsKey(source) Then
+			Dim segmentFromWorkfile As List
+			segmentFromWorkfile=sourceMap.Get(source)
+			Dim extra As Map
+			extra=segment.Get(4)
+			Dim extraFromWorkfile As Map
+			extraFromWorkfile=segmentFromWorkfile.Get(4)
+			If extraFromWorkfile.GetDefault("createdTime",0)>=extra.GetDefault("createdTime",0) Then
+				segment.Clear
+				segment.AddAll(segmentFromWorkfile)
+			End If
+		End If
+	Next
+	progressDialog.close
+	refillVisiblePane
+	contentIsChanged
+	fx.Msgbox(Main.MainForm,"Done","")
 End Sub
 
 Sub removeFileMi_Action
@@ -1652,6 +1728,16 @@ Sub viewInfoMI_Action
 	fx.Msgbox(Main.MainForm,infoBuilder.ToString,"")
 End Sub
 
+Sub refillVisiblePane
+	Dim visibleRange As Range
+	visibleRange=Main.getVisibleRange(Main.editorLV)
+	Dim ExtraSize As Int
+	ExtraSize=15
+	For i=Max(0,visibleRange.firstIndex-ExtraSize*2) To Min(Main.editorLV.Items.Size - 1,visibleRange.lastIndex+ExtraSize*2)
+		Main.editorLV.Items.Set(i,"")
+	Next
+	fillPane(visibleRange.firstIndex,visibleRange.lastIndex)
+End Sub
 
 Public Sub fillPane(FirstIndex As Int, LastIndex As Int)
 	Log("fillPane")

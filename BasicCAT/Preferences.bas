@@ -36,6 +36,7 @@ Sub Class_Globals
 	Private maxSuggestionNumSpinner As Spinner
 	Private maxCheckDropdownNumSpinner As Spinner
 	Private lineHeightTextField As TextField
+	Private sourceWordsListCheckBox As CheckBox
 End Sub
 
 'Initializes the object. You can add parameters to this method if needed.
@@ -136,6 +137,10 @@ Sub categoryListView_SelectedIndexChanged(Index As Int)
 			If unsavedPreferences.ContainsKey("maxSuggestionNum") Then
 				maxSuggestionNumSpinner.Value=unsavedPreferences.Get("maxSuggestionNum")
 			End If
+			If unsavedPreferences.ContainsKey("addSourceWords") Then
+				sourceWordsListCheckBox.Checked=unsavedPreferences.Get("addSourceWords")
+			End If
+			
 		Case 5
 			'Language Check
 			SettingPane.RemoveAllNodes
@@ -261,6 +266,10 @@ End Sub
 
 Sub autocompleteEnabledCheckBox_CheckedChange(Checked As Boolean)
 	unsavedPreferences.Put("autocompleteEnabled",Checked)
+End Sub
+
+Sub sourceWordsListCheckBox_CheckedChange(Checked As Boolean)
+	unsavedPreferences.Put("addSourceWords",Checked)
 End Sub
 
 Sub saveAddressButton_MouseClicked (EventData As MouseEvent)
@@ -418,3 +427,4 @@ Sub lineHeightTextField_TextChanged (Old As String, New As String)
 	End Try
 
 End Sub
+

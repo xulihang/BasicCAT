@@ -13,6 +13,7 @@ Sub Process_Globals
     Private progressTypeValue As String
 End Sub
 
+'input a random type name
 Sub Show(title As String,progressType As String)
 	frm.Initialize("frm",600,200)
 	frm.RootPane.LoadLayout("progress")

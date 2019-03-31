@@ -10,8 +10,6 @@ Sub Process_Globals
 	Private menus As Map
 End Sub
 
-
-
 Sub LanguageHasSpace(lang As String) As Boolean
 	Dim languagesWithoutSpaceList As List
 	languagesWithoutSpaceList=File.ReadList(File.DirAssets,"languagesWithoutSpace.txt")
