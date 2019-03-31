@@ -151,6 +151,8 @@ End Sub
 Sub addPair(source As String,targetMap As Map)
     Dim target As String
 	target=targetMap.Get("text")
+	Dim note As String
+	note=targetMap.Get("note")
 	Dim createdTime As Long
 	createdTime=targetMap.Get("createdTime")
 	If translationMemory.ContainsKey(source) Then
@@ -158,7 +160,9 @@ Sub addPair(source As String,targetMap As Map)
 		previousTargetMap=translationMemory.Get(source)
 		Dim previousCreatedTime As Long=previousTargetMap.GetDefault("createdTime",0)
 		If previousTargetMap.Get("text")=target Then
-			Return
+			If previousTargetMap.GetDefault("note","")=note Then
+				Return
+			End If
 		End If
 		If previousCreatedTime>createdTime Then
 			Return
@@ -207,10 +211,14 @@ Public Sub importExternalTranslationMemory(tmList As List,projectFile As Map) As
 			Dim source,target,filename As String
 			Dim targetMap As Map
 			targetMap.Initialize
-			If bitext.Size=3 Then
+			
+			If bitext.Size>=3 Then
 				source=bitext.get(0)
 				target=bitext.Get(1)
 				filename=bitext.Get(2)
+				If bitext.Size=4 Then
+					targetMap=bitext.Get(3)
+				End If
 			Else
 				Continue
 			End If

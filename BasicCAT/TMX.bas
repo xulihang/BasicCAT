@@ -28,6 +28,8 @@ Sub importedList(dir As String,filename As String,sourceLang As String,targetLan
 		bitext.Initialize
 		Dim tuvList As List
 		tuvList=XMLUtils.GetElements(tu,"tuv")
+		Dim targetMap As Map
+		targetMap.Initialize
 		bitext.Add("source")
 		bitext.Add("target")
 		For Each tuv As Map In tuvList
@@ -44,9 +46,39 @@ Sub importedList(dir As String,filename As String,sourceLang As String,targetLan
 				bitext.Set(0,tuv.Get("seg"))
 			else if lang.StartsWith(targetLang) Then
 				bitext.Set(1,tuv.Get("seg"))
+				targetMap.Put("text",tuv.Get("seg"))
 			End If
 		Next
+		If tu.ContainsKey("note") Then
+			targetMap.Put("note",tu.Get("note"))
+		End If
+        'Log(tu)
+		If tu.ContainsKey("Attributes") Then
+			Dim attributes As Map
+			attributes=tu.Get("Attributes")
+			If attributes.ContainsKey("creationid") And attributes.ContainsKey("creationdate") Then
+				Try
+					Dim creationdate As String
+					creationdate=attributes.Get("creationdate")
+					DateTime.DateFormat="yyyyMMdd"
+					DateTime.TimeFormat="HHmmss"
+					Dim date As String
+					Dim time As String
+					date=creationdate.SubString2(0,creationdate.IndexOf("T"))
+					time=creationdate.SubString2(creationdate.IndexOf("T")+1,creationdate.IndexOf("Z"))
+					'Log("date: "&date)
+					'Log("time: "&time)
+					'Log(DateTime.DateTimeParse(date,time))
+					targetMap.Put("createdTime",DateTime.DateTimeParse(date,time))
+					targetMap.Put("creator",attributes.Get("creationid"))
+				Catch
+					Log(LastException)
+				End Try
+			End If
+		End If
+		
 		bitext.Add(filename)
+		bitext.Add(targetMap)
 		segments.Add(bitext)
 	Next
 	Return segments
@@ -72,24 +104,50 @@ Sub export(segments As List,sourceLang As String,targetLang As String,path As St
 	Dim tuList As List
 	tuList.Initialize
 	For Each bitext As List In segments
-		Dim tuvMap As Map
-		tuvMap.Initialize
+		Dim tuMap As Map
+		tuMap.Initialize
 		Dim tuvList As List
 		tuvList.Initialize
+
 		Dim index As Int=0
 		For Each seg As String In bitext
 			If includeTag=False Then
 				seg=Regex.Replace2("<.*?>",32,seg,"")
 			End If
 			index=index+1
-			If index Mod 2=0 Then
+			If index = 2 Then
 				tuvList.Add(CreateMap("Attributes":CreateMap("xml:lang":targetLang),"seg":seg))
-			Else
+			Else if index = 1 Then 
 				tuvList.Add(CreateMap("Attributes":CreateMap("xml:lang":sourceLang),"seg":seg))
 			End If
 		Next
-		tuvMap.Put("tuv",tuvList)
-		tuList.Add(tuvMap)
+		
+		Dim targetMap As Map
+		targetMap=bitext.Get(2)
+		
+		If targetMap.ContainsKey("note") Then
+			tuMap.Put("note",targetMap.Get("note"))
+		End If
+		
+		Dim attributes As Map
+		attributes.Initialize
+		If targetMap.ContainsKey("creator") Then
+			attributes.Put("creationid",targetMap.Get("creator"))
+		End If
+		If targetMap.ContainsKey("createdTime") Then
+			Dim creationDate As String
+			DateTime.DateFormat="yyyyMMdd"
+			DateTime.TimeFormat="HHmmss"
+			creationDate=DateTime.Date(targetMap.Get("createdTime"))&"T"&DateTime.Time(targetMap.Get("createdTime"))&"Z"
+			attributes.Put("creationdate",creationDate)
+		End If
+		
+		If attributes.Size<>0 Then
+			tuMap.Put("Attributes",attributes)
+		End If
+		
+		tuMap.Put("tuv",tuvList)
+		tuList.Add(tuMap)
 	Next
 	body.Put("tu",tuList)
 	tmxMap.Put("body",body)

@@ -152,7 +152,9 @@ Sub exportToFile
 		Dim target As String
 		target=targetMap.Get("text")
 		bitext.Add(target)
+		bitext.Add(targetMap)
 		segments.Add(bitext)
+		
 	Next
 	Dim result As Int
 	result=fx.Msgbox2(frm,"Include tags?","","Yes","Cancel","No",fx.MSGBOX_CONFIRMATION)

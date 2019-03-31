@@ -1761,16 +1761,7 @@ Public Sub fillPane(FirstIndex As Int, LastIndex As Int)
 				addTextAreaToSegmentPane(segmentPane,bitext.Get(0),bitext.Get(1))
 				Dim extra As Map
 				extra=bitext.Get(4)
-				If extra.ContainsKey("neglected") Then
-					If extra.Get("neglected")="yes" Then
-						Utils.disableTextArea(segmentPane)
-					End If
-				End If
-				If extra.ContainsKey("note") Then
-					If extra.Get("note")<>"" Then
-						CSSUtils.SetStyleProperty(segmentPane.GetNode(1),"-fx-background-color","green")
-					End If
-				End If
+				setPaneStatus(extra,segmentPane)
 				If Main.calculatedHeight.ContainsKey(bitext.Get(0)&"	"&bitext.Get(1)) Then
 					Dim h As Int=Main.calculatedHeight.Get(bitext.Get(0)&"	"&bitext.Get(1))
 					Main.setLayout(segmentPane,i,h)
@@ -1828,14 +1819,14 @@ Sub preTranslate(options As Map)
 				Log(similarity>=matchrate)
 				
 				If similarity>=matchrate Then
-					setTranslation(index,resultList.Get(2))
+					setTranslation(index,resultList.Get(2),True)
 					'setSegment(bitext,index)
 					fillOne(index,resultList.Get(2))
 				End If
 			Else if options.Get("type")="MT" Then
 				wait for (MT.getMT(bitext.Get(0),projectFile.Get("source"),projectFile.Get("target"),options.Get("engine"))) Complete (translation As String)
 				If translation<>"" Then
-					setTranslation(index,translation)
+					setTranslation(index,translation,False)
 					'setSegment(bitext,index)
 					fillOne(index,translation)
 				End If
@@ -1860,14 +1851,31 @@ Sub fillOne(index As Int,translation As String)
 	Try
 		Dim p As Pane
 		p=Main.editorLV.Items.Get(index)
+		Dim targetTextArea As TextArea
+		targetTextArea=p.GetNode(1)
+		targetTextArea.Text=translation
+		Dim bitext As List
+		bitext=segments.Get(index)
+		Dim extra As Map
+		extra=bitext.Get(4)
+		setPaneStatus(extra,p)
+		contentIsChanged
 	Catch
 		Log(LastException)
-		Return
 	End Try
-	Dim targetTextArea As TextArea
-	targetTextArea=p.GetNode(1)
-	targetTextArea.Text=translation
-	contentIsChanged
+End Sub
+
+Sub setPaneStatus(extra As Map,segmentPane As Pane)
+	If extra.ContainsKey("neglected") Then
+		If extra.Get("neglected")="yes" Then
+			Utils.disableTextArea(segmentPane)
+		End If
+	End If
+	If extra.ContainsKey("note") Then
+		If extra.Get("note")<>"" Then
+			CSSUtils.SetStyleProperty(segmentPane.GetNode(1),"-fx-background-color","green")
+		End If
+	End If
 End Sub
 
 Public Sub fillVisibleTargetTextArea
@@ -1893,7 +1901,7 @@ End Sub
 'impl
 '--------------------------
 
-Public Sub setTranslation(index As String,translation As String)
+Public Sub setTranslation(index As String,translation As String,isFromTM As Boolean)
 	If segments.Size=0 Then
 		Return
 	End If
@@ -1901,19 +1909,46 @@ Public Sub setTranslation(index As String,translation As String)
 	bitext=segments.Get(index)
 	If translation<>bitext.Get(1) Then
 		bitext.Set(1,translation)
-		Dim time As String=DateTime.Now
+		Dim time As Long
+		time=DateTime.Now
 		Dim extra As Map
 		extra=bitext.Get(4)
-		extra.Put("createdTime",time)
+		Dim creator As String
 		If settings.GetDefault("sharingTM_enabled",False)=True Then
-			extra.Put("creator",Main.preferencesMap.GetDefault("vcs_username","anonymous"))
+			creator=Main.preferencesMap.GetDefault("vcs_username","anonymous")
 		Else
 			If settings.GetDefault("git_enabled",False)=False Then
-				extra.Put("creator",Main.preferencesMap.GetDefault("vcs_username",""))
+				creator=Main.preferencesMap.GetDefault("vcs_username","")
 			Else
-				extra.Put("creator",Main.preferencesMap.GetDefault("vcs_username","anonymous"))
+				creator=Main.preferencesMap.GetDefault("vcs_username","anonymous")
 			End If
 		End If
+		If isFromTM Then
+			Dim targetMap As Map
+			targetMap.Initialize
+			Dim source As String
+			source=bitext.Get(0)
+			If projectTM.translationMemory.ContainsKey(source) Then
+				targetMap=projectTM.translationMemory.Get(source)
+			Else if projectTM.externalTranslationMemory.ContainsKey(source) Then
+				targetMap=projectTM.externalTranslationMemory.Get(source)
+			End If
+			If targetMap.ContainsKey("createdTime") Then
+				Try
+					time=targetMap.Get("createdTime")
+				Catch
+					Log(LastException)
+				End Try
+			End If
+			If targetMap.ContainsKey("creator") Then
+				creator=targetMap.Get("creator")
+			End If
+			If targetMap.ContainsKey("note") Then
+				extra.Put("note",targetMap.Get("note"))
+			End If
+		End If
+		extra.Put("createdTime",time)
+		extra.Put("creator",creator)
 	End If
 End Sub
 
@@ -1925,7 +1960,12 @@ Sub saveOneTranslationToTM(bitext As List,index As Int)
 	Dim creator As String
 	Dim extra As Map
 	extra=bitext.Get(4)
-	createdTime=extra.GetDefault("createdTime",0)
+	Try
+		createdTime=extra.GetDefault("createdTime",0)
+	Catch
+		Log(LastException)
+	End Try
+
 	creator=extra.GetDefault("creator","anonymous")
 	
 	Dim targetMap As Map
@@ -1963,7 +2003,7 @@ Public Sub saveAlltheTranslationToSegmentsInVisibleArea(FirstIndex As Int, LastI
 		End Try
 
 		targetTextArea=p.GetNode(1)
-		setTranslation(i,targetTextArea.Text)
+		setTranslation(i,targetTextArea.Text,False)
 		
 		'projectTM.addPair(bitext.Get(0),bitext.Get(1))
 	Next
@@ -1974,7 +2014,7 @@ Sub saveTranslation(targetTextArea As TextArea)
 	index=Main.editorLV.Items.IndexOf(targetTextArea.Parent)
 	Dim bitext As List
 	bitext=segments.Get(index)
-	setTranslation(index,targetTextArea.Text)
+	setTranslation(index,targetTextArea.Text,False)
 	If targetTextArea.Text<>"" Then
 		saveOneTranslationToTM(bitext,index)
 	End If
