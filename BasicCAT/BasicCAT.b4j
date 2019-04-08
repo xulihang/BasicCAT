@@ -1140,7 +1140,7 @@ Sub addFiles(path As String,files As List,prefix As String,okapiExtractedFiles A
 					Dim sl,tl As String
 					sl=currentProject.projectFile.Get("source")
 					tl=currentProject.projectFile.Get("target")
-					OperationDialog.Add(Array As String(filename,"converting to xliff using okapi"))
+					OperationDialog.Add(Array As String(prefix&filename,"converting to xliff using okapi"))
 					wait for (tikal.extract(sl,tl,File.Combine(path,filename),outputDir)) complete (success As Boolean)
 					If success=True Then
 						files.Add(prefix&filename)
