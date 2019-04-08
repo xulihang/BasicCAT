@@ -1134,7 +1134,7 @@ Sub addFiles(path As String,files As List,prefix As String,okapiExtractedFiles A
 					prefix=prefix.Replace("/",GetSystemProperty("file.separator","/"))
 					Dim targetFilename As String
 					targetFilename=File.Combine(File.Combine(File.Combine(currentProject.path,"source"),prefix),filename)
-					FileUtils.createNonExistingDir(File.Combine(File.Combine(path,"source"),targetFilename))
+					FileUtils.createNonExistingDir(File.Combine(File.Combine(currentProject.path,"source"),targetFilename))
 					Dim outputDir As String
 					outputDir=File.GetFileParent(targetFilename)
 					Dim sl,tl As String
@@ -1145,7 +1145,7 @@ Sub addFiles(path As String,files As List,prefix As String,okapiExtractedFiles A
 						files.Add(prefix&filename)
 						okapiExtractedFiles.Add(prefix&filename)
 					Else
-						OperationDialog.Add(Array as string(prefix&filename,"failed"))
+						OperationDialog.Add(Array As String(prefix&filename,"failed"))
 					End If
 				End If
             End If
@@ -1238,14 +1238,19 @@ Sub addFile(path As String)
 		fx.Msgbox(MainForm,"A file with the same name already exists.","")
 		Return
 	End If
+	
+
 	If isFiletypeSupported(File.GetName(path))=False Then
 		If currentProject.files.IndexOf(File.GetName(path)&".xlf")<>-1 Then
 			fx.Msgbox(MainForm,"A file with the same name already exists.","")
 			Return
 		End If
+		progressDialog.ShowWithoutProgressBar("Importing","import")
+		progressDialog.update2("importing..."&path)
 		Dim sl,tl As String
 		sl=currentProject.projectFile.Get("source")
 		tl=currentProject.projectFile.Get("target")
+
 		wait for (tikal.extract(sl,tl,path,File.Combine(currentProject.path,"source"))) complete (success As Boolean)
 		If success=True Then
 			currentProject.addFile(path,True)
@@ -1253,8 +1258,11 @@ Sub addFile(path As String)
 			fx.Msgbox(MainForm,"This file format is not supported.","")
 		End If
 	Else
+		progressDialog.ShowWithoutProgressBar("Importing","import")
+		progressDialog.update2("importing..."&path)
 		currentProject.addFile(path,False)
 	End If
+	progressDialog.close
 End Sub
 
 Public Sub getFilename(path As String) As String
