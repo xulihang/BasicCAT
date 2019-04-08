@@ -1148,6 +1148,8 @@ Sub addFiles(path As String,files As List,prefix As String,okapiExtractedFiles A
 					Else
 						OperationDialog.Add(Array As String(prefix&filename,"failed"))
 					End If
+				Else
+					OperationDialog.Add(Array As String(prefix&filename,"already existed"))
 				End If
             End If
 		End If
