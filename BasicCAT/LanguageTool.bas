@@ -22,15 +22,20 @@ Sub check(text As String,entry As Int,langcode As String) As ResumableSub
 		Return values
 	End If
 	
-
-	langcode="auto" 'use auto detection
+    If langcode="en" Then 
+		langcode="en-US"
+	else if langcode.StartsWith("zh") Then
+		langcode="zh"
+	Else
+		langcode="auto" 'use auto detection
+    End If
 	
 	Dim su As StringUtils
 	Dim params As String
 	params="?language="&langcode&"&text="&su.EncodeUrl(text,"UTF-8")
 	Dim job As HttpJob
 	job.Initialize("job",Me)
-	job.Download("http://"&address&"/v2/check"&params)
+	job.Download(address&params)
 	wait for (job) JobDone(job As HttpJob)
 	If job.Success Then
 		Log("languagetool"&job.GetString)
