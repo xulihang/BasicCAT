@@ -27,49 +27,50 @@ File30=menuText.txt
 File31=mtparamfiller.bjl
 File32=mtSetting.bjl
 File33=oneterm.bjl
-File34=pdf2txt.bjl
-File35=pluginsSetting.bjl
-File36=preferences.bjl
-File37=preferences.conf
-File38=pretranslate.bjl
-File39=preview.bjl
+File34=operation.bjl
+File35=pdf2txt.bjl
+File36=pluginsSetting.bjl
+File37=preferences.bjl
+File38=preferences.conf
+File39=pretranslate.bjl
 File4=autocorrectItem.bjl
-File40=progress.bjl
-File41=projectSetting.bjl
-File42=quickfillSetting.bjl
-File43=right.bjl
-File44=searchandreplace.bjl
-File45=searchTableView.bjl
-File46=SearchView.bjl
-File47=segment.bjl
-File48=segmentation_en.conf
-File49=segmentation_en_exception.conf
+File40=preview.bjl
+File41=progress.bjl
+File42=projectSetting.bjl
+File43=quickfillSetting.bjl
+File44=right.bjl
+File45=searchandreplace.bjl
+File46=searchTableView.bjl
+File47=SearchView.bjl
+File48=segment.bjl
+File49=segmentation_en.conf
 File5=autocorrectSetting.bjl
-File50=segmentation_en_idml.conf
-File51=segmentation_zh.conf
-File52=segmentation_zh_exception.conf
-File53=segmentationRules.srx
-File54=serverLanucher.bjl
-File55=settingLanguagecheck.bjl
-File56=settingVersionControl.bjl
-File57=statistics.bjl
-File58=supportedFiles.txt
-File59=tableview.bjl
+File50=segmentation_en_exception.conf
+File51=segmentation_en_idml.conf
+File52=segmentation_zh.conf
+File53=segmentation_zh_exception.conf
+File54=segmentationRules.srx
+File55=serverLanucher.bjl
+File56=settingLanguagecheck.bjl
+File57=settingVersionControl.bjl
+File58=statistics.bjl
+File59=supportedFiles.txt
 File6=basiccat.jpg
-File60=tabpane.bjl
-File61=teamSetting.bjl
-File62=term.bjl
-File63=TermEditor.bjl
-File64=TermManager.bjl
-File65=termSetting.bjl
-File66=TMEditor.bjl
-File67=TMManager.bjl
-File68=tmSetting.bjl
-File69=upperRight.bjl
+File60=tableview.bjl
+File61=tabpane.bjl
+File62=teamSetting.bjl
+File63=term.bjl
+File64=TermEditor.bjl
+File65=TermManager.bjl
+File66=termSetting.bjl
+File67=TMEditor.bjl
+File68=TMManager.bjl
+File69=tmSetting.bjl
 File7=checkList.bjl
-File70=version.txt
-File71=viewSegment.bjl
-File72=wordLookupSetting.bjl
+File70=upperRight.bjl
+File71=version.txt
+File72=viewSegment.bjl
+File73=wordLookupSetting.bjl
 File8=confirmReview.bjl
 File9=dictList.txt
 FileGroup1=Default Group
@@ -142,6 +143,7 @@ FileGroup7=Default Group
 FileGroup70=Default Group
 FileGroup71=Default Group
 FileGroup72=Default Group
+FileGroup73=Default Group
 FileGroup8=Default Group
 FileGroup9=Default Group
 Group=Default Group
@@ -169,46 +171,46 @@ Library8=jrandomaccessfile
 Library9=jb4xencryption
 Module1=FileChooserUtils
 Module10=preTranslateDialog
-Module11=TMX
-Module12=TMManager
-Module13=searchAndReplaceDialog
-Module14=confirmReviewDialog
-Module15=HistoryRecord
-Module16=zip4j
-Module17=progressDialog
-Module18=SearchView
-Module19=importDialog
+Module11=LanguageTool
+Module12=ITP
+Module13=TMX
+Module14=TMManager
+Module15=searchAndReplaceDialog
+Module16=confirmReviewDialog
+Module17=HistoryRecord
+Module18=zip4j
+Module19=progressDialog
 Module2=Project
-Module20=idmlFilter
-Module21=Xml2Map
-Module22=XMLUtils
-Module23=Utils
-Module24=xliffFilter
-Module25=Preferences
-Module26=ITP
-Module27=AutoSaver
-Module28=icu4j
-Module29=tikal
+Module20=SearchView
+Module21=importDialog
+Module22=idmlFilter
+Module23=Xml2Map
+Module24=XMLUtils
+Module25=Utils
+Module26=xliffFilter
+Module27=Preferences
+Module28=AutoSaver
+Module29=icu4j
 Module3=segmentation
-Module30=PDF2TXT
-Module31=FileUtils
-Module32=Map2Xml
-Module33=MT
-Module34=SRX
-Module35=POIWord
-Module36=pdfbox
-Module37=git
-Module38=dictWebView
-Module39=InputTextAreaBox
+Module30=tikal
+Module31=PDF2TXT
+Module32=FileUtils
+Module33=Map2Xml
+Module34=MT
+Module35=SRX
+Module36=POIWord
+Module37=pdfbox
+Module38=git
+Module39=dictWebView
 Module4=CustomListView
-Module40=FontPicker
-Module41=TermEditor
-Module42=TermManager
-Module43=HistoryViewer
-Module44=Previewer
-Module45=ClientKVS
-Module46=statistics
-Module47=LanguageTool
+Module40=InputTextAreaBox
+Module41=FontPicker
+Module42=TermEditor
+Module43=TermManager
+Module44=HistoryViewer
+Module45=Previewer
+Module46=ClientKVS
+Module47=statistics
 Module48=LanguagePairSelector
 Module49=idmlUtils
 Module5=txtFilter
@@ -226,12 +228,13 @@ Module6=TM
 Module60=TextFlow
 Module61=opennlp
 Module62=coordinate
+Module63=OperationDialog
 Module7=Term
 Module8=KeyValueStore
 Module9=ProjectSettings
-NumberOfFiles=72
+NumberOfFiles=73
 NumberOfLibraries=22
-NumberOfModules=62
+NumberOfModules=63
 Version=7
 @EndOfDesignText@
 #Region Project Attributes 
@@ -302,9 +305,11 @@ Sub Process_Globals
 	Private dw As dictWebView
 	Type Item (UserField As String, KeyField As String, ValueField() As Byte, IdField As Long, TimeField As Long)
 	Type Task (TaskName As String, TaskItem As Item, TaskKey As String)
-	Type Range(firstIndex As Int,lastIndex As Int)
+	Type Range (firstIndex As Int,lastIndex As Int)
+	Type Progress (Done As Int,Total As Int)
 	Private Drag As B4JDragToMe
 	Private projectAutoSaver As AutoSaver
+	Public TargetFileGeneratingProgress as Progress
 End Sub
 
 Sub AppStart (Form1 As Form, Args() As String)
@@ -1074,15 +1079,23 @@ Sub addFolder(path As String)
 	Dim files,okapiExtractedFiles As List
 	files.Initialize
 	okapiExtractedFiles.Initialize
+
+	OperationDialog.Show
+	OperationDialog.SetButtonText("Importing...")
+	OperationDialog.EnableOkayButton(False)
+	'progressDialog.Show("Importing...","import")
+	'progressDialog.update(0,0)
 	wait for (addFiles(path,files,"",okapiExtractedFiles)) complete (success As Boolean)
+	
 	For Each subfolder As String In FileUtils.GetSubFolders(path)
 		Dim unixLikePath As String=path.Replace("\","/")
 		Dim unixSubfolderPath As String=subfolder.Replace("\","/")
 		wait for (addFiles(subfolder,files,unixSubfolderPath.Replace(unixLikePath&"/","")&"/",okapiExtractedFiles)) complete (success As Boolean)
 	Next
+	
 	Log("files"&files)
 	Dim imported As Int=0
-	progressDialog.Show("Importing...","import")
+
 	For Each filename As String In files
 		Log(filename)
 		Dim isExtractedbyOkapi As Boolean
@@ -1093,11 +1106,22 @@ Sub addFolder(path As String)
 		End If
 		imported=imported+1
 		Sleep(0)
-		progressDialog.update(imported,files.Size)
-		currentProject.addFileInFolder(path,filename,isExtractedbyOkapi)
+		'progressDialog.update(imported,files.Size)
+		addFileInFolder(path,filename,isExtractedbyOkapi)
 	Next
 	currentProject.save
-	progressDialog.close
+	OperationDialog.SetButtonText("Okay")
+	OperationDialog.EnableOkayButton(True)
+	'progressDialog.close
+End Sub
+
+Sub addFileInFolder(path As String,filename As String,isExtractedbyOkapi As Boolean)
+	wait For(currentProject.addFileInFolder(path,filename,isExtractedbyOkapi)) complete (result As Boolean)
+	If result=True Then
+		OperationDialog.Add(Array As String(filename,"imported"))
+	Else
+		OperationDialog.Add(Array As String(filename,"importing failed"))
+	End If
 End Sub
 
 Sub addFiles(path As String,files As List,prefix As String,okapiExtractedFiles As List) As ResumableSub
@@ -1120,6 +1144,8 @@ Sub addFiles(path As String,files As List,prefix As String,okapiExtractedFiles A
 					If success=True Then
 						files.Add(prefix&filename)
 						okapiExtractedFiles.Add(prefix&filename)
+					Else
+						OperationDialog.Add(Array as string(prefix&filename,"failed"))
 					End If
 				End If
             End If
@@ -1582,6 +1608,12 @@ End Sub
 
 Public Sub updateOperation(info As String)
 	operationLabel.Text=info
+	If info.Contains("generated!") Then
+	    TargetFileGeneratingProgress.Done=TargetFileGeneratingProgress.Done+1
+		If TargetFileGeneratingProgress.Done=TargetFileGeneratingProgress.Total Then
+			operationLabel.Text="Generating Completed"
+		End If
+	End If
 End Sub
 
 Sub checkLV_MouseClicked (EventData As MouseEvent)

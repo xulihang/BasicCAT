@@ -146,7 +146,7 @@ Sub addToOkapiExtractedList(filename As String)
 	projectFile.Put("okapiExtractedFiles",okapiExtractedFiles)
 End Sub
 
-Public Sub addFileInFolder(folderPath As String,filename As String,isExtractedbyOkapi As Boolean)
+Public Sub addFileInFolder(folderPath As String,filename As String,isExtractedbyOkapi As Boolean) As ResumableSub
 	filename=filename.Replace("/",GetSystemProperty("file.separator","/"))
 	If files.IndexOf(filename)=-1 Then
 		FileUtils.createNonExistingDir(File.Combine(File.Combine(path,"source"),filename))
@@ -162,7 +162,9 @@ Public Sub addFileInFolder(folderPath As String,filename As String,isExtractedby
 		End If
 		files.Add(filename)
 		addFilesToTreeTable(filename)
-		createWorkFileAccordingToExtension(filename)
+		Return createWorkFileAccordingToExtension(filename)
+	Else
+		Return False
 	End If
 End Sub
 
@@ -2038,24 +2040,29 @@ Sub runFilterPluginAccordingToExtension(filename As String,task As String,params
 	Return ""
 End Sub
 
-Sub createWorkFileAccordingToExtension(filename As String)
-	Dim filenameLowercase As String
-	filenameLowercase=filename.ToLowerCase
-	If filenameLowercase.EndsWith(".txt") Then
-		txtFilter.createWorkFile(filename,path,projectFile.Get("source"))
-	Else if filenameLowercase.EndsWith(".idml") Then
-		idmlFilter.createWorkFile(filename,path,projectFile.Get("source"))
-	Else if filenameLowercase.EndsWith(".xlf") Or filenameLowercase.EndsWith(".xliff") Then
-		xliffFilter.createWorkFile(filename,path,projectFile.Get("source"))
-	Else
-		Dim params As Map
-		params.Initialize
-		params.Put("filename",filename)
-		params.Put("path",path)
-		params.Put("sourceLang",projectFile.Get("source"))
-		runFilterPluginAccordingToExtension(filename,"createWorkFile",params)
-
-	End If
+Sub createWorkFileAccordingToExtension(filename As String) As Boolean
+	Try
+		Dim filenameLowercase As String
+		filenameLowercase=filename.ToLowerCase
+		If filenameLowercase.EndsWith(".txt") Then
+			txtFilter.createWorkFile(filename,path,projectFile.Get("source"))
+		Else if filenameLowercase.EndsWith(".idml") Then
+			idmlFilter.createWorkFile(filename,path,projectFile.Get("source"))
+		Else if filenameLowercase.EndsWith(".xlf") Or filenameLowercase.EndsWith(".xliff") Then
+			xliffFilter.createWorkFile(filename,path,projectFile.Get("source"))
+		Else
+			Dim params As Map
+			params.Initialize
+			params.Put("filename",filename)
+			params.Put("path",path)
+			params.Put("sourceLang",projectFile.Get("source"))
+			runFilterPluginAccordingToExtension(filename,"createWorkFile",params)
+		End If
+	Catch
+		Log(LastException)
+		Return False
+	End Try
+    Return True
 End Sub
 
 Sub readWorkFile(filename As String,filesegments As List,fillUI As Boolean,root As String)
@@ -2184,9 +2191,10 @@ Sub getAllSegments(filename As String) As List
 End Sub
 
 Public Sub generateTargetFiles
-	
+	Main.TargetFileGeneratingProgress.Total=0
 	For Each filename As String In files
 		Sleep(0)
+		Main.TargetFileGeneratingProgress.Total=Main.TargetFileGeneratingProgress.Total+1
 		Dim filenameLowercase As String
 		filenameLowercase=filename.ToLowerCase
 		Dim okapiExtractedFiles As List
