@@ -171,9 +171,9 @@ Library8=jrandomaccessfile
 Library9=jb4xencryption
 Module1=FileChooserUtils
 Module10=preTranslateDialog
-Module11=progressDialog
-Module12=Preferences
-Module13=OperationDialog
+Module11=OperationDialog
+Module12=progressDialog
+Module13=Preferences
 Module14=idmlFilter
 Module15=tikal
 Module16=xliffFilter
@@ -309,7 +309,7 @@ Sub Process_Globals
 	Type Progress (Done As Int,Total As Int)
 	Private Drag As B4JDragToMe
 	Private projectAutoSaver As AutoSaver
-	Public TargetFileGeneratingProgress as Progress
+	Public TargetFileGeneratingProgress As Progress
 End Sub
 
 Sub AppStart (Form1 As Form, Args() As String)
@@ -567,6 +567,8 @@ Sub MenuBar1_Action
 			fillWithTM
 		Case "Fill with the next tag"
 			fillWithTheNextTag
+		Case "Copy source text to target"
+			copySourceToTarget
 		Case "Search and Replace"
 			Dim sap As searchAndReplaceDialog
 			sap.Initialize
@@ -769,6 +771,22 @@ Sub fillWithTheNextTag
 		targetTextArea.Text=targetTextArea.Text.SubString2(0,targetTextArea.SelectionEnd)&tag&targetTextArea.Text.SubString2(targetTextArea.SelectionEnd,targetTextArea.Text.Length)
 		targetTextArea.SetSelection(selectionEnd+tag.Length,selectionEnd+tag.Length)
 	End If
+End Sub
+
+Sub copySourceToTarget
+	If editorLV.Items.Size=0 Then
+		Return
+	End If
+	Try
+		Dim p As Pane
+		p=editorLV.Items.Get(currentProject.lastEntry)
+	Catch
+		Return
+		Log(LastException)
+	End Try
+	Dim sourceTextArea As TextArea=p.GetNode(0)
+	Dim targetTextArea As TextArea=p.GetNode(1)
+	targetTextArea.Text=sourceTextArea.Text
 End Sub
 
 Sub showQuickfillDropdown
@@ -1120,7 +1138,7 @@ Sub addFileInFolder(path As String,filename As String,isExtractedbyOkapi As Bool
 	If result=True Then
 		OperationDialog.Add(Array As String(filename,"imported"))
 	Else
-		OperationDialog.Add(Array As String(filename,"importing failed"))
+		OperationDialog.Add(Array As String(filename,"importing failed or already existed"))
 	End If
 End Sub
 
