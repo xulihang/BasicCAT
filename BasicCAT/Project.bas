@@ -295,11 +295,14 @@ Sub addFilesToTreeTable(filename As String)
 	
 	Dim mi6 As MenuItem
 	mi6.Initialize("Update with existing workfile","updateWithWorkfileMi")
-
+	Dim mi7 As MenuItem
+	mi7.Initialize("Generate target file","generateTargetFileMi")
+	
 	fileCM.MenuItems.Add(mi)
 	fileCM.MenuItems.Add(mi2)
 	fileCM.MenuItems.Add(exportMenu)
 	fileCM.MenuItems.Add(mi6)
+	fileCM.MenuItems.Add(mi7)
 	
 	lbl.ContextMenu=fileCM
 	
@@ -310,6 +313,7 @@ Sub addFilesToTreeTable(filename As String)
 	mi4.Tag=filename
 	mi5.Tag=filename
 	mi6.Tag=filename
+	mi7.Tag=filename
 	subTreeTableItem.Children.Add(tti)
 End Sub
 
@@ -883,6 +887,15 @@ Sub updateWithWorkfileMI_Action
 	refillVisiblePane
 	contentIsChanged
 	fx.Msgbox(Main.MainForm,"Done","")
+End Sub
+
+Sub generateTargetFileMi_Action
+	Dim mi As MenuItem
+	mi=Sender
+	Dim filename As String
+	filename=mi.Tag
+	Main.TargetFileGeneratingProgress.Total=0
+	generateTargetFileForOne(filename)
 End Sub
 
 Sub removeFileMi_Action
@@ -2194,43 +2207,47 @@ Public Sub generateTargetFiles
 	Main.TargetFileGeneratingProgress.Total=0
 	For Each filename As String In files
 		Sleep(0)
-		Main.TargetFileGeneratingProgress.Total=Main.TargetFileGeneratingProgress.Total+1
-		Dim filenameLowercase As String
-		filenameLowercase=filename.ToLowerCase
-		Dim okapiExtractedFiles As List
-		okapiExtractedFiles.Initialize
-		If projectFile.ContainsKey("okapiExtractedFiles") Then
-			okapiExtractedFiles.AddAll(projectFile.Get("okapiExtractedFiles"))
-		End If
-		If okapiExtractedFiles.IndexOf(filename)<>-1 Then
-			Dim outputDir As String
-			outputDir=File.GetFileParent(File.Combine(File.Combine(path,"target"),filename))
-			If filenameLowercase.EndsWith(".xlf") Or filenameLowercase.EndsWith(".xliff") Then
-				xliffFilter.generateFile(filename,path,projectFile)
-				Dim targetPath As String
-				targetPath=File.Combine(File.Combine(path,"target"),filename)
-				Dim sourceDir As String
-				sourceDir=File.Combine(path,"source")
-				tikal.merge(targetPath,sourceDir,outputDir)
-			End If
-		Else
-			If filenameLowercase.EndsWith(".txt") Then
-				txtFilter.generateFile(filename,path,projectFile)
-			Else if filenameLowercase.EndsWith(".idml") Then
-				idmlFilter.generateFile(filename,path,projectFile)
-			Else if filenameLowercase.EndsWith(".xlf") Or filenameLowercase.EndsWith(".xliff") Then
-				xliffFilter.generateFile(filename,path,projectFile)
-			Else
-				Dim params As Map
-				params.Initialize
-				params.Put("filename",filename)
-				params.Put("path",path)
-				params.Put("projectFile",projectFile)
-				params.Put("main",Main)
-				runFilterPluginAccordingToExtension(filename,"generateFile",params)
-			End If
-		End If
+		generateTargetFileForOne(filename)
 	Next
+End Sub
+
+Sub generateTargetFileForOne(filename As String)
+	Main.TargetFileGeneratingProgress.Total=Main.TargetFileGeneratingProgress.Total+1
+	Dim filenameLowercase As String
+	filenameLowercase=filename.ToLowerCase
+	Dim okapiExtractedFiles As List
+	okapiExtractedFiles.Initialize
+	If projectFile.ContainsKey("okapiExtractedFiles") Then
+		okapiExtractedFiles.AddAll(projectFile.Get("okapiExtractedFiles"))
+	End If
+	If okapiExtractedFiles.IndexOf(filename)<>-1 Then
+		Dim outputDir As String
+		outputDir=File.GetFileParent(File.Combine(File.Combine(path,"target"),filename))
+		If filenameLowercase.EndsWith(".xlf") Or filenameLowercase.EndsWith(".xliff") Then
+			xliffFilter.generateFile(filename,path,projectFile)
+			Dim targetPath As String
+			targetPath=File.Combine(File.Combine(path,"target"),filename)
+			Dim sourceDir As String
+			sourceDir=File.Combine(path,"source")
+			tikal.merge(targetPath,sourceDir,outputDir)
+		End If
+	Else
+		If filenameLowercase.EndsWith(".txt") Then
+			txtFilter.generateFile(filename,path,projectFile)
+		Else if filenameLowercase.EndsWith(".idml") Then
+			idmlFilter.generateFile(filename,path,projectFile)
+		Else if filenameLowercase.EndsWith(".xlf") Or filenameLowercase.EndsWith(".xliff") Then
+			xliffFilter.generateFile(filename,path,projectFile)
+		Else
+			Dim params As Map
+			params.Initialize
+			params.Put("filename",filename)
+			params.Put("path",path)
+			params.Put("projectFile",projectFile)
+			params.Put("main",Main)
+			runFilterPluginAccordingToExtension(filename,"generateFile",params)
+		End If
+	End If
 End Sub
 
 Public Sub contentIsChanged
