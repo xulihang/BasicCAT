@@ -39,20 +39,26 @@ Sub segmentedTxt(text As String,Trim As Boolean,sourceLang As String,path As Str
 	splitted.Initialize
 	splitted.AddAll(Regex.Split(CRLF,text))
 	Dim index As Int=-1
+    'Log("para"&splitted)
 	For Each para As String In splitted
 		index=index+1
 	    segments.AddAll(paragraphInSegments(para))
+		'Log(para)
 		'Log(segments)
 		'Log(segments.Size)
-	    Dim last As String
-	    last=segments.Get(segments.Size-1)
+		If segments.Size>0 Then
+			Dim last As String
+			last=segments.Get(segments.Size-1)
 
-		If index<>splitted.Size-1 Then
-			last=last&CRLF
-		Else if text.EndsWith(CRLF)=True Then
-			last=last&CRLF
+			If index<>splitted.Size-1 Then
+				last=last&CRLF
+			Else if text.EndsWith(CRLF)=True Then
+				last=last&CRLF
+			End If
+			segments.set(segments.Size-1,last)
+		Else
+			segments.Add(para&CRLF) ' if there are several LFs at the beginning
 		End If
-		segments.set(segments.Size-1,last)
 	Next
     'Log(segments)
 	Return segments

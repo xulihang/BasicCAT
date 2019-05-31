@@ -23,9 +23,6 @@ Public Sub Show
 End Sub
 
 Public Sub Add(values() As Object)
-	Log("adding")
-	Log(values)
-	
 	If values.Length=OperationsTableView.ColumnsCount Then
 		OperationsTableView.Items.add(values)
 	End If
