@@ -1282,6 +1282,7 @@ Sub addFile(path As String)
 		progressDialog.ShowWithoutProgressBar("Importing","import")
 		progressDialog.update2("importing..."&path)
 		currentProject.addFile(path,False)
+		Sleep(50)
 	End If
 	progressDialog.close
 End Sub
@@ -1639,8 +1640,10 @@ Public Sub updateOperation(info As String)
 	operationLabel.Text=info
 	If info.Contains("generated!") Then
 	    TargetFileGeneratingProgress.Done=TargetFileGeneratingProgress.Done+1
-		If TargetFileGeneratingProgress.Done=TargetFileGeneratingProgress.Total Then
+		If TargetFileGeneratingProgress.Done=TargetFileGeneratingProgress.Total And TargetFileGeneratingProgress.Done>1 Then
 			operationLabel.Text="Generating Completed"
+			TargetFileGeneratingProgress.Total=0
+			TargetFileGeneratingProgress.Done=0
 		End If
 	End If
 End Sub

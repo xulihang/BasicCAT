@@ -42,7 +42,7 @@ Sub segmentedTxt(text As String,Trim As Boolean,sourceLang As String,path As Str
     'Log("para"&splitted)
 	For Each para As String In splitted
 		index=index+1
-	    segments.AddAll(paragraphInSegments(para))
+		segments.AddAll(paragraphInSegments(para))
 		'Log(para)
 		'Log(segments)
 		'Log(segments.Size)
@@ -60,11 +60,9 @@ Sub segmentedTxt(text As String,Trim As Boolean,sourceLang As String,path As Str
 			segments.Add(para&CRLF) ' if there are several LFs at the beginning
 		End If
 	Next
-    'Log(segments)
+	'Log(segments)
 	Return segments
 End Sub
-
-
 
 Sub paragraphInSegmentsCas(text As String) As List
 	Dim breakRules,nonbreakRules As List

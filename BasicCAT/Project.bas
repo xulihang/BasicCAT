@@ -894,7 +894,6 @@ Sub generateTargetFileMi_Action
 	mi=Sender
 	Dim filename As String
 	filename=mi.Tag
-	Main.TargetFileGeneratingProgress.Total=0
 	generateTargetFileForOne(filename)
 End Sub
 
@@ -2204,7 +2203,8 @@ Sub getAllSegments(filename As String) As List
 End Sub
 
 Public Sub generateTargetFiles
-	Main.TargetFileGeneratingProgress.Total=0
+	Main.TargetFileGeneratingProgress.Total=files.Size
+	Main.TargetFileGeneratingProgress.Done=0
 	For Each filename As String In files
 		Sleep(0)
 		generateTargetFileForOne(filename)
@@ -2212,7 +2212,6 @@ Public Sub generateTargetFiles
 End Sub
 
 Sub generateTargetFileForOne(filename As String)
-	Main.TargetFileGeneratingProgress.Total=Main.TargetFileGeneratingProgress.Total+1
 	Dim filenameLowercase As String
 	filenameLowercase=filename.ToLowerCase
 	Dim okapiExtractedFiles As List
