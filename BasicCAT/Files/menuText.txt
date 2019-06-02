@@ -2,11 +2,13 @@ _Generate target files
 Go to the next untranslated segment
 Fill with the first matched TM
 Fill with the next tag
+Copy source text to target
 Search and Replace
 Show quickfill dropdown
 Show online dictionary dropdown
 Show segment history
 Show/Edit notes of the current segmnet
+Edit the source text of the current segment
 Mark the current segment as neglected/not neglected
 Project _Settings
 Pre-_translate

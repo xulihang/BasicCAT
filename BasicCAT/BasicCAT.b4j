@@ -53,24 +53,25 @@ File54=segmentationRules.srx
 File55=serverLanucher.bjl
 File56=settingLanguagecheck.bjl
 File57=settingVersionControl.bjl
-File58=statistics.bjl
-File59=supportedFiles.txt
+File58=SourceEditor.bjl
+File59=statistics.bjl
 File6=basiccat.jpg
-File60=tableview.bjl
-File61=tabpane.bjl
-File62=teamSetting.bjl
-File63=term.bjl
-File64=TermEditor.bjl
-File65=TermManager.bjl
-File66=termSetting.bjl
-File67=TMEditor.bjl
-File68=TMManager.bjl
-File69=tmSetting.bjl
+File60=supportedFiles.txt
+File61=tableview.bjl
+File62=tabpane.bjl
+File63=teamSetting.bjl
+File64=term.bjl
+File65=TermEditor.bjl
+File66=TermManager.bjl
+File67=termSetting.bjl
+File68=TMEditor.bjl
+File69=TMManager.bjl
 File7=checkList.bjl
-File70=upperRight.bjl
-File71=version.txt
-File72=viewSegment.bjl
-File73=wordLookupSetting.bjl
+File70=tmSetting.bjl
+File71=upperRight.bjl
+File72=version.txt
+File73=viewSegment.bjl
+File74=wordLookupSetting.bjl
 File8=confirmReview.bjl
 File9=dictList.txt
 FileGroup1=Default Group
@@ -144,6 +145,7 @@ FileGroup70=Default Group
 FileGroup71=Default Group
 FileGroup72=Default Group
 FileGroup73=Default Group
+FileGroup74=Default Group
 FileGroup8=Default Group
 FileGroup9=Default Group
 Group=Default Group
@@ -171,70 +173,71 @@ Library8=jrandomaccessfile
 Library9=jb4xencryption
 Module1=FileChooserUtils
 Module10=preTranslateDialog
-Module11=OperationDialog
-Module12=progressDialog
-Module13=Preferences
-Module14=idmlFilter
-Module15=tikal
-Module16=xliffFilter
-Module17=LanguageTool
-Module18=ITP
-Module19=TMX
+Module11=SourceTextEditor
+Module12=InputTextAreaBox
+Module13=MT
+Module14=OperationDialog
+Module15=progressDialog
+Module16=Preferences
+Module17=idmlFilter
+Module18=tikal
+Module19=xliffFilter
 Module2=Project
-Module20=TMManager
-Module21=searchAndReplaceDialog
-Module22=confirmReviewDialog
-Module23=HistoryRecord
-Module24=zip4j
-Module25=SearchView
-Module26=importDialog
-Module27=Xml2Map
-Module28=XMLUtils
-Module29=Utils
+Module20=LanguageTool
+Module21=ITP
+Module22=TMX
+Module23=TMManager
+Module24=searchAndReplaceDialog
+Module25=confirmReviewDialog
+Module26=HistoryRecord
+Module27=zip4j
+Module28=SearchView
+Module29=importDialog
 Module3=segmentation
-Module30=AutoSaver
-Module31=icu4j
-Module32=PDF2TXT
-Module33=FileUtils
-Module34=Map2Xml
-Module35=MT
-Module36=SRX
-Module37=POIWord
-Module38=pdfbox
-Module39=git
+Module30=Xml2Map
+Module31=XMLUtils
+Module32=Utils
+Module33=AutoSaver
+Module34=icu4j
+Module35=PDF2TXT
+Module36=FileUtils
+Module37=Map2Xml
+Module38=SRX
+Module39=POIWord
 Module4=CustomListView
-Module40=dictWebView
-Module41=InputTextAreaBox
-Module42=FontPicker
-Module43=TermEditor
-Module44=TermManager
-Module45=HistoryViewer
-Module46=Previewer
-Module47=ClientKVS
-Module48=statistics
-Module49=LanguagePairSelector
+Module40=pdfbox
+Module41=git
+Module42=dictWebView
+Module43=FontPicker
+Module44=TermEditor
+Module45=TermManager
+Module46=HistoryViewer
+Module47=Previewer
+Module48=ClientKVS
+Module49=statistics
 Module5=txtFilter
-Module50=idmlUtils
-Module51=editDistance
-Module52=InputBox
-Module53=MTParamsFiller
-Module54=filterGenericUtils
-Module55=TBX
-Module56=CallSubUtils
-Module57=viewSegment
-Module58=serverLauncher
-Module59=languageChooser
+Module50=LanguagePairSelector
+Module51=idmlUtils
+Module52=editDistance
+Module53=InputBox
+Module54=MTParamsFiller
+Module55=filterGenericUtils
+Module56=TBX
+Module57=CallSubUtils
+Module58=viewSegment
+Module59=serverLauncher
 Module6=TM
-Module60=TMEditor
-Module61=TextFlow
-Module62=opennlp
-Module63=coordinate
+Module60=languageChooser
+Module61=TMEditor
+Module62=TextFlow
+Module63=opennlp
+Module64=coordinate
 Module7=Term
 Module8=KeyValueStore
 Module9=ProjectSettings
-NumberOfFiles=73
+NumberOfFiles=74
 NumberOfLibraries=22
-NumberOfModules=63
+NumberOfModules=64
 Version=7
 @EndOfDesignText@
 #Region Project Attributes 
@@ -585,6 +588,8 @@ Sub MenuBar1_Action
 				inp.Initialize
 				inp.showAndWait
 			End If
+		Case "Edit the source text of the current segment"
+			editSource
 		Case "Mark the current segment as neglected/not neglected"
 			changeNeglectedStatus
 		Case "Project _Settings"
@@ -599,7 +604,6 @@ Sub MenuBar1_Action
 			If resultList.Get(0)<>"canceled" Then
 				currentProject.saveSettings(resultList.Get(1))
 			End If
-			
 		Case "Pre-_translate"
 			If currentProject.IsInitialized=False Then
 				fx.Msgbox(MainForm,"Please open a project first.","")
@@ -628,8 +632,6 @@ Sub MenuBar1_Action
 					Sleep(0)
 				End If
 			End If
-			
-
 			ExitApplication
 		Case "Preferences"
 			Dim pref As Preferences
@@ -650,6 +652,34 @@ Sub MenuBar1_Action
 			version=File.ReadString(File.DirAssets,"version.txt")
 			fx.Msgbox(MainForm,"BasicCAT "&version&CRLF&"@xulihang 2019","BasicCAT")
 	End Select
+End Sub
+
+Sub editSource
+	If currentProject.segments.Size<>0 Then
+		Dim source,fullsource As String
+		Dim segment As List = currentProject.segments.Get(currentProject.lastEntry)
+		source=segment.Get(0)
+		fullsource=segment.Get(2)
+		Dim sourceEditor As SourceTextEditor
+		sourceEditor.Initialize(source,fullsource)
+		Dim editResult As Map
+		editResult=sourceEditor.ShowAndWait
+		source=editResult.GetDefault("source","")
+		fullsource=editResult.GetDefault("fullsource","")
+		segment.Set(0,source)
+		segment.Set(2,fullsource)
+		If editorLV.Items.Size<>0 Then
+			Try
+				Dim p As Pane
+				p=editorLV.Items.Get(currentProject.lastEntry)
+			Catch
+				Return
+				Log(LastException)
+			End Try
+			Dim sourceTextArea As TextArea=p.GetNode(0)
+			sourceTextArea.Text=source
+		End If
+	End If
 End Sub
 
 Sub newProject(sourceLang As String,targetLang As String)
