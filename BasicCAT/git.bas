@@ -8,10 +8,12 @@ Sub Class_Globals
 	Private fx As JFX
 	Private gitJO As JavaObject
 	Private gitJOStatic As JavaObject
+	Private th As Thread
 End Sub
 
 'Initializes the object. You can add parameters to this method if needed.
 Public Sub Initialize(path As String)
+	th.Initialise("th")
 	gitJOStatic.InitializeStatic("org.eclipse.jgit.api.Git")
 	If File.Exists(path,".git")=False Then
 		Log("init")
@@ -55,6 +57,12 @@ Sub setCredentialProvider(username As String,password As String) As JavaObject
 	Dim cp As JavaObject
 	cp.InitializeNewInstance("org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider",Array(username,password))
 	Return cp
+End Sub
+
+Public Sub fetchAsync(username As String,password As String) As ResumableSub
+	th.Start(Me,"fetch",Array As Object(username,password))
+	wait for th_Ended(endedOK As Boolean, error As String)
+	Return endedOK
 End Sub
 
 Public Sub fetch(username As String,password As String)
@@ -109,8 +117,7 @@ Public Sub checkoutAllFiles(name As String,startpoint As String)
 	checkoutCommand.RunMethod("call",Null)
 End Sub
 
-Public Sub pullRebase(username As String,password As String) As ResumableSub
-	Sleep(0)
+Public Sub pullRebase(username As String,password As String) As String
 	Try
 		Dim pullCommand As JavaObject
 		pullCommand=gitJO.RunMethodJO("pull",Null)
@@ -144,23 +151,23 @@ Public Sub addRemote(urlString As String,name As String)
 	RemoteAddCommand.RunMethodJO("call",Null)
 End Sub
 
+Public Sub pushAsync(username As String,password As String,remoteName As String,branchName As String) As ResumableSub
+	th.Start(Me,"push",Array As Object(username,password,remoteName,branchName))
+	wait for th_Ended(endedOK As Boolean, error As String)
+	Return endedOK
+End Sub
+
 Public Sub push(username As String,password As String,remoteName As String,branchName As String)
-	Try
-		Dim PushCommand As JavaObject
-		PushCommand=gitJO.RunMethodJO("push",Null)
-		PushCommand.RunMethodJO("setRemote",Array(remoteName))
-		PushCommand.RunMethodJO("add",Array(branchName))
-		If username<>"" Then
-			Dim cp As JavaObject
-			cp=setCredentialProvider(username,password)
-			PushCommand.RunMethod("setCredentialsProvider",Array(cp))
-		End If
-		PushCommand.RunMethodJo("call",Null)
-	Catch
-		Log(LastException)
-		Return "error"&LastException.Message
-	End Try
-	Return "success"
+	Dim PushCommand As JavaObject
+	PushCommand=gitJO.RunMethodJO("push",Null)
+	PushCommand.RunMethodJO("setRemote",Array(remoteName))
+	PushCommand.RunMethodJO("add",Array(branchName))
+	If username<>"" Then
+		Dim cp As JavaObject
+		cp=setCredentialProvider(username,password)
+		PushCommand.RunMethod("setCredentialsProvider",Array(cp))
+	End If
+	PushCommand.RunMethodJo("call",Null)
 End Sub
 
 Public Sub getStatus

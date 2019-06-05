@@ -462,8 +462,8 @@ Public Sub initAndPush
 		fx.Msgbox(Main.MainForm,"Please configure your git account info first.","")
 		Return
 	End If
-	wait for (projectGit.push(username,password,"origin","master")) complete (result As String)
-	If result.StartsWith("error") Then
+	wait for (projectGit.pushAsync(username,password,"origin","master")) complete (result As Boolean)
+	If result=False Then
 		fx.Msgbox(Main.MainForm,"Push Failed","")
 	End If
 End Sub
@@ -497,7 +497,7 @@ Public Sub commitAndPush(commitMessage As String)
 	
 	Main.enableAutosaveTimer(False)
 	Main.updateOperation("commiting and pushing")
-	
+	Sleep(0)
 
 	If projectGit.isConflicting Then
 		Log("conflicting")
@@ -508,14 +508,14 @@ Public Sub commitAndPush(commitMessage As String)
 		Else
 			projectGit.add(".")
 			projectGit.rebase("CONTINUE","")
-			wait for (projectGit.push(username,password,"origin","master")) complete (result As String)
-			If result.StartsWith("error") Then
+			wait for (projectGit.pushAsync(username,password,"origin","master")) complete (pushResult As Boolean)
+			If pushResult=False Then
 				fx.Msgbox(Main.MainForm,"Failed","")
 				Return
 			End If
 		End If
 	Else
-		updateLocalFileBasedonFetch(username,password,email)
+		wait for (updateLocalFileBasedonFetch(username,password,email)) Complete (success as Object)
 		Dim diffList As List
 		diffList=projectGit.diffList
 		Log(diffList)
@@ -524,20 +524,19 @@ Public Sub commitAndPush(commitMessage As String)
 			projectGit.commit(commitMessage,username,email)
 		End If
 		
-
-		If samelocalHeadAndRemoteHead(username,password,False)=False Then
-			wait for (projectGit.pullRebase(username,password)) complete (result As String)
-		
+		wait for (samelocalHeadAndRemoteHead(username,password,False)) Complete (isSame As Boolean)
+		If isSame = False Then
+			
 			Dim rebaseResult As String
-			rebaseResult=result
+			rebaseResult=projectGit.pullRebase(username,password)
 			Log("rebaseResult"&rebaseResult)
 			If rebaseResult="STOPPED" Or rebaseResult="CONFLICTS" Then
 				fx.Msgbox(Main.MainForm,"Conflits exist. Please solve the conflicts first.","")
 				closeFile
 				Return
 			Else
-				wait for (projectGit.push(username,password,"origin","master")) complete (result As String)
-				If result.StartsWith("error") Then
+				wait for (projectGit.pushAsync(username,password,"origin","master")) complete (pushResult As Boolean)
+				If pushResult=False Then
 					fx.Msgbox(Main.MainForm,"Push Failed","")
 					Return
 				End If
@@ -549,7 +548,7 @@ Public Sub commitAndPush(commitMessage As String)
 	Main.updateOperation("committed")
 End Sub
 
-Sub samelocalHeadAndRemoteHead(username As String,password As String,fetch As Boolean) As Boolean
+Sub samelocalHeadAndRemoteHead(username As String,password As String,fetch As Boolean) As ResumableSub
 	Dim result As Boolean=True
 	Dim refsPath As String
 	refsPath=File.Combine(File.Combine(path,".git"),"refs")
@@ -557,7 +556,7 @@ Sub samelocalHeadAndRemoteHead(username As String,password As String,fetch As Bo
 		Dim previousRemoteHead As String
 		previousRemoteHead=projectGit.getCommitIDofBranch("refs/remotes/origin/master")
 		If fetch Then
-			projectGit.fetch(username,password)
+			wait for (projectGit.fetchAsync(username,password)) Complete (success As Object)
 		End If
 		Dim localHead,remoteHead As String
 		localHead=projectGit.getCommitIDofBranch("refs/heads/master")
@@ -576,8 +575,9 @@ Sub samelocalHeadAndRemoteHead(username As String,password As String,fetch As Bo
 	Return result
 End Sub
 
-Sub updateLocalFileBasedonFetch(username As String,password As String,email As String)
-	If samelocalHeadAndRemoteHead(username,password,True)=False Then
+Sub updateLocalFileBasedonFetch(username As String,password As String,email As String)  as ResumableSub
+	wait for (samelocalHeadAndRemoteHead(username,password,True)) Complete (isSame As Boolean)
+	If isSame = False Then
 		Dim localHead,remoteHead As String
 		localHead=projectGit.getCommitIDofBranch("refs/heads/master")
 		remoteHead=projectGit.getCommitIDofBranch("refs/remotes/origin/master")
@@ -629,7 +629,7 @@ Sub updateLocalFileBasedonFetch(username As String,password As String,email As S
 				projectGit.add(".")
 				projectGit.commit("sync",username,email)
 			End If
-			wait for (projectGit.push(username,password,"origin","master")) complete (result As String)
+			wait for (projectGit.pushAsync(username,password,"origin","master")) complete (result As Boolean)
 			Log("pushresult"&result)
 		End If
 		projectGit.unsetWorkdir

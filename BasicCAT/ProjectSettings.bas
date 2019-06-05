@@ -387,7 +387,7 @@ End Sub
 
 Sub setRemoteButton_MouseClicked (EventData As MouseEvent)
 	Main.currentProject.setGitRemoteAndPush(GitURITextField.Text)
-	Sleep(2000)
+	'Sleep(2000)
 	fx.Msgbox(frm,"Done","")
 End Sub
 
