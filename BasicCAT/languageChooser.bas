@@ -24,11 +24,26 @@ Public Sub Initialize
 	Next
 End Sub
 
-Public Sub ShowAndWait As List
+Public Sub ShowAndWait As String
 	frm.ShowAndWait
-	Return ListView1.Items
+	Dim langsParam As String
+	For Each chkBox As CheckBox In ListView1.Items
+		If chkBox.Checked Then
+			langsParam=langsParam&chkBox.Text&"+"
+		End If
+	Next
+	If langsParam.EndsWith("+") Then
+		langsParam=langsParam.SubString2(0,langsParam.Length-1)
+	End If
+	Log(langsParam)
+	Return langsParam
 End Sub
 
 Sub OKButton_MouseClicked (EventData As MouseEvent)
+	frm.Close
+End Sub
+
+Sub frm_CloseRequest (EventData As Event)
+	ListView1.Items.Clear
 	frm.Close
 End Sub

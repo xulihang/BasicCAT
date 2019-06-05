@@ -31,14 +31,16 @@ Sub StripButton_MouseClicked (EventData As MouseEvent)
 		fx.Msgbox(frm,"Please choose a pdf file first.","")
 		Return
 	End If
+	Dim pdfbox1 As pdfbox
+	pdfbox1.Initialize(label1.Text)
 	If IncludePageNumCheckBox.Checked Then
 		If offsetTextField.Text="" Or PageAffixTextField.Text=""  Then
 			fx.Msgbox(frm,"Please fill affix and offset first.","")
 			Return
 		End If
-		TextArea1.text=pdfbox.stripPDFText(label1.Text,True,FacingPageCheckBox.Checked,PageAffixTextField.Text,offsetTextField.Text)
+		TextArea1.text=pdfbox1.stripPDFText(True,FacingPageCheckBox.Checked,PageAffixTextField.Text,offsetTextField.Text)
 	Else
-		TextArea1.text=pdfbox.stripPDFText(label1.Text,False,False,"",0)
+		TextArea1.text=pdfbox1.stripPDFText(False,False,"",0)
 	End If
 End Sub
 
@@ -117,26 +119,23 @@ Sub ocrButton_MouseClicked (EventData As MouseEvent)
 	
 	Dim lc As languageChooser
 	lc.Initialize
-	Dim langs As List
-	langs=lc.ShowAndWait
-	Dim langsParam As String
-	For Each chkBox As CheckBox In langs
-		If chkBox.Checked Then
-			langsParam=langsParam&chkBox.Text&"+"
-		End If
-	Next
-	If langsParam.EndsWith("+") Then
-		langsParam=langsParam.SubString2(0,langsParam.Length-1)
-	End If
-	Log(langsParam)
+	Dim langsParam As String=lc.ShowAndWait
 	If langsParam="" Then
 		Return
 	End If
 
 	Label2.Text="Converting pdf to images..."
 	Dim files As List
-	wait for (pdfbox.getImage(File.GetFileParent(label1.Text),File.GetName(label1.Text))) complete (result As List)
-	files=result
+	files.Initialize
+	Dim dir As String=File.GetFileParent(label1.Text)
+	Dim filename As String=File.GetName(label1.Text)
+	Dim pdfbox1 As pdfbox
+	pdfbox1.Initialize(File.Combine(dir,filename))
+	wait for (pdfbox1.getImageAsync()) complete (result As Object)
+	For i=0 To pdfbox1.PageNum-1
+		files.Add(File.Combine(dir,i&".jpg"))
+	Next
+
 	Label2.Text="OCRing..."
 	If IncludePageNumCheckBox.Checked Then
 		wait for (ocrWithPagenum(files,langsParam,PageAffixTextField.Text,offsetTextField.Text)) complete (text As String)
@@ -200,7 +199,8 @@ Sub ocrWithPagenum(files As List,langsParam As String,affix As String,offset As 
 	Else
 		path="tesseract"
 	End If
-	Dim content As String
+	Dim contentSB As StringBuilder
+	contentSB.Initialize
 	Dim pdfnum As Int=0
 	For i=0 To files.Size-1
 		pdfnum=pdfnum+1
@@ -228,7 +228,9 @@ Sub ocrWithPagenum(files As List,langsParam As String,affix As String,offset As 
 		If Success And ExitCode = 0 Then
 			Log("Success")
 			Log(StdOut)
-			content=content&pageStart&CRLF&CRLF&removeLines(File.ReadString(dir,i&".txt"))
+			contentSB.Append(pageStart).Append(CRLF)
+			contentSB.Append(CRLF).Append(File.ReadString(dir,i&".txt"))
+			'removeLines
 		Else
 			Log("Error: " & StdErr)
 		End If
@@ -236,7 +238,7 @@ Sub ocrWithPagenum(files As List,langsParam As String,affix As String,offset As 
 
 	Next
 	
-	Return content
+	Return contentSB.ToString
 End Sub
 
 Sub ocr(files As List,langsParam As String) As ResumableSub

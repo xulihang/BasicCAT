@@ -515,7 +515,7 @@ Public Sub commitAndPush(commitMessage As String)
 			End If
 		End If
 	Else
-		wait for (updateLocalFileBasedonFetch(username,password,email)) Complete (success as Object)
+		wait for (updateLocalFileBasedonFetch(username,password,email)) Complete (success As Object)
 		Dim diffList As List
 		diffList=projectGit.diffList
 		Log(diffList)
@@ -575,7 +575,7 @@ Sub samelocalHeadAndRemoteHead(username As String,password As String,fetch As Bo
 	Return result
 End Sub
 
-Sub updateLocalFileBasedonFetch(username As String,password As String,email As String)  as ResumableSub
+Sub updateLocalFileBasedonFetch(username As String,password As String,email As String)  As ResumableSub
 	wait for (samelocalHeadAndRemoteHead(username,password,True)) Complete (isSame As Boolean)
 	If isSame = False Then
 		Dim localHead,remoteHead As String
@@ -637,6 +637,7 @@ Sub updateLocalFileBasedonFetch(username As String,password As String,email As S
 	End If
 
 	Log("worddir,after: "&projectGit.getWorkdirPath)
+	return True
 End Sub
 
 Sub updateWorkFile(filename As String) As Boolean
