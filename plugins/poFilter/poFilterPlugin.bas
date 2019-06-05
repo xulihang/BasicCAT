@@ -21,11 +21,12 @@ public Sub GetNiceName() As String
 End Sub
 
 ' must be available
-public Sub Run(Tag As String, Params As Map) As Object
+public Sub Run(Tag As String, Params As Map) As ResumableSub
 	Log("run"&Tag)
 	Select Tag
 		Case "createWorkFile"
-			createWorkFile(Params.Get("filename"),Params.Get("path"),Params.Get("sourceLang"))
+			wait for (createWorkFile(Params.Get("filename"),Params.Get("path"),Params.Get("sourceLang"))) Complete (result As Boolean)
+			Return result
 		Case "generateFile"
 			generateFile(Params.Get("filename"),Params.Get("path"),Params.Get("projectFile"),Params.Get("main"))
 		Case "mergeSegment"
@@ -38,7 +39,7 @@ public Sub Run(Tag As String, Params As Map) As Object
 	Return ""
 End Sub
 
-Public Sub createWorkFile(filename As String,path As String,sourceLang As String)
+Public Sub createWorkFile(filename As String,path As String,sourceLang As String) As ResumableSub
 	Dim workfile As Map
 	workfile.Initialize
 	workfile.Put("filename",filename)
@@ -57,10 +58,11 @@ Public Sub createWorkFile(filename As String,path As String,sourceLang As String
 	For Each msgid As String As List In readPO(path,filename)
 		Dim inbetweenContent As String
 		id=id+1
+		wait for (segmentation.segmentedTxt(msgid,False,sourceLang,path)) Complete (segmentedText As List)
 		Dim size As Int
-		size=segmentation.segmentedTxt(msgid,False,sourceLang,path).Size
+		size=segmentedText.Size
 		Dim index As Int=-1
-		For Each source As String In segmentation.segmentedTxt(msgid,False,sourceLang,path)
+		For Each source As String In segmentedText
 			index=index+1
 			Dim bitext As List
 			bitext.Initialize
@@ -123,6 +125,7 @@ Public Sub createWorkFile(filename As String,path As String,sourceLang As String
 	Dim json As JSONGenerator
 	json.Initialize(workfile)
 	File.WriteString(File.Combine(path,"work"),filename&".json",json.ToPrettyString(4))
+	return True
 End Sub
 
 Sub readPO(path As String,filename As String) As List

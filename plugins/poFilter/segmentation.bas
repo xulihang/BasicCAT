@@ -26,7 +26,7 @@ Sub readRules(lang As String,path As String)
 	End If
 End Sub
 
-Sub segmentedTxt(text As String,Trim As Boolean,sourceLang As String,path As String) As List
+Sub segmentedTxt(text As String,Trim As Boolean,sourceLang As String,path As String) As ResumableSub
 	'Log("text"&text)
 	readRules(sourceLang,path)
 	Dim segments As List
@@ -39,26 +39,31 @@ Sub segmentedTxt(text As String,Trim As Boolean,sourceLang As String,path As Str
 	splitted.Initialize
 	splitted.AddAll(Regex.Split(CRLF,text))
 	Dim index As Int=-1
+    'Log("para"&splitted)
 	For Each para As String In splitted
 		index=index+1
-	    segments.AddAll(paragraphInSegments(para))
+		wait for (paragraphInSegments(para)) Complete (resultList As List)
+		segments.AddAll(resultList)
+		'Log(para)
 		'Log(segments)
 		'Log(segments.Size)
-	    Dim last As String
-	    last=segments.Get(segments.Size-1)
+		If segments.Size>0 Then
+			Dim last As String
+			last=segments.Get(segments.Size-1)
 
-		If index<>splitted.Size-1 Then
-			last=last&CRLF
-		Else if text.EndsWith(CRLF)=True Then
-			last=last&CRLF
+			If index<>splitted.Size-1 Then
+				last=last&CRLF
+			Else if text.EndsWith(CRLF)=True Then
+				last=last&CRLF
+			End If
+			segments.set(segments.Size-1,last)
+		Else
+			segments.Add(para&CRLF) ' if there are several LFs at the beginning
 		End If
-		segments.set(segments.Size-1,last)
 	Next
-    'Log(segments)
+	'Log(segments)
 	Return segments
 End Sub
-
-
 
 Sub paragraphInSegmentsCas(text As String) As List
 	Dim breakRules,nonbreakRules As List
@@ -179,7 +184,7 @@ Sub paragraphInSegmentsCas(text As String) As List
 	Return segments
 End Sub
 
-Sub paragraphInSegments(text As String) As List
+Sub paragraphInSegments(text As String) As ResumableSub
 
 	Dim breakRules,nonbreakRules As List
 	breakRules=rules.Get("breakRules")
@@ -263,8 +268,8 @@ Sub getPositions(rulesList As List,text As String) As List
 				abm=Regex.Matcher2(afterBreak,32,textLeft)
 				Do While abm.Find
 					If bbm.GetEnd(0)=abm.GetStart(0) Then
-						breakPositions.Add(abm.GetEnd(0)+text.Length-textLeft.Length)
-						textLeft=textLeft.SubString2(abm.GetEnd(0),textLeft.Length)
+						breakPositions.Add(bbm.GetEnd(0)+text.Length-textLeft.Length)
+						textLeft=textLeft.SubString2(bbm.GetEnd(0),textLeft.Length)
 						abm=Regex.Matcher2(afterBreak,32,textLeft)
 						bbm=Regex.Matcher2(beforeBreak,32,textLeft)
 
@@ -322,7 +327,12 @@ Sub removeSpacesAtBothSides(path As String,targetLang As String,text As String,r
 	If removeRedundantSpaces Then
 		text=Regex.Replace2("\b *\B",32,text,"")
 		text=Regex.Replace2("\B *\b",32,text,"")
+	Else
+		If text.StartsWith(" ") Then
+			text=text.SubString2(1,text.Length)
+		End If
 	End If
+
 	Return text
 End Sub
 
