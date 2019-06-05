@@ -734,7 +734,7 @@ Sub zipIDML(unzipedDirPath As String,filename As String,path As String)
 	zipDirPath=File.Combine(File.Combine(path,"target"),filename.Replace(".idml",""))
 	wait for (Utils.CopyFolderAsync(unzipedDirPath,zipDirPath)) Complete (result As Object)
 	
-	wait for (Utils.CopyFolderAsync(File.Combine(File.Combine(path,"target"),"Stories"),File.Combine(zipDirPath,"Stories"))) Complete (result as Object)
+	wait for (Utils.CopyFolderAsync(File.Combine(File.Combine(path,"target"),"Stories"),File.Combine(zipDirPath,"Stories"))) Complete (result As Object)
 	
     Dim zip As zip4j
 	zip.Initialize

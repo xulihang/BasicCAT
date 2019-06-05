@@ -144,8 +144,7 @@ Public Sub addRemote(urlString As String,name As String)
 	RemoteAddCommand.RunMethodJO("call",Null)
 End Sub
 
-Public Sub push(username As String,password As String,remoteName As String,branchName As String) As ResumableSub
-	Sleep(0)
+Public Sub push(username As String,password As String,remoteName As String,branchName As String)
 	Try
 		Dim PushCommand As JavaObject
 		PushCommand=gitJO.RunMethodJO("push",Null)

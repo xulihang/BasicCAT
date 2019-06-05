@@ -2078,6 +2078,7 @@ Sub createWorkFileAccordingToExtension(filename As String) As ResumableSub
 		End If
 		Return result
 	Catch
+		Log("creating workfile for "&filename&" failed")
 		Log(LastException)
 		Return False
 	End Try

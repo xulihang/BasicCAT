@@ -49,7 +49,9 @@ Sub delayedInfo(info As String)
 End Sub
 
 Sub close
-	frm.Close	
+	If frm.IsInitialized Then
+		frm.Close
+	End If
 End Sub
 
 Sub frm_CloseRequest (EventData As Event)
