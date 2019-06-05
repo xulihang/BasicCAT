@@ -367,21 +367,35 @@ Sub CopyFolder(Source As String, targetFolder As String)
 	Next
 End Sub
 
-Sub CopyWorkFolderAsync(Source As String, targetFolder As String)
-	Sleep(0)
+Sub CopyFolderAsync(Source As String, targetFolder As String) As ResumableSub
 	If File.Exists(targetFolder, "") = False Then File.MakeDir(targetFolder, "")
 	For Each f As String In File.ListFiles(Source)
 		Log(targetFolder)
 		Log("f"&f)
 		If File.IsDirectory(Source, f) Then
-			CopyFolder(File.Combine(Source, f), File.Combine(targetFolder, f))
+			wait for (CopyFolderAsync(File.Combine(Source, f), File.Combine(targetFolder, f))) Complete (result As Object)
+			Continue
+		End If
+		File.CopyAsync(Source, f, targetFolder, f)
+	Next
+	Return True
+End Sub
+
+Sub CopyWorkFolderAsync(Source As String, targetFolder As String) As ResumableSub
+	If File.Exists(targetFolder, "") = False Then File.MakeDir(targetFolder, "")
+	For Each f As String In File.ListFiles(Source)
+		Log(targetFolder)
+		Log("f"&f)
+		If File.IsDirectory(Source, f) Then
+			wait for (CopyFolderAsync(File.Combine(Source, f), File.Combine(targetFolder, f))) Complete (result As Object)
 			Continue
 		End If
 		If f.EndsWith(".json")=False Then
 			Continue
 		End If
-		File.Copy(Source, f, targetFolder, f)
+		File.CopyAsync(Source, f, targetFolder, f)
 	Next
+	Return True
 End Sub
 
 Sub leftTrim(text As String) As String

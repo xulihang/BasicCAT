@@ -444,7 +444,7 @@ Sub unzipAndLoadIDML(path As String,filename As String) As ResumableSub
 	'Log(CompletedWithoutError)
 	Dim zip As zip4j
 	zip.Initialize
-	zip.unzip(File.Combine(path,"source"),filename,unzipedDirPath)
+	wait for (zip.unzipAsync(File.Combine(path,"source"),filename,unzipedDirPath)) Complete (success As Boolean)
 	
 	Dim designmapString As String
 	designmapString=File.ReadString(unzipedDirPath, "designmap.xml")
@@ -732,13 +732,13 @@ Sub zipIDML(unzipedDirPath As String,filename As String,path As String)
 	End If
 	Dim zipDirPath As String
 	zipDirPath=File.Combine(File.Combine(path,"target"),filename.Replace(".idml",""))
-	Utils.CopyFolder(unzipedDirPath,zipDirPath)
+	wait for (Utils.CopyFolderAsync(unzipedDirPath,zipDirPath)) Complete (result As Object)
 	
-	Utils.CopyFolder(File.Combine(File.Combine(path,"target"),"Stories"),File.Combine(zipDirPath,"Stories"))
+	wait for (Utils.CopyFolderAsync(File.Combine(File.Combine(path,"target"),"Stories"),File.Combine(zipDirPath,"Stories"))) Complete (result as Object)
 	
     Dim zip As zip4j
 	zip.Initialize
-	wait for (zip.zipFiles(zipDirPath,File.Combine(path,"target"),filename)) complete (result As Object)
+	wait for (zip.zipFilesAsync(zipDirPath,File.Combine(path,"target"),filename)) complete (result As Object)
 	File.Delete(File.Combine(path,"target"),"Stories")
 	File.Delete(File.Combine(path,"target"),filename.Replace(".idml",""))
 	progressDialog.close
