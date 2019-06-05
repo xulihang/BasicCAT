@@ -10,7 +10,7 @@ Sub Process_Globals
 	Private addedMid As Int
 End Sub
 
-Sub createWorkFile(filename As String,path As String,sourceLang As String)
+Sub createWorkFile(filename As String,path As String,sourceLang As String) As ResumableSub
 	Dim workfile As Map
 	workfile.Initialize
 	workfile.Put("filename",filename)
@@ -61,7 +61,8 @@ Sub createWorkFile(filename As String,path As String,sourceLang As String)
 				segmentedText=getSegmentedSourceList(mrkList)
 			Else
 				isSegEnabled=False
-				segmentedText=segmentation.segmentedTxt(text,False,sourceLang,path)
+				wait for (segmentation.segmentedTxt(text,False,sourceLang,path)) Complete (resultList As List)
+				segmentedText=resultList
 			End If
 
 			For Each source As String In segmentedText
@@ -133,6 +134,7 @@ Sub createWorkFile(filename As String,path As String,sourceLang As String)
 	Dim json As JSONGenerator
 	json.Initialize(workfile)
 	File.WriteString(File.Combine(path,"work"),filename&".json",json.ToPrettyString(4))
+	Return True
 End Sub
 
 Sub getSegmentedSourceList(mrkList As List) As List

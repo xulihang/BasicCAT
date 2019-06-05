@@ -116,7 +116,7 @@ Public Sub newProjectSetting(source As String,target As String)
 	settings.Put("termList",termList)
 End Sub
 
-Public Sub addFile(filepath As String,isExtractedByOkapi As Boolean)
+Public Sub addFile(filepath As String,isExtractedByOkapi As Boolean) As ResumableSub
 	Dim filename As String
 	filename=Main.getFilename(filepath)
 	Log("fp"&filepath)
@@ -130,7 +130,7 @@ Public Sub addFile(filepath As String,isExtractedByOkapi As Boolean)
 	End If
 	files.Add(filename)
 	addFilesToTreeTable(filename)
-	createWorkFileAccordingToExtension(filename)
+	wait for (createWorkFileAccordingToExtension(filename)) Complete (result As Object)
 	save
 End Sub
 
@@ -160,9 +160,13 @@ Public Sub addFileInFolder(folderPath As String,filename As String,isExtractedby
 			Wait For (File.CopyAsync(folderPath,filename,File.Combine(path,"source"),filename)) Complete (Success As Boolean)
 			Log("Success: " & Success)
 		End If
-		files.Add(filename)
-		addFilesToTreeTable(filename)
-		Return createWorkFileAccordingToExtension(filename)
+
+		wait for (createWorkFileAccordingToExtension(filename)) Complete (result As Boolean)
+		If result=True Then
+			files.Add(filename)
+			addFilesToTreeTable(filename)
+		End If
+		Return result
 	Else
 		Return False
 	End If
@@ -2034,7 +2038,7 @@ Sub saveTranslation(targetTextArea As TextArea)
 	End If
 End Sub
 
-Sub runFilterPluginAccordingToExtension(filename As String,task As String,params As Map) As Object
+Sub runFilterPluginAccordingToExtension(filename As String,task As String,params As Map) As ResumableSub
 	Log(Main.plugin.GetAvailablePlugins)
 	For Each pluginName As String In Main.plugin.GetAvailablePlugins
 		If pluginName.EndsWith("Filter") Then
@@ -2045,36 +2049,38 @@ Sub runFilterPluginAccordingToExtension(filename As String,task As String,params
 			If filenameLowercase.EndsWith(extension) Then
 				Log(pluginName)
 				Log(task)
-				Return Main.plugin.RunPlugin(pluginName,task,params)
+				wait for (Main.plugin.RunPlugin(pluginName,task,params)) Complete (result As Object)
+				Return result
 			End If
 		End If
 	Next
 	Return ""
 End Sub
 
-Sub createWorkFileAccordingToExtension(filename As String) As Boolean
+Sub createWorkFileAccordingToExtension(filename As String) As ResumableSub
+	Dim result As Boolean=False
 	Try
 		Dim filenameLowercase As String
 		filenameLowercase=filename.ToLowerCase
 		If filenameLowercase.EndsWith(".txt") Then
-			txtFilter.createWorkFile(filename,path,projectFile.Get("source"))
+			wait for (txtFilter.createWorkFile(filename,path,projectFile.Get("source"))) Complete (result As Boolean)
 		Else if filenameLowercase.EndsWith(".idml") Then
-			idmlFilter.createWorkFile(filename,path,projectFile.Get("source"))
+			wait for (idmlFilter.createWorkFile(filename,path,projectFile.Get("source"))) Complete (result As Boolean)
 		Else if filenameLowercase.EndsWith(".xlf") Or filenameLowercase.EndsWith(".xliff") Then
-			xliffFilter.createWorkFile(filename,path,projectFile.Get("source"))
+			wait for (xliffFilter.createWorkFile(filename,path,projectFile.Get("source"))) Complete (result As Boolean)
 		Else
 			Dim params As Map
 			params.Initialize
 			params.Put("filename",filename)
 			params.Put("path",path)
 			params.Put("sourceLang",projectFile.Get("source"))
-			runFilterPluginAccordingToExtension(filename,"createWorkFile",params)
+			wait for (runFilterPluginAccordingToExtension(filename,"createWorkFile",params)) Complete (result As Boolean)
 		End If
+		Return result
 	Catch
 		Log(LastException)
 		Return False
 	End Try
-    Return True
 End Sub
 
 Sub readWorkFile(filename As String,filesegments As List,fillUI As Boolean,root As String)

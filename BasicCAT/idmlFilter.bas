@@ -22,11 +22,12 @@ End Sub
 
 
 
-Sub createWorkFile(filename As String,path As String,sourceLang As String)
+Sub createWorkFile(filename As String,path As String,sourceLang As String) As ResumableSub
 	If order.IsInitialized=False Then
 		parser.Initialize
 		order.Initialize
 	End If
+	progressDialog.close
 	progressDialog.ShowWithoutProgressBar("Loading idml file...","loadfile")
 	progressDialog.update2("Unzipping...")
 	Sleep(0)
@@ -98,7 +99,8 @@ Sub createWorkFile(filename As String,path As String,sourceLang As String)
 		'Log(storyContent)
 		Dim index As Int=-1
 		Dim segmentedText As List
-		segmentedText=segmentation.segmentedTxt(storyContent,False,sourceLang,path)
+		wait for (segmentation.segmentedTxt(storyContent,False,sourceLang,path)) Complete (resultList As List)
+		segmentedText=resultList
 		For Each source As String In segmentedText
 			source=Regex.Replace(" {2,}",source," ")
 			
@@ -174,7 +176,8 @@ Sub createWorkFile(filename As String,path As String,sourceLang As String)
 	json.Initialize(workfile)
 	File.WriteString(File.Combine(path,"work"),filename&".json",json.ToPrettyString(4))
 	progressDialog.close
-	fx.Msgbox(Main.MainForm,"idml file imported","")
+	'fx.Msgbox(Main.MainForm,"idml file imported","")
+	Return True
 End Sub
 
 Sub replaceNewlinestoHtmlTag(segmentsList As List)

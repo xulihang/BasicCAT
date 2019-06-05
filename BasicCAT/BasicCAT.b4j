@@ -173,15 +173,15 @@ Library8=jrandomaccessfile
 Library9=jb4xencryption
 Module1=FileChooserUtils
 Module10=preTranslateDialog
-Module11=SourceTextEditor
-Module12=InputTextAreaBox
-Module13=MT
-Module14=OperationDialog
-Module15=progressDialog
-Module16=Preferences
-Module17=idmlFilter
-Module18=tikal
-Module19=xliffFilter
+Module11=xliffFilter
+Module12=idmlFilter
+Module13=SourceTextEditor
+Module14=InputTextAreaBox
+Module15=MT
+Module16=OperationDialog
+Module17=progressDialog
+Module18=Preferences
+Module19=tikal
 Module2=Project
 Module20=LanguageTool
 Module21=ITP
@@ -238,7 +238,7 @@ Module9=ProjectSettings
 NumberOfFiles=74
 NumberOfLibraries=22
 NumberOfModules=64
-Version=7
+Version=7.32
 @EndOfDesignText@
 #Region Project Attributes 
 	#MainFormWidth: 600
@@ -1153,9 +1153,10 @@ Sub addFolder(path As String)
 			isExtractedbyOkapi=False
 		End If
 		imported=imported+1
-		Sleep(0)
+		'Sleep(0)
 		'progressDialog.update(imported,files.Size)
-		addFileInFolder(path,filename,isExtractedbyOkapi)
+		wait for (addFileInFolder(path,filename,isExtractedbyOkapi)) complete (result As Object)
+		
 	Next
 	currentProject.save
 	OperationDialog.SetButtonText("Okay")
@@ -1163,13 +1164,19 @@ Sub addFolder(path As String)
 	'progressDialog.close
 End Sub
 
-Sub addFileInFolder(path As String,filename As String,isExtractedbyOkapi As Boolean)
+Sub addFileInFolder(path As String,filename As String,isExtractedbyOkapi As Boolean) As ResumableSub
 	wait For(currentProject.addFileInFolder(path,filename,isExtractedbyOkapi)) complete (result As Boolean)
 	If result=True Then
 		OperationDialog.Add(Array As String(filename,"imported"))
 	Else
-		OperationDialog.Add(Array As String(filename,"importing failed or already existed"))
+		If currentProject.files.IndexOf(filename)<>-1 Then
+			OperationDialog.Add(Array As String(filename,"already existed"))
+		Else
+			OperationDialog.Add(Array As String(filename,"importing failed"))
+		End If
+		
 	End If
+	Return True
 End Sub
 
 Sub addFiles(path As String,files As List,prefix As String,okapiExtractedFiles As List) As ResumableSub
@@ -1304,15 +1311,15 @@ Sub addFile(path As String)
 
 		wait for (tikal.extract(sl,tl,path,File.Combine(currentProject.path,"source"))) complete (success As Boolean)
 		If success=True Then
-			currentProject.addFile(path,True)
+			wait for (currentProject.addFile(path,True)) Complete (result As Object)
 		Else
 			fx.Msgbox(MainForm,"This file format is not supported.","")
 		End If
 	Else
 		progressDialog.ShowWithoutProgressBar("Importing","import")
 		progressDialog.update2("importing..."&path)
-		currentProject.addFile(path,False)
-		Sleep(50)
+		wait for (currentProject.addFile(path,False)) Complete (result As Object)
+		'Sleep(50)
 	End If
 	progressDialog.close
 End Sub

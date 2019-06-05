@@ -26,7 +26,7 @@ Sub readRules(lang As String,path As String)
 	End If
 End Sub
 
-Sub segmentedTxt(text As String,Trim As Boolean,sourceLang As String,path As String) As List
+Sub segmentedTxt(text As String,Trim As Boolean,sourceLang As String,path As String) As ResumableSub
 	'Log("text"&text)
 	readRules(sourceLang,path)
 	Dim segments As List
@@ -42,7 +42,8 @@ Sub segmentedTxt(text As String,Trim As Boolean,sourceLang As String,path As Str
     'Log("para"&splitted)
 	For Each para As String In splitted
 		index=index+1
-		segments.AddAll(paragraphInSegments(para))
+		wait for (paragraphInSegments(para)) Complete (resultList As List)
+		segments.AddAll(resultList)
 		'Log(para)
 		'Log(segments)
 		'Log(segments.Size)
@@ -183,7 +184,7 @@ Sub paragraphInSegmentsCas(text As String) As List
 	Return segments
 End Sub
 
-Sub paragraphInSegments(text As String) As List
+Sub paragraphInSegments(text As String) As ResumableSub
 
 	Dim breakRules,nonbreakRules As List
 	breakRules=rules.Get("breakRules")

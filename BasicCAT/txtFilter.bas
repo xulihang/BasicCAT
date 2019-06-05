@@ -9,7 +9,7 @@ Sub Process_Globals
 	Private fx As JFX
 End Sub
 
-Sub createWorkFile(filename As String,path As String,sourceLang As String)
+Sub createWorkFile(filename As String,path As String,sourceLang As String) As ResumableSub
 	Dim textContent As String
 	Dim encoding As String
 	encoding=icu4j.getEncoding(File.Combine(path,"source"),filename)
@@ -29,7 +29,8 @@ Sub createWorkFile(filename As String,path As String,sourceLang As String)
 	Dim segmentsList As List
 	segmentsList.Initialize
 	Dim inbetweenContent As String
-	For Each source As String In segmentation.segmentedTxt(textContent,False,sourceLang,path)
+	wait for (segmentation.segmentedTxt(textContent,False,sourceLang,path)) Complete (segmentedText As List)
+	For Each source As String In segmentedText
 		Dim bitext As List
 		bitext.Initialize
 		If source.Trim="" Then 'newline or empty space
@@ -55,6 +56,7 @@ Sub createWorkFile(filename As String,path As String,sourceLang As String)
 	json.Initialize(workfile)
 
 	File.WriteString(File.Combine(path,"work"),filename&".json",json.ToPrettyString(4))
+	return True
 End Sub
 
 Sub generateFile(filename As String,path As String,projectFile As Map)
