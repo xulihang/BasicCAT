@@ -26,7 +26,7 @@ Sub readRules(lang As String,path As String)
 	End If
 End Sub
 
-Sub segmentedTxt(text As String,Trim As Boolean,sourceLang As String,path As String) As ResumableSub
+Sub segmentedTxt(text As String,sentenceLevel As Boolean,sourceLang As String,path As String) As ResumableSub
 	'Log("text"&text)
 	readRules(sourceLang,path)
 	Dim segments As List
@@ -38,29 +38,34 @@ Sub segmentedTxt(text As String,Trim As Boolean,sourceLang As String,path As Str
 	Dim splitted As List
 	splitted.Initialize
 	splitted.AddAll(Regex.Split(CRLF,text))
-	Dim index As Int=-1
-    'Log("para"&splitted)
-	For Each para As String In splitted
-		index=index+1
-		wait for (paragraphInSegments(para)) Complete (resultList As List)
-		segments.AddAll(resultList)
-		'Log(para)
-		'Log(segments)
-		'Log(segments.Size)
-		If segments.Size>0 Then
-			Dim last As String
-			last=segments.Get(segments.Size-1)
+	If sentenceLevel Then
+		Dim index As Int=-1
+		'Log("para"&splitted)
+		For Each para As String In splitted
+			index=index+1
+			wait for (paragraphInSegments(para)) Complete (resultList As List)
+			segments.AddAll(resultList)
+			'Log(para)
+			'Log(segments)
+			'Log(segments.Size)
+			If segments.Size>0 Then
+				Dim last As String
+				last=segments.Get(segments.Size-1)
 
-			If index<>splitted.Size-1 Then
-				last=last&CRLF
-			Else if text.EndsWith(CRLF)=True Then
-				last=last&CRLF
+				If index<>splitted.Size-1 Then
+					last=last&CRLF
+				Else if text.EndsWith(CRLF)=True Then
+					last=last&CRLF
+				End If
+				segments.set(segments.Size-1,last)
+			Else
+				segments.Add(para&CRLF) ' if there are several LFs at the beginning
 			End If
-			segments.set(segments.Size-1,last)
-		Else
-			segments.Add(para&CRLF) ' if there are several LFs at the beginning
-		End If
-	Next
+		Next
+	Else
+		segments.AddAll(splitted)
+	End If
+
 	'Log(segments)
 	Return segments
 End Sub

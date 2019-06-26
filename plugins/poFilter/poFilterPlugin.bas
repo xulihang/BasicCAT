@@ -25,7 +25,7 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 	Log("run"&Tag)
 	Select Tag
 		Case "createWorkFile"
-			wait for (createWorkFile(Params.Get("filename"),Params.Get("path"),Params.Get("sourceLang"))) Complete (result As Boolean)
+			wait for (createWorkFile(Params.Get("filename"),Params.Get("path"),Params.Get("sourceLang"),Params.Get("sentenceLevel"))) Complete (result As Boolean)
 			Return result
 		Case "generateFile"
 			generateFile(Params.Get("filename"),Params.Get("path"),Params.Get("projectFile"),Params.Get("main"))
@@ -39,7 +39,7 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 	Return ""
 End Sub
 
-Public Sub createWorkFile(filename As String,path As String,sourceLang As String) As ResumableSub
+Public Sub createWorkFile(filename As String,path As String,sourceLang As String,sentenceLevel As Boolean) As ResumableSub
 	Dim workfile As Map
 	workfile.Initialize
 	workfile.Put("filename",filename)
@@ -58,7 +58,7 @@ Public Sub createWorkFile(filename As String,path As String,sourceLang As String
 	For Each msgid As String As List In readPO(path,filename)
 		Dim inbetweenContent As String
 		id=id+1
-		wait for (segmentation.segmentedTxt(msgid,False,sourceLang,path)) Complete (segmentedText As List)
+		wait for (segmentation.segmentedTxt(msgid,sentenceLevel,sourceLang,path)) Complete (segmentedText As List)
 		Dim size As Int
 		size=segmentedText.Size
 		Dim index As Int=-1
