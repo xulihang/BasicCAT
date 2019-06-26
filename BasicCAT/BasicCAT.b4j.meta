@@ -193,5 +193,6 @@ ModuleClosedNodes64=
 ModuleClosedNodes7=
 ModuleClosedNodes8=
 ModuleClosedNodes9=
+NavigationStack=ProjectSettings,loadGeneral,81,2,Visual Designer,generalProjectSetting.bjl,-100,4,Project,Class_Globals,9,0,Project,addFile,126,0,ProjectSettings,applyButton_MouseClicked,232,1,txtFilter,createWorkFile,5,2,xliffFilter,createWorkFile,57,0,idmlFilter,createWorkFile,95,2,segmentation,segmentedTxt,26,6,Project,createWorkFileAccordingToExtension,2056,6,Project,runFilterPluginAccordingToExtension,2051,0
 SelectedBuild=0
-VisibleModules=1,2,3,4,5,6,7,8,9,10,41,15,12,21,64,36,59
+VisibleModules=1,2,3,4,5,6,7,8,9,10,19,14

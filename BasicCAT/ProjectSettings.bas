@@ -33,6 +33,7 @@ Sub Class_Globals
 	Private TermMatchAlgorithmComboBox As ComboBox
 	Private HistoryCheckBox As CheckBox
 	Private removeSpacesCheckBox As CheckBox
+	Private EnableSegmentationCheckBox As CheckBox
 End Sub
 
 'Initializes the object. You can add parameters to this method if needed.
@@ -84,6 +85,7 @@ Sub loadGeneral
 	SaveAndCommitCheckBox.checked=settings.GetDefault("save_and_commit",False)
 	HistoryCheckBox.checked=settings.GetDefault("record_history",True)
 	removeSpacesCheckBox.checked=settings.GetDefault("remove_space",True)
+	EnableSegmentationCheckBox.checked=settings.GetDefault("sentence_level_segmentation",True)
 End Sub
 
 Sub loadQuickfill
@@ -234,6 +236,7 @@ Sub applyButton_MouseClicked (EventData As MouseEvent)
 		settings.Put("updateWorkFile_enabled",updateWorkFileCheckBox.Checked)
 		settings.Put("record_history",HistoryCheckBox.Checked)
 		settings.Put("remove_space",removeSpacesCheckBox.Checked)
+		settings.Put("sentence_level_segmentation",EnableSegmentationCheckBox.checked)
 		Select TermMatchAlgorithmComboBox.SelectedIndex
 			Case 0
 				settings.Put("termMatch_algorithm","hashmap")

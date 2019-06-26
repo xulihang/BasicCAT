@@ -22,7 +22,7 @@ End Sub
 
 
 
-Sub createWorkFile(filename As String,path As String,sourceLang As String) As ResumableSub
+Sub createWorkFile(filename As String,path As String,sourceLang As String,sentenceLevel as Boolean) As ResumableSub
 	If order.IsInitialized=False Then
 		parser.Initialize
 		order.Initialize
@@ -99,7 +99,7 @@ Sub createWorkFile(filename As String,path As String,sourceLang As String) As Re
 		'Log(storyContent)
 		Dim index As Int=-1
 		Dim segmentedText As List
-		wait for (segmentation.segmentedTxt(storyContent,False,sourceLang,path)) Complete (resultList As List)
+		wait for (segmentation.segmentedTxt(storyContent,sentenceLevel,sourceLang,path)) Complete (resultList As List)
 		segmentedText=resultList
 		For Each source As String In segmentedText
 			source=Regex.Replace(" {2,}",source," ")

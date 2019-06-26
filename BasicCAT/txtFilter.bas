@@ -9,7 +9,7 @@ Sub Process_Globals
 	Private fx As JFX
 End Sub
 
-Sub createWorkFile(filename As String,path As String,sourceLang As String) As ResumableSub
+Sub createWorkFile(filename As String,path As String,sourceLang As String,sentenceLevel As Boolean) As ResumableSub
 	Dim textContent As String
 	Dim encoding As String
 	encoding=icu4j.getEncoding(File.Combine(path,"source"),filename)
@@ -29,7 +29,7 @@ Sub createWorkFile(filename As String,path As String,sourceLang As String) As Re
 	Dim segmentsList As List
 	segmentsList.Initialize
 	Dim inbetweenContent As String
-	wait for (segmentation.segmentedTxt(textContent,False,sourceLang,path)) Complete (segmentedText As List)
+	wait for (segmentation.segmentedTxt(textContent,sentenceLevel,sourceLang,path)) Complete (segmentedText As List)
 	For Each source As String In segmentedText
 		Dim bitext As List
 		bitext.Initialize

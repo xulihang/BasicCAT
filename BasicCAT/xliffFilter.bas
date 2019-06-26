@@ -10,7 +10,7 @@ Sub Process_Globals
 	Private addedMid As Int
 End Sub
 
-Sub createWorkFile(filename As String,path As String,sourceLang As String) As ResumableSub
+Sub createWorkFile(filename As String,path As String,sourceLang As String,sentenceLevel As Boolean) As ResumableSub
 	Dim workfile As Map
 	workfile.Initialize
 	workfile.Put("filename",filename)
@@ -61,7 +61,7 @@ Sub createWorkFile(filename As String,path As String,sourceLang As String) As Re
 				segmentedText=getSegmentedSourceList(mrkList)
 			Else
 				isSegEnabled=False
-				wait for (segmentation.segmentedTxt(text,False,sourceLang,path)) Complete (resultList As List)
+				wait for (segmentation.segmentedTxt(text,sentenceLevel,sourceLang,path)) Complete (resultList As List)
 				segmentedText=resultList
 			End If
 

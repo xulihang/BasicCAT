@@ -2060,21 +2060,23 @@ End Sub
 
 Sub createWorkFileAccordingToExtension(filename As String) As ResumableSub
 	Dim result As Boolean=False
+	Dim sentenceLevel As Boolean=settings.GetDefault("sentence_level_segmentation",True)
 	Try
 		Dim filenameLowercase As String
 		filenameLowercase=filename.ToLowerCase
 		If filenameLowercase.EndsWith(".txt") Then
-			wait for (txtFilter.createWorkFile(filename,path,projectFile.Get("source"))) Complete (result As Boolean)
+			wait for (txtFilter.createWorkFile(filename,path,projectFile.Get("source"),sentenceLevel)) Complete (result As Boolean)
 		Else if filenameLowercase.EndsWith(".idml") Then
-			wait for (idmlFilter.createWorkFile(filename,path,projectFile.Get("source"))) Complete (result As Boolean)
+			wait for (idmlFilter.createWorkFile(filename,path,projectFile.Get("source"),sentenceLevel)) Complete (result As Boolean)
 		Else if filenameLowercase.EndsWith(".xlf") Or filenameLowercase.EndsWith(".xliff") Then
-			wait for (xliffFilter.createWorkFile(filename,path,projectFile.Get("source"))) Complete (result As Boolean)
+			wait for (xliffFilter.createWorkFile(filename,path,projectFile.Get("source"),sentenceLevel)) Complete (result As Boolean)
 		Else
 			Dim params As Map
 			params.Initialize
 			params.Put("filename",filename)
 			params.Put("path",path)
 			params.Put("sourceLang",projectFile.Get("source"))
+			params.Put("sentenceLevel",sentenceLevel)
 			wait for (runFilterPluginAccordingToExtension(filename,"createWorkFile",params)) Complete (result As Boolean)
 		End If
 		Return result
