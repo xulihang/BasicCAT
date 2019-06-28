@@ -1238,15 +1238,36 @@ Sub showWordMeaning(selectedText As String,ta As TextArea)
 	Else
 		cm.MenuItems.Clear
 		wait for (getMeans(selectedText)) complete (result As List)
-		For Each text As String In result
+		
+		Dim p As Pane
+		p.Initialize("")
+		p.SetSize(24dip,24dip)
+		Dim cvs As B4XCanvas
+		cvs.Initialize(p)
+		Dim xui As XUI
+		For Each meaningMap As Map In result
 			Dim mi As MenuItem
-			mi.Initialize(text, "mi")
+			mi.Initialize(meaningMap.Get("text"), "mi")
+			If Main.preferencesMap.GetDefault("lookup_showSource",False)=True Then
+				Dim initial As String=meaningMap.Get("source")
+				initial=initial.CharAt(0)
+				cvs.ClearRect(cvs.TargetRect)
+				DrawTextWithCircle(cvs,initial.ToUpperCase,xui.CreateDefaultFont(12),xui.Color_DarkGray,12dip,12dip)
+				mi.Image=cvs.CreateBitmap
+			End If
 			cm.MenuItems.Add(mi)
 		Next
 		Sleep(100)
 		Dim jo As JavaObject = cm
 		jo.RunMethod("show", Array(ta, Main.getLeft, Main.getTop))
 	End If
+End Sub
+
+Sub DrawTextWithCircle (cvs1 As B4XCanvas, Text As String, Fnt As B4XFont, Clr As Int, CenterX As Int, CenterY As Int)
+	Dim r As B4XRect = cvs1.MeasureText(Text, Fnt)
+	Dim BaseLine As Int = CenterY - r.Height / 2 - r.Top
+	cvs1.DrawText(Text, CenterX, BaseLine, Fnt, Clr, "CENTER")
+	cvs1.DrawCircle(CenterX, CenterY, r.Height , Clr, False, 1)
 End Sub
 
 Sub mi_Action
@@ -1658,7 +1679,14 @@ Sub getMeans(source As String) As ResumableSub
 			End If
 			If youdaoSetuped=True Then
 				wait for (MT.youdaoMT(source,projectFile.Get("source"),projectFile.Get("target"),True)) Complete (Result As List)
-				resultList.AddAll(Result)
+				For Each meaning As String In Result
+					Dim meaningMap As Map
+					meaningMap.Initialize
+					meaningMap.Put("source","YoudaoDict")
+					meaningMap.Put("text",meaning)
+					resultList.Add(meaningMap)
+				Next
+
 			End If
 		End If
 	End If
@@ -1666,13 +1694,17 @@ Sub getMeans(source As String) As ResumableSub
 	If Main.preferencesMap.ContainsKey("lookupWordUsingMT") Then
 		If Main.preferencesMap.Get("lookupWordUsingMT")=True Then
 			For Each engine As String In MT.getMTList
-				If engine="youdao" Then
-					Continue
-				End If
+				'If engine="youdao" Then
+				'	Continue
+				'End If
 				If Utils.get_isEnabled(engine&"_isEnabled",mtPreferences)=True Then
 					wait for (MT.getMT(source,projectFile.Get("source"),projectFile.Get("target"),engine)) Complete (one As String)
 					If one<>"" Then
-						resultList.Add(one)
+						Dim meaningMap As Map
+						meaningMap.Initialize
+						meaningMap.Put("source",engine)
+						meaningMap.Put("text",one)
+						resultList.Add(meaningMap)
 					End If
 				End If
 			Next

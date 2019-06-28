@@ -38,6 +38,7 @@ Sub Class_Globals
 	Private lineHeightTextField As TextField
 	Private sourceWordsListCheckBox As CheckBox
 	Private lookupControlCheckBox As CheckBox
+	Private lookupShowSourceCheckBox As CheckBox
 End Sub
 
 'Initializes the object. You can add parameters to this method if needed.
@@ -128,6 +129,8 @@ Sub categoryListView_SelectedIndexChanged(Index As Int)
 			If unsavedPreferences.ContainsKey("lookupWordUsingMT") Then
 				lookupUsingMTCheckBox.Checked=unsavedPreferences.get("lookupWordUsingMT")
 			End If
+			lookupShowSourceCheckBox.Checked=unsavedPreferences.GetDefault("lookup_showSource",False)
+			
 		Case 4
 			'autocomplete
 			SettingPane.RemoveAllNodes
@@ -266,6 +269,11 @@ End Sub
 
 Sub lookupUsingMTCheckBox_CheckedChange(Checked As Boolean)
 	unsavedPreferences.Put("lookupWordUsingMT",Checked)
+End Sub
+
+
+Sub lookupShowSourceCheckBox_CheckedChange(Checked As Boolean)
+	unsavedPreferences.Put("lookup_showSource",Checked)
 End Sub
 
 Sub ExternalTMCheckBox_CheckedChange(Checked As Boolean)
@@ -435,5 +443,4 @@ Sub lineHeightTextField_TextChanged (Old As String, New As String)
 	End Try
 
 End Sub
-
 

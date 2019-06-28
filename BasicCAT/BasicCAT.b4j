@@ -166,6 +166,8 @@ Library21=cssutils
 Library22=b4jdragtome
 Library23=threading
 Library24=jpoi
+Library25=jbitmapcreator
+Library26=xui views
 Library3=javaobject
 Library4=json
 Library5=apachestringutilsb4j
@@ -238,7 +240,7 @@ Module7=Term
 Module8=KeyValueStore
 Module9=ProjectSettings
 NumberOfFiles=74
-NumberOfLibraries=24
+NumberOfLibraries=26
 NumberOfModules=64
 Version=7.32
 @EndOfDesignText@
