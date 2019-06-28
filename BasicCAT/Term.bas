@@ -173,6 +173,8 @@ Public Sub importExternalTerminology(termList As List)
 		termfileLowercase=termfile.ToLowerCase
 		If termfileLowercase.EndsWith(".txt") Then
 			importedTxt(termfile,termsMap)
+		Else If termfileLowercase.EndsWith(".xlsx") Then
+				importedXlsx(termfile,termsMap)
 		Else if termfileLowercase.EndsWith(".tbx") Then
 			TBX.readTermsIntoMap(File.Combine(File.Combine(Main.currentProject.path,"Term"),termfile),sourceLanguage,Main.currentProject.projectFile.Get("target"),termsMap)
 		End If
@@ -229,6 +231,39 @@ Sub importedTxt(filename As String,termsMap As Map)
 	Next
 End Sub
 
+Sub importedXlsx(filename As String,termsMap As Map)
+	Dim wb As PoiWorkbook
+	wb.InitializeExisting(File.Combine(Main.currentProject.path,"Term"),filename,"")
+	Dim sheet1 As PoiSheet=wb.GetSheet(0)
+	For Each row As PoiRow In sheet1.Rows
+		Dim terminfo As Map
+		terminfo.Initialize
+		Dim targetMap As Map
+		targetMap.Initialize
+		
+		Dim source,target,note,tag As String
+
+		source=row.GetCell(0).ValueString
+		target=row.GetCell(1).ValueString
+		Try
+			note=row.GetCell(2).ValueString
+			If note<>"" Then
+				terminfo.Put("note",note)
+			End If
+			tag=row.GetCell(3).ValueString
+			If tag<>"" Then
+				terminfo.Put("tag",tag)
+			End If
+		Catch
+			Log(LastException)
+		End Try
+		If termsMap.ContainsKey(source) Then
+			targetMap=termsMap.Get(source)
+		End If
+		targetMap.Put(target,terminfo)
+		termsMap.Put(source,targetMap)
+	Next
+End Sub
 
 Public Sub termsInASentence(sentence As String) As List
     Dim result As List

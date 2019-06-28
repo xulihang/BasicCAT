@@ -175,34 +175,34 @@ Library8=jrandomaccessfile
 Library9=jb4xencryption
 Module1=FileChooserUtils
 Module10=preTranslateDialog
-Module11=xliffFilter
-Module12=idmlFilter
-Module13=MT
-Module14=git
-Module15=zip4j
-Module16=progressDialog
-Module17=pdfbox
-Module18=PDF2TXT
-Module19=languageChooser
+Module11=TMManager
+Module12=TMX
+Module13=importDialog
+Module14=xliffFilter
+Module15=idmlFilter
+Module16=MT
+Module17=git
+Module18=zip4j
+Module19=progressDialog
 Module2=Project
-Module20=Previewer
-Module21=Utils
-Module22=AutoSaver
-Module23=SourceTextEditor
-Module24=InputTextAreaBox
-Module25=OperationDialog
-Module26=Preferences
-Module27=tikal
-Module28=LanguageTool
-Module29=ITP
+Module20=pdfbox
+Module21=PDF2TXT
+Module22=languageChooser
+Module23=Previewer
+Module24=Utils
+Module25=AutoSaver
+Module26=SourceTextEditor
+Module27=InputTextAreaBox
+Module28=OperationDialog
+Module29=Preferences
 Module3=segmentation
-Module30=TMX
-Module31=TMManager
-Module32=searchAndReplaceDialog
-Module33=confirmReviewDialog
-Module34=HistoryRecord
-Module35=SearchView
-Module36=importDialog
+Module30=tikal
+Module31=LanguageTool
+Module32=ITP
+Module33=searchAndReplaceDialog
+Module34=confirmReviewDialog
+Module35=HistoryRecord
+Module36=SearchView
 Module37=Xml2Map
 Module38=XMLUtils
 Module39=icu4j
@@ -464,22 +464,7 @@ Public Sub addProjectTreeTableItem
 			cm.MenuItems.Add(mi2)
 			lbl.ContextMenu=cm
 		End If
-		If item="Translation Memory" Then
-			Dim cm As ContextMenu
-			cm.Initialize("cm")
-			Dim mi As MenuItem
-			mi.Initialize("Export to TMX","exportTMXMi")
-			cm.MenuItems.Add(mi)
-			lbl.ContextMenu=cm
-		End If
-		If item="Terminology" Then
-			Dim cm As ContextMenu
-			cm.Initialize("cm")
-			Dim mi As MenuItem
-			mi.Initialize("Export to TXT","exportTermToTXTMi")
-			cm.MenuItems.Add(mi)
-			lbl.ContextMenu=cm
-		End If
+		
 		Dim tti As TreeTableItem
 		tti.Initialize("tti",Array As Object(lbl))
 		
@@ -1006,97 +991,6 @@ Sub changeNeglectedStatus
 		currentProject.contentIsChanged
 	End If
 End Sub
-
-Sub exportTermToTXTMi_Action
-	If currentProject.projectTerm.IsInitialized Then
-		Dim path As String
-		Dim fc As FileChooser
-		fc.Initialize
-		fc.SetExtensionFilter("txt",Array As String("*.txt"))
-		path=fc.ShowSave(MainForm)
-		If path="" Then
-			Return
-		End If
-		Dim segments As List
-		segments.Initialize
-		Dim termKVS As KeyValueStore
-		termKVS=currentProject.projectTerm.terminology
-		For Each key As String In termKVS.ListKeys
-			Dim bitext As List
-			bitext.Initialize
-			bitext.Add(key)
-			Dim targetMap As Map
-			targetMap=termKVS.Get(key)
-			bitext.Add(targetMap.GetKeyAt(0))
-			Dim terminfo As Map
-			terminfo=targetMap.Get(targetMap.GetKeyAt(0))
-			If terminfo.ContainsKey("note") Then
-				bitext.Add(terminfo.Get("note"))
-			Else
-				bitext.Add("")
-			End If
-			If terminfo.ContainsKey("tag") Then
-				bitext.Add(terminfo.Get("tag"))
-			Else
-				bitext.Add("")
-			End If
-			segments.Add(bitext)
-		Next
-		currentProject.projectTerm.exportToTXT(segments,path)
-		fx.Msgbox(MainForm,"exported","")
-	End If
-End Sub
-
-Sub exportTMXMi_Action
-	If currentProject.projectTM.IsInitialized Then
-		Dim path As String
-		Dim fc As FileChooser
-		fc.Initialize
-		fc.SetExtensionFilter("tmx",Array As String("*.tmx"))
-		path=fc.ShowSave(MainForm)
-		If path="" Then
-			Return
-		End If
-		Dim segments As List
-		segments.Initialize
-		Dim tmKVS As KeyValueStore
-		tmKVS=currentProject.projectTM.translationMemory
-
-		For Each key As String In tmKVS.ListKeys
-			Dim bitext As List
-			bitext.Initialize
-			bitext.Add(key)
-			
-			Dim targetMap As Map=tmKVS.Get(key)
-			Dim translation As String
-			translation=targetMap.Get("text")
-			bitext.Add(translation)
-			bitext.Add(targetMap)
-			segments.Add(bitext)
-		Next
-		Dim result As Int
-		result=fx.Msgbox2(MainForm,"Include tags?","","Yes","Cancel","No",fx.MSGBOX_CONFIRMATION)
-		Select result
-			Case fx.DialogResponse.NEGATIVE
-				TMX.export(segments,currentProject.projectFile.Get("source"),currentProject.projectFile.Get("target"),path,False,False)
-				fx.Msgbox(MainForm,"exported","")
-			Case fx.DialogResponse.POSITIVE
-				Dim result2 As Int
-				result2=fx.Msgbox2(MainForm,"Convert tags to universal tags?","","Yes","Cancel","No",fx.MSGBOX_CONFIRMATION)
-				Select result2
-					Case fx.DialogResponse.NEGATIVE
-						TMX.export(segments,currentProject.projectFile.Get("source"),currentProject.projectFile.Get("target"),path,True,False)
-						fx.Msgbox(MainForm,"exported","")
-					Case fx.DialogResponse.POSITIVE
-						TMX.export(segments,currentProject.projectFile.Get("source"),currentProject.projectFile.Get("target"),path,True,True)
-						fx.Msgbox(MainForm,"exported","")
-				End Select
-
-		End Select
-		
-	End If
-End Sub
-
 
 Sub addFolderMi_Action
 	If currentProject.IsInitialized=False Then

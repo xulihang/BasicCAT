@@ -49,7 +49,7 @@ Sub setItems
 			
 			If terminfo.ContainsKey("tag") Then
 				tag=terminfo.Get("tag")
-				If tag.Trim<>"" and tagList.IndexOf(tag)=-1 Then
+				If tag.Trim<>"" And tagList.IndexOf(tag)=-1 Then
 					tagList.Add(tag)
 				End If
 			End If
@@ -171,7 +171,7 @@ Sub ExportButton_MouseClicked (EventData As MouseEvent)
 	Dim fc As FileChooser
 	fc.Initialize
 	'fc.SetExtensionFilter("tbx;txt",Array As String("*.tbx","*.txt"))
-	FileChooserUtils.AddExtensionFilters4(fc,Array As String("TBX","tab-delimitted text"),Array As String("*.tbx","*.txt"),False,"All",False)
+	FileChooserUtils.AddExtensionFilters4(fc,Array As String("TBX","tab-delimitted text","XLSX"),Array As String("*.tbx","*.txt","*.xlsx"),False,"All",False)
 	path=fc.ShowSave(frm)
 	If path="" Then
 		Return
@@ -180,13 +180,36 @@ Sub ExportButton_MouseClicked (EventData As MouseEvent)
 		TBX.export(kvs,Main.currentProject.projectFile.Get("source"),Main.currentProject.projectFile.Get("target"),path)
 	Else if path.EndsWith(".txt") Then
 		exportToTXT(path)
-	Else
-		exportToTXT(path)
+	Else if path.EndsWith(".xlsx") Then
+		exportToXLSX(path)
 	End If
 End Sub
 
 Sub exportToTXT(path As String)
+	Main.currentProject.projectTerm.exportToTXT(TermsList,path)
+	fx.Msgbox(frm,"exported","")
+End Sub
 
+Sub exportToXLSX(path As String)
+	Dim wb As PoiWorkbook
+	wb.InitializeNew(True)
+	Dim sheet1 As PoiSheet=wb.AddSheet("Sheet1",0)
+	Dim index As Int=0
+
+	For Each segment As List In TermsList
+		Dim row As PoiRow=	sheet1.CreateRow(index)
+		row.CreateCellString(0,segment.Get(0))
+		row.CreateCellString(1,segment.Get(1))
+		row.CreateCellString(2,segment.Get(2))
+		row.CreateCellString(3,segment.Get(3))
+		index=index+1
+	Next
+	wb.Save(path,"")
+	wb.Close
+	fx.Msgbox(frm,"exported","")
+End Sub
+
+Sub TermsList As List
 	Dim segments As List
 	segments.Initialize
 	For Each key As String In kvs.ListKeys
@@ -212,6 +235,5 @@ Sub exportToTXT(path As String)
 			segments.Add(bitext)
 		Next
 	Next
-	Main.currentProject.projectTerm.exportToTXT(segments,path)
-	fx.Msgbox(frm,"exported","")
+	Return segments
 End Sub

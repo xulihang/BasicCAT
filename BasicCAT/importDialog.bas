@@ -153,7 +153,37 @@ Sub loadTerm(path As String)
 		importTermTxt(path)
 	else if path.ToLowerCase.EndsWith(".tbx") Then
 		importTBX(path)
+	else if path.ToLowerCase.EndsWith(".xlsx") Then
+		importedTermXlsx(path)
 	End If
+End Sub
+
+Sub importedTermXlsx(path As String)
+	Dim wb As PoiWorkbook
+	wb.InitializeExisting(path,"","")
+	Dim sheet1 As PoiSheet=wb.GetSheet(0)
+	Dim i As Int=0
+	For Each row As PoiRow In sheet1.Rows
+		Dim terminfo As Map
+		terminfo.Initialize
+		Dim targetMap As Map
+		targetMap.Initialize
+		Dim source,target,note,tag As String
+		source=row.GetCell(0).ValueString
+		target=row.GetCell(1).ValueString
+		Try
+			note=row.GetCell(2).ValueString
+			tag=row.GetCell(3).ValueString
+		Catch
+			Log(LastException)
+		End Try
+		i=i+1
+		ListView1.Items.Add(buildTermItemText(source,target,note,tag,""))
+		If i=5 Then
+			ListView1.Items.Add("......")
+			Exit
+		End If
+	Next
 End Sub
 
 Sub importTermTxt(path As String)
