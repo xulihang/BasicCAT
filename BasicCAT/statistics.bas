@@ -23,15 +23,27 @@ Public Sub Show
 End Sub
 
 Sub fillData(filename As String) As String
-	Dim sourceWords,targetWords,sourceSentences,targetSentences As Int
+	Dim sourceWords,targetWords,sourceSentences,targetSentences As Int=0
 	Dim segments As List
 	segments=Main.currentProject.getAllSegments(filename)
 	For Each bitext As List In segments
-		sourceWords=sourceWords+calculateWords(bitext.Get(0),Main.currentProject.projectFile.Get("source"))
-		targetWords=targetWords+calculateWords(bitext.Get(1),Main.currentProject.projectFile.Get("target"))
+		Dim extra As Map
+		extra=bitext.Get(4)
+		Dim source,target As String
+		source=bitext.Get(0)
+		target=bitext.Get(1)
+		If extra.GetDefault("neglected","no") = "yes" Then
+			Continue
+		End If
+		If source<>"" Then
+			sourceWords=sourceWords+calculateWords(source,Main.currentProject.projectFile.Get("source"))
+		End If
+		
 		sourceSentences=sourceSentences+1
-		If bitext.Get(1)<>"" Then
+		
+		If target<>"" Then
 			targetSentences=targetSentences+1
+			targetWords=targetWords+calculateWords(target,Main.currentProject.projectFile.Get("target"))
 		End If
 	Next
 	
@@ -124,11 +136,19 @@ Sub calculateWords(text As String,lang As String) As Int
 End Sub
 
 Sub calculateWordsForLanguageWithSpace(text As String) As Int
+	text=TagRemoved(text)
 	Return Regex.Split(" ",text).Length
 End Sub
 
 Sub calculateHanzi(text As String) As Int
+	text=TagRemoved(text)
+	text=Regex.Replace("[\x00-\x19\x21-\xff]+",text,"字")
 	text=text.Replace(" ","")
 	Return text.Length
+End Sub
+
+Sub TagRemoved(text As String) As String
+	text=Regex.Replace2("<.*?>",32,text," T ")
+	Return text
 End Sub
 
