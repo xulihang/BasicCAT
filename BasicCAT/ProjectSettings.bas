@@ -350,6 +350,8 @@ Sub AddTMButton_MouseClicked (EventData As MouseEvent)
 	filterList.add("*.txt")
 	descriptionList.Add("TMX Files")
 	filterList.add("*.tmx")
+	descriptionList.Add("XLSX Files")
+	filterList.add("*.xlsx")
 	FileChooserUtils.AddExtensionFilters4(fc,descriptionList,filterList,False,"",True)
 	Dim path As String
 	path=fc.ShowOpen(frm)

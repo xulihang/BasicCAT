@@ -37,6 +37,8 @@ End Sub
 Sub loadTM(path As String)
 	If path.ToLowerCase.EndsWith(".txt") Then
 		importTMTxt(path)
+	Else If path.ToLowerCase.EndsWith(".xlsx") Then
+			importTMXlsx(path)
 	else if path.ToLowerCase.EndsWith(".tmx") Then
 		importTMX(path,Main.currentProject.projectFile.Get("source"),Main.currentProject.projectFile.Get("target"))
 	End If
@@ -60,6 +62,31 @@ Sub importTMTxt(path As String)
 				Exit
 			End If
 		Next
+	Catch
+		fx.Msgbox(frm,"Invalid file","")
+		Log(LastException)
+	End Try
+
+End Sub
+
+Sub importTMXlsx(path As String)
+	Try
+		Dim wb As PoiWorkbook
+		wb.InitializeExisting(path,"","")
+        Dim i As Int=0
+		Dim sheet1 As PoiSheet = wb.GetSheet(0)
+		For Each row As PoiRow In sheet1.Rows
+			Dim source,target As String
+			source=row.GetCell(0).ValueString
+			target=row.GetCell(1).ValueString
+			i=i+1
+			ListView1.Items.Add(buildTMItemText(source,target))
+			If i=5 Then
+				ListView1.Items.Add("......")
+				Exit
+			End If
+		Next
+		wb.Close
 	Catch
 		fx.Msgbox(frm,"Invalid file","")
 		Log(LastException)

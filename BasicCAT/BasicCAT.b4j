@@ -165,6 +165,7 @@ Library20=jokhttputils2
 Library21=cssutils
 Library22=b4jdragtome
 Library23=threading
+Library24=jpoi
 Library3=javaobject
 Library4=json
 Library5=apachestringutilsb4j
@@ -174,15 +175,15 @@ Library8=jrandomaccessfile
 Library9=jb4xencryption
 Module1=FileChooserUtils
 Module10=preTranslateDialog
-Module11=MT
-Module12=git
-Module13=zip4j
-Module14=idmlFilter
-Module15=progressDialog
-Module16=pdfbox
-Module17=PDF2TXT
-Module18=languageChooser
-Module19=xliffFilter
+Module11=xliffFilter
+Module12=idmlFilter
+Module13=MT
+Module14=git
+Module15=zip4j
+Module16=progressDialog
+Module17=pdfbox
+Module18=PDF2TXT
+Module19=languageChooser
 Module2=Project
 Module20=Previewer
 Module21=Utils
@@ -237,9 +238,9 @@ Module7=Term
 Module8=KeyValueStore
 Module9=ProjectSettings
 NumberOfFiles=74
-NumberOfLibraries=23
+NumberOfLibraries=24
 NumberOfModules=64
-Version=7.51
+Version=7.32
 @EndOfDesignText@
 #Region Project Attributes 
 	#MainFormWidth: 600
@@ -261,14 +262,6 @@ Version=7.51
 #AdditionalJar: JavaEWAH-1.1.6
 #AdditionalJar: slf4j-api-1.7.2
 #AdditionalJar: slf4j-simple-1.7.25
-
-'-------- for Apache POI
-#AdditionalJar: poi-4.0.0
-#AdditionalJar: poi-ooxml-schemas-4.0.0
-#AdditionalJar: poi-ooxml-4.0.0
-#AdditionalJar: xmlbeans-3.0.1
-#AdditionalJar: commons-collections4-4.2
-#AdditionalJar: commons-compress-1.18
 
 '-------- for pdfbox
 #AdditionalJar: pdfbox-2.0.12

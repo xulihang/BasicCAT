@@ -199,6 +199,8 @@ Public Sub importExternalTranslationMemory(tmList As List,projectFile As Map) As
 			segments.AddAll(importedTxt(tmfile))
 		Else if tmfileLowercase.EndsWith(".tmx") Then
 			segments.AddAll(TMX.importedList(File.Combine(Main.currentProject.path,"TM"),tmfile,projectFile.Get("source"),projectFile.Get("target")))
+		else if tmfileLowercase.EndsWith(".xlsx") Then
+			segments.AddAll(importedXlsx(tmfile))
 		End If
 	Next
 	Log(segments)
@@ -206,8 +208,11 @@ Public Sub importExternalTranslationMemory(tmList As List,projectFile As Map) As
 		Dim index As Int=0
 		For Each bitext As List In segments
 			index=index+1
-			progressDialog.update(index,segments.Size)
-			Sleep(0)
+			If index Mod 5 = 0 Then
+				progressDialog.update(index,segments.Size)
+				Sleep(0)
+			End If
+
 			Dim source,target,filename As String
 			Dim targetMap As Map
 			targetMap.Initialize
@@ -250,9 +255,77 @@ Sub importedTxt(filename As String) As List
 		target=Regex.Split("	",line)(1)
 		bitext.Add(source)
 		bitext.Add(target)
+		
+		Dim targetMap As Map
+		targetMap.Initialize
+		
+		Try
+			Dim creator As String
+			creator=Regex.Split("	",line)(2)
+			targetMap.Put("creator",creator)
+			Dim creationdate As String
+			creationdate=Regex.Split("	",line)(3)
+			targetMap.Put("createdTime",creationdate)
+			Dim note As String
+			note=Regex.Split("	",line)(4)
+			targetMap.Put("note",note)
+		Catch
+			Log(LastException)
+		End Try
+		
 		bitext.Add(filename)
+		bitext.Add(targetMap)
 		result.Add(bitext)
 	Next
+	Return result
+End Sub
+
+Sub importedXlsx(filename As String) As List
+	Dim result As List
+	result.Initialize
+	
+	Dim wb As PoiWorkbook
+	wb.InitializeExisting(File.Combine(Main.currentProject.path,"TM"),filename,"")
+    
+	Dim sheet1 As PoiSheet = wb.GetSheet(0)
+	For Each row As PoiRow In sheet1.rows
+		Dim bitext As List
+		bitext.Initialize
+		Dim source,target As String
+
+		source=row.GetCell(0).ValueString
+		target=row.GetCell(1).ValueString
+		bitext.Add(source)
+		bitext.Add(target)
+		
+		Dim targetMap As Map
+		targetMap.Initialize
+		
+		Try
+			Dim creator As String
+			creator=row.GetCell(2).ValueString
+			If creator<>"" Then
+				targetMap.Put("creator",creator)
+			End If
+			Dim creationdate As String
+			creationdate=row.GetCell(3).ValueString
+			If creationdate<>"" Then
+				targetMap.Put("createdTime",creationdate)
+			End If			
+			Dim note As String
+			note=row.GetCell(4).ValueString
+			If note<>"" Then
+				targetMap.Put("note",note)
+			End If
+		Catch
+			Log(LastException)
+		End Try
+		
+		bitext.Add(filename)
+		bitext.Add(targetMap)
+		result.Add(bitext)
+	Next
+
 	Return result
 End Sub
 
@@ -361,6 +434,8 @@ Sub getOneUseMemory(source As String,rate As Double) As ResumableSub
 			End If
 			onePairList=tmPairList
 			Return onePairList
+		else if rate>=1.0 Then
+			Continue
 		End If
 		
 		For Each key As String In kvs.ListKeys

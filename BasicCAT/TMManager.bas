@@ -52,8 +52,11 @@ Sub addContextMenuToLV
 	mi.Initialize("Edit","mi")
 	Dim mi2 As MenuItem
 	mi2.Initialize("Remove","mi")
+	Dim mi3 As MenuItem
+	mi3.Initialize("Info","mi")
 	cm.MenuItems.Add(mi)
 	cm.MenuItems.Add(mi2)
+	cm.MenuItems.Add(mi3)
 	SearchView1.addContextMenuToLV(cm)
 End Sub
 
@@ -68,15 +71,17 @@ End Sub
 Sub mi_Action
 	Dim mi As MenuItem
 	mi=Sender
+	Dim p As Pane
+	p=SearchView1.GetSelected
+	Dim text As String
+	text=p.Tag
+	Dim source,target As String
+	source=Regex.Split(CRLF&"- ",text)(0).Replace("- source: ","")
+	target=Regex.Split(CRLF&"- ",text)(1).Replace("target: ","")
+	
 	Select mi.Text
 		Case "Edit"
-			Dim p As Pane
-			p=SearchView1.GetSelected
-			Dim text As String
-			text=p.Tag
-			Dim source,target As String
-			source=Regex.Split(CRLF&"- ",text)(0).Replace("- source: ","")
-			target=Regex.Split(CRLF&"- ",text)(1).Replace("target: ","")
+			
 			Dim tmEd As TMEditor
 			tmEd.Initialize(source,target)
 			Dim bitext As List
@@ -95,17 +100,20 @@ Sub mi_Action
 		Case "Remove"
 			Dim result As Int=fx.Msgbox2(frm,"Will delete this entry, continue?","","Yes","","Cancel",fx.MSGBOX_CONFIRMATION)
 			If result=fx.DialogResponse.POSITIVE Then
-				Dim p As Pane
-				p=SearchView1.GetSelected
-				Dim text As String
-				text=p.Tag
-				Dim source As String
-				source=Regex.Split(CRLF&"- ",text)(0).Replace("- source: ","")
 				kvs.Remove(source)
 				Main.currentProject.projectTM.removeFromSharedTM(source)
 				setItems
 				SearchView1.GetItems.RemoveAt(SearchView1.GetSelectedIndex)
 			End If
+		Case "Info"
+			Dim targetMap As Map
+			targetMap=kvs.Get(source)
+			Dim sb As StringBuilder
+			sb.Initialize
+			For Each key As String In targetMap.Keys
+				sb.Append(key).Append("	").Append(targetMap.Get(key)).Append(CRLF)
+			Next
+		    fx.Msgbox(frm,sb.ToString,"")
 	End Select
 End Sub
 
@@ -134,7 +142,7 @@ Sub exportToFile
 	Dim fc As FileChooser
 	fc.Initialize
 	'fc.SetExtensionFilter("tmx or tab-delimitted text",Array As String("*.tmx","*.txt"))
-	FileChooserUtils.AddExtensionFilters4(fc,Array As String("TMX","tab-delimitted text"),Array As String("*.tmx","*.txt"),False,"All",False)
+	FileChooserUtils.AddExtensionFilters4(fc,Array As String("TMX","XLSX","tab-delimitted text"),Array As String("*.tmx","*.xlsx","*.txt"),False,"All",False)
 	path=fc.ShowSave(frm)
 	If path="" Then
 		Return
@@ -177,7 +185,14 @@ Sub exportToFile
 						Return
 				End Select
 		End Select
-	Else
+	Else if path.EndsWith(".xlsx") Then
+		Select result
+			Case fx.DialogResponse.NEGATIVE
+				exportToXLSX(segments,path,False)
+			Case fx.DialogResponse.POSITIVE
+				exportToXLSX(segments,path,True)
+		End Select
+	Else if path.EndsWith(".txt") Then
 		Select result
 			Case fx.DialogResponse.NEGATIVE
 				exportToTXT(segments,path,False)
@@ -193,13 +208,69 @@ Sub exportToTXT(segments As List,path As String,includeTags As Boolean)
 	Dim sb As StringBuilder
 	sb.Initialize
 	For Each bitext As List In segments
-		Dim source As String=bitext.Get(0)
-		Dim target As String=bitext.Get(1)
-		If includeTags=False Then
-			source=Regex.Replace("<.*?>",source,"")
-			target=Regex.Replace("<.*?>",target,"")
-		End If
-		sb.Append(source).Append("	").Append(target).Append(CRLF)
+		Dim tu As List = TMUnitToList(bitext,includeTags)
+		For Each item As String In tu
+			sb.Append(item).Append("	")
+		Next
+		sb.Append(CRLF)
 	Next
 	File.WriteString(path,"",sb.ToString)
+End Sub
+
+Sub exportToXLSX(segments As List,path As String,includeTags As Boolean)
+	Dim wb As PoiWorkbook
+	wb.InitializeNew(True)
+	Dim sheet1 As PoiSheet = wb.AddSheet("Sheet1",0)
+	Dim index As Int=0
+	For Each bitext As List In segments
+		Dim tu As List = TMUnitToList(bitext,includeTags)
+		Dim row As PoiRow = sheet1.CreateRow(index)
+		For i=0 To tu.Size-1
+			row.CreateCellString(i,tu.Get(i))
+		Next
+		index=index+1
+	Next
+	wb.Save(path,"")
+	wb.Close
+End Sub
+
+Sub TMUnitToList(bitext As List,includeTags As Boolean) As List
+	Dim result As List
+	result.Initialize
+	Dim source As String = bitext.Get(0)
+	Dim target As String = bitext.Get(1)
+	
+	If includeTags=False Then
+		source=Regex.Replace("<.*?>",source,"")
+		target=Regex.Replace("<.*?>",target,"")
+	End If
+	
+	result.Add(source)
+	result.Add(target)
+
+	Dim targetMap As Map
+	targetMap=bitext.Get(2)
+
+	If targetMap.ContainsKey("creator") Then
+		result.Add(targetMap.Get("creator"))
+	Else
+		result.Add("")
+	End If
+		
+	If targetMap.ContainsKey("createdTime") Then
+		Dim creationDate As String
+		DateTime.DateFormat="yyyyMMdd"
+		DateTime.TimeFormat="HHmmss"
+		creationDate=DateTime.Date(targetMap.Get("createdTime"))&"T"&DateTime.Time(targetMap.Get("createdTime"))&"Z"
+		result.Add(creationDate)
+	Else
+		result.add("")
+	End If
+		
+	If targetMap.ContainsKey("note") Then
+		result.add(targetMap.Get("note"))
+	Else
+		result.Add("")
+	End If
+	Return result
 End Sub
