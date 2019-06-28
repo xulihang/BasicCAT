@@ -1171,28 +1171,17 @@ Sub onSelectionChanged(new As Object,ta As TextArea,isSource As Boolean)
 		Return
 	End If
 	'---------------------- add term
-	
 	Dim index As Int
 	If isSource Then
-		index=0
-		If cmClicked=True Then
-			cmClicked=False
-		Else
-			cm.MenuItems.Clear
-			wait for (getMeans(selectedText)) complete (result As List)
-			For Each text As String In result
-				Dim mi As MenuItem
-				mi.Initialize(text, "mi")
-				cm.MenuItems.Add(mi)
-			Next
-			Sleep(100)
-			Dim jo As JavaObject = cm
-			jo.RunMethod("show", Array(ta, Main.getLeft, Main.getTop))
+	    index=0
+		If Main.preferencesMap.GetDefault("lookup_usingF1",False)=False Then
+			showWordMeaning(selectedText,ta)
 		End If
 		
 	Else
 		index=1
 	End If
+	
 	'------------------ show word meaning
 	If Main.TabPane1.SelectedIndex=1 Then
 		
@@ -1241,6 +1230,23 @@ Sub onSelectionChanged(new As Object,ta As TextArea,isSource As Boolean)
 		Main.changeWhenSegmentOrSelectionChanges
 	End If
 	'---------- show segment search
+End Sub
+
+Sub showWordMeaning(selectedText As String,ta As TextArea)
+	If cmClicked=True Then
+		cmClicked=False
+	Else
+		cm.MenuItems.Clear
+		wait for (getMeans(selectedText)) complete (result As List)
+		For Each text As String In result
+			Dim mi As MenuItem
+			mi.Initialize(text, "mi")
+			cm.MenuItems.Add(mi)
+		Next
+		Sleep(100)
+		Dim jo As JavaObject = cm
+		jo.RunMethod("show", Array(ta, Main.getLeft, Main.getTop))
+	End If
 End Sub
 
 Sub mi_Action
@@ -1327,6 +1333,11 @@ Sub sourceTextArea_KeyPressed_Event (MethodName As String, Args() As Object) As 
 			params.Put("segments",segments)
 			params.Put("projectFile",projectFile)
 			runFilterPluginAccordingToExtension(currentFilename,"mergeSegment",params)
+		End If
+	else if result="F1" Then
+		If Main.preferencesMap.GetDefault("lookup_usingF1",False)=True Then
+			Dim selectedText As String=sourceTextArea.Text.SubString2(sourceTextArea.SelectionStart,sourceTextArea.SelectionEnd)
+			showWordMeaning(selectedText,sourceTextArea)
 		End If
 	End If
 End Sub

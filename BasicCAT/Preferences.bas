@@ -37,6 +37,7 @@ Sub Class_Globals
 	Private maxCheckDropdownNumSpinner As Spinner
 	Private lineHeightTextField As TextField
 	Private sourceWordsListCheckBox As CheckBox
+	Private lookupControlCheckBox As CheckBox
 End Sub
 
 'Initializes the object. You can add parameters to this method if needed.
@@ -118,6 +119,9 @@ Sub categoryListView_SelectedIndexChanged(Index As Int)
 			'word lookup
 			SettingPane.RemoveAllNodes
 			SettingPane.LoadLayout("wordLookupSetting")
+			If unsavedPreferences.ContainsKey("lookup_usingF1") Then
+				lookupControlCheckBox.Checked=unsavedPreferences.get("lookup_usingF1")
+			End If
 			If unsavedPreferences.ContainsKey("lookupWord") Then
 				lookupCheckBox.Checked=unsavedPreferences.get("lookupWord")
 			End If
@@ -251,6 +255,10 @@ Sub chkbox_CheckedChange(Checked As Boolean)
 	End If
 End Sub
 
+
+Sub lookupControlCheckBox_CheckedChange(Checked As Boolean)
+	unsavedPreferences.Put("lookup_usingF1",Checked)
+End Sub
 
 Sub lookupCheckBox_CheckedChange(Checked As Boolean)
 	unsavedPreferences.Put("lookupWord",Checked)
@@ -427,4 +435,5 @@ Sub lineHeightTextField_TextChanged (Old As String, New As String)
 	End Try
 
 End Sub
+
 
