@@ -1,7 +1,9 @@
 ﻿AppType=JavaFX
 Build1=Default,org.xulihang.basiccat
-File1=default_rules.srx
+File1=languagesWithoutSpace.txt
+File2=segmentationRules.srx
 FileGroup1=Default Group
+FileGroup2=Default Group
 Group=Default Group
 Library1=jcore
 Library2=jfx
@@ -18,10 +20,10 @@ Module5=XMLUtils
 Module6=Utils
 Module7=SRX
 Module8=segmentation
-NumberOfFiles=1
+NumberOfFiles=2
 NumberOfLibraries=7
 NumberOfModules=8
-Version=7.51
+Version=7.32
 @EndOfDesignText@
 #Region Project Attributes 
 	#MainFormWidth: 600
@@ -38,17 +40,23 @@ Sub AppStart (Form1 As Form, Args() As String)
 	MainForm = Form1
 	'MainForm.RootPane.LoadLayout("Layout1") 'Load the layout file.
 	MainForm.Show
-	'Dim pf As poFilterPlugin
-	'pf.Initialize
-	'pf.createWorkFile("321880_ms.docx.po","C:\Users\xulihang\Documents\B4J\plugin\filterPlugins\po\Objects\zhtest","en")
-	'Dim projectFile As Map
-	'projectFile.Initialize
-	'projectFile.Put("source","en")
-	'projectFile.Put("target","zh")
-	'pf.generateFile("毕业论文答辩稿.docx.po","C:\Users\xulihang\Documents\B4J\plugin\filterPlugins\po\Objects\zhtest",projectFile,Me)
+	Dim pf As poFilterPlugin
+	pf.Initialize
+	'pf.createWorkFile("zh_CN.po","C:\Users\xulihang\Documents\B4J\plugin\filterPlugins\poFilter\Objects\zhtest","en",True)
+	Dim projectFile As Map
+	projectFile.Initialize
+	projectFile.Put("source","en")
+	projectFile.Put("target","zh")
+	projectFile.Put("settings",CreateMap("key":"value"))
+	pf.generateFile("zh_CN.po","C:\Users\xulihang\Documents\B4J\plugin\filterPlugins\poFilter\Objects\zhtest",projectFile,Me)
 End Sub
 
 'Return true to allow the default exceptions handler to handle the uncaught exception.
 Sub Application_Error (Error As Exception, StackTrace As String) As Boolean
 	Return True
+End Sub
+
+
+Sub updateOperation(message As String)
+	Log(message)
 End Sub

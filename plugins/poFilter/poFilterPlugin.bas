@@ -73,6 +73,7 @@ Public Sub createWorkFile(filename As String,path As String,sourceLang As String
 				inbetweenContent=inbetweenContent&source
 				Continue
 			Else
+				source=unescapeSpecialCharacters(source)
 				Dim sourceShown As String=source
 				If filterGenericUtils.tagsNum(sourceShown)=1 Then
 					sourceShown=filterGenericUtils.tagsAtBothSidesRemovedText(sourceShown)
@@ -125,8 +126,24 @@ Public Sub createWorkFile(filename As String,path As String,sourceLang As String
 	Dim json As JSONGenerator
 	json.Initialize(workfile)
 	File.WriteString(File.Combine(path,"work"),filename&".json",json.ToPrettyString(4))
-	return True
+	Return True
 End Sub
+
+Sub unescapeSpecialCharacters(text As String) As String
+	text=text.Replace("\n",CRLF)
+	text=text.Replace("\t","	")
+	text=text.Replace($"\""$,$"""$)
+	Return text
+End Sub
+
+Sub escapeSpecialCharacters(text As String) As String
+	text=text.Replace(CRLF,"\n")
+	text=text.Replace("	","\t")
+	text=text.Replace($"""$,$"\""$)
+	Return text
+End Sub
+
+
 
 Sub readPO(path As String,filename As String) As List
 	Dim msgidList As List
@@ -192,9 +209,12 @@ Sub fillPO(msgstrList As List,path As String,filename As String) As String
 	textReader.Initialize(File.OpenInput(File.Combine(path,"source"),filename))
 	Dim line As String
 	line=textReader.ReadLine
-
+    Dim isMsgstr As Boolean=False
+	Dim msgstrIndex As Int=0
 	Do While line<>Null
 		If line.StartsWith("msgstr") Then
+			msgstrIndex=msgstrIndex+1
+			isMsgstr=True
 			Dim msgstr As String
 			msgstr=msgstrList.Get(0)
 			If msgstr="" Then
@@ -209,7 +229,10 @@ Sub fillPO(msgstrList As List,path As String,filename As String) As String
 			End If
 			content.Append("msgstr ").Append(Chr(34)).Append(msgstr).Append(Chr(34)).Append(CRLF).Append(CRLF)
 			msgstrList.RemoveAt(0)
+		else if isMsgstr And line.StartsWith($"""$) And msgstrIndex<>1 Then
+			Log("escape this line")
 		Else
+			isMsgstr=False
 			content.Append(line).Append(CRLF)
 		End If
 		line=textReader.ReadLine
@@ -258,6 +281,10 @@ Sub generateFile(filename As String,path As String,projectFile As Map,BCATMain A
 			source=bitext.Get(0)
 			target=bitext.Get(1)
 			fullsource=bitext.Get(2)
+			source=escapeSpecialCharacters(source)
+			target=escapeSpecialCharacters(target)
+			fullsource=escapeSpecialCharacters(fullsource)
+			
 			If target="" Then
 				translation=fullsource
 			Else
