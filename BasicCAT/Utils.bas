@@ -252,6 +252,48 @@ Sub exportToBiParagraph(segments As List,path As String,filename As String,sourc
     File.WriteString(path,"",text.ToString)
 End Sub
 
+Sub appendSourceToTarget(segments As List)
+	Dim previousID As String="-1"
+	Dim index As Int=-1
+	Dim startIndexofOneTU As Int = 0 'startIndexofOneTransUnit
+	Dim fullsource As String
+	Dim fullSourceMap As Map
+	fullSourceMap.Initialize
+	For Each segment As List In segments
+		index=index+1
+		Dim extra As Map
+		extra=segment.Get(4)
+		If extra.ContainsKey("id") Then
+			Dim id As String
+			id=extra.Get("id")
+			If previousID<>id Then 'new trans-unit
+				If previousID<>-1 Then
+					fullSourceMap.Put(startIndexofOneTU,fullsource)
+					startIndexofOneTU=index
+					fullsource=""
+				End If
+				previousID=id
+			End If
+		End If
+		fullsource=fullsource&segment.Get(2)
+	Next
+	For Each index As Int In fullSourceMap.Keys
+		Dim segment As List=segments.Get(index)
+		Dim source As String=segment.Get(0)
+		Dim target As String=segment.Get(1)
+		Dim fullsource As String=segment.Get(2)
+		Dim fullsourceInTU As String=fullSourceMap.Get(index)
+		'fullsourceInTU=Regex.Replace("<.*?>",fullsourceInTU,"")
+		'target= fullsourceInTU&"---seperator between source and target---"& target
+
+		Dim translation As String
+		translation=fullsource.Replace(source,target)
+		translation=fullsourceInTU&"---seperator between source and target---"&translation
+		segment.Set(0,fullsource)
+		segment.Set(1,translation)
+	Next
+End Sub
+
 Sub disableTextArea(p As Pane)
 	Dim sourceTa As TextArea=p.GetNode(0)
 	Dim targetTa As TextArea=p.GetNode(1)

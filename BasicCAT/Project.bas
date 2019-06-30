@@ -36,6 +36,7 @@ Public Sub Initialize
 	segments.Initialize
 	settings.Initialize
 	SegEnabledFiles.Initialize
+	currentWorkFileFrame.Initialize
 	cm.Initialize("cm")
 End Sub
 
@@ -637,7 +638,7 @@ Sub updateLocalFileBasedonFetch(username As String,password As String,email As S
 	End If
 
 	Log("worddir,after: "&projectGit.getWorkdirPath)
-	return True
+	Return True
 End Sub
 
 Sub updateWorkFile(filename As String) As Boolean
@@ -2253,6 +2254,22 @@ Sub getAllSegments(filename As String) As List
 		allSegments.AddAll(segmentsList)
 	Next
 	Return allSegments
+End Sub
+
+Public Sub generateBilingualTargetFiles
+	For Each filename As String In files
+		Dim fileSegments As List
+		fileSegments.Initialize
+		File.Copy(File.Combine(path,"work"),filename&".json",File.Combine(path,"work"),filename&".json.bak")
+		readWorkFile(filename,fileSegments,False,path)
+		Utils.appendSourceToTarget(fileSegments)
+		saveWorkFile(filename,fileSegments,path)
+		generateTargetFileForOne(filename)
+	Next
+	For Each filename As String In files
+		File.Copy(File.Combine(path,"work"),filename&".json.bak",File.Combine(path,"work"),filename&".json")
+		File.Delete(File.Combine(path,"work"),filename&".json.bak")
+	Next
 End Sub
 
 Public Sub generateTargetFiles

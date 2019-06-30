@@ -320,7 +320,7 @@ Sub generateFile(filename As String,path As String,projectFile As Map)
 	xmlString=XMLUtils.getXmlFromMapWithoutIndent(insertTranslation(translationMap,filename,path,isSegEnabled))
 	xmlString=XMLUtils.unescapedText(xmlString,"source","xliff")
 	xmlString=XMLUtils.unescapedText(xmlString,"target","xliff")
-	xmlString=XMLUtils.unescapedText(xmlString,"mrk","xliff")
+	xmlString=XMLUtils.unescapedText(xmlString,"seg-source","xliff")
 	'Log(xmlString)
 	File.WriteString(File.Combine(path,"target"),filename,xmlString)
 	Main.updateOperation(filename&" generated!")
@@ -339,8 +339,11 @@ Sub insertTranslation(translationMap As Map,filename As String,path As String,is
 	Dim xmlstring As String
 	xmlstring=File.ReadString(File.Combine(path,"source"),filename)
 	xmlstring=XMLUtils.escapedText(xmlstring,"source","xliff")
-	'xmlstring=XMLUtils.escapedText(xmlstring,"target","xliff")
-	xmlstring=XMLUtils.escapedText(xmlstring,"mrk","xliff")
+	xmlstring=XMLUtils.escapedText(xmlstring,"seg-source","xliff")
+	If isSegEnabled=False Then
+		xmlstring=XMLUtils.escapedText(xmlstring,"target","xliff")
+	End If
+	File.WriteString(path,"out.xml",xmlstring)
 	'Log("xml"&xmlstring)
 	Dim isSegContinuous As Boolean=False
 	isSegContinuous=checkSegContinuous(xmlstring)
@@ -358,7 +361,7 @@ Sub insertTranslation(translationMap As Map,filename As String,path As String,is
 		Try
 			body=innerFile.Get("body")
 		Catch
-			'Log(LastException)
+			Log(LastException)
 			Continue
 		End Try
 		Dim fileAttributes As Map
@@ -472,9 +475,15 @@ Sub updateTransUnits(transUnits As List,originalFilename As String,translationMa
 						End If
 					Else
 						For Each key As String In targetMap.Keys
-							If key<>"Attributes" Then
-								targetMap.Remove(key)
-							End If
+							Log(key)
+							Log(targetMap)
+							Try
+								If key<>"Attributes" Then
+									targetMap.Remove(key)
+								End If
+							Catch
+								Log(LastException)
+							End Try
 						Next
 						targetMap.Put("Text",dataMap.Get("translation"))
 					End If
