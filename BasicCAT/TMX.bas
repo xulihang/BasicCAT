@@ -7,6 +7,102 @@ Version=6.51
 'Static code module
 Sub Process_Globals
 	Private fx As JFX
+	Private parser As SaxParser
+	Private tuvs As List
+	Private tus As List
+	Private aSourceLang,aTargetLang As String
+	Private numbers As Int
+End Sub
+
+Sub parse(dir As String,filename As String)
+	tus.Initialize
+	tuvs.Initialize
+	parser.Initialize
+	Dim in As InputStream
+	in = File.OpenInput(dir, filename) 'This file was added with the file manager.
+	parser.Parse(in, "Parser") '"Parser" is the events subs prefix.
+	in.Close
+	Log("tus:"&tus)
+End Sub
+
+Sub Parser_StartElement (Uri As String, Name As String, Attributes As Attributes)
+    If Name="tuv" Then
+		Dim map1 As Map
+		map1.Initialize
+		map1.Put("Attributes",Attributes)
+		tuvs.Add(map1)
+	End If
+End Sub
+
+Sub Parser_EndElement (Uri As String, Name As String, Text As StringBuilder)
+	If Name="tuv" Then
+		numbers=numbers+1
+		Dim map1 As Map = tuvs.Get(tuvs.Size-1)
+		Dim Attributes As Attributes =map1.Get("Attributes")
+		Dim lang As String =getLang(Attributes)
+		If lang.StartsWith(aSourceLang) Or lang.StartsWith(aTargetLang) Then
+			map1.Put("Text",Text.ToString)
+		Else
+			tuvs.RemoveAt(tuvs.Size-1)
+		End If
+		Log(map1)
+		Log(numbers)
+	Else if Name = "tu" Then
+		Dim newList As List
+		newList.Initialize
+		newList.AddAll(tuvs)
+		tus.Add(newList)
+		tuvs.Clear
+	End If
+End Sub
+
+
+Sub importedListQuick(dir As String,filename As String,sourceLang As String,targetLang As String) As List
+	Dim segments As List
+	segments.Initialize
+	aSourceLang=sourceLang
+	aTargetLang=targetLang
+	
+	parse(dir,filename)
+	Return segments
+	Dim isContinue As Boolean
+	For Each tuvs As List In tus
+		isContinue=False
+		Dim bitext As List
+		bitext.Initialize
+		Dim targetMap As Map
+		targetMap.Initialize
+		bitext.Add("source")
+		bitext.Add("target")
+		For Each tuvMap As List In tuvs
+			Dim Attributes As Attributes = tuvMap.Get("Attributes")
+			Dim lang As String =getLang(Attributes)
+			If lang.StartsWith(sourceLang) Then
+				bitext.Set(0,tuvMap.Get("Text"))
+			else if lang.StartsWith(targetLang) Then
+				bitext.Set(1,tuvMap.Get("Text"))
+			Else 
+				isContinue=True
+			End If
+		Next
+		If isContinue Then
+			Continue
+		End If
+		bitext.Add(filename)
+		bitext.Add(targetMap)
+		segments.Add(bitext)
+	Next
+
+	Return segments
+End Sub
+
+Sub getLang(Attributes As Attributes) As String
+	Dim lang As String
+	lang=Attributes.GetValue2("","xml:lang")
+	If lang="" Then
+		lang=Attributes.GetValue2("","lang")
+	End If
+	Return lang
 End Sub
 
 Sub importedList(dir As String,filename As String,sourceLang As String,targetLang As String) As List
@@ -47,35 +143,36 @@ Sub importedList(dir As String,filename As String,sourceLang As String,targetLan
 			else if lang.StartsWith(targetLang) Then
 				bitext.Set(1,tuv.Get("seg"))
 				targetMap.Put("text",tuv.Get("seg"))
+				If tuv.ContainsKey("Attributes") Then
+					Dim attributes As Map
+					attributes=tuv.Get("Attributes")
+					If attributes.ContainsKey("creationid") And attributes.ContainsKey("creationdate") Then
+						Try
+							Dim creationdate As String
+							creationdate=attributes.Get("creationdate")
+							DateTime.DateFormat="yyyyMMdd"
+							DateTime.TimeFormat="HHmmss"
+							Dim date As String
+							Dim time As String
+							date=creationdate.SubString2(0,creationdate.IndexOf("T"))
+							time=creationdate.SubString2(creationdate.IndexOf("T")+1,creationdate.IndexOf("Z"))
+							'Log("date: "&date)
+							'Log("time: "&time)
+							'Log(DateTime.DateTimeParse(date,time))
+							targetMap.Put("createdTime",DateTime.DateTimeParse(date,time))
+							targetMap.Put("creator",attributes.Get("creationid"))
+						Catch
+							Log(LastException)
+						End Try
+					End If
+				End If
 			End If
 		Next
 		If tu.ContainsKey("note") Then
 			targetMap.Put("note",tu.Get("note"))
 		End If
         'Log(tu)
-		If tu.ContainsKey("Attributes") Then
-			Dim attributes As Map
-			attributes=tu.Get("Attributes")
-			If attributes.ContainsKey("creationid") And attributes.ContainsKey("creationdate") Then
-				Try
-					Dim creationdate As String
-					creationdate=attributes.Get("creationdate")
-					DateTime.DateFormat="yyyyMMdd"
-					DateTime.TimeFormat="HHmmss"
-					Dim date As String
-					Dim time As String
-					date=creationdate.SubString2(0,creationdate.IndexOf("T"))
-					time=creationdate.SubString2(creationdate.IndexOf("T")+1,creationdate.IndexOf("Z"))
-					'Log("date: "&date)
-					'Log("time: "&time)
-					'Log(DateTime.DateTimeParse(date,time))
-					targetMap.Put("createdTime",DateTime.DateTimeParse(date,time))
-					targetMap.Put("creator",attributes.Get("creationid"))
-				Catch
-					Log(LastException)
-				End Try
-			End If
-		End If
+		
 		
 		bitext.Add(filename)
 		bitext.Add(targetMap)
@@ -111,40 +208,48 @@ Sub export(segments As List,sourceLang As String,targetLang As String,path As St
 
 		Dim index As Int=0
 		For Each seg As String In bitext
+			Dim targetMap As Map
+			targetMap=bitext.Get(2)
+			
 			If includeTag=False Then
 				seg=Regex.Replace2("<.*?>",32,seg,"")
 			End If
 			index=index+1
 			If index = 2 Then
-				tuvList.Add(CreateMap("Attributes":CreateMap("xml:lang":targetLang),"seg":seg))
+				Dim targetTuvMap As Map
+				targetTuvMap=CreateMap("seg":seg)
+				Dim attributes As Map
+				attributes.Initialize
+				attributes.Put("xml:lang",targetLang)
+				If targetMap.ContainsKey("creator") Then
+					attributes.Put("creationid",targetMap.Get("creator"))
+				End If
+				If targetMap.ContainsKey("createdTime") Then
+					Dim creationDate As String
+					DateTime.DateFormat="yyyyMMdd"
+					DateTime.TimeFormat="HHmmss"
+					creationDate=DateTime.Date(targetMap.Get("createdTime"))&"T"&DateTime.Time(targetMap.Get("createdTime"))&"Z"
+					attributes.Put("creationdate",creationDate)
+				End If
+		
+				If attributes.Size<>0 Then
+					targetTuvMap.Put("Attributes",attributes)
+				End If
+				tuvList.Add(targetTuvMap)
 			Else if index = 1 Then 
 				tuvList.Add(CreateMap("Attributes":CreateMap("xml:lang":sourceLang),"seg":seg))
 			End If
 		Next
 		
-		Dim targetMap As Map
-		targetMap=bitext.Get(2)
+
 		
 		If targetMap.ContainsKey("note") Then
-			tuMap.Put("note",targetMap.Get("note"))
+			If targetMap.Get("note")<>"" Then
+				tuMap.Put("note",targetMap.Get("note"))
+			End If
 		End If
 		
-		Dim attributes As Map
-		attributes.Initialize
-		If targetMap.ContainsKey("creator") Then
-			attributes.Put("creationid",targetMap.Get("creator"))
-		End If
-		If targetMap.ContainsKey("createdTime") Then
-			Dim creationDate As String
-			DateTime.DateFormat="yyyyMMdd"
-			DateTime.TimeFormat="HHmmss"
-			creationDate=DateTime.Date(targetMap.Get("createdTime"))&"T"&DateTime.Time(targetMap.Get("createdTime"))&"Z"
-			attributes.Put("creationdate",creationDate)
-		End If
 		
-		If attributes.Size<>0 Then
-			tuMap.Put("Attributes",attributes)
-		End If
 		
 		tuMap.Put("tuv",tuvList)
 		tuList.Add(tuMap)

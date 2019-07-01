@@ -1882,14 +1882,14 @@ Sub preTranslate(options As Map)
 				Log(similarity>=matchrate)
 				
 				If similarity>=matchrate Then
-					setTranslation(index,resultList.Get(2),True)
+					setTranslation(index,resultList.Get(2),True,resultList.Get(1))
 					'setSegment(bitext,index)
 					fillOne(index,resultList.Get(2))
 				End If
 			Else if options.Get("type")="MT" Then
 				wait for (MT.getMT(bitext.Get(0),projectFile.Get("source"),projectFile.Get("target"),options.Get("engine"))) Complete (translation As String)
 				If translation<>"" Then
-					setTranslation(index,translation,False)
+					setTranslation(index,translation,False,"")
 					'setSegment(bitext,index)
 					fillOne(index,translation)
 				End If
@@ -1964,7 +1964,7 @@ End Sub
 'impl
 '--------------------------
 
-Public Sub setTranslation(index As String,translation As String,isFromTM As Boolean)
+Public Sub setTranslation(index As String,translation As String,isFromTM As Boolean,TMSource As String)
 	If segments.Size=0 Then
 		Return
 	End If
@@ -1989,12 +1989,10 @@ Public Sub setTranslation(index As String,translation As String,isFromTM As Bool
 		If isFromTM Then
 			Dim targetMap As Map
 			targetMap.Initialize
-			Dim source As String
-			source=bitext.Get(0)
-			If projectTM.translationMemory.ContainsKey(source) Then
-				targetMap=projectTM.translationMemory.Get(source)
-			Else if projectTM.externalTranslationMemory.ContainsKey(source) Then
-				targetMap=projectTM.externalTranslationMemory.Get(source)
+			If projectTM.translationMemory.ContainsKey(TMSource) Then
+				targetMap=projectTM.translationMemory.Get(TMSource)
+			else If projectTM.externalTranslationMemory.ContainsKey(TMSource) Then
+				targetMap=projectTM.externalTranslationMemory.Get(TMSource)
 			End If
 			If targetMap.ContainsKey("createdTime") Then
 				Try
@@ -2066,7 +2064,7 @@ Public Sub saveAlltheTranslationToSegmentsInVisibleArea(FirstIndex As Int, LastI
 		End Try
 
 		targetTextArea=p.GetNode(1)
-		setTranslation(i,targetTextArea.Text,False)
+		setTranslation(i,targetTextArea.Text,False,"")
 		
 		'projectTM.addPair(bitext.Get(0),bitext.Get(1))
 	Next
@@ -2077,7 +2075,7 @@ Sub saveTranslation(targetTextArea As TextArea)
 	index=Main.editorLV.Items.IndexOf(targetTextArea.Parent)
 	Dim bitext As List
 	bitext=segments.Get(index)
-	setTranslation(index,targetTextArea.Text,False)
+	setTranslation(index,targetTextArea.Text,False,"")
 	If targetTextArea.Text<>"" Then
 		saveOneTranslationToTM(bitext,index)
 	End If

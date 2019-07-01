@@ -310,7 +310,7 @@ Sub replaceSelectedButton_MouseClicked (EventData As MouseEvent)
 		bitext=Main.currentProject.segments.Get(tagList.Get(0))
 		If bitext.Get(1)=target Then
 			'bitext.Set(1,after)
-			Main.currentProject.setTranslation(tagList.Get(0),after,False)
+			Main.currentProject.setTranslation(tagList.Get(0),after,False,"")
 		End If
 		'Main.currentProject.setSegment(tagList.Get(0),bitext)
 		Main.currentProject.fillVisibleTargetTextArea
@@ -339,7 +339,7 @@ Sub replaceAllButton_MouseClicked (EventData As MouseEvent)
 			bitext=Main.currentProject.segments.Get(tagList.Get(0))
 			If bitext.Get(1)=target Then
 				'bitext.Set(1,after)
-				Main.currentProject.setTranslation(tagList.Get(0),after,False)
+				Main.currentProject.setTranslation(tagList.Get(0),after,False,"")
 			End If
 			'Main.currentProject.setSegment(tagList.Get(0),bitext)
 			Main.currentProject.fillVisibleTargetTextArea

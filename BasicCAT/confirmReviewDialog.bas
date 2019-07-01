@@ -93,7 +93,7 @@ Sub confirmButton_MouseClicked (EventData As MouseEvent)
 		target=target.SubString2(0,target.IndexOf("--------note:"))
 		target=target.Trim
 	End If
-	thisProject.setTranslation(index,target,False)
+	thisProject.setTranslation(index,target,False,"")
     thisProject.fillOne(index,target)
 	loadNextOne
 End Sub
@@ -111,7 +111,7 @@ Sub confirmAllButton_MouseClicked (EventData As MouseEvent)
 				target=target.SubString2(0,target.IndexOf("--------note:"))
 				target=target.Trim
 			End If
-			thisProject.setTranslation(index,target,False)
+			thisProject.setTranslation(index,target,False,"")
 			thisProject.fillOne(index,target)
 		End If
 		index=index+1
