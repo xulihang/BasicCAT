@@ -539,6 +539,11 @@ Sub MenuBar1_Action
 				Return
 			End If
 			currentProject.generateTargetFiles
+		Case "Generate Bilingual Files"
+			If currentProject.IsInitialized=False Then
+				Return
+			End If
+			currentProject.generateBilingualTargetFiles
 		Case "_Close"
 			Log("closing")
 			closeProject

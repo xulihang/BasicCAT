@@ -1924,6 +1924,7 @@ Sub fillOne(index As Int,translation As String)
 		setPaneStatus(extra,p)
 		contentIsChanged
 	Catch
+		Log("fillone_error")
 		Log(LastException)
 	End Try
 End Sub
