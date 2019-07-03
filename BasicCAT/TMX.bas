@@ -86,16 +86,15 @@ Sub importedListQuick(dir As String,filename As String,sourceLang As String,targ
 	aTargetLang=targetLang
 	
 	parse(dir,filename)
-	Dim isContinue As Boolean
 	For Each tu As Map In tus
 		Dim tuvList As List= tu.Get("tuv")
-		isContinue=False
 		Dim bitext As List
 		bitext.Initialize
 		Dim targetMap As Map
 		targetMap.Initialize
 		bitext.Add("source")
 		bitext.Add("target")
+		Dim addedTimes As Int=0
 		For Each tuv As Map In tuvList
 			Dim Attributes As Map =tuv.Get("Attributes")
 			'Log(Attributes.GetValue2("","xml:lang"))
@@ -107,10 +106,12 @@ Sub importedListQuick(dir As String,filename As String,sourceLang As String,targ
 			End If
 			If lang.StartsWith(sourceLang) Then
 				bitext.Set(0,tuv.Get("Text"))
+				addedTimes=addedTimes+1
 			else if lang.StartsWith(targetLang) Then
 				bitext.Set(1,tuv.Get("Text"))
+				addedTimes=addedTimes+1
 			Else 
-				isContinue=True
+				Continue
 			End If
 			If Attributes.ContainsKey("creationid") And Attributes.ContainsKey("creationdate") Then
 				Try
@@ -129,7 +130,7 @@ Sub importedListQuick(dir As String,filename As String,sourceLang As String,targ
 				End Try
 			End If
 		Next
-		If isContinue Then
+		If addedTimes<>2 Then
 			Continue
 		End If
 		If tu.ContainsKey("note") Then
