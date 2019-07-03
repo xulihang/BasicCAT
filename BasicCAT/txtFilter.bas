@@ -56,7 +56,7 @@ Sub createWorkFile(filename As String,path As String,sourceLang As String,senten
 	json.Initialize(workfile)
 
 	File.WriteString(File.Combine(path,"work"),filename&".json",json.ToPrettyString(4))
-	return True
+	Return True
 End Sub
 
 Sub generateFile(filename As String,path As String,projectFile As Map)
@@ -172,7 +172,7 @@ Sub mergeSegment(sourceTextArea As TextArea)
 	Dim sourceLang,targetLang As String
 	sourceLang=Main.currentProject.projectFile.Get("source")
 	targetLang=Main.currentProject.projectFile.Get("target")
-	If Utils.LanguageHasSpace(source)=True Then
+	If Utils.LanguageHasSpace(sourceLang)=True Then
 		If Regex.IsMatch("\s",fullsource.CharAt(fullsource.Length-1)) Or Regex.IsMatch("\s",nextFullSource.CharAt(0)) Then
 			sourceWhitespace=" "
 		Else
