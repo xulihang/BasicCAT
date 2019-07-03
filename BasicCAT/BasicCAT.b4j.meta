@@ -196,6 +196,5 @@ ModuleClosedNodes65=
 ModuleClosedNodes7=
 ModuleClosedNodes8=
 ModuleClosedNodes9=
-NavigationStack=Project,getMeans,1670,0,Project,showMT,1638,0,Project,preTranslate,1887,3,Project,fillOne,1921,6,Utils,appendSourceToTarget,260,0,Main,addFiles,850,0,Project,sourceTextArea_KeyPressed_Event,1331,0,Project,languagecheck,1479,0,xliffFilter,getFilesList,227,0,xliffFilter,insertTranslation,337,0,xliffFilter,generateFile,313,1
 SelectedBuild=0
-VisibleModules=1,2,3,4,5,6,7,8,9,10,17,24,15
+VisibleModules=1,2,3,4,5,6,7,8,9,10,13,11

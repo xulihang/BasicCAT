@@ -567,6 +567,7 @@ Sub mergeSegment(sourceTextArea As TextArea)
 	If index+1>Main.currentProject.segments.Size-1 Then
 		Return
 	End If
+	
 	Dim bitext,nextBiText As List
 	bitext=Main.currentProject.segments.Get(index)
 	nextBiText=Main.currentProject.segments.Get(index+1)
@@ -655,6 +656,7 @@ Sub mergeSegment(sourceTextArea As TextArea)
 		source=source.Trim&sourceWhitespace&nextSourceTa.Text.Trim
 		fullsource=Utils.rightTrim(fullsource)&fullsourceWhitespace&Utils.leftTrim(nextFullSource)
 	End If
+	
 	sourceTextArea.Text=source
 	sourceTextArea.Tag=sourceTextArea.Text
 		
@@ -671,6 +673,79 @@ Sub mergeSegment(sourceTextArea As TextArea)
 		
 	Main.currentProject.segments.RemoveAt(index+1)
 	Main.editorLV.Items.RemoveAt(Main.editorLV.Items.IndexOf(sourceTextArea.Parent)+1)
+End Sub
+
+Sub mergeInternalSegment(segments As List,index As Int)
+	Dim bitext,nextBiText As List
+	bitext=segments.Get(index)
+	nextBiText=segments.Get(index+1)
+	Dim source,nextsource As String
+	source=bitext.Get(0)
+	nextsource=nextBiText.Get(0)
+	Dim target,nextTarget As String
+	target=bitext.Get(1)
+	nextTarget=nextBiText.Get(1)
+	Dim fullsource,nextFullSource As String
+	fullsource=bitext.Get(2)
+	nextFullSource=nextBiText.Get(2)
+	
+	If bitext.Get(3)<>nextBiText.Get(3) Then
+		'fx.Msgbox(Main.MainForm,"Cannot merge segments as these two belong to different files.","")
+		Return
+	End If
+	Dim extra As Map
+	extra=bitext.Get(4)
+	Dim nextExtra As Map
+	nextExtra=nextBiText.Get(4)
+	If extra.Get("id")<>nextExtra.Get("id") Then
+		'fx.Msgbox(Main.MainForm,"Cannot merge segments as these two belong to different trans-units.","")
+		Return
+	End If
+		
+	Dim sourceWhitespace,targetWhitespace,fullsourceWhitespace As String
+	sourceWhitespace=""
+	targetWhitespace=""
+	fullsourceWhitespace=""
+	
+	Dim sourceLang,targetLang As String
+	sourceLang=Main.currentProject.projectFile.Get("source")
+	targetLang=Main.currentProject.projectFile.Get("target")
+	If Utils.LanguageHasSpace(sourceLang) Then
+		If Regex.IsMatch("\s",fullsource.CharAt(fullsource.Length-1)) Or Regex.IsMatch("\s",nextFullSource.CharAt(0)) Then
+			sourceWhitespace=" "
+		Else
+			sourceWhitespace=""
+		End If
+	End If
+	If Utils.LanguageHasSpace(targetLang) Then
+		targetWhitespace=" "
+	End If
+	
+	If Utils.LanguageHasSpace(sourceLang) Then
+		If Regex.IsMatch("\s",fullsource.CharAt(fullsource.Length-1)) Or Regex.IsMatch("\s",nextFullSource.CharAt(0)) Then
+			fullsourceWhitespace=" "
+		End If
+	End If
+	
+	Dim showTag As Boolean=True
+
+	If showTag Then
+		source=fullsource&nextFullSource
+		If filterGenericUtils.tagsNum(source)=1 Then
+			source=filterGenericUtils.tagsAtBothSidesRemovedText(source)
+		End If
+		If filterGenericUtils.tagsNum(source)=2 And Regex.IsMatch("<.*?>",source) Then
+			source=filterGenericUtils.tagsAtBothSidesRemovedText(source)
+		End If
+		fullsource=fullsource&nextFullSource
+	Else
+		source=source.Trim&sourceWhitespace&nextsource.Trim
+		fullsource=Utils.rightTrim(fullsource)&fullsourceWhitespace&Utils.leftTrim(nextFullSource)
+	End If
+	bitext.Set(0,source)
+	bitext.Set(1,target&targetWhitespace&nextTarget)
+	bitext.Set(2,fullsource)
+	segments.RemoveAt(index+1)
 End Sub
 
 Sub splitSegment(sourceTextArea As TextArea)

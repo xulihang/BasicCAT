@@ -252,15 +252,27 @@ Sub exportToBiParagraph(segments As List,path As String,filename As String,sourc
     File.WriteString(path,"",text.ToString)
 End Sub
 
-Sub appendSourceToTarget(segments As List)
+Sub appendSourceToTarget(segments As List,segEnabled As Boolean)
+
 	Dim previousID As String="-1"
 	Dim index As Int=-1
 	Dim startIndexofOneTU As Int = 0 'startIndexofOneTransUnit
+	Dim transUnitStartIndexes As List
+	transUnitStartIndexes.Initialize
+	Dim source As String
 	Dim fullsource As String
+	Dim translation As String
 	Dim fullSourceMap As Map
 	fullSourceMap.Initialize
+	Dim translationMap As Map
+	translationMap.Initialize
+	Dim sourceMap As Map
+	sourceMap.Initialize
 	For Each segment As List In segments
 		index=index+1
+		Dim sourceForOne As String=segment.Get(0)
+		Dim targetForOne As String=segment.Get(1)
+		Dim fullSourceForOne As String=segment.Get(2)
 		Dim extra As Map
 		extra=segment.Get(4)
 		If extra.ContainsKey("id") Then
@@ -268,31 +280,77 @@ Sub appendSourceToTarget(segments As List)
 			id=extra.Get("id")
 			If previousID<>id Then 'new trans-unit
 				If previousID<>-1 Then
+					transUnitStartIndexes.Add(startIndexofOneTU)
 					fullSourceMap.Put(startIndexofOneTU,fullsource)
+					sourceMap.put(startIndexofOneTU,source)
+					translationMap.put(startIndexofOneTU,translation)
 					startIndexofOneTU=index
 					fullsource=""
+					translation=""
+					source=""
 				End If
 				previousID=id
 			End If
 		End If
+		source=source&sourceForOne
+		translation=translation&fullSourceForOne.Replace(sourceForOne,targetForOne)
 		fullsource=fullsource&segment.Get(2)
 	Next
-	For Each index As Int In fullSourceMap.Keys
-		Dim segment As List=segments.Get(index)
-		Dim source As String=segment.Get(0)
-		Dim target As String=segment.Get(1)
-		Dim fullsource As String=segment.Get(2)
-		Dim fullsourceInTU As String=fullSourceMap.Get(index)
-		'fullsourceInTU=Regex.Replace("<.*?>",fullsourceInTU,"")
-		'target= fullsourceInTU&"---seperator between source and target---"& target
+	sourceMap.Put(startIndexofOneTU,source)
+	fullSourceMap.Put(startIndexofOneTU,fullsource)
+	translationMap.put(startIndexofOneTU,translation)
+	Log(fullSourceMap)
+	Log(translationMap)
+	If segEnabled Then
+		For Each index As Int In fullSourceMap.Keys
+			Dim segment As List=segments.Get(index)
+			Dim source As String=segment.Get(0)
+			Dim target As String=segment.Get(1)
+			Dim fullsource As String=segment.Get(2)
+			Dim fullsourceInTU As String=fullSourceMap.Get(index)
+			Dim translation As String
+			translation=fullsource.Replace(source,target)
+			translation=fullsourceInTU&"---seperator between source and target---"&translation
+			segment.Set(0,fullsource)
+			segment.Set(1,translation)
+		Next
+	Else
+		mergeTransUnits(segments,transUnitStartIndexes)
+		appendSource(segments)
+	End If
 
-		Dim translation As String
-		translation=fullsource.Replace(source,target)
-		translation=fullsourceInTU&"---seperator between source and target---"&translation
-		segment.Set(0,fullsource)
-		segment.Set(1,translation)
+End Sub
+
+Sub mergeTransUnits(segments As List,transUnitStartIndexes As List)
+	transUnitStartIndexes.Sort(False) ' eg. 15,13,12
+	Dim index As Int=transUnitStartIndexes.Size-1
+	Dim isFirst As Boolean=True
+	For Each startIndex As Int In transUnitStartIndexes
+		Dim size As Int=segments.Size
+		Dim endIndex As Int
+		If isFirst Then
+			Log("first")
+			endIndex=size-1
+		Else
+			endIndex=transUnitStartIndexes.Get(index-1)
+		End If
+		Log("start:"&startIndex)
+		Log("end:"&endIndex)
+		For i=startIndex To endIndex
+			xliffFilter.mergeInternalSegment(segments,startIndex)
+		Next
+		index=index-1
 	Next
 End Sub
+
+Sub appendSource(segments As List)
+	For Each segment As List In segments
+		Dim source As String=segment.Get(0)
+		Dim target As String=segment.Get(1)
+		segment.Set(1,source&"---seperator between source and target---"&target)
+	Next
+End Sub
+
 
 Sub disableTextArea(p As Pane)
 	Dim sourceTa As TextArea=p.GetNode(0)

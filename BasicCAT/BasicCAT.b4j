@@ -177,21 +177,21 @@ Library8=jrandomaccessfile
 Library9=jb4xencryption
 Module1=FileChooserUtils
 Module10=preTranslateDialog
-Module11=TMX
-Module12=Xml2Map
-Module13=searchAndReplaceDialog
-Module14=confirmReviewDialog
-Module15=xliffFilter
-Module16=XMLUtils
-Module17=Utils
-Module18=HistoryRecord
-Module19=idmlFilter
+Module11=Utils
+Module12=MT
+Module13=xliffFilter
+Module14=TMX
+Module15=Xml2Map
+Module16=searchAndReplaceDialog
+Module17=confirmReviewDialog
+Module18=XMLUtils
+Module19=HistoryRecord
 Module2=Project
-Module20=Map2Xml
-Module21=ErrorReporter
-Module22=TMManager
-Module23=Preferences
-Module24=MT
+Module20=idmlFilter
+Module21=Map2Xml
+Module22=ErrorReporter
+Module23=TMManager
+Module24=Preferences
 Module25=TermManager
 Module26=importDialog
 Module27=statistics
@@ -243,7 +243,7 @@ Module9=ProjectSettings
 NumberOfFiles=75
 NumberOfLibraries=24
 NumberOfModules=65
-Version=7.51
+Version=7.32
 @EndOfDesignText@
 #Region Project Attributes 
 	#MainFormWidth: 600
@@ -539,11 +539,11 @@ Sub MenuBar1_Action
 				Return
 			End If
 			currentProject.generateTargetFiles
-		Case "Generate Bilingual Files"
+		Case "Generate Bilingual Files (for xliff)"
 			If currentProject.IsInitialized=False Then
 				Return
 			End If
-			currentProject.generateBilingualTargetFiles
+			currentProject.generateBilingualTargetFilesForXliff
 		Case "_Close"
 			Log("closing")
 			closeProject
