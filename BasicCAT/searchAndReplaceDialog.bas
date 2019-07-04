@@ -237,38 +237,14 @@ Sub showResult
 End Sub
 
 Sub addText(tf As TextFlow,target As String,find As String,textSegments As List,isInTarget As Boolean)
-	Dim targetLeft As String
-	targetLeft=target
-	Dim currentSegment As String
-	Dim length As Int
-	length=target.Length-find.Length
-	Log(length)
-	For i=0 To length
-		Log(i)
-		Dim endIndex As Int
-		endIndex=i+find.Length
-		currentSegment=target.SubString2(i,endIndex)
-		Log(currentSegment)
-		If currentSegment=find Then
-			Log(True)
-			Dim textBefore As String
-            Log(targetLeft)
-			textBefore=targetLeft.SubString2(0,targetLeft.IndexOf(find))
-			If textBefore<>"" Then
-				tf.AddText(textBefore)
-				textSegments.Add(textBefore)
-			End If
+    Utils.splitByFind(target,find,textSegments)
+	For Each segment As String In textSegments
+		If segment=find Then
 			tf.AddText(find).SetColor(fx.Colors.Blue).SetUnderline(True)
-			textSegments.Add(find)
-			Log("tb"&textBefore)
-			Log("find"&find)
-			targetLeft=targetLeft.SubString2(targetLeft.IndexOf(find)+find.Length,targetLeft.Length)
-			Log("left"&targetLeft)
-			Log(targetLeft.IndexOf(find))
+		Else
+			tf.AddText(segment)
 		End If
 	Next
-	tf.AddText(targetLeft)
-	textSegments.Add(targetLeft)
 	If isInTarget=False Then
 		textSegments.Clear
 	End If

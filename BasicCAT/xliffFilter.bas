@@ -269,7 +269,8 @@ Sub generateFile(filename As String,path As String,projectFile As Map)
 					target=target&" "
 				End If
 				target=addNecessaryTags(target,source)
-				translation=fullsource.Replace(source,target)
+				'translation=fullsource.Replace(source,target)
+				translation=filterGenericUtils.relaceAtTheRightPosition(source,target,fullsource)
 				If Utils.LanguageHasSpace(projectFile.Get("target"))=False Then
 					translation=segmentation.removeSpacesAtBothSides(Main.currentProject.path,Main.currentProject.projectFile.Get("target"),translation,Utils.getMap("settings",projectFile).GetDefault("remove_space",True))
 				End If
