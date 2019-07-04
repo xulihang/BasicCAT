@@ -285,13 +285,14 @@ Sub generateFile(filename As String,path As String,projectFile As Map,BCATMain A
 			target=escapeSpecialCharacters(target)
 			fullsource=escapeSpecialCharacters(fullsource)
 			
-			If target="" Then
+			If target="" Or target=source Then
 				translation=fullsource
 			Else
 				If shouldAddSpace(projectFile.Get("source"),projectFile.Get("target"),index,segmentsList) Then
 					target=target&" "
 				End If
-				translation=fullsource.Replace(source,target)
+				'translation=fullsource.Replace(source,target)
+				translation=filterGenericUtils.relaceAtTheRightPosition(source,target,fullsource)
 				If Utils.LanguageHasSpace(projectFile.Get("target"))=False Then
 					translation=segmentation.removeSpacesAtBothSides(path,projectFile.Get("target"),translation,Utils.getMap("settings",projectFile).GetDefault("remove_space",True))
 				End If
@@ -464,6 +465,76 @@ Sub mergeSegment(MainForm As Form,sourceTextArea As TextArea,editorLV As ListVie
 		
 	segments.RemoveAt(index+1)
 	editorLV.Items.RemoveAt(editorLV.Items.IndexOf(sourceTextArea.Parent)+1)
+End Sub
+
+Sub mergeInternalSegment(segments As List,index As Int,sourceLang As String,targetLang As String)
+	Dim bitext,nextBiText As List
+	bitext=segments.Get(index)
+	nextBiText=segments.Get(index+1)
+	Dim source,nextsource As String
+	source=bitext.Get(0)
+	nextsource=nextBiText.Get(0)
+	Dim target,nextTarget As String
+	target=bitext.Get(1)
+	nextTarget=nextBiText.Get(1)
+	Dim fullsource,nextFullSource As String
+	fullsource=bitext.Get(2)
+	nextFullSource=nextBiText.Get(2)
+	
+	If bitext.Get(3)<>nextBiText.Get(3) Then
+		'fx.Msgbox(Main.MainForm,"Cannot merge segments as these two belong to different files.","")
+		Return
+	End If
+	Dim extra As Map
+	extra=bitext.Get(4)
+	Dim nextExtra As Map
+	nextExtra=nextBiText.Get(4)
+	If extra.Get("id")<>nextExtra.Get("id") Then
+		'fx.Msgbox(Main.MainForm,"Cannot merge segments as these two belong to different trans-units.","")
+		Return
+	End If
+		
+	Dim sourceWhitespace,targetWhitespace,fullsourceWhitespace As String
+	sourceWhitespace=""
+	targetWhitespace=""
+	fullsourceWhitespace=""
+	
+	If Utils.LanguageHasSpace(sourceLang) Then
+		If Regex.IsMatch("\s",fullsource.CharAt(fullsource.Length-1)) Or Regex.IsMatch("\s",nextFullSource.CharAt(0)) Then
+			sourceWhitespace=" "
+		Else
+			sourceWhitespace=""
+		End If
+	End If
+	If Utils.LanguageHasSpace(targetLang) Then
+		targetWhitespace=" "
+	End If
+	
+	If Utils.LanguageHasSpace(sourceLang) Then
+		If Regex.IsMatch("\s",fullsource.CharAt(fullsource.Length-1)) Or Regex.IsMatch("\s",nextFullSource.CharAt(0)) Then
+			fullsourceWhitespace=" "
+		End If
+	End If
+	
+	Dim showTag As Boolean=True
+
+	If showTag Then
+		source=fullsource&nextFullSource
+		If filterGenericUtils.tagsNum(source)=1 Then
+			source=filterGenericUtils.tagsAtBothSidesRemovedText(source)
+		End If
+		If filterGenericUtils.tagsNum(source)=2 And Regex.IsMatch("<.*?>",source) Then
+			source=filterGenericUtils.tagsAtBothSidesRemovedText(source)
+		End If
+		fullsource=fullsource&nextFullSource
+	Else
+		source=source.Trim&sourceWhitespace&nextsource.Trim
+		fullsource=Utils.rightTrim(fullsource)&fullsourceWhitespace&Utils.leftTrim(nextFullSource)
+	End If
+	bitext.Set(0,source)
+	bitext.Set(1,target&targetWhitespace&nextTarget)
+	bitext.Set(2,fullsource)
+	segments.RemoveAt(index+1)
 End Sub
 
 Sub splitSegment(BCATMain As Object,sourceTextArea As TextArea,editorLV As ListView,segments As List,projectFile As Map)

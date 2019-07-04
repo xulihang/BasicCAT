@@ -9,6 +9,62 @@ Sub Process_Globals
 	Private fx As JFX
 End Sub
 
+Sub relaceAtTheRightPosition(source As String,target As String,fullSource As String) As String
+	Dim textSegments As List
+	textSegments.Initialize
+	Utils.splitByFind(fullSource,source,textSegments)
+	Dim index As Int=0
+	For Each segment As String In textSegments
+		If segment=source Then
+			Dim newSegments As List
+			newSegments.Initialize
+			newSegments.AddAll(textSegments)
+			newSegments.Set(index,target)
+			Dim translation As String
+			translation=joinSegments(newSegments)
+			If areTagsMatch(fullSource,translation) Then
+				Return translation
+			End If
+		End If
+		index=index+1
+	Next
+	Return fullSource
+End Sub
+
+Sub areTagsMatch(text1 As String,text2 As String) As Boolean
+	Dim tagsInText1 As List
+	tagsInText1.Initialize
+	Dim tagMatcher As Matcher=Regex.Matcher("<.*?>",text1)
+	Do While tagMatcher.Find
+		tagsInText1.Add(tagMatcher.Match)
+	Loop
+	
+	Dim tagsInText2 As List
+	tagsInText2.Initialize
+	Dim tagMatcher As Matcher=Regex.Matcher("<.*?>",text2)
+	Do While tagMatcher.Find
+		tagsInText2.Add(tagMatcher.Match)
+	Loop
+	
+	For Each tag As String In tagsInText2
+		Try
+			tagsInText1.RemoveAt(tagsInText1.IndexOf(tag))
+		Catch
+			Log(LastException)
+		End Try
+	Next
+    Return tagsInText1.Size=0
+End Sub
+
+Sub joinSegments(segments As List) As String
+	Dim sb As StringBuilder
+	sb.Initialize
+	For Each segment As String In segments
+		sb.Append(segment)
+	Next
+	Return sb.ToString
+End Sub
+
 Sub tagsRemovedText(text As String) As String
 	Return Regex.Replace2("<.*?>",32,text,"")
 End Sub
@@ -39,7 +95,6 @@ Sub tagsAtBothSidesRemovedText(text As String) As String
 		End If
 	Next
 
-    
 	Do While newList.Size>2 And tagsAreAPair(newList.Get(0),newList.Get(newList.Size-1))
 		newList.RemoveAt(0)
 		newList.RemoveAt(newList.Size-1)
@@ -61,8 +116,6 @@ Sub tagsAtBothSidesRemovedText(text As String) As String
 			Log(LastException)
 		End Try
 	End If
-	
-	
 	text=""
 	For Each item As String In newList
 		text=text&item

@@ -15,15 +15,15 @@ Library7=javaobject
 Module1=poFilterPlugin
 Module2=Xml2Map
 Module3=Map2Xml
-Module4=filterGenericUtils
-Module5=XMLUtils
-Module6=Utils
-Module7=SRX
-Module8=segmentation
+Module4=XMLUtils
+Module5=SRX
+Module6=segmentation
+Module7=filterGenericUtils
+Module8=Utils
 NumberOfFiles=2
 NumberOfLibraries=7
 NumberOfModules=8
-Version=7.32
+Version=7.51
 @EndOfDesignText@
 #Region Project Attributes 
 	#MainFormWidth: 600

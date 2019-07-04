@@ -10,7 +10,33 @@ Sub Process_Globals
 	Private menus As Map
 End Sub
 
-
+'find is the text within a whole text
+Sub splitByFind(text As String,find As String,textSegments As List)
+	Dim textLeft As String
+	textLeft=text
+	Dim currentSegment As String
+	Dim length As Int
+	length=text.Length-find.Length
+	For i=0 To length
+		Log(i)
+		Dim endIndex As Int
+		endIndex=i+find.Length
+		currentSegment=text.SubString2(i,endIndex)
+		Log(currentSegment)
+		If currentSegment=find Then
+			Log(True)
+			Dim textBefore As String
+			Log(textLeft)
+			textBefore=textLeft.SubString2(0,textLeft.IndexOf(find))
+			If textBefore<>"" Then
+				textSegments.Add(textBefore)
+			End If
+			textSegments.Add(find)
+			textLeft=textLeft.SubString2(textLeft.IndexOf(find)+find.Length,textLeft.Length)
+		End If
+	Next
+	textSegments.Add(textLeft)
+End Sub
 
 Sub LanguageHasSpace(lang As String) As Boolean
 	Dim languagesWithoutSpaceList As List
@@ -254,6 +280,106 @@ Sub exportToBiParagraph(segments As List,path As String,filename As String,sourc
     File.WriteString(path,"",text.ToString)
 End Sub
 
+Sub appendSourceToTarget(segments As List,segEnabled As Boolean)
+
+	Dim previousID As String="-1"
+	Dim index As Int=-1
+	Dim startIndexofOneTU As Int = 0 'startIndexofOneTransUnit
+	Dim transUnitStartIndexes As List
+	transUnitStartIndexes.Initialize
+	Dim source As String
+	Dim fullsource As String
+	Dim translation As String
+	Dim fullSourceMap As Map
+	fullSourceMap.Initialize
+	Dim translationMap As Map
+	translationMap.Initialize
+	Dim sourceMap As Map
+	sourceMap.Initialize
+	For Each segment As List In segments
+		index=index+1
+		Dim sourceForOne As String=segment.Get(0)
+		Dim targetForOne As String=segment.Get(1)
+		Dim fullSourceForOne As String=segment.Get(2)
+		Dim extra As Map
+		extra=segment.Get(4)
+		If extra.ContainsKey("id") Then
+			Dim id As String
+			id=extra.Get("id")
+			If previousID<>id Then 'new trans-unit
+				If previousID<>-1 Then
+					transUnitStartIndexes.Add(startIndexofOneTU)
+					fullSourceMap.Put(startIndexofOneTU,fullsource)
+					sourceMap.put(startIndexofOneTU,source)
+					translationMap.put(startIndexofOneTU,translation)
+					startIndexofOneTU=index
+					fullsource=""
+					translation=""
+					source=""
+				End If
+				previousID=id
+			End If
+		End If
+		source=source&sourceForOne
+		translation=translation&fullSourceForOne.Replace(sourceForOne,targetForOne)
+		fullsource=fullsource&segment.Get(2)
+	Next
+	sourceMap.Put(startIndexofOneTU,source)
+	fullSourceMap.Put(startIndexofOneTU,fullsource)
+	translationMap.put(startIndexofOneTU,translation)
+	Log(fullSourceMap)
+	Log(translationMap)
+	If segEnabled Then
+		For Each index As Int In fullSourceMap.Keys
+			Dim segment As List=segments.Get(index)
+			Dim source As String=segment.Get(0)
+			Dim target As String=segment.Get(1)
+			Dim fullsource As String=segment.Get(2)
+			Dim fullsourceInTU As String=fullSourceMap.Get(index)
+			Dim translation As String
+			translation=fullsource.Replace(source,target)
+			translation=fullsourceInTU&"---seperator between source and target---"&translation
+			segment.Set(0,fullsource)
+			segment.Set(1,translation)
+		Next
+	Else
+		mergeTransUnits(segments,transUnitStartIndexes)
+		appendSource(segments)
+	End If
+
+End Sub
+
+Sub mergeTransUnits(segments As List,transUnitStartIndexes As List)
+	transUnitStartIndexes.Sort(False) ' eg. 15,13,12
+	Dim index As Int=transUnitStartIndexes.Size-1
+	Dim isFirst As Boolean=True
+	For Each startIndex As Int In transUnitStartIndexes
+		Dim size As Int=segments.Size
+		Dim endIndex As Int
+		If isFirst Then
+			Log("first")
+			endIndex=size-1
+		Else
+			endIndex=transUnitStartIndexes.Get(index-1)
+		End If
+		Log("start:"&startIndex)
+		Log("end:"&endIndex)
+		For i=startIndex To endIndex
+			CallSub3("xliffFilter","mergeInternalSegment",segments,startIndex)
+		Next
+		index=index-1
+	Next
+End Sub
+
+Sub appendSource(segments As List)
+	For Each segment As List In segments
+		Dim source As String=segment.Get(0)
+		Dim target As String=segment.Get(1)
+		segment.Set(1,source&"---seperator between source and target---"&target)
+	Next
+End Sub
+
+
 Sub disableTextArea(p As Pane)
 	Dim sourceTa As TextArea=p.GetNode(0)
 	Dim targetTa As TextArea=p.GetNode(1)
@@ -369,21 +495,35 @@ Sub CopyFolder(Source As String, targetFolder As String)
 	Next
 End Sub
 
-Sub CopyWorkFolderAsync(Source As String, targetFolder As String)
-	Sleep(0)
+Sub CopyFolderAsync(Source As String, targetFolder As String) As ResumableSub
 	If File.Exists(targetFolder, "") = False Then File.MakeDir(targetFolder, "")
 	For Each f As String In File.ListFiles(Source)
 		Log(targetFolder)
 		Log("f"&f)
 		If File.IsDirectory(Source, f) Then
-			CopyFolder(File.Combine(Source, f), File.Combine(targetFolder, f))
+			wait for (CopyFolderAsync(File.Combine(Source, f), File.Combine(targetFolder, f))) Complete (result As Object)
+			Continue
+		End If
+		File.CopyAsync(Source, f, targetFolder, f)
+	Next
+	Return True
+End Sub
+
+Sub CopyWorkFolderAsync(Source As String, targetFolder As String) As ResumableSub
+	If File.Exists(targetFolder, "") = False Then File.MakeDir(targetFolder, "")
+	For Each f As String In File.ListFiles(Source)
+		Log(targetFolder)
+		Log("f"&f)
+		If File.IsDirectory(Source, f) Then
+			wait for (CopyFolderAsync(File.Combine(Source, f), File.Combine(targetFolder, f))) Complete (result As Object)
 			Continue
 		End If
 		If f.EndsWith(".json")=False Then
 			Continue
 		End If
-		File.Copy(Source, f, targetFolder, f)
+		File.CopyAsync(Source, f, targetFolder, f)
 	Next
+	Return True
 End Sub
 
 Sub leftTrim(text As String) As String
