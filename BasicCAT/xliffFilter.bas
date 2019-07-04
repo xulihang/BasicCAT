@@ -568,7 +568,7 @@ Sub mergeSegment(sourceTextArea As TextArea)
 	If index+1>Main.currentProject.segments.Size-1 Then
 		Return
 	End If
-	
+
 	Dim bitext,nextBiText As List
 	bitext=Main.currentProject.segments.Get(index)
 	nextBiText=Main.currentProject.segments.Get(index+1)
@@ -591,88 +591,36 @@ Sub mergeSegment(sourceTextArea As TextArea)
 		fx.Msgbox(Main.MainForm,"Cannot merge segments as these two belong to different trans-units.","")
 		Return
 	End If
-		
-	Dim showTag As Boolean=False
+	
 	If filterGenericUtils.tagsNum(source&nextsource)<>filterGenericUtils.tagsNum(fullsource&nextFullSource) And filterGenericUtils.tagsNum(fullsource&nextFullSource)>0 Then
 		Dim result As Int
 		result=fx.Msgbox2(Main.MainForm,"Segments contain unshown tags, continue?","","Yes","Cancel","No",fx.MSGBOX_CONFIRMATION)
 		'Log(result)
 		'yes -1, no -2, cancel -3
 		Select result
-			Case -1
-				showTag=True
 			Case -2
 				Return
 			Case -3
 				Return
 		End Select
-
 	End If
 	
 	Dim pane,nextPane As Pane
 
 	pane=Main.editorLV.Items.Get(index)
 	nextPane=Main.editorLV.Items.Get(index+1)
-	Dim targetTa,nextSourceTa,nextTargetTa As TextArea
-	nextSourceTa=nextPane.GetNode(0)
-	nextTargetTa=nextPane.GetNode(1)
-		
-
-		
-	Dim sourceWhitespace,targetWhitespace,fullsourceWhitespace As String
-	sourceWhitespace=""
-	targetWhitespace=""
-	fullsourceWhitespace=""
-	
-	Dim sourceLang,targetLang As String
-	sourceLang=Main.currentProject.projectFile.Get("source")
-	targetLang=Main.currentProject.projectFile.Get("target")
-	If Utils.LanguageHasSpace(sourceLang) Then
-		If Regex.IsMatch("\s",fullsource.CharAt(fullsource.Length-1)) Or Regex.IsMatch("\s",nextFullSource.CharAt(0)) Then
-			sourceWhitespace=" "
-		Else
-			sourceWhitespace=""
-		End If
-	End If
-	If Utils.LanguageHasSpace(targetLang) Then
-		targetWhitespace=" "
-	End If
-	
-	If Utils.LanguageHasSpace(sourceLang) Then
-		If Regex.IsMatch("\s",fullsource.CharAt(fullsource.Length-1)) Or Regex.IsMatch("\s",nextFullSource.CharAt(0)) Then
-			fullsourceWhitespace=" "
-		End If
-	End If
-		
-	If showTag Then
-		source=fullsource&nextFullSource
-		If filterGenericUtils.tagsNum(source)=1 Then
-			source=filterGenericUtils.tagsAtBothSidesRemovedText(source)
-		End If
-		If filterGenericUtils.tagsNum(source)=2 And Regex.IsMatch("<.*?>",source) Then
-			source=filterGenericUtils.tagsAtBothSidesRemovedText(source)
-		End If
-		fullsource=fullsource&nextFullSource
-	Else
-		source=source.Trim&sourceWhitespace&nextSourceTa.Text.Trim
-		fullsource=Utils.rightTrim(fullsource)&fullsourceWhitespace&Utils.leftTrim(nextFullSource)
-	End If
-	
-	sourceTextArea.Text=source
-	sourceTextArea.Tag=sourceTextArea.Text
-		
+	Dim targetTa,nextTargetTa As TextArea
 	targetTa=pane.GetNode(1)
-	targetTa.Text=targetTa.Text&targetWhitespace&nextTargetTa.Text
-
-
-	bitext.Set(0,sourceTextArea.Text)
+	nextTargetTa=nextPane.GetNode(1)
 	bitext.Set(1,targetTa.Text)
-	bitext.Set(2,fullsource)
-
+	nextBiText.Set(1,nextTargetTa.Text)
 	
+	mergeInternalSegment(Main.currentProject.segments,index)
 
-		
-	Main.currentProject.segments.RemoveAt(index+1)
+	sourceTextArea.Text=bitext.Get(0)
+	sourceTextArea.Tag=sourceTextArea.Text
+	targetTa.Text=bitext.Get(1)
+	
 	Main.editorLV.Items.RemoveAt(Main.editorLV.Items.IndexOf(sourceTextArea.Parent)+1)
 End Sub
 
@@ -680,9 +628,8 @@ Sub mergeInternalSegment(segments As List,index As Int)
 	Dim bitext,nextBiText As List
 	bitext=segments.Get(index)
 	nextBiText=segments.Get(index+1)
-	Dim source,nextsource As String
+	Dim source As String
 	source=bitext.Get(0)
-	nextsource=nextBiText.Get(0)
 	Dim target,nextTarget As String
 	target=bitext.Get(1)
 	nextTarget=nextBiText.Get(1)
@@ -703,46 +650,27 @@ Sub mergeInternalSegment(segments As List,index As Int)
 		Return
 	End If
 		
-	Dim sourceWhitespace,targetWhitespace,fullsourceWhitespace As String
-	sourceWhitespace=""
+	Dim targetWhitespace As String
+
 	targetWhitespace=""
-	fullsourceWhitespace=""
-	
-	Dim sourceLang,targetLang As String
-	sourceLang=Main.currentProject.projectFile.Get("source")
+
+	Dim targetLang As String
 	targetLang=Main.currentProject.projectFile.Get("target")
-	If Utils.LanguageHasSpace(sourceLang) Then
-		If Regex.IsMatch("\s",fullsource.CharAt(fullsource.Length-1)) Or Regex.IsMatch("\s",nextFullSource.CharAt(0)) Then
-			sourceWhitespace=" "
-		Else
-			sourceWhitespace=""
-		End If
-	End If
+
 	If Utils.LanguageHasSpace(targetLang) Then
 		targetWhitespace=" "
 	End If
 	
-	If Utils.LanguageHasSpace(sourceLang) Then
-		If Regex.IsMatch("\s",fullsource.CharAt(fullsource.Length-1)) Or Regex.IsMatch("\s",nextFullSource.CharAt(0)) Then
-			fullsourceWhitespace=" "
-		End If
+	source=fullsource&nextFullSource
+	source=source.Trim
+	If filterGenericUtils.tagsNum(source)=1 Then
+		source=filterGenericUtils.tagsAtBothSidesRemovedText(source)
 	End If
-	
-	Dim showTag As Boolean=True
+	If filterGenericUtils.tagsNum(source)=2 And Regex.IsMatch("<.*?>",source) Then
+		source=filterGenericUtils.tagsAtBothSidesRemovedText(source)
+	End If
+	fullsource=fullsource&nextFullSource
 
-	If showTag Then
-		source=fullsource&nextFullSource
-		If filterGenericUtils.tagsNum(source)=1 Then
-			source=filterGenericUtils.tagsAtBothSidesRemovedText(source)
-		End If
-		If filterGenericUtils.tagsNum(source)=2 And Regex.IsMatch("<.*?>",source) Then
-			source=filterGenericUtils.tagsAtBothSidesRemovedText(source)
-		End If
-		fullsource=fullsource&nextFullSource
-	Else
-		source=source.Trim&sourceWhitespace&nextsource.Trim
-		fullsource=Utils.rightTrim(fullsource)&fullsourceWhitespace&Utils.leftTrim(nextFullSource)
-	End If
 	bitext.Set(0,source)
 	bitext.Set(1,target&targetWhitespace&nextTarget)
 	bitext.Set(2,fullsource)
