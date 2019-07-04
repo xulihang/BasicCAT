@@ -39,7 +39,6 @@ Sub tagsAtBothSidesRemovedText(text As String) As String
 		End If
 	Next
 
-    
 	Do While newList.Size>2 And tagsAreAPair(newList.Get(0),newList.Get(newList.Size-1))
 		newList.RemoveAt(0)
 		newList.RemoveAt(newList.Size-1)
@@ -61,8 +60,6 @@ Sub tagsAtBothSidesRemovedText(text As String) As String
 			Log(LastException)
 		End Try
 	End If
-	
-	
 	text=""
 	For Each item As String In newList
 		text=text&item

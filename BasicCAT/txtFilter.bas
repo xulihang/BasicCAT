@@ -89,7 +89,7 @@ Sub generateFile(filename As String,path As String,projectFile As Map)
 			'Log(source)
 			'Log(target)
 			'Log(fullsource)
-			If target="" Then
+			If target="" Or target=source Then
 				translation=fullsource
 			Else
 				If shouldAddSpace(projectFile.Get("source"), _ 

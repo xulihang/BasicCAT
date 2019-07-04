@@ -1349,7 +1349,7 @@ Sub previewText As String
 		target=targetTextArea.Text
 		fullsource=bitext.Get(2)
 
-		If target="" Then
+		If target="" Or target=source Then
 			translation=fullsource
 		Else
 			source=source.Replace("<br/>",CRLF)

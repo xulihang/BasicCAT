@@ -2273,6 +2273,7 @@ Public Sub generateBilingualTargetFilesForXliff
 		saveWorkFile(filename,fileSegments,path)
 		generateTargetFileForOne(filename)
 	Next
+	return
 	For Each filename As String In files
 		If filename.EndsWith(".xlf")=False Then
 			Continue
