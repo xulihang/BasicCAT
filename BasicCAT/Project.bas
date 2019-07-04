@@ -2255,29 +2255,24 @@ Sub getAllSegments(filename As String) As List
 	Return allSegments
 End Sub
 
-Public Sub generateBilingualTargetFilesForXliff
+Public Sub generateBilingualTargetFiles
 	For Each filename As String In files
-		If filename.EndsWith(".xlf")=False Then
-			Continue
-		End If
+		Dim extension As String=filename.SubString2(filename.LastIndexOf(".")+1,filename.Length)
 		Dim fileSegments As List
 		fileSegments.Initialize
 		File.Copy(File.Combine(path,"work"),filename&".json",File.Combine(path,"work"),filename&".json.bak")
 		readWorkFile(filename,fileSegments,False,path)
 		If SegEnabledFiles.IndexOf(currentFilename)<>-1 Then
-			Utils.appendSourceToTarget(fileSegments,True)
+			Utils.appendSourceToTarget(fileSegments,True,extension,projectFile.Get("source"))
 		Else
-			Utils.appendSourceToTarget(fileSegments,False)
+			Utils.appendSourceToTarget(fileSegments,False,extension,projectFile.Get("target"))
 		End If
 		
 		saveWorkFile(filename,fileSegments,path)
 		generateTargetFileForOne(filename)
 	Next
-	return
+	Return
 	For Each filename As String In files
-		If filename.EndsWith(".xlf")=False Then
-			Continue
-		End If
 		File.Copy(File.Combine(path,"work"),filename&".json.bak",File.Combine(path,"work"),filename&".json")
 		File.Delete(File.Combine(path,"work"),filename&".json.bak")
 	Next

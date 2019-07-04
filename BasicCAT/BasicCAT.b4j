@@ -543,7 +543,7 @@ Sub MenuBar1_Action
 			If currentProject.IsInitialized=False Then
 				Return
 			End If
-			currentProject.generateBilingualTargetFilesForXliff
+			currentProject.generateBilingualTargetFiles
 		Case "_Close"
 			Log("closing")
 			closeProject

@@ -405,7 +405,7 @@ Sub mergeSegment(MainForm As Form,sourceTextArea As TextArea,editorLV As ListVie
 	bitext.Set(1,targetTa.Text)
 	nextBiText.Set(1,nextTargetTa.Text)
 
-	mergeInternalSegment(segments,index,projectFile.Get("source"),projectFile.Get("target"))
+	filterGenericUtils.mergeInternalSegment(segments,index,projectFile.Get("source"),"po")
 	
 	
 	sourceTextArea.Text=bitext.Get(0)
@@ -415,55 +415,6 @@ Sub mergeSegment(MainForm As Form,sourceTextArea As TextArea,editorLV As ListVie
 	targetTa.Text=bitext.Get(1)
 
 	editorLV.Items.RemoveAt(editorLV.Items.IndexOf(sourceTextArea.Parent)+1)
-End Sub
-
-Sub mergeInternalSegment(segments As List,index As Int,sourceLang As String,targetLang As String)
-
-	Dim bitext,nextBiText As List
-	bitext=segments.Get(index)
-	nextBiText=segments.Get(index+1)
-	Dim source As String
-	source=bitext.Get(0)
-	Dim target,nextTarget As String
-	target=bitext.Get(1)
-	nextTarget=nextBiText.Get(1)
-	Dim fullsource,nextFullSource As String
-	fullsource=bitext.Get(2)
-	nextFullSource=nextBiText.Get(2)
-	
-	If bitext.Get(3)<>nextBiText.Get(3) Then
-		'fx.Msgbox(MainForm,"Cannot merge segments as these two belong to different files.","")
-		Return
-	End If
-	Dim extra As Map
-	extra=bitext.Get(4)
-	Dim nextExtra As Map
-	nextExtra=nextBiText.Get(4)
-	If extra.Get("id")<>nextExtra.Get("id") Then
-		'fx.Msgbox(MainForm,"Cannot merge segments as these two belong to different units.","")
-		Return
-	End If
-		
-	Dim targetWhitespace As String
-	targetWhitespace=""
-	
-	If Utils.LanguageHasSpace(targetLang) Then
-		targetWhitespace=" "
-	End If
-	
-	source=fullsource&nextFullSource
-	If filterGenericUtils.tagsNum(source)=1 Then
-		source=filterGenericUtils.tagsAtBothSidesRemovedText(source)
-	End If
-	If filterGenericUtils.tagsNum(source)>=2 And Regex.IsMatch("<.*?>",source) Then
-		source=filterGenericUtils.tagsAtBothSidesRemovedText(source)
-	End If
-	fullsource=fullsource&nextFullSource
-
-	bitext.Set(0,source)
-	bitext.Set(1,target&targetWhitespace&nextTarget)
-	bitext.Set(2,fullsource)
-	segments.RemoveAt(index+1)
 End Sub
 
 Sub splitSegment(BCATMain As Object,sourceTextArea As TextArea,editorLV As ListView,segments As List,projectFile As Map)

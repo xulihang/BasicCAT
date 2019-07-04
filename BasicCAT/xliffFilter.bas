@@ -615,7 +615,7 @@ Sub mergeSegment(sourceTextArea As TextArea)
 	bitext.Set(1,targetTa.Text)
 	nextBiText.Set(1,nextTargetTa.Text)
 	
-	mergeInternalSegment(Main.currentProject.segments,index)
+	filterGenericUtils.mergeInternalSegment(Main.currentProject.segments,index,Main.currentProject.projectFile.Get("target"),"xlf")
 
 	sourceTextArea.Text=bitext.Get(0)
 	sourceTextArea.Tag=sourceTextArea.Text
@@ -624,58 +624,7 @@ Sub mergeSegment(sourceTextArea As TextArea)
 	Main.editorLV.Items.RemoveAt(Main.editorLV.Items.IndexOf(sourceTextArea.Parent)+1)
 End Sub
 
-Sub mergeInternalSegment(segments As List,index As Int)
-	Dim bitext,nextBiText As List
-	bitext=segments.Get(index)
-	nextBiText=segments.Get(index+1)
-	Dim source As String
-	source=bitext.Get(0)
-	Dim target,nextTarget As String
-	target=bitext.Get(1)
-	nextTarget=nextBiText.Get(1)
-	Dim fullsource,nextFullSource As String
-	fullsource=bitext.Get(2)
-	nextFullSource=nextBiText.Get(2)
-	
-	If bitext.Get(3)<>nextBiText.Get(3) Then
-		'fx.Msgbox(Main.MainForm,"Cannot merge segments as these two belong to different files.","")
-		Return
-	End If
-	Dim extra As Map
-	extra=bitext.Get(4)
-	Dim nextExtra As Map
-	nextExtra=nextBiText.Get(4)
-	If extra.Get("id")<>nextExtra.Get("id") Then
-		'fx.Msgbox(Main.MainForm,"Cannot merge segments as these two belong to different trans-units.","")
-		Return
-	End If
-		
-	Dim targetWhitespace As String
 
-	targetWhitespace=""
-
-	Dim targetLang As String
-	targetLang=Main.currentProject.projectFile.Get("target")
-
-	If Utils.LanguageHasSpace(targetLang) Then
-		targetWhitespace=" "
-	End If
-	
-	source=fullsource&nextFullSource
-	source=source.Trim
-	If filterGenericUtils.tagsNum(source)=1 Then
-		source=filterGenericUtils.tagsAtBothSidesRemovedText(source)
-	End If
-	If filterGenericUtils.tagsNum(source)=2 And Regex.IsMatch("<.*?>",source) Then
-		source=filterGenericUtils.tagsAtBothSidesRemovedText(source)
-	End If
-	fullsource=fullsource&nextFullSource
-
-	bitext.Set(0,source)
-	bitext.Set(1,target&targetWhitespace&nextTarget)
-	bitext.Set(2,fullsource)
-	segments.RemoveAt(index+1)
-End Sub
 
 Sub splitSegment(sourceTextArea As TextArea)
 	Dim index As Int

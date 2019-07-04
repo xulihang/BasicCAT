@@ -280,7 +280,7 @@ Sub exportToBiParagraph(segments As List,path As String,filename As String,sourc
     File.WriteString(path,"",text.ToString)
 End Sub
 
-Sub appendSourceToTarget(segments As List,segEnabled As Boolean)
+Sub appendSourceToTarget(segments As List,segEnabled As Boolean,extension As String,targetLang As String)
 
 	Dim previousID As String="-1"
 	Dim index As Int=-1
@@ -343,13 +343,13 @@ Sub appendSourceToTarget(segments As List,segEnabled As Boolean)
 			segment.Set(1,translation)
 		Next
 	Else
-		mergeTransUnits(segments,transUnitStartIndexes)
+		mergeTransUnits(segments,transUnitStartIndexes,extension,targetLang)
 		appendSource(segments)
 	End If
 
 End Sub
 
-Sub mergeTransUnits(segments As List,transUnitStartIndexes As List)
+Sub mergeTransUnits(segments As List,transUnitStartIndexes As List,extension As String,targetLang As String)
 	transUnitStartIndexes.Sort(False) ' eg. 15,13,12
 	Dim index As Int=transUnitStartIndexes.Size-1
 	Dim isFirst As Boolean=True
@@ -365,7 +365,7 @@ Sub mergeTransUnits(segments As List,transUnitStartIndexes As List)
 		Log("start:"&startIndex)
 		Log("end:"&endIndex)
 		For i=startIndex To endIndex
-			xliffFilter.mergeInternalSegment(segments,startIndex)
+			filterGenericUtils.mergeInternalSegment(segments,startIndex,targetLang,extension)
 		Next
 		index=index-1
 	Next

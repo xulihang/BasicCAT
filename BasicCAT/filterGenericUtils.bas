@@ -9,6 +9,69 @@ Sub Process_Globals
 	Private fx As JFX
 End Sub
 
+Sub mergeInternalSegment(segments As List,index As Int,targetLang As String,extension As String)
+	Dim bitext,nextBiText As List
+	bitext=segments.Get(index)
+	nextBiText=segments.Get(index+1)
+	Dim source As String
+	source=bitext.Get(0)
+	Dim target,nextTarget As String
+	target=bitext.Get(1)
+	nextTarget=nextBiText.Get(1)
+	Dim fullsource,nextFullSource As String
+	fullsource=bitext.Get(2)
+	nextFullSource=nextBiText.Get(2)
+	
+	If bitext.Get(3)<>nextBiText.Get(3) Then
+		'fx.Msgbox(Main.MainForm,"Cannot merge segments as these two belong to different files.","")
+		Return
+	End If
+	Dim extra As Map
+	extra=bitext.Get(4)
+	Dim nextExtra As Map
+	nextExtra=nextBiText.Get(4)
+	If extra.ContainsKey("id")=False Then
+		Return
+	End If
+	If extra.Get("id")<>nextExtra.Get("id") Then
+		'fx.Msgbox(Main.MainForm,"Cannot merge segments as these two belong to different trans-units.","")
+		Return
+	End If
+		
+	Dim targetWhitespace As String
+
+	targetWhitespace=""
+
+	If Utils.LanguageHasSpace(targetLang) Then
+		targetWhitespace=" "
+	End If
+	
+	source=fullsource&nextFullSource
+	source=source.Trim
+	
+	
+	If tagsNum(source)=1 Then
+		source=tagsAtBothSidesRemovedText(source)
+	End If
+	
+	If extension="po" Then
+		If tagsNum(source)>=2 And Regex.IsMatch("<.*?>",source) Then
+			source=tagsAtBothSidesRemovedText(source)
+		End If
+	Else
+		If tagsNum(source)=2 And Regex.IsMatch("<.*?>",source) Then
+			source=tagsAtBothSidesRemovedText(source)
+		End If
+	End If
+
+	fullsource=fullsource&nextFullSource
+
+	bitext.Set(0,source)
+	bitext.Set(1,target&targetWhitespace&nextTarget)
+	bitext.Set(2,fullsource)
+	segments.RemoveAt(index+1)
+End Sub
+
 Sub relaceAtTheRightPosition(source As String,target As String,fullSource As String) As String
 	Dim textSegments As List
 	textSegments.Initialize
