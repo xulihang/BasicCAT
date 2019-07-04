@@ -25,6 +25,6 @@ ModuleClosedNodes5=
 ModuleClosedNodes6=
 ModuleClosedNodes7=
 ModuleClosedNodes8=
-NavigationStack=Utils,mergeTransUnits,352,5,filterGenericUtils,relaceAtTheRightPosition,5,0,poFilterPlugin,Class_Globals,0,0,poFilterPlugin,createWorkFile,77,0,poFilterPlugin,generateFile,333,6,poFilterPlugin,mergeInternalSegment,463,6,poFilterPlugin,mergeSegment,453,0
+NavigationStack=Utils,mergeTransUnits,352,5,filterGenericUtils,relaceAtTheRightPosition,5,0,poFilterPlugin,createWorkFile,77,0,poFilterPlugin,Class_Globals,0,0,poFilterPlugin,generateFile,346,6,poFilterPlugin,mergeInternalSegment,463,6,poFilterPlugin,mergeSegment,376,6,Utils,splitByFind,14,0
 SelectedBuild=0
 VisibleModules=1,2,3,4,5,6,7,8
