@@ -54,12 +54,12 @@ Sub mergeInternalSegment(segments As List,index As Int,targetLang As String,exte
 		source=tagsAtBothSidesRemovedText(source)
 	End If
 	
-	If extension="po" Then
-		If tagsNum(source)>=2 And Regex.IsMatch("<.*?>",source) Then
+	If extension="xlf" Then
+		If tagsNum(source)=2 And Regex.IsMatch("<.*?>",source) Then
 			source=tagsAtBothSidesRemovedText(source)
 		End If
 	Else
-		If tagsNum(source)=2 And Regex.IsMatch("<.*?>",source) Then
+		If tagsNum(source)>=2 And Regex.IsMatch("<.*?>",source) Then
 			source=tagsAtBothSidesRemovedText(source)
 		End If
 	End If

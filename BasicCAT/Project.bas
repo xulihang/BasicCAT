@@ -2258,6 +2258,9 @@ End Sub
 Public Sub generateBilingualTargetFiles
 	For Each filename As String In files
 		Dim extension As String=filename.SubString2(filename.LastIndexOf(".")+1,filename.Length)
+		If extension.EndsWith("xlf")=False Then
+			Continue
+		End If
 		Dim fileSegments As List
 		fileSegments.Initialize
 		File.Copy(File.Combine(path,"work"),filename&".json",File.Combine(path,"work"),filename&".json.bak")
@@ -2271,8 +2274,10 @@ Public Sub generateBilingualTargetFiles
 		saveWorkFile(filename,fileSegments,path)
 		generateTargetFileForOne(filename)
 	Next
-	Return
 	For Each filename As String In files
+		If extension.EndsWith("xlf")=False Then
+			Continue
+		End If
 		File.Copy(File.Combine(path,"work"),filename&".json.bak",File.Combine(path,"work"),filename&".json")
 		File.Delete(File.Combine(path,"work"),filename&".json.bak")
 	Next

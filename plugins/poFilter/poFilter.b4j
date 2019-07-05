@@ -23,7 +23,7 @@ Module8=Utils
 NumberOfFiles=2
 NumberOfLibraries=7
 NumberOfModules=8
-Version=7.51
+Version=7.32
 @EndOfDesignText@
 #Region Project Attributes 
 	#MainFormWidth: 600

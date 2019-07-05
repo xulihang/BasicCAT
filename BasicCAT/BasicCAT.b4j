@@ -179,9 +179,9 @@ Module1=FileChooserUtils
 Module10=preTranslateDialog
 Module11=xliffFilter
 Module12=filterGenericUtils
-Module13=idmlFilter
-Module14=idmlUtils
-Module15=Utils
+Module13=Utils
+Module14=idmlFilter
+Module15=idmlUtils
 Module16=MT
 Module17=TMX
 Module18=Xml2Map
@@ -243,7 +243,7 @@ Module9=ProjectSettings
 NumberOfFiles=75
 NumberOfLibraries=24
 NumberOfModules=65
-Version=7.51
+Version=7.32
 @EndOfDesignText@
 #Region Project Attributes 
 	#MainFormWidth: 600

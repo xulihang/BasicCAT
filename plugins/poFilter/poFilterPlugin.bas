@@ -400,6 +400,7 @@ Sub mergeSegment(MainForm As Form,sourceTextArea As TextArea,editorLV As ListVie
 	pane=editorLV.Items.Get(index)
 	nextPane=editorLV.Items.Get(index+1)
 	Dim targetTa,nextTargetTa As TextArea
+	targetTa=pane.GetNode(1)
 	nextTargetTa=nextPane.GetNode(1)
 	
 	bitext.Set(1,targetTa.Text)

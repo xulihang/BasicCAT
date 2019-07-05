@@ -196,6 +196,5 @@ ModuleClosedNodes65=
 ModuleClosedNodes7=
 ModuleClosedNodes8=
 ModuleClosedNodes9=
-NavigationStack=Main,MenuBar1_Action,298,0,Project,saveWorkFile,2179,0,Project,readWorkFile,2152,0,Utils,shouldAddSpace,120,0,Utils,splitByFind,18,0,Utils,getList,383,0,Utils,appendSource,368,0,Utils,appendSourceToTarget,343,0,Utils,mergeTransUnits,361,6,filterGenericUtils,mergeInternalSegment,36,6
 SelectedBuild=0
-VisibleModules=1,2,3,4,5,6,7,8,9,10,11,12,15
+VisibleModules=1,2,3,4,5,6,7,8,9,10,13,11,12
