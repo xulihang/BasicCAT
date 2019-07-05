@@ -318,7 +318,7 @@ Sub generateFile(filename As String,path As String,projectFile As Map)
 		Next
 	Next
 	Dim xmlString As String
-	xmlString=XMLUtils.getXmlFromMap(insertTranslation(translationMap,filename,path,isSegEnabled))
+	xmlString=XMLUtils.getXmlFromMapWithoutIndent(insertTranslation(translationMap,filename,path,isSegEnabled))
 	xmlString=XMLUtils.unescapedText(xmlString,"source","xliff")
 	xmlString=XMLUtils.unescapedText(xmlString,"target","xliff")
 	xmlString=XMLUtils.unescapedText(xmlString,"seg-source","xliff")
