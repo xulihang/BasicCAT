@@ -177,8 +177,8 @@ Library8=jrandomaccessfile
 Library9=jb4xencryption
 Module1=FileChooserUtils
 Module10=preTranslateDialog
-Module11=Utils
-Module12=xliffFilter
+Module11=xliffFilter
+Module12=Utils
 Module13=filterGenericUtils
 Module14=idmlFilter
 Module15=idmlUtils
@@ -265,6 +265,13 @@ Version=7.32
 #AdditionalJar: JavaEWAH-1.1.6
 #AdditionalJar: slf4j-api-1.7.2
 #AdditionalJar: slf4j-simple-1.7.25
+
+'-------- for alimt
+#AdditionalJar: aliyun-java-sdk-alimt-1.0.3
+#AdditionalJar: aliyun-java-sdk-core-4.4.2
+#AdditionalJar: httpcore-4.4.9
+#AdditionalJar: httpclient-4.5.6
+#AdditionalJar: gson-2.8.5
 
 '-------- for pdfbox
 #AdditionalJar: pdfbox-2.0.12

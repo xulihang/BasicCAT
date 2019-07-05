@@ -53,6 +53,10 @@ Sub init(engineName As String)
 			setTableView(Array As String("key"))
 		Case "mymemory"
 			setTableView(Array As String("email"))
+		Case "ali"
+			setTableView(Array As String("accesskeyId","accesskeySecret"))
+		Case "ali-ecommerce"
+			setTableView(Array As String("scene"))
 	End Select
 	If MT.getMTPluginList.IndexOf(engineName)<>-1 Then
 		wait for (Main.plugin.RunPlugin(engineName&"MT","getParams",Null)) complete (result As List)

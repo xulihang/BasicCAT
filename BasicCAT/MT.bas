@@ -13,7 +13,7 @@ End Sub
 Sub getMTList As List
 	Dim mtList As List
 	mtList.Initialize
-	mtList.AddAll(Array As String("baidu","yandex","youdao","google","microsoft","mymemory"))
+	mtList.AddAll(Array As String("baidu","yandex","youdao","google","microsoft","mymemory","ali","ali-ecommerce"))
     mtList.AddAll(getMTPluginList)
 	Return mtList
 End Sub
@@ -56,6 +56,12 @@ Sub getMT(source As String,sourceLang As String,targetLang As String,MTEngine As
 		Case "mymemory"
 			wait for (MyMemory(source,sourceLang,targetLang)) Complete (result As String)
 			Return result
+		Case "ali"
+			wait for (AliMT(source,sourceLang,targetLang,False)) Complete (result As String)
+			Return result
+		Case "ali-ecommerce"
+			wait for (AliMT(source,sourceLang,targetLang,True)) Complete (result As String)
+			Return result
 	End Select
 	If getMTPluginList.IndexOf(MTEngine)<>-1 Then
 		Dim params As Map
@@ -68,6 +74,7 @@ Sub getMT(source As String,sourceLang As String,targetLang As String,MTEngine As
 		Log("pluginMT"&result)
 		Return result
 	End If
+	return ""
 End Sub
 
 Sub convertLangCode(lang As String,engine As String) As String
@@ -324,6 +331,41 @@ Sub MyMemory(source As String,sourceLang As String,targetLang As String) As Resu
 	End If
 	job.Release
 	Return translatedText
+End Sub
+
+Sub AliMT(source As String,sourceLang As String,targetLang As String,isEcommerce As Boolean) As ResumableSub
+	Dim result As String
+	Try
+		Dim accessKeyID,accessKeySecret,scene As String
+		accessKeyID=Utils.getMap("ali",Utils.getMap("mt",Main.preferencesMap)).Get("accesskeyId")
+		accessKeySecret=Utils.getMap("ali",Utils.getMap("mt",Main.preferencesMap)).Get("accesskeySecret")
+		scene=Utils.getMap("ali-ecommerce",Utils.getMap("mt",Main.preferencesMap)).Get("scene")
+		Dim profile As JavaObject
+		profile.InitializeStatic("com.aliyuncs.profile.DefaultProfile")
+		profile=profile.RunMethodJO("getProfile",Array("cn-hangzhou",accessKeyID,accessKeySecret))
+		Dim client As JavaObject
+		client.InitializeNewInstance("com.aliyuncs.DefaultAcsClient",Array(profile))
+		Dim methodType As JavaObject
+		methodType.InitializeStatic("com.aliyuncs.http.MethodType")
+		Dim request As JavaObject
+		If isEcommerce Then
+			request.InitializeNewInstance("com.aliyuncs.alimt.model.v20181012.TranslateECommerceRequest",Null)
+			request.RunMethod("setScene",Array(scene))
+		Else
+			request.InitializeNewInstance("com.aliyuncs.alimt.model.v20181012.TranslateGeneralRequest",Null)
+		End If
+		request.RunMethod("setMethod",Array(methodType.GetField("POST")))
+		request.RunMethod("setFormatType",Array("text"))
+		request.RunMethod("setSourceLanguage",Array(sourceLang))
+		request.RunMethod("setTargetLanguage",Array(targetLang))
+		request.RunMethod("setSourceText",Array(source))
+		Dim response As JavaObject=client.RunMethodJO("getAcsResponse",Array(request))
+		Dim data As JavaObject=response.RunMethodJO("getData",Null)
+		result=data.RunMethod("getTranslated",Null)
+	Catch
+		Log(LastException)
+	End Try
+	Return result
 End Sub
 
 Sub UUID As String
