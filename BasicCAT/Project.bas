@@ -1478,25 +1478,37 @@ Sub languagecheck(ta As TextArea,entry As Int)
 	If Main.getCheckLVSize<=1 Then
 		If Main.preferencesMap.ContainsKey("languagetoolEnabled") Then
 			If Main.preferencesMap.Get("languagetoolEnabled")=True Then
-				wait for (LanguageTool.check(ta.Text,entry,projectFile.Get("target"))) complete (result As List)
-				showReplacements(result,ta)
+				wait for (LanguageTool.check(ta.Text,projectFile.Get("target"))) complete (matches As List)
+				showReplacements(matches,entry)
 			End If
 		End If
 	End If
 End Sub
 
-Sub showReplacements(values As List,ta As TextArea)
-	If values.Size=0 Then
+Sub showReplacements(matches As List,entry As Int)
+	If matches.Size=0 Then
+		Main.noErrors
 		Return
 	End If
+	If Main.getCheckLVSize>1 Then
+		Return
+	End If
+	Dim p As Pane
+	p=Main.editorLV.Items.Get(entry)
+	Dim ta As TextArea
+	ta=p.GetNode(1)
+	
+	Dim match As Map=matches.Get(0)
+	Main.addCheckList(matches,entry,ta.Text)
 	
 	Dim replacementsCM As ContextMenu
 	replacementsCM.Initialize("replacementsCM")
 	Dim replacements As List
-	replacements=values.Get(2)
-	'0 offset
-	'1 length
-	'2 replacements
+	replacements=match.Get("replacements")
+	Dim offset,length As Int
+	offset=match.Get("offset")
+	length=match.Get("length")
+
 	Dim maxCheckDropdownNum As Int=5
 	If Main.preferencesMap.ContainsKey("maxCheckDropdownNum") Then
 		maxCheckDropdownNum=Main.preferencesMap.Get("maxCheckDropdownNum")
@@ -1505,12 +1517,18 @@ Sub showReplacements(values As List,ta As TextArea)
 	For Each replace As Map In replacements
 		Log(replace)
 		num=num+1
+		Dim replacement As String
+		replacement=replace.Get("value")
 		Dim mi As MenuItem
-		mi.Initialize(replace.Get("value"), "replacementMi")
+		mi.Initialize(replacement, "replacementMi")
 		Dim tagList As List
 		tagList.Initialize
-		tagList.AddAll(values)
-		tagList.set(2,replace.Get("value"))
+		tagList.Add(offset)
+		tagList.Add(length)
+		tagList.Add(replacement)
+		tagList.Add(entry)
+		tagList.Add(matches)
+		'tagList.Add(ta)
 		mi.Tag=tagList
 		replacementsCM.MenuItems.Add(mi)
 		If num=maxCheckDropdownNum Then
@@ -1535,10 +1553,10 @@ Sub replacementMi_Action
 		offset=tagList.Get(0)
 		length=tagList.Get(1)
 		thisPreviousEntry=tagList.Get(3)
-		Log(thisPreviousEntry)
+		'Log(thisPreviousEntry)
 		Dim replacement As String
 		replacement=tagList.Get(2)
-		Log(replacement)
+		'Log(replacement)
 		Dim p As Pane
 		p=Main.editorLV.Items.Get(thisPreviousEntry)
 		Dim targetTextArea As TextArea
@@ -1547,6 +1565,7 @@ Sub replacementMi_Action
 		Sleep(0)
 		targetTextArea.SetSelection(targetTextArea.Text.Length,targetTextArea.Text.Length)
 		Main.checkLVClear
+		targetTextArea.RequestFocus
 	Catch
 		Log(LastException)
 	End Try

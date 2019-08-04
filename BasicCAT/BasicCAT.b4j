@@ -177,57 +177,57 @@ Library8=jrandomaccessfile
 Library9=jb4xencryption
 Module1=FileChooserUtils
 Module10=preTranslateDialog
-Module11=xliffFilter
-Module12=Utils
-Module13=filterGenericUtils
-Module14=idmlFilter
-Module15=idmlUtils
-Module16=MT
-Module17=TMX
-Module18=Xml2Map
-Module19=searchAndReplaceDialog
+Module11=LanguageTool
+Module12=MT
+Module13=MTParamsFiller
+Module14=Utils
+Module15=Preferences
+Module16=xliffFilter
+Module17=filterGenericUtils
+Module18=idmlFilter
+Module19=idmlUtils
 Module2=Project
-Module20=confirmReviewDialog
-Module21=XMLUtils
-Module22=HistoryRecord
-Module23=Map2Xml
-Module24=ErrorReporter
-Module25=TMManager
-Module26=Preferences
-Module27=TermManager
-Module28=importDialog
-Module29=statistics
+Module20=TMX
+Module21=Xml2Map
+Module22=searchAndReplaceDialog
+Module23=confirmReviewDialog
+Module24=XMLUtils
+Module25=HistoryRecord
+Module26=Map2Xml
+Module27=ErrorReporter
+Module28=TMManager
+Module29=TermManager
 Module3=segmentation
-Module30=OperationDialog
-Module31=LanguagePairSelector
-Module32=git
-Module33=zip4j
-Module34=progressDialog
-Module35=pdfbox
-Module36=PDF2TXT
-Module37=languageChooser
-Module38=Previewer
-Module39=AutoSaver
+Module30=importDialog
+Module31=statistics
+Module32=OperationDialog
+Module33=LanguagePairSelector
+Module34=git
+Module35=zip4j
+Module36=progressDialog
+Module37=pdfbox
+Module38=PDF2TXT
+Module39=languageChooser
 Module4=CustomListView
-Module40=SourceTextEditor
-Module41=InputTextAreaBox
-Module42=tikal
-Module43=LanguageTool
-Module44=ITP
-Module45=SearchView
-Module46=icu4j
-Module47=FileUtils
-Module48=SRX
-Module49=POIWord
+Module40=Previewer
+Module41=AutoSaver
+Module42=SourceTextEditor
+Module43=InputTextAreaBox
+Module44=tikal
+Module45=ITP
+Module46=SearchView
+Module47=icu4j
+Module48=FileUtils
+Module49=SRX
 Module5=txtFilter
-Module50=dictWebView
-Module51=FontPicker
-Module52=TermEditor
-Module53=HistoryViewer
-Module54=ClientKVS
-Module55=editDistance
-Module56=InputBox
-Module57=MTParamsFiller
+Module50=POIWord
+Module51=dictWebView
+Module52=FontPicker
+Module53=TermEditor
+Module54=HistoryViewer
+Module55=ClientKVS
+Module56=editDistance
+Module57=InputBox
 Module58=TBX
 Module59=CallSubUtils
 Module6=TM
@@ -1596,11 +1596,22 @@ Sub checkLV_MouseClicked (EventData As MouseEvent)
 	
 End Sub
 
-Public Sub addCheckList(replacements As List, message As String,offset As Int,length As Int,context As String,entry As Int)
+Public Sub addCheckList(matches As List,entry As Int,context As String)
 	Try
-	
 		TabPane1.SelectedIndex=2
 		checkLV.Clear
+		Dim match As Map=matches.Get(0)
+		Log("match"&match)
+		'match.Get("shortMessage")
+		'Dim context As Map
+		Dim message As String
+		message=match.Get("message")
+		'context=match.Get("context")
+		Dim replacements As List
+		replacements=match.Get("replacements")
+		Dim offset,length As Int
+		offset=match.Get("offset")
+		length=match.Get("length")
 		Log("offset"&offset)
 		Log(context)
 		Dim tf As TextFlow
@@ -1612,15 +1623,22 @@ Public Sub addCheckList(replacements As List, message As String,offset As Int,le
 		tf.AddText(context.SubString2(offset+length,context.Length))
 		Dim p As Pane=tf.CreateTextFlow
 		p.SetSize(checkLV.AsView.Width,Utils.MeasureMultilineTextHeight(fx.DefaultFont(15),checkLV.AsView.Width,tf.getText))
-		checkLV.Add(p,"")
-		For Each replacement As Map In replacements
+		Dim tagList As List
+		tagList.Initialize
+		tagList.Add(matches)
+		tagList.Add(entry)
+		checkLV.Add(p,tagList)
+		For Each replace As Map In replacements
+			Dim replacement As String
+			replacement=replace.Get("value")
 			Dim values As List
 			values.Initialize
-			values.Add(replacement.Get("value"))
 			values.Add(offset)
 			values.Add(length)
+			values.Add(replacement)
 			values.Add(entry)
-			checkLV.AddTextItem("replacement: "&replacement.Get("value"),values)
+			values.Add(matches)
+			checkLV.AddTextItem("replacement: "&replacement,values)
 		Next
 	Catch
 		Log(LastException)
@@ -1641,31 +1659,42 @@ Public Sub noErrors
 End Sub
 
 Sub checkLV_ItemClick (Index As Int, Value As Object)
-	If Value<>"" Then
-		Try
+	checkLV.Clear
+	Try
+		If Index=0 Then
 			Dim tagList As List
 			tagList=Value
-			Dim offset,length,entry As Int
-			offset=tagList.Get(1)
-			length=tagList.Get(2)
-			entry=tagList.Get(3)
-			Dim replacement As String
-			replacement=tagList.Get(0)
-			Dim p As Pane
-			p=editorLV.Items.Get(entry)
-			Dim targetTextArea As TextArea
-			targetTextArea=p.GetNode(1)
-			targetTextArea.Text=targetTextArea.Text.SubString2(0,offset)&replacement&targetTextArea.Text.SubString2(offset+length,targetTextArea.Text.Length)
-			Sleep(0)
-			targetTextArea.SetSelection(targetTextArea.Text.Length,targetTextArea.Text.Length)
-			targetTextArea.RequestFocus
-		Catch
-			Log(LastException)
-		End Try
-		checkLV.Clear
-	Else
-		checkLV.Clear
-	End If
+			Dim matches As List=tagList.Get(0)
+			Dim entry As Int
+			entry=tagList.Get(1)
+			If matches.Size>1 Then
+				matches.RemoveAt(0)
+				currentProject.showReplacements(matches,entry)
+			End If
+		Else
+			If Value<>"" Then
+				Dim tagList As List
+				tagList=Value
+				Dim offset,length,entry As Int
+				offset=tagList.Get(0)
+				length=tagList.Get(1)
+				Dim replacement As String
+				replacement=tagList.Get(2)
+				entry=tagList.Get(3)
+				Dim p As Pane
+				p=editorLV.Items.Get(entry)
+				Dim targetTextArea As TextArea
+				targetTextArea=p.GetNode(1)
+				targetTextArea.Text=targetTextArea.Text.SubString2(0,offset)&replacement&targetTextArea.Text.SubString2(offset+length,targetTextArea.Text.Length)
+				Sleep(0)
+				targetTextArea.SetSelection(targetTextArea.Text.Length,targetTextArea.Text.Length)
+				targetTextArea.RequestFocus
+			End If
+		End If
+	Catch
+		Log(LastException)
+	End Try
+
 End Sub
 
 

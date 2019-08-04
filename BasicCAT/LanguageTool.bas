@@ -10,16 +10,14 @@ Sub Process_Globals
 End Sub
 
 
-Sub check(text As String,entry As Int,langcode As String) As ResumableSub
-	Dim values As List
-	values.Initialize
-    
+Sub check(text As String,langcode As String) As ResumableSub
+	Dim matches As List
+	matches.Initialize
 	Dim address As String
 	If Main.preferencesMap.ContainsKey("languagetool_address") Then
-
 		address=Main.preferencesMap.Get("languagetool_address")
 	Else
-		Return values
+		Return matches
 	End If
 	
     If langcode="en" Then 
@@ -38,44 +36,19 @@ Sub check(text As String,entry As Int,langcode As String) As ResumableSub
 	job.Download(address&params)
 	wait for (job) JobDone(job As HttpJob)
 	If job.Success Then
-		Log("languagetool"&job.GetString)
-		values=showResult(job.GetString,entry,text)
+		Try
+			Log("languagetool"&job.GetString)
+			Dim json As JSONParser
+			json.Initialize(job.GetString)
+			Dim result As Map
+			result=json.NextObject
+			matches=result.Get("matches")
+		Catch
+			Log(LastException)
+		End Try
 	End If
 	job.Release
-	Return values
+	Return matches
 End Sub
 
-Sub showResult(jsonstring As String,entry As Int,text As String) As List
-	Dim values As List
-	values.Initialize
-	Dim json As JSONParser
-	json.Initialize(jsonstring)
-	Dim result As Map
-	result=json.NextObject
-	Dim matches As List
-	matches=result.Get("matches")
-	If matches.Size=0 Then
-		Main.noErrors
-		Return values
-	Else
-		Dim match As Map=matches.Get(0)
-		Log("match"&match)
-		'match.Get("shortMessage")
-		'Dim context As Map
-		Dim message As String
-		message=match.Get("message")
-		'context=match.Get("context")
-		Dim replacements As List
-		replacements=match.Get("replacements")
-		Dim offset,length As Int
-		offset=match.Get("offset")
-		length=match.Get("length")
-		values.Add(offset)
-		values.Add(length)
-		values.Add(replacements)
-		values.Add(entry)
-		Main.addCheckList(replacements,message,offset,length,text,entry)
-	End If
-	Return values
-End Sub
 
