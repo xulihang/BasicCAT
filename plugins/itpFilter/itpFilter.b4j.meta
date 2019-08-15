@@ -4,6 +4,6 @@ ModuleBreakpoints0=
 ModuleBreakpoints1=
 ModuleClosedNodes0=
 ModuleClosedNodes1=
-NavigationStack=itpFilterPlugin,initPreviewWindow,64,5,itpFilterPlugin,CanBeSortedAsNumber,380,0,itpFilterPlugin,GetParent,357,0,Main,Button1_MouseClicked,58,0,Main,AppStart,26,0,Main,Button2_MouseClicked,44,1,itpFilterPlugin,GetNiceName,26,0,itpFilterPlugin,createWorkFile,148,6,itpFilterPlugin,Run,34,0,itpFilterPlugin,generateFile,193,0,itpFilterPlugin,loadImg,89,0
+NavigationStack=Main,Button1_MouseClicked,58,0,Main,AppStart,26,0,Main,Button2_MouseClicked,44,1,itpFilterPlugin,GetNiceName,26,0,itpFilterPlugin,createWorkFile,148,6,itpFilterPlugin,Run,34,0,itpFilterPlugin,generateFile,193,0,itpFilterPlugin,loadImg,89,0,itpFilterPlugin,Class_Globals,5,0,itpFilterPlugin,previewText,455,6
 SelectedBuild=0
 VisibleModules=1

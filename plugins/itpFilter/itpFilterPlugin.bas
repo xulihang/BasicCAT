@@ -457,6 +457,9 @@ Sub previewText(editorLV As ListView,segments As List,lastEntry As Int,projectFi
 			loadImg(File.Combine(workfile.Get("dirPath"),bitext.Get(3)))
 			removeBoxes
 			addBox(boxGeometry)
+			Log(boxGeometry.Get("Y"))
+			Log(iv.GetImage.Height)
+			ImageScrollPane.VPosition=boxGeometry.Get("Y")/iv.GetImage.Height
 		End If
 		text.Append(translation).Append(CRLF)
 	Next
