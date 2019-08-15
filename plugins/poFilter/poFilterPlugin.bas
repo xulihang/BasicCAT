@@ -484,8 +484,13 @@ Sub shouldAddSpace(sourceLang As String,targetLang As String,index As Int,segmen
 	Return False
 End Sub
 
-Sub previewText(editorLV As ListView,segments As List,lastEntry As Int,sourceLang As String,targetLang As String,path As String,settings As Map) As String
+Sub previewText(editorLV As ListView,segments As List,lastEntry As Int,projectFile As Map,path As String,filename As String) As String
 	Log("Po preview")
+	Dim sourceLang,targetLang As String
+	sourceLang=projectFile.Get("source")
+	targetLang=projectFile.Get("target")
+	Dim settings As Map
+	settings=projectFile.Get("settings")
 	Dim text As StringBuilder
 	text.Initialize
 	If editorLV.Items.Size<>segments.Size Then
