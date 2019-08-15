@@ -168,6 +168,7 @@ Library21=cssutils
 Library22=b4jdragtome
 Library23=threading
 Library24=jpoi
+Library25=jbitmapcreator
 Library3=javaobject
 Library4=json
 Library5=apachestringutilsb4j
@@ -241,9 +242,9 @@ Module7=Term
 Module8=KeyValueStore
 Module9=ProjectSettings
 NumberOfFiles=75
-NumberOfLibraries=24
+NumberOfLibraries=25
 NumberOfModules=65
-Version=7.32
+Version=7.51
 @EndOfDesignText@
 #Region Project Attributes 
 	#MainFormWidth: 600

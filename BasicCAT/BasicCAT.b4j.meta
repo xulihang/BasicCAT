@@ -196,5 +196,6 @@ ModuleClosedNodes65=
 ModuleClosedNodes7=
 ModuleClosedNodes8=
 ModuleClosedNodes9=
+NavigationStack=Main,lbl_MouseClicked,1480,0,txtFilter,previewText,241,0,xliffFilter,previewText,661,0,idmlFilter,previewText,1317,0,Project,showPreView,320,0,Previewer,Show,15,0,Previewer,isShowing,22,0,Previewer,loadText,47,5,Previewer,getFontSize,111,0
 SelectedBuild=0
-VisibleModules=1,2,3,4,5,6,7,8,9,10,11
+VisibleModules=1,2,3,4,5,6,7,8,9,10,16,18,40

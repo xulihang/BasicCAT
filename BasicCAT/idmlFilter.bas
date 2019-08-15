@@ -1327,7 +1327,7 @@ Sub previewText As String
 	If Main.editorLV.Items.Size<>Main.currentProject.segments.Size Then
 		Return ""
 	End If
-	Dim previousStory as String
+	Dim previousStory As String
 	For i=Max(0,Main.currentProject.lastEntry-3) To Min(Main.currentProject.lastEntry+7,Main.currentProject.segments.Size-1)
 		Try
 			Dim p As Pane

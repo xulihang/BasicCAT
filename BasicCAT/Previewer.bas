@@ -45,10 +45,9 @@ Public Sub loadText
 		params.Put("editorLV",Main.editorLV)
 		params.Put("segments",Main.currentProject.segments)
 		params.Put("lastEntry",Main.currentProject.lastEntry)
-		params.Put("sourceLang",Main.currentProject.projectFile.Get("source"))
-		params.Put("targetLang",Main.currentProject.projectFile.Get("target"))
+		params.Put("projectFile",Main.currentProject.projectFile)
 		params.Put("path",Main.currentProject.path)
-		params.Put("settings",Main.currentProject.projectFile.Get("settings"))
+		params.Put("filename",currentFilename)
 		wait for (Main.currentProject.runFilterPluginAccordingToExtension(currentFilename,"previewText",params)) Complete (result As String)
 		text=result
 	End If

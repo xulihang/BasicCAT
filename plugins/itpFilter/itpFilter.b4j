@@ -1,0 +1,99 @@
+﻿AppType=JavaFX
+Build1=Default,org.xulihang.basiccat
+File1=itpPreview.bjl
+File2=languagesWithoutSpace.txt
+File3=segmentationRules.srx
+FileGroup1=Default Group
+FileGroup2=Default Group
+FileGroup3=Default Group
+Group=Default Group
+Library1=jcore
+Library2=jfx
+Library3=json
+Library4=jxmlsax
+Library5=xmlbuilder
+Library6=jxui
+Library7=javaobject
+Library8=jbitmapcreator
+Library9=b4xcollections
+Module1=itpFilterPlugin
+NumberOfFiles=3
+NumberOfLibraries=9
+NumberOfModules=1
+Version=7.51
+@EndOfDesignText@
+#Region Project Attributes 
+	#MainFormWidth: 600
+	#MainFormHeight: 600 
+#End Region
+
+Sub Process_Globals
+	Private fx As JFX
+	Public MainForm As Form
+	Private ip As itpFilterPlugin
+End Sub
+
+Sub AppStart (Form1 As Form, Args() As String)
+	MainForm = Form1
+	MainForm.RootPane.LoadLayout("itpPreview") 'Load the layout file.
+	MainForm.Show
+
+	ip.Initialize
+	Dim boxGeometry As Map
+	boxGeometry.Initialize
+	boxGeometry.Initialize
+	boxGeometry.Put("X",20)
+	boxGeometry.Put("Y",50)
+	boxGeometry.Put("width",100)
+	boxGeometry.Put("height",200)
+	Dim params As Map
+	params.Initialize
+	params.Put("path",File.Combine(File.DirApp,"1.jpg"))
+	params.Put("boxGeometry",boxGeometry)
+	ip.Run("show",params)
+	Sleep(1000)
+	ip.Run("loadImage",params)
+	ip.Run("addBox",params)
+End Sub
+
+'Return true to allow the default exceptions handler to handle the uncaught exception.
+Sub Application_Error (Error As Exception, StackTrace As String) As Boolean
+	Return True
+End Sub
+
+Sub updateOperation(message As String)
+	Log(message)
+End Sub
+
+Sub Button2_MouseClicked (EventData As MouseEvent)
+	ip.createWorkFile("desktop.itp",File.DirApp,"en",False)
+End Sub
+
+Sub Button1_MouseClicked (EventData As MouseEvent)
+	Dim boxGeometry As Map
+	boxGeometry.Initialize
+	boxGeometry.Initialize
+	boxGeometry.Put("X",20)
+	boxGeometry.Put("Y",50)
+	boxGeometry.Put("width",100)
+	boxGeometry.Put("height",200)
+	Dim boxGeometry2 As Map
+	boxGeometry2.Initialize
+	boxGeometry2.Initialize
+	boxGeometry2.Put("X",120)
+	boxGeometry2.Put("Y",250)
+	boxGeometry2.Put("width",100)
+	boxGeometry2.Put("height",200)
+	Dim boxes As List
+	boxes.Initialize
+	boxes.Add(boxGeometry2)
+	boxes.Add(boxGeometry)
+	Dim params As Map
+	params.Initialize
+	params.Put("boxes",boxes)
+	ip.Run("addBoxes",params)
+End Sub
+
+Sub Button3_MouseClicked (EventData As MouseEvent)
+	ip.generateFile("1.itp",File.DirApp,CreateMap("":""),Me)
+End Sub
