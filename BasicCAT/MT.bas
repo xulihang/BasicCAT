@@ -74,7 +74,7 @@ Sub getMT(source As String,sourceLang As String,targetLang As String,MTEngine As
 		Log("pluginMT"&result)
 		Return result
 	End If
-	return ""
+	Return ""
 End Sub
 
 Sub convertLangCode(lang As String,engine As String) As String
@@ -95,8 +95,6 @@ Sub convertLangCode(lang As String,engine As String) As String
 End Sub
 
 Sub BaiduMT(source As String,sourceLang As String,targetLang As String) As ResumableSub
-
-	
 	sourceLang=sourceLang.ToLowerCase
 	targetLang=targetLang.ToLowerCase
 	Dim salt As Int
@@ -115,14 +113,12 @@ Sub BaiduMT(source As String,sourceLang As String,targetLang As String) As Resum
 	param="?appid="&appid&"&q="&source&"&from="&sourceLang&"&to="&targetLang&"&salt="&salt&"&sign="&sign
 	Dim job As HttpJob
 	job.Initialize("job",Me)
-	job.Download("http://api.fanyi.baidu.com/api/trans/vip/translate"&param)
+	job.Download("https://api.fanyi.baidu.com/api/trans/vip/translate"&param)
 	wait for (job) JobDone(job As HttpJob)
-	Dim target As String
+	Dim target As String=""
 	If job.Success Then
 		'Log(job.GetString)
-		If job.GetString.Contains("error") Then
-			target=""
-		Else
+	    Try
 			Dim json As JSONParser
 			json.Initialize(job.GetString)
 			Dim result As List
@@ -130,16 +126,16 @@ Sub BaiduMT(source As String,sourceLang As String,targetLang As String) As Resum
 			Dim resultMap As Map
 			resultMap=result.Get(0)
 			target=resultMap.Get("dst")
-		End If
-	Else
-		target=""
+		Catch
+			Log(LastException)
+		End Try
 	End If
 	job.Release
 	Return target
 End Sub
 
 Sub yandexMT(source As String,sourceLang As String,targetLang As String) As ResumableSub
-	Dim target As String
+	Dim target As String=""
 	Dim su As StringUtils
 	Dim job As HttpJob
 	job.Initialize("job",Me)
@@ -149,19 +145,19 @@ Sub yandexMT(source As String,sourceLang As String,targetLang As String) As Resu
 	wait For (job) JobDone(job As HttpJob)
 	If job.Success Then
 		Log(job.GetString)
-		Dim json As JSONParser
-		json.Initialize(job.GetString)
-		Dim map1 As Map
-		map1=json.NextObject
-		If map1.Get("code")=200 Then
-			Dim result As List
-			result=map1.Get("text")
-			target=result.Get(0)
-		Else
-			target=""
-		End If
-	Else
-		target=""
+		Try
+			Dim json As JSONParser
+			json.Initialize(job.GetString)
+			Dim map1 As Map
+			map1=json.NextObject
+			If map1.Get("code")=200 Then
+				Dim result As List
+				result=map1.Get("text")
+				target=result.Get(0)
+			End If
+		Catch
+			Log(LastException)
+		End Try
 	End If
 	job.Release
 	Return target

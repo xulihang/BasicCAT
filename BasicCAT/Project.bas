@@ -1493,8 +1493,14 @@ Sub showReplacements(matches As List,entry As Int)
 	If Main.getCheckLVSize>1 Then
 		Return
 	End If
-	Dim p As Pane
-	p=Main.editorLV.Items.Get(entry)
+	Try
+		Dim p As Pane
+		p=Main.editorLV.Items.Get(entry)
+	Catch
+		Log(LastException)
+		Return
+	End Try
+
 	Dim ta As TextArea
 	ta=p.GetNode(1)
 	
