@@ -199,6 +199,5 @@ ModuleClosedNodes66=
 ModuleClosedNodes7=
 ModuleClosedNodes8=
 ModuleClosedNodes9=
-NavigationStack=MT,getMTPluginList,22,0,MT,yandexMT,149,2,opennlp,tokenize,27,0,Project,showReplacements,1491,2,MT,getMTList,6,0,MT,BaiduMT,115,3,Project,showMT,1663,0,Project,getMeans,1720,0,MT,getMT,25,0,Project,preTranslate,1897,0
 SelectedBuild=0
-VisibleModules=1,2,3,4,5,6,7,8,9,10,20,65
+VisibleModules=1,2,3,4,5,6,7,8,9,10,19,20

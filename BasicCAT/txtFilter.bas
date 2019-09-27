@@ -229,13 +229,13 @@ Sub splitSegment(sourceTextArea As TextArea)
 	fullsource=bitext.Get(2)
 	
 	bitext.Set(0,sourceTextArea.Text)
-	bitext.Set(2,sourceTextArea.Text)
+	bitext.Set(2,fullsource.SubString2(0,fullsource.IndexOf(sourceTextArea.Text)+sourceTextArea.Text.Length))
 	
 	
 	newBiText.Initialize
 	newBiText.Add(source)
 	newBiText.Add("")
-	newBiText.Add(fullsource.Replace(sourceTextArea.Text,""))
+	newBiText.Add(fullsource.SubString2(fullsource.IndexOf(sourceTextArea.Text)+sourceTextArea.Text.Length,fullsource.Length))
 	newBiText.Add(bitext.Get(3))
 	newBiText.Add(bitext.Get(4))
 	Main.currentProject.segments.set(index,bitext)
