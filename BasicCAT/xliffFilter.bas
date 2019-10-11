@@ -344,7 +344,7 @@ Sub insertTranslation(translationMap As Map,filename As String,path As String,is
 	If isSegEnabled=False Then
 		xmlstring=XMLUtils.escapedText(xmlstring,"target","xliff")
 	End If
-	File.WriteString(path,"out.xml",xmlstring)
+	'File.WriteString(path,"out.xml",xmlstring)
 	'Log("xml"&xmlstring)
 	Dim isSegContinuous As Boolean=False
 	isSegContinuous=checkSegContinuous(xmlstring)
