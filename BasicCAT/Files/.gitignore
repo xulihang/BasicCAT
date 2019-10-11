@@ -7,3 +7,13 @@ History
 project.bcp
 tmp
 config
+
+# Mac
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows:
+Thumbs.db
+ehthumbs.db
+Desktop.ini
