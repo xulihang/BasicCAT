@@ -358,10 +358,11 @@ Sub AliMT(source As String,sourceLang As String,targetLang As String,isEcommerce
 		Dim response As JavaObject=client.RunMethodJO("getAcsResponse",Array(request))
 		Dim data As JavaObject=response.RunMethodJO("getData",Null)
 		result=data.RunMethod("getTranslated",Null)
+		Return result
 	Catch
 		Log(LastException)
+		Return ""
 	End Try
-	Return result
 End Sub
 
 Sub UUID As String

@@ -1,81 +1,82 @@
 ﻿AppType=JavaFX
 Build1=Default,org.xulihang.basiccat
 File1=.gitignore
-File10=dictWebview.bjl
-File11=editor.bjl
-File12=ErrorReporter.bjl
-File13=FontPicker.bjl
-File14=Fonts.xml
-File15=generalProjectSetting.bjl
-File16=generalSetting.bjl
-File17=HistoryItem.bjl
-File18=HistoryViewer.bjl
-File19=importDialog.bjl
+File10=dictList.txt
+File11=dictWebview.bjl
+File12=editor.bjl
+File13=ErrorReporter.bjl
+File14=FontPicker.bjl
+File15=Fonts.xml
+File16=generalProjectSetting.bjl
+File17=generalSetting.bjl
+File18=HistoryItem.bjl
+File19=HistoryViewer.bjl
 File2=appearance.bjl
-File20=inputbox.bjl
-File21=inputTextArea.bjl
-File22=lang.conf
-File23=LangaugePairSelector.bjl
-File24=langcodes.txt
-File25=languageChooser.bjl
-File26=languagesWithoutSpace.txt
-File27=leftProject.bjl
-File28=Log.bjl
-File29=lowerRight.bjl
+File20=importDialog.bjl
+File21=inputbox.bjl
+File22=inputTextArea.bjl
+File23=lang.conf
+File24=LangaugePairSelector.bjl
+File25=langcodes.txt
+File26=languageChooser.bjl
+File27=languagesWithoutSpace.txt
+File28=leftProject.bjl
+File29=Log.bjl
 File3=autocomplete.bjl
-File30=main.bjl
-File31=menuText.txt
-File32=MTCompare.bjl
-File33=mtparamfiller.bjl
-File34=mtSetting.bjl
-File35=oneterm.bjl
-File36=operation.bjl
-File37=pdf2txt.bjl
-File38=pluginsSetting.bjl
-File39=preferences.bjl
+File30=lowerRight.bjl
+File31=main.bjl
+File32=menuText.txt
+File33=MTCompare.bjl
+File34=mtparamfiller.bjl
+File35=mtSetting.bjl
+File36=oneterm.bjl
+File37=operation.bjl
+File38=pdf2txt.bjl
+File39=pluginsSetting.bjl
 File4=autocorrectItem.bjl
-File40=preferences.conf
-File41=pretranslate.bjl
-File42=preview.bjl
-File43=progress.bjl
-File44=projectSetting.bjl
-File45=quickfillSetting.bjl
-File46=right.bjl
-File47=searchandreplace.bjl
-File48=searchTableView.bjl
-File49=SearchView.bjl
+File40=preferences.bjl
+File41=preferences.conf
+File42=pretranslate.bjl
+File43=preview.bjl
+File44=progress.bjl
+File45=projectSetting.bjl
+File46=quickfillSetting.bjl
+File47=right.bjl
+File48=searchandreplace.bjl
+File49=searchTableView.bjl
 File5=autocorrectSetting.bjl
-File50=segment.bjl
-File51=segmentation_en.conf
-File52=segmentation_en_exception.conf
-File53=segmentation_en_idml.conf
-File54=segmentation_zh.conf
-File55=segmentation_zh_exception.conf
-File56=segmentationRules.srx
-File57=serverLanucher.bjl
-File58=settingLanguagecheck.bjl
-File59=settingVersionControl.bjl
+File50=SearchView.bjl
+File51=segment.bjl
+File52=segmentation_en.conf
+File53=segmentation_en_exception.conf
+File54=segmentation_en_idml.conf
+File55=segmentation_zh.conf
+File56=segmentation_zh_exception.conf
+File57=segmentationRules.srx
+File58=serverLanucher.bjl
+File59=settingLanguagecheck.bjl
 File6=basiccat.jpg
-File60=SourceEditor.bjl
-File61=statistics.bjl
-File62=supportedFiles.txt
-File63=tableview.bjl
-File64=tabpane.bjl
-File65=teamSetting.bjl
-File66=term.bjl
-File67=TermEditor.bjl
-File68=TermManager.bjl
-File69=termSetting.bjl
+File60=settingVersionControl.bjl
+File61=SourceEditor.bjl
+File62=statistics.bjl
+File63=supportedFiles.txt
+File64=tableview.bjl
+File65=tabpane.bjl
+File66=teamSetting.bjl
+File67=term.bjl
+File68=TermEditor.bjl
+File69=TermManager.bjl
 File7=checkList.bjl
-File70=TMEditor.bjl
-File71=TMManager.bjl
-File72=tmSetting.bjl
-File73=upperRight.bjl
-File74=version.txt
-File75=viewSegment.bjl
-File76=wordLookupSetting.bjl
+File70=termSetting.bjl
+File71=TMEditor.bjl
+File72=TMManager.bjl
+File73=tmSetting.bjl
+File74=upperRight.bjl
+File75=version.txt
+File76=viewSegment.bjl
+File77=wordLookupSetting.bjl
 File8=confirmReview.bjl
-File9=dictList.txt
+File9=dark.css
 FileGroup1=Default Group
 FileGroup10=Default Group
 FileGroup11=Default Group
@@ -150,6 +151,7 @@ FileGroup73=Default Group
 FileGroup74=Default Group
 FileGroup75=Default Group
 FileGroup76=Default Group
+FileGroup77=Default Group
 FileGroup8=Default Group
 FileGroup9=Default Group
 Group=Default Group
@@ -181,36 +183,36 @@ Library9=jb4xencryption
 Module1=FileChooserUtils
 Module10=preTranslateDialog
 Module11=MT
-Module12=opennlp
-Module13=LanguagePairSelector
-Module14=languageChooser
-Module15=Utils
-Module16=MTCompare
-Module17=serverLauncher
-Module18=Previewer
-Module19=xliffFilter
+Module12=git
+Module13=xliffFilter
+Module14=idmlFilter
+Module15=filterGenericUtils
+Module16=opennlp
+Module17=LanguagePairSelector
+Module18=languageChooser
+Module19=Utils
 Module2=Project
-Module20=idmlFilter
-Module21=LanguageTool
-Module22=MTParamsFiller
-Module23=Preferences
-Module24=filterGenericUtils
-Module25=idmlUtils
-Module26=TMX
-Module27=Xml2Map
-Module28=searchAndReplaceDialog
-Module29=confirmReviewDialog
+Module20=MTCompare
+Module21=serverLauncher
+Module22=Previewer
+Module23=LanguageTool
+Module24=MTParamsFiller
+Module25=Preferences
+Module26=idmlUtils
+Module27=TMX
+Module28=Xml2Map
+Module29=searchAndReplaceDialog
 Module3=segmentation
-Module30=XMLUtils
-Module31=HistoryRecord
-Module32=Map2Xml
-Module33=ErrorReporter
-Module34=TMManager
-Module35=TermManager
-Module36=importDialog
-Module37=statistics
-Module38=OperationDialog
-Module39=git
+Module30=confirmReviewDialog
+Module31=XMLUtils
+Module32=HistoryRecord
+Module33=Map2Xml
+Module34=ErrorReporter
+Module35=TMManager
+Module36=TermManager
+Module37=importDialog
+Module38=statistics
+Module39=OperationDialog
 Module4=CustomListView
 Module40=zip4j
 Module41=progressDialog
@@ -244,7 +246,7 @@ Module66=coordinate
 Module7=Term
 Module8=KeyValueStore
 Module9=ProjectSettings
-NumberOfFiles=76
+NumberOfFiles=77
 NumberOfLibraries=25
 NumberOfModules=66
 Version=7.32
@@ -321,12 +323,14 @@ Sub Process_Globals
 	Private Drag As B4JDragToMe
 	Private projectAutoSaver As AutoSaver
 	Public TargetFileGeneratingProgress As Progress
+	Private statusBar As Pane
 End Sub
 
 Sub AppStart (Form1 As Form, Args() As String)
 	MainForm = Form1
 	MainForm.RootPane.LoadLayout("main") 'Load the layout file.
 	MainForm.Show
+
 	init
 	
 	'Log(fx.Screens)
@@ -387,9 +391,12 @@ Sub init
 	
 	lowerRightSplitPane.LoadLayout("Log")
 	lowerRightSplitPane.LoadLayout("tabpane")
+	
 	TabPane1.LoadLayout("tableview", "TM Match")
 	TabPane1.LoadLayout("searchTableView", "Segment Search")
 	TabPane1.LoadLayout("checkList", "LanguageCheck")
+	
+	
 	calculatedHeight.Initialize
 	adjustDividerPositions
 	preferencesMap.Initialize
@@ -407,7 +414,14 @@ Sub init
 	Utils.disableMenuItems(MenuBar1,File.ReadList(File.DirAssets,"menuText.txt"))
 	Drag.Initialize(projectTreeTableView, "Drag")
 	loadPlugins
+	If preferencesMap.GetDefault("darktheme",False)=True Then
+		MainForm.Stylesheets.Add(File.GetUri(File.DirAssets, "dark.css"))
+		CSSUtils.SetStyleProperty(TabPane1,"-fx-base","rgba(60, 63, 65, 255)")
+		CSSUtils.SetBackgroundColor(statusBar,fx.Colors.DarkGray)
+		LoadHTMLWithBackground(LogWebView,"")
+	End If
 
+	'CSSUtils.SetStyleProperty(lowerRightSplitPane,"-fx-base","rgba(60, 63, 65, 255)")
 End Sub
 
 Public Sub initializeNLP(sourcelang As String)
@@ -1483,14 +1497,32 @@ Sub tmTableView_SelectedRowChanged(Index As Int, Row() As Object)
 		Dim sourceTextArea As TextArea
 		sourceTextArea=pane.GetNode(0)
 		If Row(1)="" Then
-			LogWebView.LoadHtml(Utils.buildHtmlString(Row(2)))
+			LoadHTMLWithBackground(LogWebView,Utils.buildHtmlString(Row(2)))
 			Return
 		End If
 		Dim html As String
 		html=editDistance.showDiff(sourceTextArea.Text,Row(1)).Replace("</body>","<p>"&Row(2)&"</p></body>")
-		LogWebView.LoadHtml(html)
+		LoadHTMLWithBackground(LogWebView,html)
 	End If
 
+End Sub
+
+Public Sub LoadHTMLWithBackground(wv As WebView,html As String)
+	If preferencesMap.GetDefault("darktheme",False)=True Then
+		html=html.Replace("<body>","<body bgcolor=#95999C>")
+		html=html.Replace($"color="red""$,$"color="#C80000""$)
+		If html="" Then
+			Dim s As StringBuilder
+			s.Initialize
+			s.Append("<!DOCTYPE html>")
+			s.Append("<html>")
+			s.Append("<body bgcolor=#95999C>")
+			s.Append("</body>")
+			s.Append("</html>")
+			html=s.ToString
+		End If
+	End If
+	wv.LoadHtml(html)
 End Sub
 
 Sub searchTableView_Action
@@ -1785,7 +1817,11 @@ Public Sub addTextAreaToSegmentPane(segmentpane As Pane,source As String)
 End Sub
 
 Public Sub changeAutoSaveInterval(seconds As Int)
-	projectAutoSaver.Interval=seconds*1000
+	Try
+		projectAutoSaver.Interval=seconds*1000
+	Catch
+		Log(LastException)
+	End Try
 End Sub
 
 Public Sub enableAutosaveTimer(enabled As Boolean)

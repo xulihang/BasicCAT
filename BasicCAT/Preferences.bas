@@ -39,6 +39,7 @@ Sub Class_Globals
 	Private sourceWordsListCheckBox As CheckBox
 	Private lookupControlCheckBox As CheckBox
 	Private lookupShowSourceCheckBox As CheckBox
+	Private DarkThemeCheckBox As CheckBox
 End Sub
 
 'Initializes the object. You can add parameters to this method if needed.
@@ -108,6 +109,9 @@ Sub categoryListView_SelectedIndexChanged(Index As Int)
 			SettingPane.LoadLayout("appearance")
 			loadFont
 			lineHeightTextField.Text=unsavedPreferences.GetDefault("lineheight",0.6)
+			If unsavedPreferences.ContainsKey("darktheme") Then
+				DarkThemeCheckBox.Checked=unsavedPreferences.get("darktheme")
+			End If
 		Case 2
 			'mt
 			SettingPane.RemoveAllNodes
@@ -296,6 +300,10 @@ Sub saveLanguageToolAddressButton_MouseClicked (EventData As MouseEvent)
 	unsavedPreferences.Put("languagetool_address",languagetoolAddressTextField.Text)
 End Sub
 
+Sub DarkThemeCheckBox_CheckedChange(Checked As Boolean)
+	unsavedPreferences.Put("darktheme",Checked)
+End Sub
+
 Sub languagetoolEnabledCheckBox_CheckedChange(Checked As Boolean)
 	unsavedPreferences.Put("languagetoolEnabled",Checked)
 End Sub
@@ -443,4 +451,5 @@ Sub lineHeightTextField_TextChanged (Old As String, New As String)
 	End Try
 
 End Sub
+
 

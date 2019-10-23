@@ -239,7 +239,7 @@ Sub openFile(filename As String,onOpeningProject As Boolean)
 	End If
 	Main.editorLV.Items.Clear
 	Main.tmTableView.Items.Clear
-	Main.LogWebView.LoadHtml("")
+	Main.LoadHTMLWithBackground(Main.LogWebView,"")
 	Main.searchTableView.Items.Clear
 	segments.Clear
 	currentFilename=filename
@@ -266,7 +266,7 @@ End Sub
 Sub closeFile
 	Main.editorLV.Items.Clear
 	Main.tmTableView.Items.Clear
-	Main.LogWebView.LoadHtml("")
+	Main.LoadHTMLWithBackground(Main.LogWebView,"")
 	Main.searchTableView.Items.Clear
 	segments.Clear
 	currentFilename=""
@@ -1620,7 +1620,7 @@ Sub showTM(targetTextArea As TextArea)
 		Return
 	End If
 	Main.tmTableView.Items.Clear
-	Main.LogWebView.LoadHtml("")
+	Main.LoadHTMLWithBackground(Main.LogWebView,"")
 	projectTM.currentSource=sourceTA.Text
 	showMT(sourceTA.Text,targetTextArea)
 	Dim senderFilter As Object = projectTM.getMatchList(sourceTA.Text)

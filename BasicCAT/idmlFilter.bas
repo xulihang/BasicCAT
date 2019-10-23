@@ -22,7 +22,7 @@ End Sub
 
 
 
-Sub createWorkFile(filename As String,path As String,sourceLang As String,sentenceLevel as Boolean) As ResumableSub
+Sub createWorkFile(filename As String,path As String,sourceLang As String,sentenceLevel As Boolean) As ResumableSub
 	If order.IsInitialized=False Then
 		parser.Initialize
 		order.Initialize
