@@ -332,50 +332,6 @@ Sub importedXlsx(filename As String) As List
 	Return result
 End Sub
 
-
-Sub getMatchListNew(source As String) As ResumableSub
-	Dim matchList As List
-	matchList.Initialize
-	Dim jo As JavaObject
-	jo.InitializeStatic("me.xdrop.fuzzywuzzy.FuzzySearch")
-    For i=0 To 1
-		Dim result As List
-		If i=0 Then
-			result=jo.RunMethod("extractTop",Array(source,translationMemory.ListKeys,10))
-	    Else
-			result=jo.RunMethod("extractTop",Array(source,externalTranslationMemory.ListKeys,10))
-		End If
-		Log("result")
-		Log(result)
-		For Each one As JavaObject In result
-			Dim str As String=one.RunMethod("getString",Null)
-			Dim similarity As Double=one.RunMethod("getScore",Null)/100
-			Dim tmPairList As List
-			tmPairList.Initialize
-			tmPairList.Add(similarity)
-			tmPairList.Add(str)
-				
-			Dim target As String
-			Dim targetMap As Map
-			If i=0 Then
-				targetMap=translationMemory.Get(str)
-			Else
-				targetMap=externalTranslationMemory.Get(str)
-			End If
-			target=targetMap.Get("text")
-			tmPairList.Add(target)
-			If i=0 Then
-				tmPairList.Add(targetMap.GetDefault("creator","anonymous"))
-			Else
-				tmPairList.Add(targetMap.Get("filename")) ' external tm name
-			End If
-			Log(tmPairList)
-			matchList.Add(tmPairList)
-		Next
-    Next
-	Return matchList
-End Sub
-
 Sub getMatchList(source As String) As ResumableSub
 	Dim matchList As List
 	matchList.Initialize
