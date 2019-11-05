@@ -34,6 +34,16 @@ Public Sub Put(Key As String, Value As Object)
 	sql1.ExecNonQuery2("INSERT OR REPLACE INTO main VALUES(?, ?)", Array (Key, ser.ConvertObjectToBytes(Value)))
 End Sub
 
+Public Sub PutWithTransaction(map1 As Map)
+	sql1.BeginTransaction
+	For Each key As String In map1.Keys
+		Dim value As Object=map1.Get(key)
+		Dim ser As B4XSerializator
+		sql1.ExecNonQuery2("INSERT OR REPLACE INTO main VALUES(?, ?)", Array (key, ser.ConvertObjectToBytes(value)))
+	Next
+	sql1.TransactionSuccessful
+End Sub
+
 Public Sub Get(Key As String) As Object
 	'Log(Key)
 	Dim rs As ResultSet = sql1.ExecQuery2("SELECT value FROM main WHERE key = ?", Array As String(Key))

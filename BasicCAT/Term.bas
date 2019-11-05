@@ -179,16 +179,18 @@ Public Sub importExternalTerminology(termList As List)
 			TBX.readTermsIntoMap(File.Combine(File.Combine(Main.currentProject.path,"Term"),termfile),sourceLanguage,Main.currentProject.projectFile.Get("target"),termsMap)
 		End If
 	Next
-
+    Dim termToBeImported As Map
+	termToBeImported.Initialize
 	If termsMap.Size<>0 Then
 		Dim index As Int=0
 		For Each source As String In termsMap.Keys
 			index=index+1
 			Sleep(0)
 			progressDialog.update(index,termsMap.Size)
-			externalTerminology.put(source,termsMap.Get(source))
+			termToBeImported.put(source,termsMap.Get(source))
 		Next
 	End If
+	externalTerminology.PutWithTransaction(termToBeImported)
 	progressDialog.close
 End Sub
 

@@ -199,5 +199,6 @@ ModuleClosedNodes66=
 ModuleClosedNodes7=
 ModuleClosedNodes8=
 ModuleClosedNodes9=
+NavigationStack=Term,importExternalTerminology,175,6,MT,BaiduMT,110,0,TM,Class_Globals,8,3,TM,Initialize,15,6,TM,addPair,164,5,Project,showTM,1631,0,TM,importedXlsx,327,0,TM,getMatchList,372,6
 SelectedBuild=0
-VisibleModules=1,2,3,4,5,6,7,8,9,10,25,30,11,19,59
+VisibleModules=1,2,3,4,5,6,7,8,9,10,13
