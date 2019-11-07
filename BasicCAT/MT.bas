@@ -8,6 +8,7 @@ Version=6.51
 Sub Process_Globals
 	Private fx As JFX
 	Private Bconv As ByteConverter
+	Private mtResultStore As Map
 End Sub
 
 Sub getMTList As List
@@ -37,33 +38,34 @@ Sub getMT(source As String,sourceLang As String,targetLang As String,MTEngine As
 	End If
 	sourceLang=convertLangCode(sourceLang,MTEngine)
 	targetLang=convertLangCode(targetLang,MTEngine)
+	Dim result As String
+	
+	If mtResultStore.IsInitialized=True Then
+		Dim key As String=getMTResultKey(source,MTEngine,sourceLang,targetLang)
+		If mtResultStore.ContainsKey(key) Then
+			Return mtResultStore.Get(key)
+		End If
+	End If
+	
 	Select MTEngine
 		Case "baidu"
 			wait for (BaiduMT(source,sourceLang,targetLang)) Complete (result As String)
-			Return result
 		Case "yandex"
 			wait for (yandexMT(source,sourceLang,targetLang)) Complete (result As String)
-			Return result
 		Case "youdao"
 			wait for (youdaoMT(source,sourceLang,targetLang,False)) Complete (result As String)
-			Return result
 		Case "google"
 			wait for (googleMT(source,sourceLang,targetLang)) Complete (result As String)
-			Return result
 		Case "microsoft"
 			wait for (microsoftMT(source,sourceLang,targetLang)) Complete (result As String)
-			Return result
 		Case "mymemory"
 			wait for (MyMemory(source,sourceLang,targetLang)) Complete (result As String)
-			Return result
 		Case "ali"
 			wait for (AliMT(source,sourceLang,targetLang,False)) Complete (result As String)
-			Return result
 		Case "ali-ecommerce"
 			wait for (AliMT(source,sourceLang,targetLang,True)) Complete (result As String)
-			Return result
 	End Select
-	If getMTPluginList.IndexOf(MTEngine)<>-1 Then
+	If result="" And getMTPluginList.IndexOf(MTEngine)<>-1 Then
 		Dim params As Map
 		params.Initialize
 		params.Put("source",source)
@@ -72,9 +74,30 @@ Sub getMT(source As String,sourceLang As String,targetLang As String,MTEngine As
 		params.Put("preferencesMap",Main.preferencesMap)
 		wait for (Main.plugin.RunPlugin(MTEngine&"MT","translate",params)) complete (result As String)
 		Log("pluginMT"&result)
-		Return result
 	End If
-	Return ""
+	If result<>"" Then
+		storeMTResult(source,result,MTEngine,sourceLang,targetLang)
+	End If
+	Return result
+End Sub
+
+Sub storeMTResult(source As String,target As String,engine As String,sourceLang As String,targetLang As String)
+	If mtResultStore.IsInitialized=False Then
+		mtResultStore.Initialize
+	End If
+	mtResultStore.Put(getMTResultKey(source,engine,sourceLang,targetLang),target)
+End Sub
+
+Sub getMTResultKey(source As String,engine As String,sourceLang As String,targetLang As String) As String
+	Dim map1 As Map
+	map1.Initialize
+	map1.Put("source",source)
+	map1.Put("engine",engine)
+	map1.Put("sourceLang",sourceLang)
+	map1.Put("targetLang",targetLang)
+	Dim json As JSONGenerator
+	json.Initialize(map1)
+	Return json.ToString
 End Sub
 
 Sub convertLangCode(lang As String,engine As String) As String
