@@ -8,7 +8,7 @@ Sub Class_Globals
 	Private fx As JFX
 	Private frm As Form
 	Private SearchView1 As SearchView
-	Private kvs As KeyValueStore
+	Private kvs As TMDB
 	Private externalTMRadioButton As RadioButton
 	Private projectTMRadioButton As RadioButton
 End Sub

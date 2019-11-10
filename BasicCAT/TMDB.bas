@@ -1,16 +1,19 @@
-﻿B4A=true
+﻿B4J=true
 Group=Default Group
 ModulesStructureVersion=1
 Type=Class
-Version=6.5
+Version=7.8
 @EndOfDesignText@
+'KeyValueStore: v2.20
 Sub Class_Globals
 	Private sql1 As SQL
 	'Private ser As B4XSerializator
+	Private sourceLang As String
 End Sub
 
 'Initializes the store and sets the store file.
-Public Sub Initialize (Dir As String, FileName As String)
+Public Sub Initialize (Dir As String, FileName As String,pSourceLang As String)
+	sourceLang=pSourceLang
 	If sql1.IsInitialized Then sql1.Close
 #if B4J
 	sql1.InitializeSQLite(Dir, FileName, True)
@@ -26,11 +29,14 @@ Public Sub Initialize (Dir As String, FileName As String)
 	End If
 	
 	CreateTable
+	If checkIsFTSEnabled=False Then
+		migrateToFTS
+	End If
 End Sub
 
 Public Sub Put(Key As String, Value As Object)
 	Dim ser As B4XSerializator
-	sql1.ExecNonQuery2("INSERT OR REPLACE INTO main VALUES(?, ?)", Array (Key, ser.ConvertObjectToBytes(Value)))
+	sql1.ExecNonQuery2("INSERT OR REPLACE INTO main VALUES(?, ?, ?)", Array (Key, ser.ConvertObjectToBytes(Value),getStringForIndex(Key)))
 End Sub
 
 Public Sub PutWithTransaction(map1 As Map)
@@ -38,7 +44,7 @@ Public Sub PutWithTransaction(map1 As Map)
 	For Each key As String In map1.Keys
 		Dim value As Object=map1.Get(key)
 		Dim ser As B4XSerializator
-		sql1.ExecNonQuery2("INSERT OR REPLACE INTO main VALUES(?, ?)", Array (key, ser.ConvertObjectToBytes(value)))
+		sql1.ExecNonQuery2("INSERT OR REPLACE INTO main VALUES(?, ?, ?)", Array (key, ser.ConvertObjectToBytes(value),getStringForIndex(key)))
 	Next
 	sql1.TransactionSuccessful
 End Sub
@@ -97,7 +103,7 @@ Public Sub PutMapAsync (Map As Map) As ResumableSub
 		myser.ConvertObjectToBytesAsync(Map.Get(key), "myser")
 		Wait For (myser) myser_ObjectToBytes (Success As Boolean, Bytes() As Byte)
 		If Success Then
-			sql1.AddNonQueryToBatch("INSERT OR REPLACE INTO main VALUES(?, ?)", Array(key, Bytes))
+			sql1.AddNonQueryToBatch("INSERT OR REPLACE INTO main VALUES(?, ?, ?)", Array(key, Bytes,getStringForIndex(key)))
 		Else
 			Log("Failed to serialize object: " & Map.Get(key))
 		End If
@@ -195,6 +201,83 @@ End Sub
 
 'creates the main table (if it does not exist)
 Private Sub CreateTable
-	sql1.ExecNonQuery("CREATE TABLE IF NOT EXISTS main(key TEXT PRIMARY KEY, value NONE)")
+	sql1.ExecNonQuery("CREATE VIRTUAL TABLE IF NOT EXISTS main USING fts4(key, value, index, notindexed=key, notindexed=value)")
+	'sql1.ExecNonQuery("CREATE TABLE IF NOT EXISTS main(key TEXT PRIMARY KEY, value NONE)")
 End Sub
 
+Sub migrateToFTS
+	Dim resultMap As Map = asMapWithB4XSerializedData
+	DeleteAll
+	CreateTable
+	sql1.BeginTransaction
+	For Each key As String In resultMap.Keys
+		Dim value As Object=resultMap.Get(key)
+		sql1.ExecNonQuery2("INSERT OR REPLACE INTO main VALUES(?, ?, ?)", Array (key, value,getStringForIndex(key)))
+	Next
+	sql1.TransactionSuccessful
+End Sub
+
+'Returns the database as a map.
+Public Sub asMapWithB4XSerializedData As Map
+	Dim map1 As Map
+	map1.Initialize
+	Dim c As ResultSet = sql1.ExecQuery("SELECT * FROM main")
+	Do While c.NextRow
+		map1.Put(c.GetString2(0),c.GetBlob2(1))
+	Loop
+	c.Close
+	Return map1
+End Sub
+
+Sub checkIsFTSEnabled As Boolean
+	Try
+		sql1.ExecQuery("SELECT * FROM main_content")
+		Return True
+	Catch
+		Log(LastException)
+		Return False
+	End Try
+End Sub
+
+Public Sub GetMatchedMap(text As String) As Map
+	text=getQuery(text)
+	Dim sqlStr As String="SELECT key, value , quote(matchinfo(main)) as rank FROM main WHERE main MATCH '"&text&"' ORDER BY rank DESC LIMIT 1000 OFFSET 0"
+	Log(sqlStr)
+	Dim rs As ResultSet = sql1.ExecQuery(sqlStr)
+	Dim resultMap As Map
+	resultMap.Initialize
+	Dim result As Object = Null
+	Do While rs.NextRow
+		Dim ser As B4XSerializator
+		result = ser.ConvertBytesToObject(rs.GetBlob2(1))
+		resultMap.Put(rs.GetString2(0),result)
+	Loop
+	rs.Close
+	Return resultMap
+End Sub
+
+Sub getQuery(source As String) As String
+	Dim sb As StringBuilder
+	sb.Initialize
+	Dim words As List=LanguageUtils.TokenizedList(source,sourceLang)
+	For index =0 To words.Size-1
+		Dim word As String=words.Get(index)
+		If word.Trim<>"" Then
+			sb.Append(word)
+			If index<>words.Size-1 Then
+				sb.Append(" OR ")
+			End If
+		End If
+	Next
+	Return sb.ToString
+End Sub
+
+Sub getStringForIndex(source As String) As String
+	Dim sb As StringBuilder
+	sb.Initialize
+	Dim words As List=LanguageUtils.TokenizedList(source,sourceLang)
+	For index =0 To words.Size-1
+		sb.Append(words.Get(index)).Append(" ")
+	Next
+	Return sb.ToString.Trim
+End Sub

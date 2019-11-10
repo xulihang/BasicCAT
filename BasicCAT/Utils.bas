@@ -10,6 +10,18 @@ Sub Process_Globals
 	Private menus As Map
 End Sub
 
+Sub removeDuplicated(source As List)
+	Dim newList As List
+	newList.Initialize
+	For Each item As Object In source
+		If newList.IndexOf(item)=-1 Then
+			newList.Add(item)
+		End If
+	Next
+	source.Clear
+	source.AddAll(newList)
+End Sub
+
 'find is the text within a whole text
 Sub splitByFind(text As String,find As String,textSegments As List)
 	Dim textLeft As String

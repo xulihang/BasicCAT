@@ -6,8 +6,8 @@ Version=6.51
 @EndOfDesignText@
 Sub Class_Globals
 	Private fx As JFX
-	Public translationMemory As KeyValueStore
-	Public externalTranslationMemory As KeyValueStore
+	Public translationMemory As TMDB
+	Public externalTranslationMemory As TMDB
 	Private sharedTM As ClientKVS
 	Private similarityStore As Map
 	Public currentSource As String
@@ -15,9 +15,9 @@ Sub Class_Globals
 End Sub
 
 'Initializes the object. You can add parameters to this method if needed.
-Public Sub Initialize(projectPath As String)
-	translationMemory.Initialize(File.Combine(projectPath,"TM"),"TM.db")
-    externalTranslationMemory.Initialize(File.Combine(projectPath,"TM"),"externalTM.db")
+Public Sub Initialize(projectPath As String,sourceLang As String)
+	translationMemory.Initialize(File.Combine(projectPath,"TM"),"TM.db",sourceLang)
+	externalTranslationMemory.Initialize(File.Combine(projectPath,"TM"),"externalTM.db",sourceLang)
 	similarityStore.Initialize
 	initSharedTM(projectPath)
 End Sub
@@ -336,6 +336,71 @@ Sub getMatchList(source As String) As ResumableSub
 	Dim matchList As List
 	matchList.Initialize
 
+	Dim matchrate As Double
+	If Main.currentProject.settings.ContainsKey("matchrate") Then
+		matchrate=Main.currentProject.settings.Get("matchrate")
+	Else
+		matchrate=0.5
+	End If
+	For i=0 To 1
+		If i=0 Then
+			Dim kvs As TMDB
+			kvs=translationMemory
+		Else
+			Dim kvs As TMDB
+			kvs=externalTranslationMemory
+		End If
+		
+		Dim matchedMap As Map=kvs.GetMatchedMap(source)
+		Log(matchedMap)
+		For Each key As String In matchedMap.Keys
+			Sleep(0)
+			If basicCompare(source,key)=False Then
+				Continue
+			End If
+
+			Dim similarity As Double
+			If key=source Then 'exact match
+				similarity=1.0
+			Else
+				If similarityStore.ContainsKey(source&"	"&key) Then
+					similarity=similarityStore.Get(source&"	"&key)
+				Else
+					wait for (getSimilarityFuzzyWuzzy(source,key)) Complete (Result As Double)
+					similarity=Result
+					similarityStore.Put(source&"	"&key,similarity)
+				End If
+			End If
+
+			If similarity>matchrate Then
+				Dim tmPairList As List
+				tmPairList.Initialize
+				tmPairList.Add(similarity)
+				tmPairList.Add(key)
+				
+				Dim target As String
+				Dim targetMap As Map
+				targetMap=kvs.Get(key)
+				target=targetMap.Get("text")
+				tmPairList.Add(target)
+				If i=0 Then
+					tmPairList.Add(targetMap.GetDefault("creator","anonymous"))
+				Else
+					tmPairList.Add(targetMap.Get("filename")) ' external tm name
+				End If
+				Log(tmPairList)
+				matchList.Add(tmPairList)
+			End If
+		Next
+	Next
+	
+	Return subtractedAndSortMatchList(matchList)
+End Sub
+
+Sub getMatchListOld(source As String) As ResumableSub
+	Dim matchList As List
+	matchList.Initialize
+
     Dim matchrate As Double
 	If Main.currentProject.settings.ContainsKey("matchrate") Then
 		matchrate=Main.currentProject.settings.Get("matchrate")
@@ -344,10 +409,10 @@ Sub getMatchList(source As String) As ResumableSub
 	End If
 	For i=0 To 1
 		If i=0 Then
-			Dim kvs As KeyValueStore
+			Dim kvs As TMDB
 			kvs=translationMemory
 		Else
-			Dim kvs As KeyValueStore
+			Dim kvs As TMDB
 			kvs=externalTranslationMemory
 		End If
 		For Each key As String In kvs.ListKeys
@@ -403,10 +468,10 @@ Sub getOneUseMemory(source As String,rate As Double) As ResumableSub
 	onePairList.Initialize
 	For i=0 To 1
 		If i=0 Then
-			Dim kvs As KeyValueStore
+			Dim kvs As TMDB
 			kvs=translationMemory
 		Else
-			Dim kvs As KeyValueStore
+			Dim kvs As TMDB
 			kvs=externalTranslationMemory
 		End If
 		

@@ -288,12 +288,12 @@ Sub termsInASentenceUsingHashMap(sentence As String,kvs As KeyValueStore) As Lis
 		'Log(sentence)
 		sentence=Regex.Replace("[\x21-\x2F\x3A-\x40\x5B-\x60\x7B-\x7E]",sentence,"") 'remove punctuations
 		words.AddAll(Regex.Split(" ",sentence))
-		addPhrases(words)
+		LanguageUtils.addPhrases(words)
 		If sourceLanguage.StartsWith("en") Then 'only english opennlp model exists
 			Dim lemmatized As List
 			lemmatized.Initialize
 			lemmatized.AddAll(Regex.Split(" ",Main.nlp.lemmatizedSentence(sentence)))
-			addPhrases(lemmatized)
+			LanguageUtils.addPhrases(lemmatized)
 			For Each lemma As String In lemmatized 'here, lemma may be lemmatized phrases
 				If words.IndexOf(lemma)=-1 Then
 					words.Add(lemma)
@@ -302,7 +302,7 @@ Sub termsInASentenceUsingHashMap(sentence As String,kvs As KeyValueStore) As Lis
 		End If
 	Else
 	    words.AddAll(Regex.Split("",sentence))
-		words.AddAll(addHanziWords(sentence))
+		words.AddAll(LanguageUtils.addHanziWords(sentence))
 	End If
 	
 	For Each word As String In words
@@ -324,49 +324,7 @@ Sub termsInASentenceUsingHashMap(sentence As String,kvs As KeyValueStore) As Lis
 	Return result
 End Sub
 
-Sub addPhrases(words As List)
-	Dim iterateList As List
-	iterateList.Initialize
-	iterateList.AddAll(words)
-	For i=1 To 8
-		Dim endnum As Int=iterateList.Size-i
-		If endnum<=0 Then
-			Exit
-		End If
-		For j=0 To endnum 
-			Dim word As String
-			If j+i>iterateList.Size-1 Then
-				Exit
-			End If
-			For k=j To j+i
-				word=word&" "&iterateList.Get(k)
-			Next
-			word=word.Trim
-			If words.IndexOf(word)=-1 Then
-				words.Add(word)
-			End If
-		Next
-	Next
-End Sub
 
-Sub addHanziWords(source As String) As List
-	Dim words As List
-	words.Initialize
-	For i=1 To 8
-		If source.Length-i<=0 Then
-			Exit
-		End If
-		For j=0 To source.Length-i
-			If j+i>source.Length Then
-				Exit
-			End If
-			Dim word As String
-			word=source.SubString2(j,j+i)
-			words.Add(word)
-		Next
-	Next
-	Return words
-End Sub
 
 
 Sub termsInASentenceUsingIteration(sentence As String,kvs As KeyValueStore) As List

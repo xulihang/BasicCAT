@@ -173,6 +173,7 @@ Library22=b4jdragtome
 Library23=threading
 Library24=jpoi
 Library25=jbitmapcreator
+Library26=b4xcollections
 Library3=javaobject
 Library4=json
 Library5=apachestringutilsb4j
@@ -243,12 +244,14 @@ Module63=viewSegment
 Module64=TMEditor
 Module65=TextFlow
 Module66=coordinate
+Module67=LanguageUtils
+Module68=TMDB
 Module7=Term
 Module8=KeyValueStore
 Module9=ProjectSettings
 NumberOfFiles=77
-NumberOfLibraries=25
-NumberOfModules=66
+NumberOfLibraries=26
+NumberOfModules=68
 Version=7.8
 @EndOfDesignText@
 #Region Project Attributes 
