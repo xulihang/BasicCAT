@@ -41,7 +41,7 @@ Public Sub Initialize
 End Sub
 
 Sub initializeTM(projectPath As String,isExistingProject As Boolean)
-	projectTM.Initialize(projectPath,projectFile.Get("source"))
+	projectTM.Initialize(projectPath,projectFile.Get("source"),projectFile.Get("target"))
 	Dim externalTMList As List
 	externalTMList=settings.Get("tmList")
 	Log(externalTMList.Size)

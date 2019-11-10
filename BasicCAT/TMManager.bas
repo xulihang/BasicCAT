@@ -11,6 +11,7 @@ Sub Class_Globals
 	Private kvs As TMDB
 	Private externalTMRadioButton As RadioButton
 	Private projectTMRadioButton As RadioButton
+	Private LangComboBox As ComboBox
 End Sub
 
 'Initializes the object. You can add parameters to this method if needed.
@@ -30,19 +31,62 @@ Sub init
 	Sleep(0)
 	SearchView1.show
 	addContextMenuToLV
+	LangComboBox.Items.AddAll(Array As String("source","target"))
+	LangComboBox.SelectedIndex=0
 End Sub
 
 
 Sub setItems
+	
+	'Dim items As List
+	'items.Initialize
+	'For Each key As String In kvs.ListKeys
+	'	'Log(key)
+	'	Dim targetMap As Map
+	'	targetMap=kvs.Get(key)
+	'	items.Add(buildItemText(key,targetMap.Get("text")))
+	'Next
+	
+	SearchView1.SetItems(MatchedItems)
+End Sub
+
+Sub SearchView1_TextChanged(text As String)
+	setItems
+    SearchView1.TextChanged(text)
+End Sub
+
+
+Sub LangComboBox_SelectedIndexChanged(Index As Int, Value As Object)
+	setItems
+	SearchView1.TextChanged(SearchView1.EtText)
+End Sub
+
+Sub MatchedItems As List
+	Dim text As String=SearchView1.EtText
 	Dim items As List
 	items.Initialize
-	For Each key As String In kvs.ListKeys
-		'Log(key)
-		Dim targetMap As Map
-	    targetMap=kvs.Get(key)
-		items.Add(buildItemText(key,targetMap.Get("text")))
-	Next
-	SearchView1.SetItems(items)
+	If text<>"" Then
+		Dim matchedMap As Map=kvs.GetMatchedMap(text,LangComboBox.SelectedIndex=0)
+		For Each key As String In matchedMap.Keys
+			'Log(key)
+			Dim targetMap As Map
+			targetMap=matchedMap.Get(key)
+			items.Add(buildItemText(key,targetMap.Get("text")))
+		Next
+	Else
+		Dim index As Int=0
+		For Each key As String In kvs.ListKeys
+			'Log(key)
+			index=index+1
+			Dim targetMap As Map
+			targetMap=kvs.Get(key)
+			items.Add(buildItemText(key,targetMap.Get("text")))
+			If index=100 Then
+				Exit
+			End If
+		Next
+	End If
+	Return items
 End Sub
 
 Sub addContextMenuToLV

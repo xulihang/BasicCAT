@@ -4,16 +4,17 @@ ModulesStructureVersion=1
 Type=Class
 Version=7.8
 @EndOfDesignText@
-'KeyValueStore: v2.20
 Sub Class_Globals
 	Private sql1 As SQL
 	'Private ser As B4XSerializator
 	Private sourceLang As String
+	Private targetLang As String
 End Sub
 
 'Initializes the store and sets the store file.
-Public Sub Initialize (Dir As String, FileName As String,pSourceLang As String)
+Public Sub Initialize (Dir As String, FileName As String,pSourceLang As String,pTargetLang As String)
 	sourceLang=pSourceLang
+	targetLang=pTargetLang
 	If sql1.IsInitialized Then sql1.Close
 #if B4J
 	sql1.InitializeSQLite(Dir, FileName, True)
@@ -28,23 +29,29 @@ Public Sub Initialize (Dir As String, FileName As String,pSourceLang As String)
 		sql1.ExecNonQuery("PRAGMA journal_mode = wal")
 	End If
 	
-	CreateTable
 	If checkIsFTSEnabled=False Then
-		migrateToFTS
+		CreateTable
+		createIdx
+	Else
+		CreateTable
 	End If
 End Sub
 
-Public Sub Put(Key As String, Value As Object)
+Public Sub Put(source As String, targetMap As Map)
 	Dim ser As B4XSerializator
-	sql1.ExecNonQuery2("INSERT OR REPLACE INTO main VALUES(?, ?, ?)", Array (Key, ser.ConvertObjectToBytes(Value),getStringForIndex(Key)))
+	Dim bytes() As Byte=ser.ConvertObjectToBytes(targetMap)
+	sql1.ExecNonQuery2("INSERT OR REPLACE INTO main VALUES(?, ?)", Array (source,bytes))
+	sql1.ExecNonQuery2("INSERT OR REPLACE INTO idx VALUES(?, ?, ?)", Array (source,getStringForIndex(source,sourceLang),getStringForIndex(targetMap.Get("text"),targetLang)))
 End Sub
 
 Public Sub PutWithTransaction(map1 As Map)
 	sql1.BeginTransaction
-	For Each key As String In map1.Keys
-		Dim value As Object=map1.Get(key)
+	For Each source As String In map1.Keys
+		Dim targetMap As Map=map1.Get(source)
 		Dim ser As B4XSerializator
-		sql1.ExecNonQuery2("INSERT OR REPLACE INTO main VALUES(?, ?, ?)", Array (key, ser.ConvertObjectToBytes(value),getStringForIndex(key)))
+		Dim bytes() As Byte=ser.ConvertObjectToBytes(targetMap)
+		sql1.ExecNonQuery2("INSERT OR REPLACE INTO main VALUES(?, ?)", Array (source,bytes))
+		sql1.ExecNonQuery2("INSERT OR REPLACE INTO idx VALUES(?, ?, ?)", Array (source,getStringForIndex(source,sourceLang),getStringForIndex(targetMap.Get("text"),targetLang)))
 	Next
 	sql1.TransactionSuccessful
 End Sub
@@ -61,107 +68,11 @@ Public Sub Get(Key As String) As Object
 	Return result
 End Sub
 
-'Asynchronously retrieves the values from the store.
-'The result is a map with the keys and values.
-'<code>
-'Wait For (Starter.kvs.GetMapAsync(Array("2 custom types", "time"))) Complete (Result As Map)
-'</code>
-Public Sub GetMapAsync (Keys As List) As ResumableSub
-	Dim sb As StringBuilder
-	sb.Initialize
-	sb.Append("SELECT key, value FROM main WHERE ")
-	For i = 0 To Keys.Size - 1
-		If i > 0 Then sb.Append(" OR ")
-		sb.Append(" key = ? ")
-	Next
-	Dim SenderFilter As Object = sql1.ExecQueryAsync("SQL", sb.ToString, Keys)
-	Wait For (SenderFilter) SQL_QueryComplete (Success As Boolean, rs As ResultSet)
-	Dim m As Map
-	m.Initialize
-	If Success Then
-		Do While rs.NextRow
-			Dim myser As B4XSerializator
-			myser.ConvertBytesToObjectAsync(rs.GetBlob2(1), "myser")
-			Wait For (myser) myser_BytesToObject (Success As Boolean, NewObject As Object)
-			If Success Then
-				m.Put(rs.GetString2(0), NewObject)
-			End If
-		Loop
-		rs.Close
-	Else
-		Log(LastException)
-	End If
-	Return m
-End Sub
-
-'Asynchronously inserts the keys and values from the map.
-'Note that each pair is inserted as a separate item.
-'Call it with Wait For if you want to wait for the insert to complete.
-Public Sub PutMapAsync (Map As Map) As ResumableSub
-	For Each key As String In Map.Keys
-		Dim myser As B4XSerializator
-		myser.ConvertObjectToBytesAsync(Map.Get(key), "myser")
-		Wait For (myser) myser_ObjectToBytes (Success As Boolean, Bytes() As Byte)
-		If Success Then
-			sql1.AddNonQueryToBatch("INSERT OR REPLACE INTO main VALUES(?, ?, ?)", Array(key, Bytes,getStringForIndex(key)))
-		Else
-			Log("Failed to serialize object: " & Map.Get(key))
-		End If
-	Next
-	Dim SenderFilter As Object = sql1.ExecNonQueryBatch("SQL")
-	Wait For (SenderFilter) SQL_NonQueryComplete (Success As Boolean)
-	Return Success
-End Sub
-
 Public Sub GetDefault(Key As String, DefaultValue As Object) As Object
 	Dim res As Object = Get(Key)
 	If res = Null Then Return DefaultValue
 	Return res
 End Sub
-
-Public Sub PutEncrypted (Key As String, Value As Object, Password As String)
-#if B4I
-	Dim cipher As Cipher
-#else
-	Dim cipher As B4XCipher
-#end if
-	Dim ser As B4XSerializator
-	Put(Key, cipher.Encrypt(ser.ConvertObjectToBytes(Value), Password))
-End Sub
-
-
-Public Sub GetEncrypted (Key As String, Password As String) As Object
-#if B4I
-	Dim cipher As Cipher
-#else
-	Dim cipher As B4XCipher
-#end if
-	Dim b() As Byte = Get(Key)
-	If b = Null Then Return Null
-	Dim ser As B4XSerializator
-	Return ser.ConvertBytesToObject(cipher.Decrypt(b, Password))
-End Sub
-
-#if not(B4J)
-Public Sub PutBitmap(Key As String, Value As Bitmap)
-	Dim out As OutputStream
-	out.InitializeToBytesArray(0)
-	Value.WriteToStream(out, 100, "PNG")
-	Put(Key, out.ToBytesArray)
-	out.Close
-End Sub
-
-Public Sub GetBitmap(Key As String) As Bitmap
-	Dim b() As Byte = Get(Key)
-	If b = Null Then Return Null
-	Dim in As InputStream
-	in.InitializeFromBytesArray(b, 0, b.Length)
-	Dim bmp As Bitmap
-	bmp.Initialize2(in)
-	in.Close
-	Return bmp
-End Sub
-#End If
 
 'Removes the key and value mapped to this key.
 Public Sub Remove(Key As String)
@@ -192,7 +103,6 @@ Public Sub DeleteAll
 	CreateTable
 End Sub
 
-
 'Closes the store.
 Public Sub Close
 	sql1.Close
@@ -201,29 +111,31 @@ End Sub
 
 'creates the main table (if it does not exist)
 Private Sub CreateTable
-	sql1.ExecNonQuery("CREATE VIRTUAL TABLE IF NOT EXISTS main USING fts4(key, value, index, notindexed=key, notindexed=value)")
-	'sql1.ExecNonQuery("CREATE TABLE IF NOT EXISTS main(key TEXT PRIMARY KEY, value NONE)")
+	sql1.ExecNonQuery("CREATE TABLE IF NOT EXISTS main(key TEXT PRIMARY KEY, value NONE)")
+	sql1.ExecNonQuery("CREATE VIRTUAL TABLE IF NOT EXISTS idx USING fts4(key, source, target, notindexed=key)")
 End Sub
 
-Sub migrateToFTS
-	Dim resultMap As Map = asMapWithB4XSerializedData
-	DeleteAll
-	CreateTable
+
+Sub createIdx
+	Dim resultMap As Map = asMap
 	sql1.BeginTransaction
 	For Each key As String In resultMap.Keys
-		Dim value As Object=resultMap.Get(key)
-		sql1.ExecNonQuery2("INSERT OR REPLACE INTO main VALUES(?, ?, ?)", Array (key, value,getStringForIndex(key)))
+		Dim targetMap As Map=resultMap.Get(key)
+		sql1.ExecNonQuery2("INSERT OR REPLACE INTO idx VALUES(?, ?, ?)", Array (key, getStringForIndex(key,sourceLang),getStringForIndex(targetMap.Get("text"),targetLang)))
 	Next
 	sql1.TransactionSuccessful
 End Sub
 
 'Returns the database as a map.
-Public Sub asMapWithB4XSerializedData As Map
+Public Sub asMap As Map
 	Dim map1 As Map
 	map1.Initialize
 	Dim c As ResultSet = sql1.ExecQuery("SELECT * FROM main")
 	Do While c.NextRow
-		map1.Put(c.GetString2(0),c.GetBlob2(1))
+		Dim result As Object
+		Dim ser As B4XSerializator
+		result = ser.ConvertBytesToObject(c.GetBlob2(1))
+		map1.Put(c.GetString2(0),result)
 	Loop
 	c.Close
 	Return map1
@@ -231,7 +143,7 @@ End Sub
 
 Sub checkIsFTSEnabled As Boolean
 	Try
-		sql1.ExecQuery("SELECT * FROM main_content")
+		sql1.ExecQuery("SELECT * FROM idx")
 		Return True
 	Catch
 		Log(LastException)
@@ -239,27 +151,45 @@ Sub checkIsFTSEnabled As Boolean
 	End Try
 End Sub
 
-Public Sub GetMatchedMap(text As String) As Map
-	text=getQuery(text)
-	Dim sqlStr As String="SELECT key, value , quote(matchinfo(main)) as rank FROM main WHERE main MATCH '"&text&"' ORDER BY rank DESC LIMIT 1000 OFFSET 0"
+Public Sub GetMatchedMap(text As String,isSource As Boolean) As Map
+	Dim sqlStr As String
+	If isSource Then
+		text=getQuery(text,sourceLang)
+		sqlStr="SELECT key, rowid, quote(matchinfo(idx)) as rank FROM idx WHERE source MATCH '"&text&"' ORDER BY rank DESC LIMIT 1000 OFFSET 0"
+	Else
+		text=getQuery(text,targetLang)
+		sqlStr="SELECT key, rowid, quote(matchinfo(idx)) as rank FROM idx WHERE target MATCH '"&text&"' ORDER BY rank DESC LIMIT 1000 OFFSET 0"
+	End If
+	
 	Log(sqlStr)
 	Dim rs As ResultSet = sql1.ExecQuery(sqlStr)
 	Dim resultMap As Map
 	resultMap.Initialize
 	Dim result As Object = Null
 	Do While rs.NextRow
-		Dim ser As B4XSerializator
-		result = ser.ConvertBytesToObject(rs.GetBlob2(1))
-		resultMap.Put(rs.GetString2(0),result)
+		Dim key As String=rs.GetString2(0)
+		If ContainsKey(key) Then
+			result=Get(key)
+			resultMap.Put(key,result)
+		Else
+			Log("not exist")
+			DeleteIdxRow(rs.GetInt2(1))
+		End If
+		
 	Loop
 	rs.Close
 	Return resultMap
 End Sub
 
-Sub getQuery(source As String) As String
+Sub DeleteIdxRow(rowid As Int)
+	Log(rowid)
+	sql1.ExecNonQuery("DELETE FROM idx WHERE rowid = "&rowid)
+End Sub
+
+Sub getQuery(text As String,lang As String) As String
 	Dim sb As StringBuilder
 	sb.Initialize
-	Dim words As List=LanguageUtils.TokenizedList(source,sourceLang)
+	Dim words As List=LanguageUtils.TokenizedList(text,lang)
 	For index =0 To words.Size-1
 		Dim word As String=words.Get(index)
 		If word.Trim<>"" Then
@@ -272,10 +202,10 @@ Sub getQuery(source As String) As String
 	Return sb.ToString
 End Sub
 
-Sub getStringForIndex(source As String) As String
+Sub getStringForIndex(source As String,lang As String) As String
 	Dim sb As StringBuilder
 	sb.Initialize
-	Dim words As List=LanguageUtils.TokenizedList(source,sourceLang)
+	Dim words As List=LanguageUtils.TokenizedList(source,lang)
 	For index =0 To words.Size-1
 		sb.Append(words.Get(index)).Append(" ")
 	Next

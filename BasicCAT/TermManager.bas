@@ -35,6 +35,10 @@ Sub init
 	addContextMenuToLV
 End Sub
 
+Sub SearchView1_TextChanged(text As String)
+	SearchView1.TextChanged(text)
+End Sub
+
 Sub setItems
 	tagList.Clear
 	Dim items As List

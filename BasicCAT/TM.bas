@@ -15,9 +15,9 @@ Sub Class_Globals
 End Sub
 
 'Initializes the object. You can add parameters to this method if needed.
-Public Sub Initialize(projectPath As String,sourceLang As String)
-	translationMemory.Initialize(File.Combine(projectPath,"TM"),"TM.db",sourceLang)
-	externalTranslationMemory.Initialize(File.Combine(projectPath,"TM"),"externalTM.db",sourceLang)
+Public Sub Initialize(projectPath As String,sourceLang As String,targetLang As String)
+	translationMemory.Initialize(File.Combine(projectPath,"TM"),"TM.db",sourceLang,targetLang)
+	externalTranslationMemory.Initialize(File.Combine(projectPath,"TM"),"externalTM.db",sourceLang,targetLang)
 	similarityStore.Initialize
 	initSharedTM(projectPath)
 End Sub
@@ -351,7 +351,7 @@ Sub getMatchList(source As String) As ResumableSub
 			kvs=externalTranslationMemory
 		End If
 		
-		Dim matchedMap As Map=kvs.GetMatchedMap(source)
+		Dim matchedMap As Map=kvs.GetMatchedMap(source,True)
 		Log(matchedMap)
 		For Each key As String In matchedMap.Keys
 			Sleep(0)

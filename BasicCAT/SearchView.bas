@@ -29,6 +29,7 @@ Public Sub Initialize (vCallback As Object, vEventName As String)
 	mCallback = vCallback
 	prefixList.Initialize
 	substringList.Initialize
+	loadedItems.Initialize
 	tf.Initialize
 End Sub
 
@@ -167,16 +168,21 @@ Sub SelectItem
 	End If
 End Sub
 
-
 Private Sub et_TextChanged (Old As String, New As String)
+	If SubExists(mCallback, mEventName & "_TextChanged") Then
+		CallSub2(mCallback, mEventName & "_TextChanged", et.Text)
+	End If
+	'lv.PrefHeight = Min(mBase.PrefHeight - et.PrefHeight, Max(5, lv.Items.Size) * (ROWHEIGHT + 9))
+End Sub
+
+Public Sub TextChanged(new As String)
 	lv.Items.Clear
-	If New.Length = 0 Then
+	If new.Length = 0 Then
 		'lv.Visible = False
 		show
 		Return
 	End If
-	showMatch(New)
-	'lv.PrefHeight = Min(mBase.PrefHeight - et.PrefHeight, Max(5, lv.Items.Size) * (ROWHEIGHT + 9))
+	showMatch(new)
 End Sub
 
 Sub showMatch(new As String)
