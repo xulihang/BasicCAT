@@ -11,7 +11,7 @@ Sub Class_Globals
 	Private kvs As TMDB
 	Private externalTMRadioButton As RadioButton
 	Private projectTMRadioButton As RadioButton
-	Private LangComboBox As ComboBox
+	Private PhraseQueryCheckBox As CheckBox
 End Sub
 
 'Initializes the object. You can add parameters to this method if needed.
@@ -31,21 +31,10 @@ Sub init
 	Sleep(0)
 	SearchView1.show
 	addContextMenuToLV
-	LangComboBox.Items.AddAll(Array As String("source","target"))
-	LangComboBox.SelectedIndex=0
 End Sub
 
 
 Sub setItems As ResumableSub
-	
-	'Dim items As List
-	'items.Initialize
-	'For Each key As String In kvs.ListKeys
-	'	'Log(key)
-	'	Dim targetMap As Map
-	'	targetMap=kvs.Get(key)
-	'	items.Add(buildItemText(key,targetMap.Get("text")))
-	'Next
 	wait for (MatchedItems) complete (items As List)
 	SearchView1.SetItems(items)
 	Return ""
@@ -56,18 +45,15 @@ Sub SearchView1_TextChanged(text As String)
     SearchView1.TextChanged(text)
 End Sub
 
-
-Sub LangComboBox_SelectedIndexChanged(Index As Int, Value As Object)
-	wait for (setItems) complete (rst As Object)
-	SearchView1.TextChanged(SearchView1.EtText)
-End Sub
-
 Sub MatchedItems As ResumableSub
-	Dim text As String=SearchView1.EtText
+	Dim text As String=SearchView1.EtText.Trim
 	Dim items As List
 	items.Initialize
 	If text<>"" Then
-		wait for (kvs.GetMatchedMapAsync(text,LangComboBox.SelectedIndex=0)) Complete (matchedMap As Map)
+		If PhraseQueryCheckBox.Checked Then
+			text=$""${text}""$
+		End If
+		wait for (kvs.GetMatchedMapAsync(text,True,True)) Complete (matchedMap As Map)
 		For Each key As String In matchedMap.Keys
 			'Log(key)
 			Dim targetMap As Map

@@ -151,29 +151,47 @@ Sub checkIsFTSEnabled As Boolean
 	End Try
 End Sub
 
-Public Sub GetMatchedMapAsync(text As String,isSource As Boolean) As ResumableSub
+Public Sub GetMatchedMapAsync(text As String,isSource As Boolean,matchAll As Boolean) As ResumableSub
 	'Dim maxLength As Int=text.Length*2
 	Dim sqlStr As String
+	Dim matchTarget As String
+	Dim operator As String
+	Dim lang As String
+	Dim words As List
+	words.Initialize
 	If isSource Then
-		text=getQuery(text,sourceLang)
-		sqlStr="SELECT key, rowid, quote(matchinfo(idx)) as rank FROM idx WHERE source MATCH '"&text&"' ORDER BY rank DESC LIMIT 1000 OFFSET 0"
+		lang=sourceLang
+		matchTarget="source"
 	Else
-		text=getQuery(text,targetLang)
-		sqlStr="SELECT key, rowid, quote(matchinfo(idx)) as rank FROM idx WHERE target MATCH '"&text&"' ORDER BY rank DESC LIMIT 1000 OFFSET 0"
+		lang=targetLang
+		matchTarget="target"
 	End If
+	If matchAll Then
+		matchTarget="idx"
+		operator="AND"
+		If text.StartsWith($"""$) And text.EndsWith($"""$) Then
+			words.Add(text)
+		Else
+			words=getWordsForAll(text)
+		End If
+	Else
+		operator="OR"
+		words=LanguageUtils.TokenizedList(text,lang)
+	End If
+	text=getQuery(words,operator)
+	
+	sqlStr="SELECT key, rowid, quote(matchinfo(idx)) as rank FROM idx WHERE "&matchTarget&" MATCH '"&text&"' ORDER BY rank DESC LIMIT 1000 OFFSET 0"
 	Log(sqlStr)
 	Dim SenderFilter As Object = sql1.ExecQueryAsync("SQL", sqlStr, Null)
 	Wait For (SenderFilter) SQL_QueryComplete (Success As Boolean, rs As ResultSet)
-
 	Dim resultMap As Map
 	resultMap.Initialize
 	Dim result As Object = Null
 	If Success Then
 		Do While rs.NextRow
-			Dim key As String=rs.GetString2(0)
-			result=GetDefault(key,Null)
+			result=GetDefault(rs.GetString2(0),Null)
 			If result<>Null Then
-				resultMap.Put(key,result)
+				resultMap.Put(rs.GetString2(0),result)
 			Else
 				Log("not exist")
 				DeleteIdxRow(rs.GetInt2(1))
@@ -183,7 +201,6 @@ Public Sub GetMatchedMapAsync(text As String,isSource As Boolean) As ResumableSu
 	Else
 		Log(LastException)
 	End If
-
 	Return resultMap
 End Sub
 
@@ -192,16 +209,26 @@ Sub DeleteIdxRow(rowid As Int)
 	sql1.ExecNonQuery("DELETE FROM idx WHERE rowid = "&rowid)
 End Sub
 
-Sub getQuery(text As String,lang As String) As String
+Sub getWordsForAll(text As String) As List
+	Dim words As List
+	words.Initialize
+	words.AddAll(LanguageUtils.TokenizedList(text,sourceLang))
+	words.AddAll(LanguageUtils.TokenizedList(text,targetLang))
+	Utils.removeDuplicated(words)
+	LanguageUtils.removeCharacters(words)
+	LanguageUtils.removeMultiBytesWords(words)
+	Return words
+End Sub
+
+Sub getQuery(words As List,operator As String) As String
 	Dim sb As StringBuilder
 	sb.Initialize
-	Dim words As List=LanguageUtils.TokenizedList(text,lang)
 	For index =0 To words.Size-1
 		Dim word As String=words.Get(index)
 		If word.Trim<>"" Then
 			sb.Append(word)
 			If index<>words.Size-1 Then
-				sb.Append(" OR ")
+				sb.Append(" "&operator&" ") ' AND OR NOT
 			End If
 		End If
 	Next

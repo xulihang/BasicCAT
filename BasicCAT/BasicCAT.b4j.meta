@@ -205,6 +205,6 @@ ModuleClosedNodes68=
 ModuleClosedNodes7=
 ModuleClosedNodes8=
 ModuleClosedNodes9=
-NavigationStack=TMManager,MatchedItems,58,0,TMManager,setItems,45,0,SearchView,Class_Globals,17,6,Utils,LanguageHasSpace,77,0,SearchView,addContextMenuToLV,31,0,SearchView,showMatch,185,6,TermManager,init,28,0,TMManager,LangComboBox_SelectedIndexChanged,55,2,Utils,splitByStrs,34,6,SearchView,AddItemsToList,233,6
+NavigationStack=TMDB,getWordsForAll,204,0,Visual Designer,TMManager.bjl,-100,6,TMDB,Initialize,15,0,TMManager,mi_Action,132,0,TMManager,Class_Globals,7,0,TMManager,setItems,31,0,TMManager,MatchedItems,42,6,TMDB,Class_Globals,4,0,TMDB,getQuery,220,0,TMDB,GetMatchedMapAsync,173,6
 SelectedBuild=0
 VisibleModules=1,2,3,4,5,6,7,8,9,10,17,16,14,13,11,15

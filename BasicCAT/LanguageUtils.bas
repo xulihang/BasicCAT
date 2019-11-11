@@ -80,3 +80,39 @@ Sub removePunctuation(source As String,replacement As String) As String
 	source=Regex.Replace($"[。！？，“”'",\.\!\?\*\^\-]"$,source," ")
 	Return source
 End Sub
+
+Sub removeMultiBytesWords(words As List)
+	Dim newList As List
+	newList.Initialize
+	For Each word As String In words
+		If word.Length>1 Then
+			If getBytesLength(word.CharAt(0))>1 Then
+				Continue
+			End If
+		End If
+		newList.Add(word)
+	Next
+	words.Clear
+	words.AddAll(newList)
+End Sub
+
+Sub removeCharacters(source As List)
+	Dim newList As List
+	newList.Initialize
+	For Each text As String In source
+		If text.Length=1 Then
+			If Regex.IsMatch("[a-z]",text.ToLowerCase)=True Then
+				Continue
+			End If
+		End If
+		newList.Add(text)
+	Next
+	source.Clear
+	source.AddAll(newList)
+End Sub
+
+Sub getBytesLength(singleString As String) As Int
+	Dim bytes() As Byte
+	bytes=singleString.GetBytes("UTF-8")
+	Return bytes.Length
+End Sub
