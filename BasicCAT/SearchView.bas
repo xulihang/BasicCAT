@@ -187,33 +187,54 @@ End Sub
 
 Sub showMatch(new As String)
 	lv.Items.Clear
-	If new.Length < MIN_LIMIT Then Return
-	Dim str1, str2 As String
-	str1 = new.ToLowerCase
-	If str1.Length > MAX_LIMIT Then
-		str2 = str1.SubString2(0, MAX_LIMIT)
+
+	If new.Contains(" ") Then
+		AddItemsToList(loadedItems, Regex.Split(" ",new))
 	Else
-		str2 = str1
+		If new.Length < MIN_LIMIT Then Return
+		Dim str1, str2 As String
+		str1 = new.ToLowerCase
+		If str1.Length > MAX_LIMIT Then
+			str2 = str1.SubString2(0, MAX_LIMIT)
+		Else
+			str2 = str1
+		End If
+		AddItemsToList(prefixList.Get(str2), Array As String(str1))
+		AddItemsToList(substringList.Get(str2), Array As String(str1))
 	End If
-	AddItemsToList(prefixList.Get(str2), str1)
-	AddItemsToList(substringList.Get(str2), str1)
 End Sub
 
-Private Sub AddItemsToList(li As List, full As String)
+Private Sub AddItemsToList(li As List, strs() As String)
 	Dim addedNumber As Int
 	If li.IsInitialized = False Then Return
+	Dim strsMap As Map
+	strsMap.Initialize
+	For Each str As String In strs
+		strsMap.Put(str.ToLowerCase,"")
+	Next
+	
 	For i = 0 To li.Size - 1
 		addedNumber=addedNumber+1
 		If addedNumber>100 Then
 			Exit
 		End If
 		Dim item As String = li.Get(i)
-		Dim x As Int = item.ToLowerCase.IndexOf(full)
-		If x = -1 Then
+		Dim textSegments As List=Utils.splitByStrs(strs,item)
+		If textSegments.Size=1 Then
 			Continue
 		End If
-		tf.Reset.AddMonoText(item.SubString2(0, x)).SetColor(textColor).AddMonoText(item.SubString2(x, x + full.Length)).SetColor(highlightColor)
-		tf.AddMonoText(item.SubString(x + full.Length)).SetColor(textColor)
+		'Log(textSegments)
+		tf.Reset
+		For Each text As String In textSegments
+			If text="" Then
+				Continue
+			End If
+			If strsMap.ContainsKey(text.ToLowerCase) Then
+				tf.AddMonoText(text).SetColor(highlightColor)
+			Else
+				tf.AddMonoText(text).SetColor(textColor)
+			End If
+		Next
 		Dim p As Pane = tf.CreateTextFlowWithWidth(lv.PrefWidth-40)
 		p.Tag = item
 		p.PrefHeight=Utils.MeasureMultilineTextHeight(fx.CreateFont("monospace",15,False,False),lv.PrefWidth,p.Tag)+ROWHEIGHT

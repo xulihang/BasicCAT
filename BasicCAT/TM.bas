@@ -350,8 +350,7 @@ Sub getMatchList(source As String) As ResumableSub
 			Dim kvs As TMDB
 			kvs=externalTranslationMemory
 		End If
-		
-		Dim matchedMap As Map=kvs.GetMatchedMap(source,True)
+		wait for (kvs.GetMatchedMapAsync(source,True)) Complete (matchedMap As Map)
 		Log(matchedMap)
 		For Each key As String In matchedMap.Keys
 			Sleep(0)

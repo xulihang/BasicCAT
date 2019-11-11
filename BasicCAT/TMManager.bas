@@ -27,7 +27,7 @@ End Sub
 
 Sub init
 	kvs=Main.currentProject.projectTM.translationMemory
-	setItems
+	wait for (setItems) complete (rst As Object)
 	Sleep(0)
 	SearchView1.show
 	addContextMenuToLV
@@ -36,7 +36,7 @@ Sub init
 End Sub
 
 
-Sub setItems
+Sub setItems As ResumableSub
 	
 	'Dim items As List
 	'items.Initialize
@@ -46,27 +46,28 @@ Sub setItems
 	'	targetMap=kvs.Get(key)
 	'	items.Add(buildItemText(key,targetMap.Get("text")))
 	'Next
-	
-	SearchView1.SetItems(MatchedItems)
+	wait for (MatchedItems) complete (items As List)
+	SearchView1.SetItems(items)
+	Return ""
 End Sub
 
 Sub SearchView1_TextChanged(text As String)
-	setItems
+	wait for (setItems) complete (rst As Object)
     SearchView1.TextChanged(text)
 End Sub
 
 
 Sub LangComboBox_SelectedIndexChanged(Index As Int, Value As Object)
-	setItems
+	wait for (setItems) complete (rst As Object)
 	SearchView1.TextChanged(SearchView1.EtText)
 End Sub
 
-Sub MatchedItems As List
+Sub MatchedItems As ResumableSub
 	Dim text As String=SearchView1.EtText
 	Dim items As List
 	items.Initialize
 	If text<>"" Then
-		Dim matchedMap As Map=kvs.GetMatchedMap(text,LangComboBox.SelectedIndex=0)
+		wait for (kvs.GetMatchedMapAsync(text,LangComboBox.SelectedIndex=0)) Complete (matchedMap As Map)
 		For Each key As String In matchedMap.Keys
 			'Log(key)
 			Dim targetMap As Map
@@ -139,14 +140,14 @@ Sub mi_Action
 			If externalTMRadioButton.Selected=False Then
 				Main.currentProject.projectTM.addPairToSharedTM(bitext.Get(0),targetMap)
 			End If
-			setItems
+			wait for (setItems) complete (rst As Object)
 			SearchView1.replaceItem(buildItemText(bitext.Get(0),bitext.Get(1)),SearchView1.GetSelectedIndex)
 		Case "Remove"
 			Dim result As Int=fx.Msgbox2(frm,"Will delete this entry, continue?","","Yes","","Cancel",fx.MSGBOX_CONFIRMATION)
 			If result=fx.DialogResponse.POSITIVE Then
 				kvs.Remove(source)
 				Main.currentProject.projectTM.removeFromSharedTM(source)
-				setItems
+				wait for (setItems) complete (rst As Object)
 				SearchView1.GetItems.RemoveAt(SearchView1.GetSelectedIndex)
 			End If
 		Case "Info"
@@ -164,7 +165,7 @@ End Sub
 Sub projectTMRadioButton_SelectedChange(Selected As Boolean)
 	If Selected Then
 		kvs=Main.currentProject.projectTM.translationMemory
-		setItems
+		wait for (setItems) complete (rst As Object)
 		SearchView1.show
 	End If
 End Sub
@@ -172,7 +173,7 @@ End Sub
 Sub externalTMRadioButton_SelectedChange(Selected As Boolean)
 	If Selected Then
 		kvs=Main.currentProject.projectTM.externalTranslationMemory
-		setItems
+		wait for (setItems) complete (rst As Object)
 		SearchView1.show
 	End If
 End Sub

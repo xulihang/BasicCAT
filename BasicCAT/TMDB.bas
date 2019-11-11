@@ -151,7 +151,8 @@ Sub checkIsFTSEnabled As Boolean
 	End Try
 End Sub
 
-Public Sub GetMatchedMap(text As String,isSource As Boolean) As Map
+Public Sub GetMatchedMapAsync(text As String,isSource As Boolean) As ResumableSub
+	'Dim maxLength As Int=text.Length*2
 	Dim sqlStr As String
 	If isSource Then
 		text=getQuery(text,sourceLang)
@@ -160,24 +161,29 @@ Public Sub GetMatchedMap(text As String,isSource As Boolean) As Map
 		text=getQuery(text,targetLang)
 		sqlStr="SELECT key, rowid, quote(matchinfo(idx)) as rank FROM idx WHERE target MATCH '"&text&"' ORDER BY rank DESC LIMIT 1000 OFFSET 0"
 	End If
-	
 	Log(sqlStr)
-	Dim rs As ResultSet = sql1.ExecQuery(sqlStr)
+	Dim SenderFilter As Object = sql1.ExecQueryAsync("SQL", sqlStr, Null)
+	Wait For (SenderFilter) SQL_QueryComplete (Success As Boolean, rs As ResultSet)
+
 	Dim resultMap As Map
 	resultMap.Initialize
 	Dim result As Object = Null
-	Do While rs.NextRow
-		Dim key As String=rs.GetString2(0)
-		If ContainsKey(key) Then
-			result=Get(key)
-			resultMap.Put(key,result)
-		Else
-			Log("not exist")
-			DeleteIdxRow(rs.GetInt2(1))
-		End If
-		
-	Loop
-	rs.Close
+	If Success Then
+		Do While rs.NextRow
+			Dim key As String=rs.GetString2(0)
+			result=GetDefault(key,Null)
+			If result<>Null Then
+				resultMap.Put(key,result)
+			Else
+				Log("not exist")
+				DeleteIdxRow(rs.GetInt2(1))
+			End If
+		Loop
+		rs.Close
+	Else
+		Log(LastException)
+	End If
+
 	Return resultMap
 End Sub
 

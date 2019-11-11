@@ -22,6 +22,28 @@ Sub removeDuplicated(source As List)
 	source.AddAll(newList)
 End Sub
 
+Sub splitByStrs(strs() As String,text As String) As List
+	For Each str As String In strs
+		Dim matcher As Matcher
+		matcher=Regex.Matcher(str.ToLowerCase,text.ToLowerCase)
+		Dim offset As Int=0
+		Do While matcher.Find
+			Dim startIndex,endIndex As Int
+			startIndex=matcher.GetStart(0)+offset
+			endIndex=matcher.GetEnd(0)+offset
+			text=text.SubString2(0,endIndex)&"<--->"&text.SubString2(endIndex,text.Length)
+			text=text.SubString2(0,startIndex)&"<--->"&text.SubString2(startIndex,text.Length)
+			offset=offset+"<--->".Length*2
+		Loop
+	Next
+	Dim result As List
+	result.Initialize
+	For Each str As String In Regex.Split("<--->",text)
+		result.Add(str)
+	Next
+	Return result
+End Sub
+
 'find is the text within a whole text
 Sub splitByFind(text As String,find As String,textSegments As List)
 	Dim textLeft As String
