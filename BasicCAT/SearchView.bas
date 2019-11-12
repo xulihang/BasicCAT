@@ -37,6 +37,8 @@ Public Sub addContextMenuToLV(cm As ContextMenu)
 	lv.ContextMenu=cm
 End Sub
 
+
+
 Public Sub show
 	If lv.IsInitialized Then
 		lv.Items.Clear
@@ -188,7 +190,7 @@ End Sub
 Sub showMatch(new As String)
 	lv.Items.Clear
 
-	If new.Contains(" ") Then
+	If new.Contains(" ") And isTM Then
 		AddItemsToList(loadedItems, Regex.Split(" ",new))
 	Else
 		If new.Length < MIN_LIMIT Then Return
@@ -292,4 +294,15 @@ Sub lv_Resize (Width As Double, Height As Double)
 			show
 		End If
 	End If
+End Sub
+
+Sub isTM As Boolean
+	Try
+		Dim tmm As TMManager
+		tmm=mCallback
+		Return True
+	Catch
+		Log(LastException)
+		Return False
+	End Try
 End Sub
