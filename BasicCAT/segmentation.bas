@@ -273,8 +273,8 @@ Sub getPositions(rulesList As List,text As String) As List
 				abm=Regex.Matcher2(afterBreak,32,textLeft)
 				Do While abm.Find
 					If bbm.GetEnd(0)=abm.GetStart(0) Then
-						breakPositions.Add(bbm.GetEnd(0)+text.Length-textLeft.Length)
-						textLeft=textLeft.SubString2(bbm.GetEnd(0),textLeft.Length)
+						breakPositions.Add(abm.GetEnd(0)+text.Length-textLeft.Length)
+						textLeft=textLeft.SubString2(abm.GetEnd(0),textLeft.Length)
 						abm=Regex.Matcher2(afterBreak,32,textLeft)
 						bbm=Regex.Matcher2(beforeBreak,32,textLeft)
 
@@ -297,45 +297,42 @@ Sub getPositions(rulesList As List,text As String) As List
 End Sub
 
 Sub removeSpacesAtBothSides(path As String,targetLang As String,text As String,removeRedundantSpaces As Boolean) As String
-	If removeRedundantSpaces Then
-		readRules(targetLang,path)
-		Dim breakRules As List=rules.Get("breakRules")
-		Dim breakPositions As List
-		breakPositions=getPositions(breakRules,text)
-		breakPositions.Sort(False)
-		removeDuplicated(breakPositions)
-		For Each position As Int In breakPositions
-			Try
-				'Log(position)
-				'Log(text)
-				'Log("charat"&text.CharAt(position))
-				'Log("remove space:")
-				'Log(text.CharAt(position)=" ")
-				Dim offsetToRight As Int=0
-				For i=0 To Max(text.Length-1-position,0)
-					If position+i<=text.Length-1 Then
-						If text.CharAt(position+i)=" " Then
-							offsetToRight=offsetToRight+1
-						Else
-							Exit
-						End If
+	readRules(targetLang,path)
+	Dim breakRules As List=rules.Get("breakRules")
+	Dim breakPositions As List
+	breakPositions=getPositions(breakRules,text)
+	breakPositions.Sort(False)
+	removeDuplicated(breakPositions)
+	For Each position As Int In breakPositions
+		Try
+			'Log(position)
+			'Log(text)
+			'Log("charat"&text.CharAt(position))
+			'Log("remove space:")
+			'Log(text.CharAt(position)=" ")
+			Dim offsetToRight As Int=0
+			For i=0 To Max(text.Length-1-position,0)
+				If position+i<=text.Length-1 Then
+					If text.CharAt(position+i)=" " Then
+						offsetToRight=offsetToRight+1
+					Else
+						Exit
 					End If
-				Next
-				Dim rightText As String
-				If position+offsetToRight<=text.Length-1 Then
-					rightText=text.SubString2(position+offsetToRight,text.Length)
 				End If
-				text=text.SubString2(0,position)&rightText
-			Catch
-				Log(LastException)
-			End Try
-		Next
+			Next
+			Dim rightText As String
+			If position+offsetToRight<=text.Length-1 Then
+				rightText=text.SubString2(position+offsetToRight,text.Length)
+			End If
+			text=text.SubString2(0,position)&rightText
+		Catch
+			Log(LastException)
+		End Try
+	Next
+	
+	If removeRedundantSpaces Then
 		text=Regex.Replace2("\b *\B",32,text,"")
 		text=Regex.Replace2("\B *\b",32,text,"")
-	Else
-		If text.StartsWith(" ") Then
-			text=text.SubString2(1,text.Length)
-		End If
 	End If
 
 	Return text

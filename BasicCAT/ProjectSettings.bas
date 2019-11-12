@@ -84,7 +84,7 @@ Sub loadGeneral
 	End If
 	SaveAndCommitCheckBox.checked=settings.GetDefault("save_and_commit",False)
 	HistoryCheckBox.checked=settings.GetDefault("record_history",True)
-	removeSpacesCheckBox.checked=settings.GetDefault("remove_space",True)
+	removeSpacesCheckBox.checked=settings.GetDefault("remove_space",False)
 	EnableSegmentationCheckBox.checked=settings.GetDefault("sentence_level_segmentation",True)
 End Sub
 
