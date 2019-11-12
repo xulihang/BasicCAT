@@ -20,7 +20,7 @@ Sub TokenizedList(text As String,sourceLang As String) As List
 		text=removePunctuation(text,"")
 		words.AddAll(Regex.Split("",text))
 	End If
-    Utils.removeDuplicated(words)
+    'Utils.removeDuplicated(words)
 	Dim newList As List
 	newList.Initialize
 	For Each word As String In words

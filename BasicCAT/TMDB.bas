@@ -214,13 +214,13 @@ Sub getWordsForAll(text As String) As List
 	words.Initialize
 	words.AddAll(LanguageUtils.TokenizedList(text,sourceLang))
 	words.AddAll(LanguageUtils.TokenizedList(text,targetLang))
-	Utils.removeDuplicated(words)
 	LanguageUtils.removeCharacters(words)
 	LanguageUtils.removeMultiBytesWords(words)
 	Return words
 End Sub
 
 Sub getQuery(words As List,operator As String) As String
+	Utils.removeDuplicated(words)
 	Dim sb As StringBuilder
 	sb.Initialize
 	For index =0 To words.Size-1
