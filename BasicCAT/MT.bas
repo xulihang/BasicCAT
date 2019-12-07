@@ -292,21 +292,25 @@ Sub youdaoMT(source As String,sourceLang As String,targetLang As String,lookup A
 	meansList.Initialize
 	If job.Success Then
 		Log(job.GetString)
-		Dim json As JSONParser
-		json.Initialize(job.GetString)
-		Dim result As Map
-		result=json.NextObject
-		If result.Get("errorCode")="0" Then
-			Dim translationList As List
-			translationList=result.Get("translation")
-			target=translationList.Get(0)
-			If lookup=True And result.ContainsKey("basic") Then
-				Dim basic As Map
-				basic=result.Get("basic")
-				meansList.AddAll(basic.Get("explains"))
-				meansList.Add(target)
+		Try
+			Dim json As JSONParser
+			json.Initialize(job.GetString)
+			Dim result As Map
+			result=json.NextObject
+			If result.Get("errorCode")="0" Then
+				Dim translationList As List
+				translationList=result.Get("translation")
+				target=translationList.Get(0)
+				If lookup=True And result.ContainsKey("basic") Then
+					Dim basic As Map
+					basic=result.Get("basic")
+					meansList.AddAll(basic.Get("explains"))
+					meansList.Add(target)
+				End If
 			End If
-		End If
+		Catch
+			Log(LastException)
+		End Try
 	End If
 	job.Release
 	If lookup Then

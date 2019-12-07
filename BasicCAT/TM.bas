@@ -203,7 +203,7 @@ Public Sub importExternalTranslationMemory(tmList As List,projectFile As Map) As
 			segments.AddAll(importedXlsx(tmfile))
 		End If
 	Next
-	Log(segments)
+	'Log(segments)
 	Dim tmToBeImported As Map
 	tmToBeImported.Initialize
 	If segments.Size<>0 Then
