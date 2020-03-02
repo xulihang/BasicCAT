@@ -10,27 +10,34 @@ Sub Process_Globals
 End Sub
 
 
-Sub readRules(filepath As String,lang As String) As Map
+Sub readRules(filepath As String,lang As String) As List
 	Dim srxString As String
 	
 	
-	If filepath="" or File.Exists(filepath,"")=False Then
+	If filepath="" Or File.Exists(filepath,"")=False Then
 		srxString=File.ReadString(File.DirAssets,"segmentationRules.srx")
 	Else
 		srxString=File.ReadString(filepath,"")
 	End If
 	
 	Log(filepath)
-	Dim rules As Map
-	rules.Initialize
-	Dim breakRules As List
-	breakRules.Initialize
-	Dim nonbreakRules As List
-	nonbreakRules.Initialize
+	'Dim rules As Map
+	'rules.Initialize
+	Dim allRules As List
+	allRules.Initialize
 
 	Dim srxMap As Map
 	srxMap.Initialize
 	srxMap=XMLUtils.getXmlMap(srxString).Get("srx")
+	Dim header As Map=srxMap.Get("header")
+	Dim headerAttributes As Map
+	headerAttributes=header.Get("Attributes")
+	If headerAttributes.GetDefault("cascade","no")="no" Then
+		segmentation.cascade=False
+	Else
+		segmentation.cascade=True
+	End If
+	
 	Dim srxBody As Map
 	srxBody.Initialize
 	srxBody=srxMap.Get("body")
@@ -78,19 +85,10 @@ Sub readRules(filepath As String,lang As String) As Map
 				tidyRule.Put("beforebreak",rule.Get("beforebreak"))
 				tidyRule.Put("afterbreak",rule.Get("afterbreak"))
 
-				If tidyRule.Get("break")="yes" Then
-					breakRules.Add(tidyRule)
-				Else
-					nonbreakRules.Add(tidyRule)
-				End If
-				
+				allRules.Add(tidyRule)
 			Next
 		End If
 	Next
 	
-	
-	rules.Put("breakRules",breakRules)
-	rules.Put("nonbreakRules",nonbreakRules)
-	Log(rules)
-	Return rules
+	Return allRules
 End Sub
