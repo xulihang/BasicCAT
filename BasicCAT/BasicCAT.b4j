@@ -672,7 +672,7 @@ Sub MenuBar1_Action
 		Case "_About"
 			Dim version As String
 			version=File.ReadString(File.DirAssets,"version.txt")
-			fx.Msgbox(MainForm,"BasicCAT "&version&CRLF&"@xulihang 2019","BasicCAT")
+			fx.Msgbox(MainForm,"BasicCAT "&version&CRLF&"@xulihang 2020","BasicCAT")
 	End Select
 End Sub
 
@@ -1748,7 +1748,14 @@ Sub addPositionChangedEvent(divider As Object,eventName As String)
 End Sub
 
 Sub dividerPosition_changed(old As Object, new As Object)
+	CallSubDelayed(Me,"TermPane_Resize")
 	CallSubDelayed(Me,"ListViewParent_Resize")
+End Sub
+
+Sub TermPane_Resize
+	For Each p As Pane In termLV.Items
+		p.SetSize(termLV.Width,p.Height)
+	Next
 End Sub
 
 Sub lbl_MouseClicked (EventData As MouseEvent)
