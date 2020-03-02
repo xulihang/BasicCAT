@@ -9,6 +9,7 @@ Sub Process_Globals
 	Private fx As JFX
 	Private rules As List
 	Private previousLang As String
+	Private previousText As String
 	Public cascade As Boolean=False
 End Sub
 
@@ -186,13 +187,15 @@ End Sub
 
 Sub removeSpacesAtBothSides(path As String,targetLang As String,text As String,removeRedundantSpaces As Boolean) As String
 	readRules(targetLang,path)
-	Dim breakPositionsMap As Map=getPositions("yes",text)
+	Dim breakPositionsMap As Map=getPositions("yes",previousText&text)
 	Dim breakPositions As List
 	breakPositions.Initialize
-	For Each key As Int In breakPositionsMap.Keys
-		breakPositions.Add(key)
+	For Each pos As Int In breakPositionsMap.Keys
+		pos=pos-previousText.Length
+		breakPositions.Add(pos)
 	Next
 	breakPositions.Sort(False)
+	
 	For Each position As Int In breakPositions
 		Try
 			'Log(position)
@@ -224,7 +227,7 @@ Sub removeSpacesAtBothSides(path As String,targetLang As String,text As String,r
 		text=Regex.Replace2("\b *\B",32,text,"")
 		text=Regex.Replace2("\B *\b",32,text,"")
 	End If
-
+	previousText=text
 	Return text
 End Sub
 
