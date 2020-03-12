@@ -78,13 +78,13 @@ Sub fillSharedTM
 		'progressDialog.update(index,size)
 		If tmmap.ContainsKey(key) Then
 			
-			Dim previousTargetMap As Map=translationMemory.Get(key)
-			Dim newTargetMap As Map=tmmap.Get(key)
-			Dim previousCreatedTime,newCreatedTime As Long
-			previousCreatedTime=previousTargetMap.Get("createdTime")
-			newCreatedTime=newTargetMap.Get("createdTime")
+			Dim localTargetMap As Map=translationMemory.Get(key)
+			Dim sharedTMTargetMap As Map=tmmap.Get(key)
+			Dim localCreatedTime,sharedTMCreatedTime As Long
+			localCreatedTime=localTargetMap.Get("createdTime")
+			sharedTMCreatedTime=sharedTMTargetMap.Get("createdTime")
 			
-			If previousTargetMap.Get("text")<>translationMemory.Get("text") And newCreatedTime>previousCreatedTime Then
+			If localTargetMap.Get("text")<>sharedTMTargetMap.Get("text") And sharedTMCreatedTime<localCreatedTime Then
 				toAddMap.Put(key,translationMemory.Get(key))
 			End If
 		Else

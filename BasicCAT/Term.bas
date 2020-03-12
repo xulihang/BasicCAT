@@ -66,7 +66,7 @@ Sub fillSharedTerm
 	'progressDialog.Show("Filling SharedTerm","sharedTerm")
 	Dim termmap As Map
 	termmap=sharedTerm.GetAll(projectName&"Term")
-	Dim size As Int=terminology.ListKeys.Size
+	'Dim size As Int=terminology.ListKeys.Size
 	Dim index As Int=0
 	Dim toAddMap As Map
 	toAddMap.Initialize
