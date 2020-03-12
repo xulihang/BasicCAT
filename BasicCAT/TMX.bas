@@ -104,6 +104,7 @@ Sub importedListQuick(dir As String,filename As String,sourceLang As String,targ
 			else if Attributes.ContainsKey("lang") Then
 				lang=Attributes.Get("lang")
 			End If
+			lang=lang.ToLowerCase
 			If lang.StartsWith(sourceLang) Then
 				bitext.Set(0,tuv.Get("Text"))
 				addedTimes=addedTimes+1
