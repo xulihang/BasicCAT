@@ -1623,7 +1623,15 @@ Sub showTM(targetTextArea As TextArea)
 	Main.LoadHTMLWithBackground(Main.LogWebView,"")
 	projectTM.currentSource=sourceTA.Text
 	showMT(sourceTA.Text,targetTextArea)
-	Dim senderFilter As Object = projectTM.getMatchList(sourceTA.Text)
+	
+	Dim matchrate As Double
+	If Main.currentProject.settings.ContainsKey("matchrate") Then
+		matchrate=Main.currentProject.settings.Get("matchrate")
+	Else
+		matchrate=0.5
+	End If
+	
+	Dim senderFilter As Object = projectTM.getMatchList(sourceTA.Text,matchrate,False)
 	Wait For (senderFilter) Complete (Result As List)
 
 
@@ -1889,7 +1897,7 @@ Sub preTranslate(options As Map)
 					Return
 				End If
 				Dim resultList As List
-				Log("rate"&options.Get("rate"))
+				'Log("rate"&options.Get("rate"))
 				Wait For (projectTM.getOneUseMemory(bitext.Get(0),options.Get("rate"))) Complete (Result As List)
 				resultList=Result
 				If resultList.Size=0 Then
@@ -1901,10 +1909,10 @@ Sub preTranslate(options As Map)
 				similarity=resultList.Get(0)
 				matchrate=options.Get("rate")
 
-				Log(bitext.Get(0))
-				Log(similarity)
-				Log(matchrate)
-				Log(similarity>=matchrate)
+				'Log(bitext.Get(0))
+				'Log(similarity)
+				'Log(matchrate)
+				'Log(similarity>=matchrate)
 				
 				If similarity>=matchrate Then
 					setTranslation(index,resultList.Get(2),True,resultList.Get(1))

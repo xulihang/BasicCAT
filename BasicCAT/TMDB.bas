@@ -9,15 +9,19 @@ Sub Class_Globals
 	'Private ser As B4XSerializator
 	Private sourceLang As String
 	Private targetLang As String
+	Private dir As String
+	Private fileName As String
 End Sub
 
 'Initializes the store and sets the store file.
-Public Sub Initialize (Dir As String, FileName As String,pSourceLang As String,pTargetLang As String)
+Public Sub Initialize (pDir As String, pFileName As String,pSourceLang As String,pTargetLang As String)
 	sourceLang=pSourceLang
 	targetLang=pTargetLang
+	dir=pDir
+	fileName=pFileName
 	If sql1.IsInitialized Then sql1.Close
 #if B4J
-	sql1.InitializeSQLite(Dir, FileName, True)
+	sql1.InitializeSQLite(dir, fileName, True)
 #else
 	sql1.Initialize(Dir, FileName, True)
 #end if
@@ -99,7 +103,10 @@ End Sub
 
 'Deletes all data from the store.
 Public Sub DeleteAll
+	sql1.Close
+	sql1.InitializeSQLite(dir, fileName, False)
 	sql1.ExecNonQuery("DROP TABLE main")
+	sql1.ExecNonQuery("DROP TABLE idx")
 	CreateTable
 End Sub
 
@@ -181,7 +188,7 @@ Public Sub GetMatchedMapAsync(text As String,isSource As Boolean,matchAll As Boo
 	text=getQuery(words,operator)
 	
 	sqlStr="SELECT key, rowid, quote(matchinfo(idx)) as rank FROM idx WHERE "&matchTarget&" MATCH '"&text&"' ORDER BY rank DESC LIMIT 1000 OFFSET 0"
-	Log(sqlStr)
+	'Log(sqlStr)
 	Dim SenderFilter As Object = sql1.ExecQueryAsync("SQL", sqlStr, Null)
 	Wait For (SenderFilter) SQL_QueryComplete (Success As Boolean, rs As ResultSet)
 	Dim resultMap As Map

@@ -57,6 +57,7 @@ Sub Parser_EndElement (Uri As String, Name As String, Text As StringBuilder)
 		else if Attributes.ContainsKey("lang") Then
 			lang=Attributes.Get("lang")
 		End If
+		lang=lang.ToLowerCase
 		'Log("lang: "&lang)
 		If lang.StartsWith(aSourceLang) Or lang.StartsWith(aTargetLang) Then
 			map1.Put("Text",Text.ToString)
@@ -82,8 +83,8 @@ End Sub
 Sub importedListQuick(dir As String,filename As String,sourceLang As String,targetLang As String) As List
 	Dim segments As List
 	segments.Initialize
-	aSourceLang=sourceLang
-	aTargetLang=targetLang
+	aSourceLang=sourceLang.ToLowerCase
+	aTargetLang=targetLang.ToLowerCase
 	
 	parse(dir,filename)
 	For Each tu As Map In tus

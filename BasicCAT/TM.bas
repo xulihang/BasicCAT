@@ -332,16 +332,9 @@ Sub importedXlsx(filename As String) As List
 	Return result
 End Sub
 
-Sub getMatchList(source As String) As ResumableSub
+Sub getMatchList(source As String,matchrate As Double,getOne As Boolean) As ResumableSub
 	Dim matchList As List
 	matchList.Initialize
-
-	Dim matchrate As Double
-	If Main.currentProject.settings.ContainsKey("matchrate") Then
-		matchrate=Main.currentProject.settings.Get("matchrate")
-	Else
-		matchrate=0.5
-	End If
 	For i=0 To 1
 		If i=0 Then
 			Dim kvs As TMDB
@@ -350,28 +343,39 @@ Sub getMatchList(source As String) As ResumableSub
 			Dim kvs As TMDB
 			kvs=externalTranslationMemory
 		End If
-		wait for (kvs.GetMatchedMapAsync(source,True,False)) Complete (matchedMap As Map)
-		Log(matchedMap)
+		Dim matchedMap As Map
+		
+		If kvs.ContainsKey(source) And getOne Then
+			matchedMap=kvs.Get(source)
+		Else
+			wait for (kvs.GetMatchedMapAsync(source,True,False)) Complete (resultMap As Map)
+			matchedMap=resultMap
+		End If
+		
+		'Log(matchedMap)
+		source=source.ToLowerCase.Trim
 		For Each key As String In matchedMap.Keys
 			Sleep(0)
-			If basicCompare(source,key)=False Then
+			Dim lowerCased As String=key.ToLowerCase.Trim
+			If basicCompare(source,lowerCased)=False Then
 				Continue
 			End If
 
 			Dim similarity As Double
-			If key=source Then 'exact match
+			If lowerCased=source Then 'exact match
 				similarity=1.0
 			Else
-				If similarityStore.ContainsKey(source&"	"&key) Then
-					similarity=similarityStore.Get(source&"	"&key)
+				Dim joined As String=source&"	"&lowerCased
+				If similarityStore.ContainsKey(joined) Then
+					similarity=similarityStore.Get(joined)
 				Else
-					wait for (getSimilarityFuzzyWuzzy(source,key)) Complete (Result As Double)
+					wait for (getSimilarityFuzzyWuzzy(source,lowerCased)) Complete (Result As Double)
 					similarity=Result
-					similarityStore.Put(source&"	"&key,similarity)
+					similarityStore.Put(joined,similarity)
 				End If
 			End If
 
-			If similarity>matchrate Then
+			If similarity>=matchrate Then
 				Dim tmPairList As List
 				tmPairList.Initialize
 				tmPairList.Add(similarity)
@@ -387,8 +391,11 @@ Sub getMatchList(source As String) As ResumableSub
 				Else
 					tmPairList.Add(targetMap.Get("filename")) ' external tm name
 				End If
-				Log(tmPairList)
+				'Log(tmPairList)
 				matchList.Add(tmPairList)
+				If getOne Then
+					Return matchList
+				End If
 			End If
 		Next
 	Next
@@ -449,7 +456,7 @@ Sub getMatchListOld(source As String) As ResumableSub
 				Else
 					tmPairList.Add(targetMap.Get("filename")) ' external tm name
 				End If
-				Log(tmPairList)
+				'Log(tmPairList)
 				matchList.Add(tmPairList)
 			End If
 		Next
@@ -460,97 +467,13 @@ End Sub
 
 
 Sub getOneUseMemory(source As String,rate As Double) As ResumableSub
-	
-	Dim matchList As List
-	matchList.Initialize
 	Dim onePairList As List
 	onePairList.Initialize
-	For i=0 To 1
-		If i=0 Then
-			Dim kvs As TMDB
-			kvs=translationMemory
-		Else
-			Dim kvs As TMDB
-			kvs=externalTranslationMemory
-		End If
-		
-		If kvs.ContainsKey(source) Then
-			Dim tmPairList As List
-			tmPairList.Initialize
-			tmPairList.Add(1)
-			tmPairList.Add(source)
-			
-			Dim target As String
-			Dim targetMap As Map
-			targetMap=kvs.Get(source)
-			target=targetMap.Get("text")
-			
-			If i=0 Then
-				tmPairList.Add(target)
-				tmPairList.Add(targetMap.GetDefault("creator","anonymous"))
-			Else
-				tmPairList.Add(target)
-				tmPairList.Add(targetMap.Get("filename"))
-			End If
-			onePairList=tmPairList
-			Return onePairList
-		else if rate>=1.0 Then
-			Continue
-		End If
-		
-		For Each key As String In kvs.ListKeys
-			If basicCompare(source,key)=False Then
-				Continue
-			End If
-			
-			
-			
-			Dim similarity As Double
-			
-			If similarityStore.ContainsKey(source&"	"&key) Then
-				similarity=similarityStore.Get(source&"	"&key)
-			Else
-				wait for (getSimilarityFuzzyWuzzy(source,key)) Complete (Result As Double)
-				similarity=Result
-				similarityStore.Put(source&"	"&key,similarity)
-			End If
-			
-
-
-
-
-			If similarity>rate Then
-				
-				Dim target As String
-				Dim targetMap As Map
-				targetMap=kvs.Get(key)
-				target=targetMap.Get("text")
-				
-				Dim tmPairList As List
-				tmPairList.Initialize
-				tmPairList.Add(similarity)
-				tmPairList.Add(key)
-				
-				If i=0 Then
-					tmPairList.Add(target)
-					tmPairList.Add("")
-				Else
-					tmPairList.Add(target)
-					tmPairList.Add(targetMap.Get("filename"))
-				End If
-				If similarity=1 Then
-					'Log("exact match")
-					onePairList=tmPairList
-					Return onePairList
-				End If
-				matchList.Add(tmPairList)
-			End If
-		Next
-	Next
+	wait for (getMatchList(source,rate,True)) Complete (matchList As List) 
 	If matchList.Size=0 Then
 		Return onePairList
 	End If
-	onePairList=subtractedAndSortMatchList(matchList).Get(0)
+	onePairList=matchList.Get(0)
 	Return onePairList
 End Sub
 
