@@ -1878,7 +1878,7 @@ Sub preTranslate(options As Map)
 		Dim index As Int=-1
 		progressDialog.Show("Pretranslating...","pretranslate")
 		For Each bitext As List In segments
-			Sleep(0)
+			'Sleep(0)
 			index=index+1
 			Dim target As String
 			target=bitext.Get(1)
@@ -1897,23 +1897,17 @@ Sub preTranslate(options As Map)
 					Return
 				End If
 				Dim resultList As List
-				'Log("rate"&options.Get("rate"))
-				Wait For (projectTM.getOneUseMemory(bitext.Get(0),options.Get("rate"))) Complete (Result As List)
+				Dim similarity,matchrate As Double
+				matchrate=options.Get("rate")
+				Wait For (projectTM.getOneUseMemory(bitext.Get(0),matchrate)) Complete (Result As List)
 				resultList=Result
 				If resultList.Size=0 Then
 					completed=completed+1
 					progressDialog.update(completed,segments.Size)
 					Continue
 				End If
-				Dim similarity,matchrate As Double
 				similarity=resultList.Get(0)
-				matchrate=options.Get("rate")
 
-				'Log(bitext.Get(0))
-				'Log(similarity)
-				'Log(matchrate)
-				'Log(similarity>=matchrate)
-				
 				If similarity>=matchrate Then
 					setTranslation(index,resultList.Get(2),True,resultList.Get(1))
 					'setSegment(bitext,index)

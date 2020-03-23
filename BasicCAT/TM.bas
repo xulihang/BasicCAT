@@ -344,18 +344,18 @@ Sub getMatchList(source As String,matchrate As Double,getOne As Boolean) As Resu
 			kvs=externalTranslationMemory
 		End If
 		Dim matchedMap As Map
-		
+		matchedMap.Initialize
 		If kvs.ContainsKey(source) And getOne Then
-			matchedMap=kvs.Get(source)
+			matchedMap.Put(source,kvs.Get(source))
 		Else
 			wait for (kvs.GetMatchedMapAsync(source,True,False)) Complete (resultMap As Map)
 			matchedMap=resultMap
 		End If
-		
+		'Log(source)
 		'Log(matchedMap)
 		source=source.ToLowerCase.Trim
 		For Each key As String In matchedMap.Keys
-			Sleep(0)
+			'Sleep(0)
 			Dim lowerCased As String=key.ToLowerCase.Trim
 			If basicCompare(source,lowerCased)=False Then
 				Continue
@@ -374,8 +374,12 @@ Sub getMatchList(source As String,matchrate As Double,getOne As Boolean) As Resu
 					similarityStore.Put(joined,similarity)
 				End If
 			End If
-
+			'Log(source)
+			'Log(lowerCased)
+			'Log(similarity)
+			'Log(matchrate)
 			If similarity>=matchrate Then
+
 				Dim tmPairList As List
 				tmPairList.Initialize
 				tmPairList.Add(similarity)
@@ -535,7 +539,6 @@ Sub NextIsMoreSimilar(list2 As List,list1 As List) As Boolean
 End Sub
 
 Sub getSimilarityFuzzyWuzzy(str1 As String,str2 As String) As ResumableSub
-	Sleep(0)
 	Dim result As Double
 	Dim jo As JavaObject
 	result=jo.InitializeStatic("me.xdrop.fuzzywuzzy.FuzzySearch").RunMethod("ratio",Array As String(str1,str2))
