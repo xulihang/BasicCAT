@@ -19,8 +19,9 @@ Sub createWorkFile(filename As String,path As String,sourceLang As String,senten
 	sourceFiles.Initialize
 	
 	Dim files As List
-	Dim xmlstring As String
-	xmlstring=XMLUtils.escapedText(File.ReadString(File.Combine(path,"source"),filename),"source","xliff")
+	Dim xmlstring As String=File.ReadString(File.Combine(path,"source"),filename)
+	xmlstring=XMLUtils.escapedText(xmlstring,"source","xliff")
+	xmlstring=XMLUtils.escapedText(xmlstring,"target","xliff")
 	xmlstring=XMLUtils.escapedText(xmlstring,"mrk","xliff")
 	'Log("done")
 
@@ -86,7 +87,13 @@ Sub createWorkFile(filename As String,path As String,sourceLang As String,senten
 					End If
 
 					bitext.add(sourceShown.Trim)
-					bitext.Add("")
+					Dim target As String=""
+					If segmentedText.Size=1 And isSegEnabled=False Then
+                        If tu.Size=5 Then
+							target=tu.Get(4)
+                        End If						
+					End If
+					bitext.Add(target)
 					bitext.Add(inbetweenContent&source) 'inbetweenContent contains crlf and spaces between sentences
 					bitext.Add(innerfileName)
 					Dim extra As Map
@@ -222,6 +229,20 @@ Sub addTransUnit(transUnits As List,tidyTransUnits As List,groupIndex As Int)
 		oneTransUnit.Add(id)
 		oneTransUnit.Add(mrkList)
 		oneTransUnit.Add(groupIndex)
+		If transUnit.ContainsKey("target") Then
+			Dim target As String
+			Try
+				Dim targetMap As Map
+				targetMap=transUnit.Get("target")
+				target=targetMap.Get("Text")
+			Catch
+				'Log(LastException)
+				target=transUnit.Get("target")
+			End Try
+			If text<>target And target<>"null" Then
+				oneTransUnit.Add(target)
+			End If
+		End If
 		tidyTransUnits.Add(oneTransUnit)
 	Next
 End Sub
