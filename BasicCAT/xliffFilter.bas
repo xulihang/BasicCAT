@@ -21,11 +21,15 @@ Sub createWorkFile(filename As String,path As String,sourceLang As String,senten
 	Dim files As List
 	Dim xmlstring As String=File.ReadString(File.Combine(path,"source"),filename)
 	xmlstring=XMLUtils.escapedText(xmlstring,"source","xliff")
-	xmlstring=XMLUtils.escapedText(xmlstring,"mrk","xliff")
-	xmlstring=Regex.Replace("<target\b.*?/>",xmlstring,"<target></target>")
-	xmlstring=XMLUtils.escapedText(xmlstring,"target","xliff")
+	If xmlstring.Contains("<seg-source>")=False Then
+		xmlstring=Regex.Replace("<target */>",xmlstring,"<target></target>")
+		xmlstring=XMLUtils.escapedText(xmlstring,"target","xliff")
+	Else
+		xmlstring=XMLUtils.escapedText(xmlstring,"mrk","xliff")
+	End If
+	
     Log("escape done")
-
+    'Log(xmlstring)
 	
 	files=getFilesList(xmlstring)
 	
@@ -343,7 +347,6 @@ Sub generateFile(filename As String,path As String,projectFile As Map)
 	xmlString=XMLUtils.getXmlFromMapWithoutIndent(insertTranslation(translationMap,filename,path,isSegEnabled))
 	xmlString=XMLUtils.unescapedText(xmlString,"source","xliff")
 	xmlString=XMLUtils.unescapedText(xmlString,"seg-source","xliff")
-	'xmlString=Regex.Replace("<target\b.*?/>",xmlString,"<target></target>")
 	xmlString=XMLUtils.unescapedText(xmlString,"target","xliff")
 	'Log(xmlString)
 	File.WriteString(File.Combine(path,"target"),filename,xmlString)
@@ -363,10 +366,11 @@ Sub insertTranslation(translationMap As Map,filename As String,path As String,is
 	Dim xmlstring As String
 	xmlstring=File.ReadString(File.Combine(path,"source"),filename)
 	xmlstring=XMLUtils.escapedText(xmlstring,"source","xliff")
-	xmlstring=XMLUtils.escapedText(xmlstring,"seg-source","xliff")
 	If isSegEnabled=False Then
-		xmlstring=Regex.Replace("<target\b.*?/>",xmlstring,"<target></target>")
+		xmlstring=Regex.Replace("<target */>",xmlstring,"<target></target>")
 		xmlstring=XMLUtils.escapedText(xmlstring,"target","xliff")
+	Else
+		xmlstring=XMLUtils.escapedText(xmlstring,"seg-source","xliff")
 	End If
 	'File.WriteString(path,"out.xml",xmlstring)
 	'Log("xml"&xmlstring)
