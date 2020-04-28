@@ -21,9 +21,10 @@ Sub createWorkFile(filename As String,path As String,sourceLang As String,senten
 	Dim files As List
 	Dim xmlstring As String=File.ReadString(File.Combine(path,"source"),filename)
 	xmlstring=XMLUtils.escapedText(xmlstring,"source","xliff")
-	xmlstring=XMLUtils.escapedText(xmlstring,"target","xliff")
 	xmlstring=XMLUtils.escapedText(xmlstring,"mrk","xliff")
-	'Log("done")
+	xmlstring=Regex.Replace("<target\b.*?/>",xmlstring,"<target></target>")
+	xmlstring=XMLUtils.escapedText(xmlstring,"target","xliff")
+    Log("escape done")
 
 	
 	files=getFilesList(xmlstring)
@@ -341,8 +342,9 @@ Sub generateFile(filename As String,path As String,projectFile As Map)
 	Dim xmlString As String
 	xmlString=XMLUtils.getXmlFromMapWithoutIndent(insertTranslation(translationMap,filename,path,isSegEnabled))
 	xmlString=XMLUtils.unescapedText(xmlString,"source","xliff")
-	xmlString=XMLUtils.unescapedText(xmlString,"target","xliff")
 	xmlString=XMLUtils.unescapedText(xmlString,"seg-source","xliff")
+	'xmlString=Regex.Replace("<target\b.*?/>",xmlString,"<target></target>")
+	xmlString=XMLUtils.unescapedText(xmlString,"target","xliff")
 	'Log(xmlString)
 	File.WriteString(File.Combine(path,"target"),filename,xmlString)
 	Main.updateOperation(filename&" generated!")
@@ -363,6 +365,7 @@ Sub insertTranslation(translationMap As Map,filename As String,path As String,is
 	xmlstring=XMLUtils.escapedText(xmlstring,"source","xliff")
 	xmlstring=XMLUtils.escapedText(xmlstring,"seg-source","xliff")
 	If isSegEnabled=False Then
+		xmlstring=Regex.Replace("<target\b.*?/>",xmlstring,"<target></target>")
 		xmlstring=XMLUtils.escapedText(xmlstring,"target","xliff")
 	End If
 	'File.WriteString(path,"out.xml",xmlstring)
@@ -383,7 +386,7 @@ Sub insertTranslation(translationMap As Map,filename As String,path As String,is
 		Try
 			body=innerFile.Get("body")
 		Catch
-			Log(LastException)
+			'Log(LastException)
 			Continue
 		End Try
 		Dim fileAttributes As Map
@@ -497,14 +500,14 @@ Sub updateTransUnits(transUnits As List,originalFilename As String,translationMa
 						End If
 					Else
 						For Each key As String In targetMap.Keys
-							Log(key)
-							Log(targetMap)
+							'Log(key)
+							'Log(targetMap)
 							Try
 								If key<>"Attributes" Then
 									targetMap.Remove(key)
 								End If
 							Catch
-								Log(LastException)
+								'Log(LastException)
 							End Try
 						Next
 						targetMap.Put("Text",dataMap.Get("translation"))
