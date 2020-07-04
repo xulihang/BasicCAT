@@ -14,7 +14,7 @@ Module1=niutransMTPlugin
 NumberOfFiles=0
 NumberOfLibraries=9
 NumberOfModules=1
-Version=6.51
+Version=7.8
 @EndOfDesignText@
 #Region Project Attributes 
 	#MainFormWidth: 600
