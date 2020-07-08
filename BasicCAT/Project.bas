@@ -884,6 +884,9 @@ Sub updateWithWorkfileMI_Action
 			Dim extraFromWorkfile As Map
 			extraFromWorkfile=segmentFromWorkfile.Get(4)
 			If extraFromWorkfile.GetDefault("createdTime",0)>=extra.GetDefault("createdTime",0) Then
+				If extra.ContainsKey("id") Then
+					extraFromWorkfile.Put("id",extra.Get("id"))
+				End If
 				segment.Clear
 				segment.AddAll(segmentFromWorkfile)
 			End If

@@ -511,7 +511,7 @@ Sub updateTransUnits(transUnits As List,originalFilename As String,translationMa
 									targetMap.Remove(key)
 								End If
 							Catch
-								'Log(LastException)
+								Log(LastException)
 							End Try
 						Next
 						targetMap.Put("Text",dataMap.Get("translation"))
