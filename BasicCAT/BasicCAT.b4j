@@ -1778,7 +1778,7 @@ Public Sub setLabelFont(lbl As Label,name As String)
 	Log(lbl.font.Size)
 End Sub
 
-Public Sub setTextAreaFont(ta As RichTextArea,name As String)
+Public Sub setTextAreaStyle(ta As RichTextArea,FontNameKey As String)
 	Dim cssPath As String
 	If File.Exists(currentProject.path,"config/richtext.css") Then
 		cssPath=File.Combine(currentProject.path,"config/richtext.css")
@@ -1786,18 +1786,21 @@ Public Sub setTextAreaFont(ta As RichTextArea,name As String)
 		cssPath=File.Combine(File.DirData("BasicCAT"),"richtext.css")
 		File.WriteString(cssPath,"",Utils.richTextCSS)
 	End If
-	ta.GetObjectJO.RunMethodJO("getStylesheets",Null).RunMethod("clear",Null)
+	'ta.GetObjectJO.RunMethodJO("getStylesheets",Null).RunMethod("clear",Null)
 	ta.GetObjectJO.RunMethodJO("getStylesheets",Null).RunMethod("add",Array(File.GetUri(cssPath,"")))
 	
-	If preferencesMap.ContainsKey(name) Then
+	If preferencesMap.ContainsKey(FontNameKey) Then
 		Dim fontPreference As Map
-		fontPreference=preferencesMap.Get(name)
+		fontPreference=preferencesMap.Get(FontNameKey)
 		Dim familyName As String
 		familyName=fontPreference.get("FamilyName")
 		Dim size As Int
 		size=fontPreference.get("Size")
 		ta.FontFamily=familyName
 		ta.FontSzie=size
+	End If
+	If preferencesMap.GetDefault("darktheme",False) Then
+		Utils.darkenTextArea(ta)
 	End If
 End Sub
 

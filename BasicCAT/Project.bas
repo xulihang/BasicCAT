@@ -1109,14 +1109,14 @@ Public Sub addTextAreaToSegmentPane(segmentpane As Pane,source As String,target 
 	sourceTextArea=segmentpane.GetNode(0).Tag
 	sourceTextArea.Text=source
     sourceTextArea.WrapText=True
-	Main.setTextAreaFont(sourceTextArea,"sourceFont")
+	Main.setTextAreaStyle(sourceTextArea,"sourceFont")
 	
 	addKeyEvent(sourceTextArea.BasePane,"sourceTextArea")
 	Dim targetTextArea As RichTextArea
 	targetTextArea=segmentpane.GetNode(1).Tag
 	targetTextArea.Text=target
 	targetTextArea.WrapText=True
-	Main.setTextAreaFont(targetTextArea,"targetFont")
+	Main.setTextAreaStyle(targetTextArea,"targetFont")
 	addKeyEvent(targetTextArea.BasePane,"targetTextArea")
 	
 	sourceTextArea.BasePane.Left=0

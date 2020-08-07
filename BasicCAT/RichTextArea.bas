@@ -179,6 +179,12 @@ End Sub
 
 Sub setEnabled(enabled As Boolean)
 	mBase.Enabled=enabled
+	If enabled=False Then
+		CustomViewNode.Alpha=0.5
+		'CSSUtils.SetBackgroundColor(CustomViewNode,fx.Colors.DarkGray)
+	Else
+		CustomViewNode.Alpha=1.0
+	End If
 End Sub
 
 Sub getBasePane As Pane

@@ -598,13 +598,27 @@ Sub richTextCSS As String
 -fx-underline:true;
 -fx-fill: darkgray;
 }"$
+	Dim text As String=$".styled-text-area .text {
+	 -fx-fill: white;
+	 }
+    .styled-text-area .caret {
+        -fx-stroke: white;
+    }
+	"$
     Dim sb As StringBuilder
 	sb.Initialize
 	sb.Append(tags)
 	If Main.preferencesMap.GetDefault("underline_spaces",False) Then
 		sb.Append(CRLF).Append(spaces)
 	End If
+	If Main.preferencesMap.GetDefault("darktheme",False) Then
+		sb.Append(CRLF).Append(text)
+	End If
     Return sb.ToString
+End Sub
+
+Sub darkenTextArea(ta As RichTextArea)
+	CSSUtils.SetBackgroundColor(ta.GetObject,fx.Colors.Black)
 End Sub
 
 Sub MeasureMultilineTextHeight (Font As Font, Width As Double, Text As String) As Double
