@@ -1662,7 +1662,7 @@ Sub showMT(source As String,targetTextArea As RichTextArea)
 				Main.tmTableView.Items.Add(row)
 				Main.changeWhenSegmentOrSelectionChanges
 			End If
-			'loadITPSegments(targetTextArea,engine,Result)
+			loadITPSegments(targetTextArea,engine,Result)
 		End If
 	Next
 End Sub
