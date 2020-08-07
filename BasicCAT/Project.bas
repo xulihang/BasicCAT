@@ -1126,7 +1126,7 @@ Sub loadStylesForTextArea(ta As RichTextArea)
 	If File.Exists(path,"config/richtext.css") Then
 		cssPath=File.Combine(path,"config/richtext.css")
 	Else
-		cssPath=File.Combine(File.DirData("BasicCAT"),"config/richtext.css")
+		cssPath=File.Combine(File.DirData("BasicCAT"),"richtext.css")
 		File.WriteString(cssPath,"",Utils.richTextCSS)
 	End If
 	ta.GetObjectJO.RunMethodJO("getStylesheets",Null).RunMethod("add",Array(File.GetUri(cssPath,"")))
