@@ -229,7 +229,7 @@ Sub FocusChanged_Event (MethodName As String,Args() As Object) As Object							'
 	Log("focus")
 	Log(Args(2))
 	If SubExists(mCallBack,mEventName & "_FocusChanged") Then
-		CallSub2(mCallBack,mEventName & "_FocusChanged",Args(2))
+		CallSubDelayed2(mCallBack,mEventName & "_FocusChanged",Args(2))
 	End If
 End Sub
 
@@ -238,7 +238,7 @@ Sub KeyPressed_Event (MethodName As String, Args() As Object) As Object 'ignore
 	Dim result As String
 	result=KEvt.RunMethod("getCode",Null)
 	If SubExists(mCallBack,mEventName & "_KeyPressed") Then
-		CallSub2(mCallBack,mEventName & "_KeyPressed",result)
+		CallSubDelayed2(mCallBack,mEventName & "_KeyPressed",result)
 	End If
 End Sub
 
@@ -325,13 +325,13 @@ End Sub
 Sub TextChanged_Event(MethodName As String,Args() As Object) As Object							'ignore
 	JO.RunMethod("setStyleSpans",Array(0,ComputeHighlightingB4x(getText)))
 	If SubExists(mCallBack,mEventName & "_TextChanged") Then
-		CallSub3(mCallBack,mEventName & "_TextChanged",Args(1),Args(2))
+		CallSubDelayed3(mCallBack,mEventName & "_TextChanged",Args(1),Args(2))
 	End If
 End Sub
 
 Sub SelectedTextChanged_Event(MethodName As String,Args() As Object) As Object							'ignore
 	If SubExists(mCallBack,mEventName & "_SelectedTextChanged") Then
-		CallSub3(mCallBack,mEventName & "_SelectedTextChanged",Args(1),Args(2))
+		CallSubDelayed3(mCallBack,mEventName & "_SelectedTextChanged",Args(1),Args(2))
 	End If
 End Sub
 

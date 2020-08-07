@@ -996,12 +996,18 @@ Sub targetTextArea_TextChanged (Old As String, New As String)
 			Dim match As String
 			Dim before As String=item.Get(0)
 			Dim after As String=item.Get(1)
+			If before="" Or after="" Then
+				Continue
+			End If
+			Dim text As String=ta.Text
 			If ta.SelectionEnd-before.Length>=0 Then
-				match=ta.Text.SubString2(ta.SelectionEnd-before.Length,ta.SelectionEnd)
+				Dim startIndex,endIndex As Int
+				startIndex=ta.SelectionEnd-before.Length
+				endIndex=ta.SelectionEnd
+				match=text.SubString2(startIndex,endIndex)
 				If match=before Then
-					Dim selection As Int=ta.SelectionEnd
-					ta.Text=ta.Text.SubString2(0,ta.SelectionEnd-before.Length)&after&ta.Text.SubString2(ta.SelectionEnd,ta.Text.Length)
-					ta.SetSelection(selection+after.Length,selection+after.Length)
+					ta.Text=text.SubString2(0,startIndex)&after&text.SubString2(ta.SelectionEnd,text.Length)
+					ta.SetSelection(startIndex+after.Length,startIndex+after.Length)
 					corrected=True
 				End If
 			End If
@@ -1073,7 +1079,7 @@ Sub targetTextArea_TextChanged (Old As String, New As String)
 				map1=Utils.GetScreenPosition(ta.BasePane)
 				Log(map1)
 				Dim jo As JavaObject = cm
-				jo.RunMethod("show", Array(ta, map1.Get("x")+ta.Width/10, map1.Get("y")+ta.Height))
+				jo.RunMethod("show", Array(ta.BasePane, map1.Get("x")+ta.Width/10, map1.Get("y")+ta.Height))
 			End If
 		End If
 	End If
@@ -1103,7 +1109,6 @@ Public Sub addTextAreaToSegmentPane(segmentpane As Pane,source As String,target 
 	sourceTextArea=segmentpane.GetNode(0).Tag
 	sourceTextArea.Text=source
     sourceTextArea.WrapText=True
-	loadStylesForTextArea(sourceTextArea)
 	Main.setTextAreaFont(sourceTextArea,"sourceFont")
 	
 	addKeyEvent(sourceTextArea.BasePane,"sourceTextArea")
@@ -1111,7 +1116,6 @@ Public Sub addTextAreaToSegmentPane(segmentpane As Pane,source As String,target 
 	targetTextArea=segmentpane.GetNode(1).Tag
 	targetTextArea.Text=target
 	targetTextArea.WrapText=True
-	loadStylesForTextArea(targetTextArea)
 	Main.setTextAreaFont(targetTextArea,"targetFont")
 	addKeyEvent(targetTextArea.BasePane,"targetTextArea")
 	
@@ -1121,17 +1125,6 @@ Public Sub addTextAreaToSegmentPane(segmentpane As Pane,source As String,target 
 	targetTextArea.BasePane.SetSize(Main.editorLV.Width/2-20dip,50dip)
 End Sub
 
-Sub loadStylesForTextArea(ta As RichTextArea)
-	Dim cssPath As String
-	If File.Exists(path,"config/richtext.css") Then
-		cssPath=File.Combine(path,"config/richtext.css")
-	Else
-		cssPath=File.Combine(File.DirData("BasicCAT"),"richtext.css")
-		File.WriteString(cssPath,"",Utils.richTextCSS)
-	End If
-	ta.GetObjectJO.RunMethodJO("getStylesheets",Null).RunMethod("add",Array(File.GetUri(cssPath,"")))
-End Sub
-
 Sub addKeyEvent(textarea1 As Object,eventName As String)
 	Dim CJO As JavaObject = textarea1
 	Dim O As Object = CJO.CreateEventFromUI("javafx.event.EventHandler",eventName&"_KeyPressed",Null)
@@ -1139,13 +1132,13 @@ Sub addKeyEvent(textarea1 As Object,eventName As String)
 	CJO.RunMethod("setFocusTraversable",Array(True))
 End Sub
 
-Sub sourceTextAreaSelectedText_changed(old As Object, new As Object)
+Sub sourceTextArea_SelectedTextChanged(old As Object, new As Object)
 	Dim ta As RichTextArea
 	ta=Sender
 	onSelectionChanged(new,ta,True)
 End Sub
 
-Sub targetTextAreaSelectedText_changed(old As Object, new As Object)
+Sub targetTextArea_SelectedTextChanged(old As Object, new As Object)
 	cursorReachEnd=False
     Log(old)
 	Log(new)
@@ -1155,6 +1148,8 @@ Sub targetTextAreaSelectedText_changed(old As Object, new As Object)
 End Sub
 
 Sub onSelectionChanged(selectedText As String,ta As RichTextArea,isSource As Boolean)
+	Log("selectedText")
+	Log(selectedText)
 	If selectedText<>"" Then
 		If isSource Then
 		    Main.sourceTermTextField.Text=selectedText
@@ -1250,7 +1245,7 @@ Sub showWordMeaning(selectedText As String,ta As RichTextArea)
 		Next
 		Sleep(100)
 		Dim jo As JavaObject = cm
-		jo.RunMethod("show", Array(ta, Main.getLeft, Main.getTop))
+		jo.RunMethod("show", Array(ta.BasePane, Main.getLeft, Main.getTop))
 	End If
 End Sub
 
@@ -1529,7 +1524,7 @@ Sub showReplacements(matches As List,entry As Int)
 	map1=Utils.GetScreenPosition(ta.BasePane)
 	Log(map1)
 	Dim jo As JavaObject = replacementsCM
-	jo.RunMethod("show", Array(ta, map1.Get("x")+ta.Width/10, map1.Get("y")+ta.Height))
+	jo.RunMethod("show", Array(ta.BasePane, map1.Get("x")+ta.Width/10, map1.Get("y")+ta.Height))
 End Sub
 
 Sub replacementMi_Action
