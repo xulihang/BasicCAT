@@ -40,6 +40,7 @@ Sub Class_Globals
 	Private lookupControlCheckBox As CheckBox
 	Private lookupShowSourceCheckBox As CheckBox
 	Private DarkThemeCheckBox As CheckBox
+	Private UnderlineSpacesCheckBox As CheckBox
 End Sub
 
 'Initializes the object. You can add parameters to this method if needed.
@@ -109,6 +110,7 @@ Sub categoryListView_SelectedIndexChanged(Index As Int)
 			SettingPane.LoadLayout("appearance")
 			loadFont
 			lineHeightTextField.Text=unsavedPreferences.GetDefault("lineheight",0.6)
+			UnderlineSpacesCheckBox.Checked=unsavedPreferences.GetDefault("underline_spaces",False)
 			If unsavedPreferences.ContainsKey("darktheme") Then
 				DarkThemeCheckBox.Checked=unsavedPreferences.get("darktheme")
 			End If
@@ -452,4 +454,6 @@ Sub lineHeightTextField_TextChanged (Old As String, New As String)
 
 End Sub
 
-
+Sub UnderlineSpacesCheckBox_CheckedChange(Checked As Boolean)
+	unsavedPreferences.Put("underline_spaces",Checked)
+End Sub

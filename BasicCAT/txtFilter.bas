@@ -136,7 +136,7 @@ Sub shouldAddSpace(sourceLang As String,targetLang As String,index As Int,segmen
 	Return False
 End Sub
 
-Sub mergeSegment(sourceTextArea As TextArea)
+Sub mergeSegment(sourceTextArea As RichTextArea)
 	Dim index As Int
 	index=Main.editorLV.Items.IndexOf(sourceTextArea.Parent)
 	If index+1>Main.currentProject.segments.Size-1 Then
@@ -157,9 +157,9 @@ Sub mergeSegment(sourceTextArea As TextArea)
 
 	pane=Main.editorLV.Items.Get(index)
 	nextPane=Main.editorLV.Items.Get(index+1)
-	Dim targetTa,nextSourceTa,nextTargetTa As TextArea
-	nextSourceTa=nextPane.GetNode(0)
-	nextTargetTa=nextPane.GetNode(1)
+	Dim targetTa,nextSourceTa,nextTargetTa As RichTextArea
+	nextSourceTa=nextPane.GetNode(0).Tag
+	nextTargetTa=nextPane.GetNode(1).tag
 	Dim fullsource,nextFullSource As String
 	fullsource=bitext.Get(2)
 	nextFullSource=nextBiText.Get(2)
@@ -192,7 +192,7 @@ Sub mergeSegment(sourceTextArea As TextArea)
 	sourceTextArea.Text=source.Trim&sourceWhitespace&nextSourceTa.Text.Trim
 	sourceTextArea.Tag=sourceTextArea.Text
 		
-	targetTa=pane.GetNode(1)
+	targetTa=pane.GetNode(1).Tag
 	targetTa.Text=targetTa.Text&targetWhitespace&nextTargetTa.Text
 
 
@@ -208,7 +208,7 @@ Sub mergeSegment(sourceTextArea As TextArea)
 	Main.editorLV.Items.RemoveAt(Main.editorLV.Items.IndexOf(sourceTextArea.Parent)+1)
 End Sub
 
-Sub splitSegment(sourceTextArea As TextArea)
+Sub splitSegment(sourceTextArea As RichTextArea)
 	Dim index As Int
 	index=Main.editorLV.Items.IndexOf(sourceTextArea.Parent)
 	Dim source As String
@@ -262,10 +262,10 @@ Sub previewText As String
 		End Try
 
 
-		Dim sourceTextArea As TextArea
-		Dim targetTextArea As TextArea
-		sourceTextArea=p.GetNode(0)
-		targetTextArea=p.GetNode(1)
+		Dim sourceTextArea As RichTextArea
+		Dim targetTextArea As RichTextArea
+		sourceTextArea=p.GetNode(0).Tag
+		targetTextArea=p.GetNode(1).Tag
 		Dim bitext As List
 		bitext=Main.currentProject.segments.Get(i)
 		Dim source,target,fullsource,translation As String

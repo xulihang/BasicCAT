@@ -68,8 +68,8 @@ Sub addTextFromDict(text As String)
 		If p.NumberOfNodes=0 Then
 			Return
 		End If
-		Dim ta As TextArea
-		ta=p.Getnode(1)
+		Dim ta As RichTextArea
+		ta=p.Getnode(1).Tag
 		Dim endPos As Int=ta.SelectionEnd
 		ta.Text=ta.Text.SubString2(0,endPos)&text&ta.Text.SubString2(endPos,ta.Text.Length)
 		ta.SetSelection(endPos+text.Length,endPos+text.Length)

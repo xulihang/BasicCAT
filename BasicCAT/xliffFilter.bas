@@ -590,7 +590,7 @@ Sub shouldAddSpace(sourceLang As String,targetLang As String,index As Int,segmen
 	Return False
 End Sub
 
-Sub mergeSegment(sourceTextArea As TextArea)
+Sub mergeSegment(sourceTextArea As RichTextArea)
 	Dim index As Int
 	index=Main.editorLV.Items.IndexOf(sourceTextArea.Parent)
 	If index+1>Main.currentProject.segments.Size-1 Then
@@ -637,9 +637,9 @@ Sub mergeSegment(sourceTextArea As TextArea)
 
 	pane=Main.editorLV.Items.Get(index)
 	nextPane=Main.editorLV.Items.Get(index+1)
-	Dim targetTa,nextTargetTa As TextArea
-	targetTa=pane.GetNode(1)
-	nextTargetTa=nextPane.GetNode(1)
+	Dim targetTa,nextTargetTa As RichTextArea
+	targetTa=pane.GetNode(1).Tag
+	nextTargetTa=nextPane.GetNode(1).Tag
 	bitext.Set(1,targetTa.Text)
 	nextBiText.Set(1,nextTargetTa.Text)
 	
@@ -654,7 +654,7 @@ End Sub
 
 
 
-Sub splitSegment(sourceTextArea As TextArea)
+Sub splitSegment(sourceTextArea As RichTextArea)
 	Dim index As Int
 	index=Main.editorLV.Items.IndexOf(sourceTextArea.Parent)
 	Dim source As String
@@ -710,10 +710,10 @@ Sub previewText As String
 			Continue
 		End Try
 
-		Dim sourceTextArea As TextArea
-		Dim targetTextArea As TextArea
-		sourceTextArea=p.GetNode(0)
-		targetTextArea=p.GetNode(1)
+		Dim sourceTextArea As RichTextArea
+		Dim targetTextArea As RichTextArea
+		sourceTextArea=p.GetNode(0).Tag
+		targetTextArea=p.GetNode(1).Tag
 		Dim bitext As List
 		bitext=Main.currentProject.segments.Get(i)
 		Dim source,target,fullsource,translation As String

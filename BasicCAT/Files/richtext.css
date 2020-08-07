@@ -1,0 +1,7 @@
+.bracket{
+-fx-fill: darkgray;
+}
+.space{
+-fx-underline:true;
+-fx-fill: darkgray;
+}

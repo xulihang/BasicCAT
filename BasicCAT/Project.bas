@@ -973,7 +973,7 @@ Sub targetTextArea_TextChanged (Old As String, New As String)
 		Return
 	End If
 	
-	Dim ta As TextArea
+	Dim ta As RichTextArea
 	ta=Sender
 	
 	'-----autocorrect
@@ -1036,9 +1036,6 @@ Sub targetTextArea_TextChanged (Old As String, New As String)
 	'Log("old"&Old)
 	'Log("last"&lastString)
 
-
-
-
 	If cmClicked=True Then
 		cmClicked=False
 	Else
@@ -1073,7 +1070,7 @@ Sub targetTextArea_TextChanged (Old As String, New As String)
 			Next
 			If cm.MenuItems.Size<>0 Then
 				Dim map1 As Map
-				map1=Utils.GetScreenPosition(ta)
+				map1=Utils.GetScreenPosition(ta.BasePane)
 				Log(map1)
 				Dim jo As JavaObject = cm
 				jo.RunMethod("show", Array(ta, map1.Get("x")+ta.Width/10, map1.Get("y")+ta.Height))
@@ -1102,70 +1099,63 @@ End Sub
 Public Sub addTextAreaToSegmentPane(segmentpane As Pane,source As String,target As String)
 	segmentpane.LoadLayout("segment")
 	segmentpane.SetSize(Main.editorLV.Width,50dip)
-	Dim sourceTextArea As TextArea
-	sourceTextArea=segmentpane.GetNode(0)
+	Dim sourceTextArea As RichTextArea
+	sourceTextArea=segmentpane.GetNode(0).Tag
 	sourceTextArea.Text=source
-
-	'sourceTextArea.Style = "-fx-font-family: Tahoma;"
+    sourceTextArea.WrapText=True
+	loadStylesForTextArea(sourceTextArea)
 	Main.setTextAreaFont(sourceTextArea,"sourceFont")
-	addKeyEvent(sourceTextArea,"sourceTextArea")
-	addSelectionChangedEvent(sourceTextArea,"sourceTextAreaSelection")
-	Dim targetTextArea As TextArea
-	targetTextArea=segmentpane.GetNode(1)
-	targetTextArea.Text=target
-
-	'targetTextArea.Style = "-fx-font-family: Arial Unicode MS;"
-	Main.setTextAreaFont(targetTextArea,"targetFont")
-	addKeyEvent(targetTextArea,"targetTextArea")
-	addSelectionChangedEvent(targetTextArea,"targetTextAreaSelection")
 	
-	sourceTextArea.Left=0
-	sourceTextArea.SetSize(Main.editorLV.Width/2-20dip,50dip)
-	targetTextArea.Left=sourceTextArea.Left+sourceTextArea.Width
-	targetTextArea.SetSize(Main.editorLV.Width/2-20dip,50dip)
+	addKeyEvent(sourceTextArea.BasePane,"sourceTextArea")
+	Dim targetTextArea As RichTextArea
+	targetTextArea=segmentpane.GetNode(1).Tag
+	targetTextArea.Text=target
+	targetTextArea.WrapText=True
+	loadStylesForTextArea(targetTextArea)
+	Main.setTextAreaFont(targetTextArea,"targetFont")
+	addKeyEvent(targetTextArea.BasePane,"targetTextArea")
+	
+	sourceTextArea.BasePane.Left=0
+	sourceTextArea.BasePane.SetSize(Main.editorLV.Width/2-20dip,50dip)
+	targetTextArea.BasePane.Left=sourceTextArea.BasePane.Left+sourceTextArea.BasePane.Width
+	targetTextArea.BasePane.SetSize(Main.editorLV.Width/2-20dip,50dip)
 End Sub
 
-Sub addKeyEvent(textarea1 As TextArea,eventName As String)
+Sub loadStylesForTextArea(ta As RichTextArea)
+	Dim cssPath As String
+	If File.Exists(path,"config/richtext.css") Then
+		cssPath=File.Combine(path,"config/richtext.css")
+	Else
+		cssPath=File.Combine(File.DirData("BasicCAT"),"config/richtext.css")
+		File.WriteString(cssPath,"",Utils.richTextCSS)
+	End If
+	ta.GetObjectJO.RunMethodJO("getStylesheets",Null).RunMethod("add",Array(File.GetUri(cssPath,"")))
+End Sub
+
+Sub addKeyEvent(textarea1 As Object,eventName As String)
 	Dim CJO As JavaObject = textarea1
 	Dim O As Object = CJO.CreateEventFromUI("javafx.event.EventHandler",eventName&"_KeyPressed",Null)
 	CJO.RunMethod("setOnKeyPressed",Array(O))
 	CJO.RunMethod("setFocusTraversable",Array(True))
 End Sub
 
-Sub addSelectionChangedEvent(textarea1 As TextArea,eventName As String)
-	Dim Obj As Reflector
-	Obj.Target = textarea1
-	Obj.AddChangeListener(eventName, "selectionProperty")
-	
-End Sub
-
-Sub sourceTextAreaSelection_changed(old As Object, new As Object)
-
-	Dim ta As TextArea
+Sub sourceTextAreaSelectedText_changed(old As Object, new As Object)
+	Dim ta As RichTextArea
 	ta=Sender
 	onSelectionChanged(new,ta,True)
 End Sub
 
-Sub targetTextAreaSelection_changed(old As Object, new As Object)
+Sub targetTextAreaSelectedText_changed(old As Object, new As Object)
 	cursorReachEnd=False
     Log(old)
 	Log(new)
-	Dim ta As TextArea
+	Dim ta As RichTextArea
 	ta=Sender
     onSelectionChanged(new,ta,False)
-
 End Sub
 
-Sub onSelectionChanged(new As Object,ta As TextArea,isSource As Boolean)
-	
-	Dim indexString As String
-	indexString=new
-	Dim selectionStart,selectionEnd As Int
-	selectionStart=Regex.Split(",",indexString)(0)
-	selectionEnd=Regex.Split(",",indexString)(1)
-	Dim selectedText As String
-	If selectionEnd<>selectionStart Then
-		selectedText=ta.Text.SubString2(selectionStart,selectionEnd)
+Sub onSelectionChanged(selectedText As String,ta As RichTextArea,isSource As Boolean)
+	If selectedText<>"" Then
 		If isSource Then
 		    Main.sourceTermTextField.Text=selectedText
 		Else
@@ -1181,15 +1171,12 @@ Sub onSelectionChanged(new As Object,ta As TextArea,isSource As Boolean)
 		If Main.preferencesMap.GetDefault("lookup_usingF1",False)=False Then
 			showWordMeaning(selectedText,ta)
 		End If
-		
 	Else
 		index=1
 	End If
-	
 	'------------------ show word meaning
+	Dim selectionEnd As Int=ta.SelectionEnd
 	If Main.TabPane1.SelectedIndex=1 Then
-		
-		
 		If Utils.LanguageHasSpace(projectFile.Get("source"))=True And isSource=True Then
 			If selectionEnd<>ta.Text.Length Then
 				Dim lastChar As String
@@ -1236,7 +1223,7 @@ Sub onSelectionChanged(new As Object,ta As TextArea,isSource As Boolean)
 	'---------- show segment search
 End Sub
 
-Sub showWordMeaning(selectedText As String,ta As TextArea)
+Sub showWordMeaning(selectedText As String,ta As RichTextArea)
 	If cmClicked=True Then
 		cmClicked=False
 	Else
@@ -1281,8 +1268,8 @@ Sub mi_Action
 	Try
 		Dim p As Pane
 		p=Main.editorLV.Items.Get(lastEntry)
-		Dim targetTextArea As TextArea
-		targetTextArea=p.GetNode(1)
+		Dim targetTextArea As RichTextArea
+		targetTextArea=p.GetNode(1).Tag
 		targetTextArea.Text=targetTextArea.Text.SubString2(0,targetTextArea.SelectionStart)&Utils.replaceOnce(mi.Text,mi.Tag,"")&targetTextArea.Text.SubString2(targetTextArea.SelectionStart,targetTextArea.Text.Length)
 		Sleep(0)
 		targetTextArea.SetSelection(targetTextArea.Text.Length,targetTextArea.Text.Length)
@@ -1293,7 +1280,7 @@ Sub mi_Action
 End Sub
 
 Sub sourceTextArea_MouseClicked (EventData As MouseEvent)
-	Dim ta As TextArea
+	Dim ta As RichTextArea
 	ta=Sender
 	lastEntry=Main.editorLV.Items.IndexOf(ta.Parent)
 	If ta.SelectionEnd=ta.SelectionStart Then
@@ -1303,18 +1290,14 @@ Sub sourceTextArea_MouseClicked (EventData As MouseEvent)
 End Sub
 
 
-Sub sourceTextArea_KeyPressed_Event (MethodName As String, Args() As Object) As Object
-	Dim sourceTextArea As TextArea
+Sub sourceTextArea_KeyPressed (result As String)
+	Dim sourceTextArea As RichTextArea
 	sourceTextArea=Sender
-
-	Dim KEvt As JavaObject = Args(0)
-	Dim result As String
-	result=KEvt.RunMethod("getCode",Null)
 	Log(result)
     If result="ENTER" Then
 		If SegEnabledFiles.IndexOf(currentFilename)<>-1 Then
 			fx.Msgbox(Main.MainForm,"This file does not support spliting and merging segments","")
-			Return Null
+			Return
 		End If
 		contentIsChanged
 		Dim filenameLowercase As String
@@ -1338,7 +1321,7 @@ Sub sourceTextArea_KeyPressed_Event (MethodName As String, Args() As Object) As 
 	Else if result="DELETE" Then
 		If SegEnabledFiles.IndexOf(currentFilename)<>-1 Then
 			fx.Msgbox(Main.MainForm,"This file does not support spliting and merging segments","")
-			Return Null
+			Return
 		End If
 		contentIsChanged
 		Dim filenameLowercase As String
@@ -1367,12 +1350,9 @@ Sub sourceTextArea_KeyPressed_Event (MethodName As String, Args() As Object) As 
 	End If
 End Sub
 
-Sub targetTextArea_KeyPressed_Event (MethodName As String, Args() As Object) As Object
-	Dim KEvt As JavaObject = Args(0)
-	Dim result As String
-	result=KEvt.RunMethod("getCode",Null)
+Sub targetTextArea_KeyPressed (result As String)
 	Log(result)
-	Dim targetTextArea As TextArea
+	Dim targetTextArea As RichTextArea
 	targetTextArea=Sender
 	If result="ENTER" Then
 		changeSegment(1,targetTextArea)
@@ -1391,7 +1371,7 @@ Sub targetTextArea_KeyPressed_Event (MethodName As String, Args() As Object) As 
 	End If
 End Sub
 
-Sub changeSegment(offset As Int,targetTextArea As TextArea)
+Sub changeSegment(offset As Int,targetTextArea As RichTextArea)
 	Try
 		targetTextArea.Text=targetTextArea.Text.Replace(CRLF,"")
 		saveTranslation(targetTextArea)
@@ -1404,8 +1384,8 @@ Sub changeSegment(offset As Int,targetTextArea As TextArea)
 		End If
 		Dim nextPane As Pane
 		nextPane=Main.editorLV.Items.Get(index+offset)
-		Dim nextTA As TextArea
-		nextTA=nextPane.GetNode(1)
+		Dim nextTA As RichTextArea
+		nextTA=nextPane.GetNode(1).Tag
 		nextTA.RequestFocus
 		lastEntry=Main.editorLV.Items.IndexOf(nextPane)
 		lastFilename=currentFilename
@@ -1430,7 +1410,7 @@ End Sub
 
 Sub sourceTextArea_FocusChanged (HasFocus As Boolean)
 	Log(HasFocus)
-	Dim TextArea1 As TextArea
+	Dim TextArea1 As RichTextArea
 	TextArea1=Sender
 	If HasFocus Then
 		TextArea1.Tag=TextArea1.Text
@@ -1442,9 +1422,9 @@ Sub sourceTextArea_FocusChanged (HasFocus As Boolean)
 End Sub
 
 Sub targetTextArea_FocusChanged (HasFocus As Boolean)
-	Dim TextArea1 As TextArea
+	Dim TextArea1 As RichTextArea
 	TextArea1=Sender
-	Sleep(0)
+	'Sleep(0)
 	If TextArea1.IsInitialized=False Then
 		Log("Null,Textarea")
 		Return
@@ -1477,7 +1457,7 @@ Sub targetTextArea_FocusChanged (HasFocus As Boolean)
 	End If
 End Sub
 
-Sub languagecheck(ta As TextArea,entry As Int)
+Sub languagecheck(ta As RichTextArea,entry As Int)
 	If Main.getCheckLVSize<=1 Then
 		If Main.preferencesMap.ContainsKey("languagetoolEnabled") Then
 			If Main.preferencesMap.Get("languagetoolEnabled")=True Then
@@ -1504,8 +1484,8 @@ Sub showReplacements(matches As List,entry As Int)
 		Return
 	End Try
 
-	Dim ta As TextArea
-	ta=p.GetNode(1)
+	Dim ta As RichTextArea
+	ta=p.GetNode(1).Tag
 	
 	Dim match As Map=matches.Get(0)
 	Main.addCheckList(matches,entry,ta.Text)
@@ -1546,7 +1526,7 @@ Sub showReplacements(matches As List,entry As Int)
 	Next
 	Sleep(100)
 	Dim map1 As Map
-	map1=Utils.GetScreenPosition(ta)
+	map1=Utils.GetScreenPosition(ta.BasePane)
 	Log(map1)
 	Dim jo As JavaObject = replacementsCM
 	jo.RunMethod("show", Array(ta, map1.Get("x")+ta.Width/10, map1.Get("y")+ta.Height))
@@ -1568,8 +1548,8 @@ Sub replacementMi_Action
 		'Log(replacement)
 		Dim p As Pane
 		p=Main.editorLV.Items.Get(thisPreviousEntry)
-		Dim targetTextArea As TextArea
-		targetTextArea=p.GetNode(1)
+		Dim targetTextArea As RichTextArea
+		targetTextArea=p.GetNode(1).Tag
 		targetTextArea.Text=targetTextArea.Text.SubString2(0,offset)&replacement&targetTextArea.Text.SubString2(offset+length,targetTextArea.Text.Length)
 		Sleep(0)
 		targetTextArea.SetSelection(targetTextArea.Text.Length,targetTextArea.Text.Length)
@@ -1580,7 +1560,7 @@ Sub replacementMi_Action
 	End Try
 End Sub
 
-Sub loadITPSegments(targetTextArea As TextArea,engine As String,fullTranslation As String)
+Sub loadITPSegments(targetTextArea As RichTextArea,engine As String,fullTranslation As String)
 	If Main.preferencesMap.ContainsKey("autocompleteEnabled") Then
 		If Main.preferencesMap.Get("autocompleteEnabled")=False Then
 			Return
@@ -1590,8 +1570,8 @@ Sub loadITPSegments(targetTextArea As TextArea,engine As String,fullTranslation 
 	End If
 	Dim pane As Pane
 	pane=targetTextArea.Parent
-	Dim sourceTA As TextArea
-	sourceTA=pane.GetNode(0)
+	Dim sourceTA As RichTextArea
+	sourceTA=pane.GetNode(0).Tag
 	Dim result As List
 	result.Initialize
 	wait for (ITP.getAllSegmentTranslation(sourceTA.Text,engine)) Complete (segmentTranslations As List)
@@ -1607,15 +1587,15 @@ Sub loadITPSegments(targetTextArea As TextArea,engine As String,fullTranslation 
 	End If
 End Sub
 
-Sub showTM(targetTextArea As TextArea)
+Sub showTM(targetTextArea As RichTextArea)
 	Dim time As Long
 	time=DateTime.Now
 	Dim pane As Pane
 	pane=targetTextArea.Parent
-	Dim sourceTA As TextArea
-	sourceTA=pane.GetNode(0)
-	Dim targetTA As TextArea
-	targetTA=pane.GetNode(1)
+	Dim sourceTA As RichTextArea
+	sourceTA=pane.GetNode(0).Tag
+	Dim targetTA As RichTextArea
+	targetTA=pane.GetNode(1).Tag
 	Log(sourceTA.Text)
 	
 	
@@ -1625,6 +1605,8 @@ Sub showTM(targetTextArea As TextArea)
 	Main.tmTableView.Items.Clear
 	Main.LoadHTMLWithBackground(Main.LogWebView,"")
 	projectTM.currentSource=sourceTA.Text
+	Log("source")
+	Log(sourceTA.Text)
 	showMT(sourceTA.Text,targetTextArea)
 	
 	Dim matchrate As Double
@@ -1669,7 +1651,7 @@ Sub showTM(targetTextArea As TextArea)
 	End If
 End Sub
 
-Sub showMT(source As String,targetTextArea As TextArea)
+Sub showMT(source As String,targetTextArea As RichTextArea)
 	Dim mtPreferences As Map
 	If Main.preferencesMap.ContainsKey("mt") Then
 		mtPreferences=Main.preferencesMap.get("mt")
@@ -1680,11 +1662,12 @@ Sub showMT(source As String,targetTextArea As TextArea)
 		If Utils.get_isEnabled(engine&"_isEnabled",mtPreferences)=True Then
 			wait for (MT.getMT(source,projectFile.Get("source"),projectFile.Get("target"),engine)) Complete (Result As String)
 			If Result<>"" Then
+				Log("mt:"&Result)
 				Dim row()  As Object = Array As String("","",Result,engine)
 				Main.tmTableView.Items.Add(row)
 				Main.changeWhenSegmentOrSelectionChanges
 			End If
-			loadITPSegments(targetTextArea,engine,Result)
+			'loadITPSegments(targetTextArea,engine,Result)
 		End If
 	Next
 End Sub
@@ -1753,12 +1736,12 @@ Sub getMeans(source As String) As ResumableSub
 	Return resultList
 End Sub
 
-Sub showTerm(targetTextArea As TextArea)
+Sub showTerm(targetTextArea As RichTextArea)
 	Main.termLV.Items.Clear
 	Dim pane As Pane
 	pane=targetTextArea.Parent
-	Dim sourceTA As TextArea
-	sourceTA=pane.GetNode(0)
+	Dim sourceTA As RichTextArea
+	sourceTA=pane.GetNode(0).Tag
 	Dim terms As List
 	terms=projectTerm.termsInASentence(sourceTA.Text)
 	Main.termLV.Items.Clear
@@ -1861,10 +1844,6 @@ Public Sub fillPane(FirstIndex As Int, LastIndex As Int)
 				Dim extra As Map
 				extra=bitext.Get(4)
 				setPaneStatus(extra,segmentPane)
-				If Main.calculatedHeight.ContainsKey(bitext.Get(0)&"	"&bitext.Get(1)) Then
-					Dim h As Int=Main.calculatedHeight.Get(bitext.Get(0)&"	"&bitext.Get(1))
-					Main.setLayout(segmentPane,i,h)
-				End If
 				Main.editorLV.Items.Set(i,segmentPane)
 			End If
 		Else
@@ -1944,8 +1923,8 @@ Sub fillOne(index As Int,translation As String)
 	Try
 		Dim p As Pane
 		p=Main.editorLV.Items.Get(index)
-		Dim targetTextArea As TextArea
-		targetTextArea=p.GetNode(1)
+		Dim targetTextArea As RichTextArea
+		targetTextArea=p.GetNode(1).Tag
 		targetTextArea.Text=translation
 		Dim bitext As List
 		bitext=segments.Get(index)
@@ -1984,8 +1963,8 @@ Public Sub fillVisibleTargetTextArea
 			Log(LastException)
 			Continue
 		End Try
-		Dim targetTextArea As TextArea
-		targetTextArea=p.GetNode(1)
+		Dim targetTextArea As RichTextArea
+		targetTextArea=p.GetNode(1).Tag
 		Dim bitext As List
 		bitext=segments.Get(i)
 		targetTextArea.Text=bitext.Get(1)
@@ -2085,7 +2064,7 @@ End Sub
 
 Public Sub saveAlltheTranslationToSegmentsInVisibleArea(FirstIndex As Int, LastIndex As Int)
 	For i=Max(0,FirstIndex) To Min(LastIndex,Main.editorLV.Items.Size-1)
-		Dim targetTextArea As TextArea
+		Dim targetTextArea As RichTextArea
 		Try
 			Dim p As Pane
 			p=Main.editorLV.Items.Get(i)
@@ -2094,14 +2073,14 @@ Public Sub saveAlltheTranslationToSegmentsInVisibleArea(FirstIndex As Int, LastI
 			Continue
 		End Try
 
-		targetTextArea=p.GetNode(1)
+		targetTextArea=p.GetNode(1).tag
 		setTranslation(i,targetTextArea.Text,False,"")
 		
 		'projectTM.addPair(bitext.Get(0),bitext.Get(1))
 	Next
 End Sub
 
-Sub saveTranslation(targetTextArea As TextArea)
+Sub saveTranslation(targetTextArea As RichTextArea)
 	Dim index As Int
 	index=Main.editorLV.Items.IndexOf(targetTextArea.Parent)
 	Dim bitext As List

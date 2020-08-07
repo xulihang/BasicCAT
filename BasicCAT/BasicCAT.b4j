@@ -41,40 +41,41 @@ File43=preview.bjl
 File44=progress.bjl
 File45=projectSetting.bjl
 File46=quickfillSetting.bjl
-File47=right.bjl
-File48=searchandreplace.bjl
-File49=searchTableView.bjl
+File47=richtext.css
+File48=right.bjl
+File49=searchandreplace.bjl
 File5=autocorrectSetting.bjl
-File50=SearchView.bjl
-File51=segment.bjl
-File52=segmentation_en.conf
-File53=segmentation_en_exception.conf
-File54=segmentation_en_idml.conf
-File55=segmentation_zh.conf
-File56=segmentation_zh_exception.conf
-File57=segmentationRules.srx
-File58=serverLanucher.bjl
-File59=settingLanguagecheck.bjl
+File50=searchTableView.bjl
+File51=SearchView.bjl
+File52=segment.bjl
+File53=segmentation_en.conf
+File54=segmentation_en_exception.conf
+File55=segmentation_en_idml.conf
+File56=segmentation_zh.conf
+File57=segmentation_zh_exception.conf
+File58=segmentationRules.srx
+File59=serverLanucher.bjl
 File6=basiccat.jpg
-File60=settingVersionControl.bjl
-File61=SourceEditor.bjl
-File62=statistics.bjl
-File63=supportedFiles.txt
-File64=tableview.bjl
-File65=tabpane.bjl
-File66=teamSetting.bjl
-File67=term.bjl
-File68=TermEditor.bjl
-File69=TermManager.bjl
+File60=settingLanguagecheck.bjl
+File61=settingVersionControl.bjl
+File62=SourceEditor.bjl
+File63=statistics.bjl
+File64=supportedFiles.txt
+File65=tableview.bjl
+File66=tabpane.bjl
+File67=teamSetting.bjl
+File68=term.bjl
+File69=TermEditor.bjl
 File7=checkList.bjl
-File70=termSetting.bjl
-File71=TMEditor.bjl
-File72=TMManager.bjl
-File73=tmSetting.bjl
-File74=upperRight.bjl
-File75=version.txt
-File76=viewSegment.bjl
-File77=wordLookupSetting.bjl
+File70=TermManager.bjl
+File71=termSetting.bjl
+File72=TMEditor.bjl
+File73=TMManager.bjl
+File74=tmSetting.bjl
+File75=upperRight.bjl
+File76=version.txt
+File77=viewSegment.bjl
+File78=wordLookupSetting.bjl
 File8=confirmReview.bjl
 File9=dark.css
 FileGroup1=Default Group
@@ -152,6 +153,7 @@ FileGroup74=Default Group
 FileGroup75=Default Group
 FileGroup76=Default Group
 FileGroup77=Default Group
+FileGroup78=Default Group
 FileGroup8=Default Group
 FileGroup9=Default Group
 Group=Default Group
@@ -183,75 +185,76 @@ Library8=jrandomaccessfile
 Library9=jb4xencryption
 Module1=FileChooserUtils
 Module10=preTranslateDialog
-Module11=xliffFilter
-Module12=XMLUtils
-Module13=Preferences
-Module14=Xml2Map
-Module15=SRX
-Module16=TMX
-Module17=LanguageTool
-Module18=TMDB
-Module19=LanguageUtils
+Module11=TextFlow
+Module12=AutoSaver
+Module13=MTParamsFiller
+Module14=git
+Module15=SearchView
+Module16=ClientKVS
+Module17=TMManager
+Module18=Preferences
+Module19=xliffFilter
 Module2=Project
-Module20=importDialog
-Module21=progressDialog
-Module22=TMManager
-Module23=TermManager
-Module24=statistics
-Module25=ClientKVS
-Module26=Utils
-Module27=MT
-Module28=idmlFilter
-Module29=SearchView
+Module20=XMLUtils
+Module21=Xml2Map
+Module22=SRX
+Module23=TMX
+Module24=LanguageTool
+Module25=TMDB
+Module26=LanguageUtils
+Module27=importDialog
+Module28=progressDialog
+Module29=TermManager
 Module3=segmentation
-Module30=idmlUtils
-Module31=confirmReviewDialog
-Module32=editDistance
-Module33=git
-Module34=filterGenericUtils
-Module35=opennlp
-Module36=LanguagePairSelector
-Module37=languageChooser
-Module38=MTCompare
-Module39=serverLauncher
+Module30=statistics
+Module31=Utils
+Module32=MT
+Module33=idmlFilter
+Module34=idmlUtils
+Module35=confirmReviewDialog
+Module36=editDistance
+Module37=filterGenericUtils
+Module38=opennlp
+Module39=LanguagePairSelector
 Module4=CustomListView
-Module40=Previewer
-Module41=MTParamsFiller
-Module42=searchAndReplaceDialog
-Module43=HistoryRecord
-Module44=Map2Xml
-Module45=ErrorReporter
-Module46=OperationDialog
-Module47=zip4j
-Module48=pdfbox
-Module49=PDF2TXT
+Module40=languageChooser
+Module41=MTCompare
+Module42=serverLauncher
+Module43=Previewer
+Module44=searchAndReplaceDialog
+Module45=HistoryRecord
+Module46=Map2Xml
+Module47=ErrorReporter
+Module48=OperationDialog
+Module49=zip4j
 Module5=txtFilter
-Module50=AutoSaver
-Module51=SourceTextEditor
-Module52=InputTextAreaBox
-Module53=tikal
-Module54=ITP
-Module55=icu4j
-Module56=FileUtils
-Module57=POIWord
-Module58=dictWebView
-Module59=FontPicker
+Module50=pdfbox
+Module51=PDF2TXT
+Module52=SourceTextEditor
+Module53=InputTextAreaBox
+Module54=tikal
+Module55=ITP
+Module56=icu4j
+Module57=FileUtils
+Module58=POIWord
+Module59=dictWebView
 Module6=TM
-Module60=TermEditor
-Module61=HistoryViewer
-Module62=InputBox
-Module63=TBX
-Module64=CallSubUtils
-Module65=viewSegment
-Module66=TMEditor
-Module67=TextFlow
+Module60=FontPicker
+Module61=TermEditor
+Module62=HistoryViewer
+Module63=InputBox
+Module64=TBX
+Module65=CallSubUtils
+Module66=viewSegment
+Module67=TMEditor
 Module68=coordinate
+Module69=RichTextArea
 Module7=Term
 Module8=KeyValueStore
 Module9=ProjectSettings
-NumberOfFiles=77
+NumberOfFiles=78
 NumberOfLibraries=26
-NumberOfModules=68
+NumberOfModules=69
 Version=7.8
 @EndOfDesignText@
 #Region Project Attributes 
@@ -266,6 +269,7 @@ Version=7.8
 #AdditionalJar: zip4j-1.3.2
 #AdditionalJar: opennlp-tools-1.9.0
 #AdditionalJar: icu4j
+#AdditionalJar: richtextfx-fat-0.10.5
 
 '-------- for jgit
 #AdditionalJar: org.eclipse.jgit-5.1.1.201809181055-r
@@ -698,7 +702,7 @@ Sub editSource
 				Return
 				Log(LastException)
 			End Try
-			Dim sourceTextArea As TextArea=p.GetNode(0)
+			Dim sourceTextArea As RichTextArea=p.GetNode(0).Tag
 			sourceTextArea.Text=source
 		End If
 	End If
@@ -794,8 +798,8 @@ Sub fillWithTheNextTag
 		Log(LastException)
 	End Try
 
-	Dim sourceTextArea As TextArea=p.GetNode(0)
-	Dim targetTextArea As TextArea=p.GetNode(1)
+	Dim sourceTextArea As RichTextArea=p.GetNode(0).Tag
+	Dim targetTextArea As RichTextArea=p.GetNode(1).tag
 	
 	Dim tagsInSource As List
 	tagsInSource.Initialize
@@ -837,8 +841,8 @@ Sub copySourceToTarget
 		Return
 		Log(LastException)
 	End Try
-	Dim sourceTextArea As TextArea=p.GetNode(0)
-	Dim targetTextArea As TextArea=p.GetNode(1)
+	Dim sourceTextArea As RichTextArea=p.GetNode(0).Tag
+	Dim targetTextArea As RichTextArea=p.GetNode(1).Tag
 	targetTextArea.Text=sourceTextArea.Text
 End Sub
 
@@ -856,7 +860,7 @@ Sub showQuickfillDropdown
 	End Try
 
 
-	Dim ta As TextArea=p.GetNode(1)
+	Dim ta As RichTextArea=p.GetNode(1).Tag
 	Dim cm As ContextMenu
 	cm.Initialize("")
 	Dim quickfillList As List
@@ -885,7 +889,7 @@ Sub showQuickfillDropdown
 		cm.MenuItems.Add(mi)
 	Next
 	Dim map1 As Map
-	map1=Utils.GetScreenPosition(ta)
+	map1=Utils.GetScreenPosition(ta.BasePane)
 	Dim jo As JavaObject = cm
 	jo.RunMethod("show", Array(ta, map1.Get("x")+ta.Width/10, map1.Get("y")+ta.Height))
 End Sub
@@ -902,7 +906,7 @@ Sub quickFillMi_Action
 		Log(LastException)
 		Return
 	End Try
-	Dim ta As TextArea=p.GetNode(1)
+	Dim ta As RichTextArea=p.GetNode(1).Tag
 	Dim selectionEnd As Int=ta.selectionEnd
 	ta.Text=ta.Text.SubString2(0,ta.SelectionEnd)&mi.Text&ta.Text.SubString2(ta.SelectionEnd,ta.Text.Length)
 	ta.SetSelection(selectionEnd+mi.Text.Length,selectionEnd+mi.Text.Length)
@@ -920,7 +924,7 @@ Sub showSegmentHistory
 		Return
 	End Try
 
-	Dim ta As TextArea=p.GetNode(0)
+	Dim ta As RichTextArea=p.GetNode(0).Tag
     Dim hisViewer As HistoryViewer
 	hisViewer.Initialize
 	Dim historyList As List
@@ -939,7 +943,7 @@ Sub showDictDropdown
 		Log(LastException)
 		Return
 	End Try
-	Dim ta As TextArea=p.GetNode(0)
+	Dim ta As RichTextArea=p.GetNode(0).Tag
 	Dim selected As String
 	selected=ta.Text.SubString2(ta.SelectionStart,ta.SelectionEnd)
 	If selected="" Then
@@ -976,7 +980,7 @@ Sub showDictDropdown
 	Sleep(100)
 
 	Dim map1 As Map
-	map1=Utils.GetScreenPosition(ta)
+	map1=Utils.GetScreenPosition(ta.BasePane)
 	Log(map1)
 	Dim jo As JavaObject = cm
 	jo.RunMethod("show", Array(ta, map1.Get("x")+ta.Width/10, map1.Get("y")+ta.Height))
@@ -1022,8 +1026,8 @@ Sub changeNeglectedStatus
 			Return
 			Log(LastException)
 		End Try
-		Dim sourceTa As TextArea=p.GetNode(0)
-		Dim targetTa As TextArea=p.GetNode(1)
+		Dim sourceTa As RichTextArea=p.GetNode(0).Tag
+		Dim targetTa As RichTextArea=p.GetNode(1).Tag
 		Select isNeglected
 			Case "no"
 				sourceTa.Enabled=True
@@ -1289,7 +1293,6 @@ End Sub
 '-----------------------------
 
 Sub ListViewParent_Resize
-
 	Dim lv As ListView
 	lv=editorLV
 	Dim visibleRange As Range=getVisibleRange(lv)
@@ -1309,37 +1312,20 @@ Sub ListViewParent_Resize
         Catch
 	        Log(LastException)
 			Continue
-        End Try
-		Dim sourceTa As TextArea = p.GetNode(0)
-		Dim targetTa As TextArea = p.GetNode(1)
-		If calculatedHeight.ContainsKey(sourceTa.Text&"	"&targetTa.Text)=False Then
-			Dim sourcelbl,targetlbl As Label
-			sourcelbl.Initialize("")
-			targetlbl.Initialize("")
-			setLabelFont(sourcelbl,"sourceFont")
-			setLabelFont(targetlbl,"targetFont")
-			Dim sourceHeight,targetHeight As Int
-			Dim sourceLineHeight As Int=Utils.MeasureMultilineTextHeight(sourcelbl.Font,itemWidth/2-20dip,CRLF)
-			Dim targetLineHeight As Int=Utils.MeasureMultilineTextHeight(targetlbl.Font,itemWidth/2-20dip,CRLF)
-			Dim lineHeightTimes As Double
-			lineHeightTimes=preferencesMap.GetDefault("lineheight",2/3)
-			sourceHeight=Utils.MeasureMultilineTextHeight(sourcelbl.Font,itemWidth/2-20dip,sourceTa.Text)+sourceLineHeight*lineHeightTimes
-			targetHeight=Utils.MeasureMultilineTextHeight(targetlbl.Font,itemWidth/2-20dip,targetTa.Text)+targetLineHeight*lineHeightTimes
-			Dim h As Int = Max(Max(20, sourceHeight + 10), targetHeight + 10)
-			calculatedHeight.Put(sourceTa.Text&"	"&targetTa.Text,h)
-			setLayout(p,i,h)
-			sourcelbl.RemoveNodeFromParent
-			targetlbl.RemoveNodeFromParent
-			'Do While isScrollBarVisible(sourceTa)
-			'	Sleep(50)
-			'	h = h+5dip
-			'	calculatedHeight.Put(sourceTa.Text&"	"&targetTa.Text,h)
-			'	setLayout(p,i,h)
-			'Loop
-		Else
-			Dim h As Int =calculatedHeight.get(sourceTa.Text&"	"&targetTa.Text)
-			setLayout(p,i,h)
-		End If
+		End Try
+		Dim lineHeightTimes As Double
+		lineHeightTimes=preferencesMap.GetDefault("lineheight",2/3)
+		Dim sourceTa As RichTextArea = p.GetNode(0).Tag
+		Dim targetTa As RichTextArea = p.GetNode(1).Tag
+		sourceTa.BasePane.Left=0
+		sourceTa.BasePane.SetSize(itemWidth/2-20dip,50)
+		targetTa.BasePane.Left=itemWidth/2-20dip
+		targetTa.BasePane.SetSize(itemWidth/2-20dip,50)
+		Dim h As Double=Max(sourceTa.totalHeightEstimate+lineHeightTimes*sourceTa.LineHeight,targetTa.totalHeightEstimate+lineHeightTimes*targetTa.LineHeight)
+		sourceTa.BasePane.SetSize(itemWidth/2-20dip,h)
+		targetTa.BasePane.SetSize(itemWidth/2-20dip,h)
+		p.Left=0
+		p.SetSize(itemWidth-40dip,h)
 	Next
 End Sub
 
@@ -1359,20 +1345,6 @@ Sub isScrollBarVisible(ta As TextArea) As Boolean
 		Return False
 	End Try
 End Sub
-
-Public Sub setLayout(p As Pane,index As Int,h As Int)
-	Dim itemwidth As Double
-	itemwidth=editorLV.Width
-	p.Left=0
-	p.SetSize(itemwidth-40dip,h)
-	Dim sourceTa As TextArea = p.GetNode(0)
-	Dim targetTa As TextArea = p.GetNode(1)
-	sourceTa.Left=0
-	sourceTa.SetSize(itemwidth/2-20dip,h)
-	targetTa.Left=itemwidth/2-20dip
-	targetTa.SetSize(itemwidth/2-20dip,h)
-End Sub
-
 
 Sub ListView1_ScrollPosition_Changed(OldVal As Object,NewVal As Object)
 	'Log(NewVal)
@@ -1481,8 +1453,8 @@ Sub termLV_MouseClicked (EventData As MouseEvent)
 			Log(LastException)
 			Return
 		End Try
-		Dim targetTextArea As TextArea
-		targetTextArea=pane.GetNode(1)
+		Dim targetTextArea As RichTextArea
+		targetTextArea=pane.GetNode(1).Tag
 		targetTextArea.Text=targetTextArea.Text.SubString2(0,targetTextArea.SelectionStart)&lbl.Text&targetTextArea.Text.SubString2(targetTextArea.SelectionStart,targetTextArea.Text.Length)
 	End If
 End Sub
@@ -1497,8 +1469,8 @@ Sub tmTableView_SelectedRowChanged(Index As Int, Row() As Object)
 			Return
 		End Try
 
-		Dim sourceTextArea As TextArea
-		sourceTextArea=pane.GetNode(0)
+		Dim sourceTextArea As RichTextArea
+		sourceTextArea=pane.GetNode(0).Tag
 		If Row(1)="" Then
 			LoadHTMLWithBackground(LogWebView,Utils.buildHtmlString(Row(2)))
 			Return
@@ -1726,8 +1698,8 @@ Sub checkLV_ItemClick (Index As Int, Value As Object)
 				entry=tagList.Get(3)
 				Dim p As Pane
 				p=editorLV.Items.Get(entry)
-				Dim targetTextArea As TextArea
-				targetTextArea=p.GetNode(1)
+				Dim targetTextArea As RichTextArea
+				targetTextArea=p.GetNode(1).Tag
 				targetTextArea.Text=targetTextArea.Text.SubString2(0,offset)&replacement&targetTextArea.Text.SubString2(offset+length,targetTextArea.Text.Length)
 				Sleep(0)
 				targetTextArea.SetSelection(targetTextArea.Text.Length,targetTextArea.Text.Length)
@@ -1806,7 +1778,7 @@ Public Sub setLabelFont(lbl As Label,name As String)
 	Log(lbl.font.Size)
 End Sub
 
-Public Sub setTextAreaFont(ta As TextArea,name As String)
+Public Sub setTextAreaFont(ta As RichTextArea,name As String)
 	If preferencesMap.ContainsKey(name) Then
 		Dim fontPreference As Map
 		fontPreference=preferencesMap.Get(name)
@@ -1814,8 +1786,8 @@ Public Sub setTextAreaFont(ta As TextArea,name As String)
 		familyName=fontPreference.get("FamilyName")
 		Dim size As Int
 		size=fontPreference.get("Size")
-		ta.Style = $"-fx-font-family: ${familyName};
-		             -fx-font-size: ${size}px;"$
+		ta.FontFamily=familyName
+		ta.FontSzie=size
 	End If
 End Sub
 

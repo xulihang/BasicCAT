@@ -415,8 +415,8 @@ End Sub
 
 
 Sub disableTextArea(p As Pane)
-	Dim sourceTa As TextArea=p.GetNode(0)
-	Dim targetTa As TextArea=p.GetNode(1)
+	Dim sourceTa As RichTextArea=p.GetNode(0).Tag
+	Dim targetTa As RichTextArea=p.GetNode(1).Tag
 	sourceTa.Enabled=False
 	targetTa.Enabled=False
 End Sub
@@ -438,8 +438,8 @@ Sub get_isEnabled(key As String,parentmap As Map) As Boolean
 End Sub
 
 Sub getTextFromPane(index As Int,p As Pane) As String
-	Dim ta As TextArea
-	ta=p.GetNode(index)
+	Dim ta As RichTextArea
+	ta=p.GetNode(index).Tag
 	Return ta.Text 
 End Sub
 
@@ -588,6 +588,23 @@ Sub rightTrim(text As String) As String
 		End If
 	Next
 	Return new
+End Sub
+
+Sub richTextCSS As String
+	Dim tags As String=$".bracket{
+-fx-fill: darkgray;
+}"$
+	Dim spaces As String=$".space{
+-fx-underline:true;
+-fx-fill: darkgray;
+}"$
+    Dim sb As StringBuilder
+	sb.Initialize
+	sb.Append(tags)
+	If Main.preferencesMap.GetDefault("underline_spaces",False) Then
+		sb.Append(CRLF).Append(spaces)
+	End If
+    Return sb.ToString
 End Sub
 
 Sub MeasureMultilineTextHeight (Font As Font, Width As Double, Text As String) As Double
