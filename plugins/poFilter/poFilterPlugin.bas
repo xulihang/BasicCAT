@@ -34,7 +34,7 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 		Case "splitSegment"
 			splitSegment(Params.Get("main"),Params.Get("sourceTextArea"),Params.Get("editorLV"),Params.Get("segments"),Params.Get("projectFile"))
 		Case "previewText"
-			Return previewText(Params.Get("editorLV"),Params.Get("segments"),Params.Get("lastEntry"),Params.Get("sourceLang"),Params.Get("targetLang"),Params.Get("path"),Params.Get("settings"))
+			Return previewText(Params.Get("editorLV"),Params.Get("segments"),Params.Get("lastEntry"),Params.Get("projectFile"),Params.Get("path"))
 	End Select
 	Return ""
 End Sub
@@ -352,7 +352,7 @@ Sub generateFile(filename As String,path As String,projectFile As Map,BCATMain A
 	CallSub2(BCATMain,"updateOperation",filename&" generated!")
 End Sub
 
-Sub mergeSegment(MainForm As Form,sourceTextArea As TextArea,editorLV As ListView,segments As List,projectFile As Map)
+Sub mergeSegment(MainForm As Form,sourceTextArea As RichTextArea,editorLV As ListView,segments As List,projectFile As Map)
 	Dim index As Int
 	index=editorLV.Items.IndexOf(sourceTextArea.Parent)
 	If index+1>segments.Size-1 Then
@@ -399,26 +399,24 @@ Sub mergeSegment(MainForm As Form,sourceTextArea As TextArea,editorLV As ListVie
 
 	pane=editorLV.Items.Get(index)
 	nextPane=editorLV.Items.Get(index+1)
-	Dim targetTa,nextTargetTa As TextArea
-	targetTa=pane.GetNode(1)
-	nextTargetTa=nextPane.GetNode(1)
+	Dim targetTa,nextTargetTa As RichTextArea
+	targetTa=pane.GetNode(1).Tag
+	nextTargetTa=nextPane.GetNode(1).tag
 	
 	bitext.Set(1,targetTa.Text)
 	nextBiText.Set(1,nextTargetTa.Text)
 
 	filterGenericUtils.mergeInternalSegment(segments,index,projectFile.Get("source"),"po")
 	
-	
 	sourceTextArea.Text=bitext.Get(0)
 	sourceTextArea.Tag=sourceTextArea.Text
-		
-	targetTa=pane.GetNode(1)
+	
 	targetTa.Text=bitext.Get(1)
 
 	editorLV.Items.RemoveAt(editorLV.Items.IndexOf(sourceTextArea.Parent)+1)
 End Sub
 
-Sub splitSegment(BCATMain As Object,sourceTextArea As TextArea,editorLV As ListView,segments As List,projectFile As Map)
+Sub splitSegment(BCATMain As Object,sourceTextArea As RichTextArea,editorLV As ListView,segments As List,projectFile As Map)
 	Dim index As Int
 	index=editorLV.Items.IndexOf(sourceTextArea.Parent)
 	Dim source As String
@@ -484,7 +482,7 @@ Sub shouldAddSpace(sourceLang As String,targetLang As String,index As Int,segmen
 	Return False
 End Sub
 
-Sub previewText(editorLV As ListView,segments As List,lastEntry As Int,projectFile As Map,path As String,filename As String) As String
+Sub previewText(editorLV As ListView,segments As List,lastEntry As Int,projectFile As Map,path As String) As String
 	Log("Po preview")
 	Dim sourceLang,targetLang As String
 	sourceLang=projectFile.Get("source")
@@ -505,10 +503,10 @@ Sub previewText(editorLV As ListView,segments As List,lastEntry As Int,projectFi
 			Log(LastException)
 			Continue
 		End Try
-		Dim sourceTextArea As TextArea
-		Dim targetTextArea As TextArea
-		sourceTextArea=p.GetNode(0)
-		targetTextArea=p.GetNode(1)
+		Dim sourceTextArea As RichTextArea
+		Dim targetTextArea As RichTextArea
+		sourceTextArea=p.GetNode(0).Tag
+		targetTextArea=p.GetNode(1).Tag
 		Dim bitext As List
 		bitext=segments.Get(i)
 		Dim source,target,fullsource,translation As String
