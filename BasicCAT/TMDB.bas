@@ -187,9 +187,9 @@ Public Sub GetMatchedMapAsync(text As String,isSource As Boolean,matchAll As Boo
 	End If
 	text=getQuery(words,operator)
 	
-	sqlStr="SELECT key, rowid, quote(matchinfo(idx)) as rank FROM idx WHERE "&matchTarget&" MATCH '"&text&"' ORDER BY rank DESC LIMIT 1000 OFFSET 0"
+	sqlStr="SELECT key, rowid, quote(matchinfo(idx)) as rank FROM idx WHERE "&matchTarget&" MATCH "&text&" ORDER BY rank DESC LIMIT 1000 OFFSET 0"
 	'Log(sqlStr)
-	Dim SenderFilter As Object = sql1.ExecQueryAsync("SQL", sqlStr, Null)
+	Dim SenderFilter As Object = sql1.ExecQueryAsync("SQL", sqlStr,Null)
 	Wait For (SenderFilter) SQL_QueryComplete (Success As Boolean, rs As ResultSet)
 	Dim resultMap As Map
 	resultMap.Initialize
@@ -230,6 +230,7 @@ Sub getQuery(words As List,operator As String) As String
 	Utils.removeDuplicated(words)
 	Dim sb As StringBuilder
 	sb.Initialize
+	sb.Append("'")
 	For index =0 To words.Size-1
 		Dim word As String=words.Get(index)
 		If word.Trim<>"" Then
@@ -239,6 +240,7 @@ Sub getQuery(words As List,operator As String) As String
 			End If
 		End If
 	Next
+	sb.Append("'")
 	Return sb.ToString
 End Sub
 

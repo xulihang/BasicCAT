@@ -10,6 +10,12 @@ Sub Process_Globals
 	Private menus As Map
 End Sub
 
+Sub escapeSQL(text As String) As String
+	For Each str As String In Array As String("'",$"""$,":",";","(",")","[","]","|","\","@")
+		text=text.Replace(str,"'"&str)
+	Next
+End Sub
+
 Sub removeDuplicated(source As List)
 	Dim newList As List
 	newList.Initialize
