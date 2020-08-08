@@ -460,8 +460,10 @@ Sub disableMenuItems(mb As MenuBar,menuText As List)
 		CollectMenuItems(mb.Menus)
 	End If
 	For Each text As String In menuText
-		Dim mi As MenuItem = menus.Get(text)
-		mi.Enabled = False
+		If menus.ContainsKey(text) Then
+			Dim mi As MenuItem = menus.Get(text)
+			mi.Enabled = False
+		End If
 	Next
 End Sub
 

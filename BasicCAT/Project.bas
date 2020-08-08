@@ -441,6 +441,7 @@ Public Sub gitcommitLocal(commitMessage As String)
 	If diffList<>Null And diffList.Size<>0 Then
 		projectGit.add(".")
 		projectGit.commit(commitMessage,username,email)
+		Main.updateOperation("committed")
 	End If
 End Sub
 

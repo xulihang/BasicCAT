@@ -617,7 +617,7 @@ Sub MenuBar1_Action
 			editSource
 		Case "Mark the current segment as neglected/not neglected"
 			changeNeglectedStatus
-		Case "Project _Settings"
+		Case "Project _settings"
 			If currentProject.IsInitialized=False Then
 				fx.Msgbox(MainForm,"Please open a project first.","")
 				Return
@@ -641,13 +641,17 @@ Sub MenuBar1_Action
 			Dim ptDialog As preTranslateDialog
 			ptDialog.Initialize
 			currentProject.preTranslate(ptDialog.ShowAndWait)
-		Case "Git _Commit"
+		Case "Git _commit"
 			If currentProject.gitcommit(True,False)=False Then
 				fx.Msgbox(MainForm,"Git not configured.","")
 			End If
-		Case "Git Commit and _Push"
+		Case "Git commit and _push"
 			If currentProject.gitcommit(False,False)=False Then
 				fx.Msgbox(MainForm,"Git not configured.","")
+			End If
+		Case "Open project _folder"
+			If currentProject.IsInitialized Then
+				fx.ShowExternalDocument(File.GetUri(currentProject.path,""))
 			End If
 		Case "_Exit"
 			'Dim currentProject as Project

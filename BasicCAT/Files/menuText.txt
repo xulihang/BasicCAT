@@ -10,7 +10,8 @@ Show segment history
 Show/Edit notes of the current segmnet
 Edit the source text of the current segment
 Mark the current segment as neglected/not neglected
-Project _Settings
+Project _settings
 Pre-_translate
-Git _Commit
-Git Commit and _Push
+Git _commit
+Git commit and _push
+Open project _folder
