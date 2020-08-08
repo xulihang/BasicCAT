@@ -60,7 +60,7 @@ Public Sub DesignerCreateView(Base As Pane, Lbl As Label, Props As Map)
 
 	'Initialize our wrapper object
 	JO.InitializeNewInstance("org.fxmisc.richtext.CodeArea",Null)
-	
+	setupIM
 	'Cast the wrapped view to a node so we can use B4x Node methods on it.
 	CustomViewNode = GetObject
 	
@@ -381,5 +381,22 @@ Sub ComputeHighlightingB4x(str As String) As JavaObject
 		LastKwEnd = Matcher.GetEnd(Index)
 	Loop
 	SpansBuilder.RunMethod("add",Array(Collections.RunMethod("emptyList",Null),str.Length - LastKwEnd))
-	Return SpansBuilder.RunMethod("create",Null)		
+	Return SpansBuilder.RunMethod("create",Null)
+End Sub
+
+Public Sub setupIM
+	Dim o As JavaObject
+	o.InitializeNewInstance("com.xulihang.InputMethodRequestsObject",Null)
+	o.RunMethod("setArea",Array(GetObject))
+	Dim event As Object = JO.CreateEventFromUI("javafx.event.EventHandler","InputMethodTextChanged",Null)
+	JO.RunMethod("setInputMethodRequests",Array(o))
+	JO.RunMethod("setOnInputMethodTextChanged",Array(event))
+End Sub
+
+Sub InputMethodTextChanged_Event(MethodName As String,Args() As Object) As Object							'ignore
+	Dim e As JavaObject=Args(0)
+	If e.RunMethod("getCommitted",Null)<>"" Then
+		JO.RunMethod("replaceSelection",Array(""))
+		JO.RunMethod("insertText",Array(JO.RunMethod("getCaretPosition",Null), e.RunMethod("getCommitted",Null)))
+	End If
 End Sub
