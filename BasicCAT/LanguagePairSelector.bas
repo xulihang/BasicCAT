@@ -46,6 +46,11 @@ Sub close
 	frm.Close
 End Sub
 
+Public Sub fillLang(sourceLang As String,targetLang As String)
+	sourceTextField.Text=sourceLang
+	targetTextField.Text=targetLang
+End Sub
+
 Sub targetComboBox_SelectedIndexChanged(Index As Int, Value As Object)
 	targetTextField.Text=LanguageNames.Get(Value)
 End Sub

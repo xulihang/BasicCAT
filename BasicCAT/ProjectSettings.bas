@@ -411,3 +411,15 @@ Sub setKeyButton_MouseClicked (EventData As MouseEvent)
 		File.WriteString(configPath,"accesskey",key)
 	End If
 End Sub
+
+Sub SetLangButton_MouseClicked (EventData As MouseEvent)
+	Dim languageSelector As LanguagePairSelector
+	languageSelector.Initialize
+	languageSelector.fillLang(Main.currentProject.projectFile.get("source"),Main.currentProject.projectFile.get("target"))
+	Dim result As Map
+	result=languageSelector.ShowAndWait
+	If result.ContainsKey("source") Then
+		Main.currentProject.projectFile.Put("source",result.Get("source"))
+		Main.currentProject.projectFile.Put("target",result.Get("target"))
+	End If
+End Sub
