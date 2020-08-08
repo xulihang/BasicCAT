@@ -185,76 +185,77 @@ Library8=jrandomaccessfile
 Library9=jb4xencryption
 Module1=FileChooserUtils
 Module10=preTranslateDialog
-Module11=TextFlow
-Module12=AutoSaver
-Module13=MTParamsFiller
-Module14=git
-Module15=SearchView
-Module16=ClientKVS
-Module17=TMManager
-Module18=Preferences
-Module19=xliffFilter
+Module11=RichTextArea
+Module12=Utils
+Module13=xliffFilter
+Module14=idmlUtils
+Module15=idmlFilter
+Module16=TMX
+Module17=SourceTextEditor
+Module18=TMEditor
+Module19=dictWebView
 Module2=Project
-Module20=XMLUtils
-Module21=Xml2Map
-Module22=SRX
-Module23=TMX
-Module24=LanguageTool
-Module25=TMDB
-Module26=LanguageUtils
-Module27=importDialog
-Module28=progressDialog
-Module29=TermManager
+Module20=HistoryViewer
+Module21=Preferences
+Module22=serverLauncher
+Module23=TextFlow
+Module24=AutoSaver
+Module25=MTParamsFiller
+Module26=git
+Module27=SearchView
+Module28=ClientKVS
+Module29=TMManager
 Module3=segmentation
-Module30=statistics
-Module31=Utils
-Module32=MT
-Module33=idmlFilter
-Module34=idmlUtils
-Module35=confirmReviewDialog
-Module36=editDistance
-Module37=filterGenericUtils
-Module38=opennlp
-Module39=LanguagePairSelector
+Module30=XMLUtils
+Module31=Xml2Map
+Module32=SRX
+Module33=LanguageTool
+Module34=TMDB
+Module35=LanguageUtils
+Module36=importDialog
+Module37=progressDialog
+Module38=TermManager
+Module39=statistics
 Module4=CustomListView
-Module40=languageChooser
-Module41=MTCompare
-Module42=serverLauncher
-Module43=Previewer
-Module44=searchAndReplaceDialog
-Module45=HistoryRecord
-Module46=Map2Xml
-Module47=ErrorReporter
-Module48=OperationDialog
-Module49=zip4j
+Module40=MT
+Module41=confirmReviewDialog
+Module42=editDistance
+Module43=filterGenericUtils
+Module44=opennlp
+Module45=LanguagePairSelector
+Module46=languageChooser
+Module47=MTCompare
+Module48=Previewer
+Module49=searchAndReplaceDialog
 Module5=txtFilter
-Module50=pdfbox
-Module51=PDF2TXT
-Module52=SourceTextEditor
-Module53=InputTextAreaBox
-Module54=tikal
-Module55=ITP
-Module56=icu4j
-Module57=FileUtils
-Module58=POIWord
-Module59=dictWebView
+Module50=HistoryRecord
+Module51=Map2Xml
+Module52=ErrorReporter
+Module53=OperationDialog
+Module54=zip4j
+Module55=pdfbox
+Module56=PDF2TXT
+Module57=InputTextAreaBox
+Module58=tikal
+Module59=ITP
 Module6=TM
-Module60=FontPicker
-Module61=TermEditor
-Module62=HistoryViewer
-Module63=InputBox
-Module64=TBX
-Module65=CallSubUtils
-Module66=viewSegment
-Module67=TMEditor
-Module68=coordinate
-Module69=RichTextArea
+Module60=icu4j
+Module61=FileUtils
+Module62=POIWord
+Module63=FontPicker
+Module64=TermEditor
+Module65=InputBox
+Module66=TBX
+Module67=CallSubUtils
+Module68=viewSegment
+Module69=coordinate
 Module7=Term
+Module70=PathSaver
 Module8=KeyValueStore
 Module9=ProjectSettings
 NumberOfFiles=78
 NumberOfLibraries=26
-NumberOfModules=69
+NumberOfModules=70
 Version=7.8
 @EndOfDesignText@
 #Region Project Attributes 
@@ -522,12 +523,14 @@ Sub MenuBar1_Action
 			End If
 			Dim fc As FileChooser
 			fc.Initialize
+			fc.InitialDirectory=PathSaver.previousPath("project")
 			fc.SetExtensionFilter("project files",Array As String("*.bcp"))
 			Dim path As String
 			path=fc.ShowOpen(MainForm)
 			If path="" Then
 				Return
 			End If
+			PathSaver.savePath("project",path)
 			openProject(path)
 		Case "en to zh Project"
 			newProject("en","zh")
@@ -1051,11 +1054,12 @@ Sub addFolderMi_Action
 	End If
 	Dim dc As DirectoryChooser
 	dc.Initialize
-	
+	dc.InitialDirectory=PathSaver.previousPath("folder")
 	Dim path As String = dc.Show(MainForm)
 	If path="" Then
 		Return
 	End If
+	PathSaver.savePath("folder",path)
 	addFolder(path)
 End Sub
 
@@ -1202,6 +1206,7 @@ Sub addFileMi_Action
 	End If
 	Dim fc As FileChooser
 	fc.Initialize
+	fc.InitialDirectory=PathSaver.previousPath("file")
 	Dim supportedFiles As List
 	supportedFiles=File.ReadList(File.DirAssets,"supportedFiles.txt")
 	Dim descriptionList,filterList As List
@@ -1220,7 +1225,10 @@ Sub addFileMi_Action
 	FileChooserUtils.AddExtensionFilters4(fc,descriptionList,filterList,True,"All",True)
 	Dim path As String
 	path=fc.ShowOpen(MainForm)
-	addFile(path)
+	If File.Exists(path,"") Then
+		PathSaver.savePath("file",path)
+		addFile(path)
+	End If
 End Sub
 
 Sub addFile(path As String)
@@ -1232,7 +1240,6 @@ Sub addFile(path As String)
 		fx.Msgbox(MainForm,"A file with the same name already exists.","")
 		Return
 	End If
-	
 
 	If isFiletypeSupported(File.GetName(path))=False Then
 		If currentProject.files.IndexOf(File.GetName(path)&".xlf")<>-1 Then
