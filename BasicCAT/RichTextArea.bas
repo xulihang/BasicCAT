@@ -29,6 +29,7 @@ Private Sub Class_Globals
 	Private offset As Int=2
 	Public Font As Font
 	Public Tag As Object
+	Private previousComposedText As String
 End Sub
 
 'Initializes the object.
@@ -395,8 +396,22 @@ End Sub
 
 Sub InputMethodTextChanged_Event(MethodName As String,Args() As Object) As Object							'ignore
 	Dim e As JavaObject=Args(0)
+	JO.RunMethod("replaceSelection",Array(""))
+	Dim startIndex,endIndex As Int
+	startIndex=JO.RunMethod("getCaretPosition",Null)-previousComposedText.Length
+	endIndex=JO.RunMethod("getCaretPosition",Null)
+	JO.RunMethod("deleteText",Array(startIndex, endIndex))
 	If e.RunMethod("getCommitted",Null)<>"" Then
-		JO.RunMethod("replaceSelection",Array(""))
 		JO.RunMethod("insertText",Array(JO.RunMethod("getCaretPosition",Null), e.RunMethod("getCommitted",Null)))
+		previousComposedText=""
+	Else
+		Dim sb As StringBuilder
+		sb.Initialize
+		Dim composed As List=e.RunMethod("getComposed",Null)
+		For Each run As JavaObject In composed
+			sb.Append(run.RunMethod("getText",Null))
+		Next
+		previousComposedText=sb.ToString
+		JO.RunMethod("insertText",Array(JO.RunMethod("getCaretPosition",Null), sb.ToString))
 	End If
 End Sub

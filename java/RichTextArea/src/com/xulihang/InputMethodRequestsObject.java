@@ -19,12 +19,12 @@ public class InputMethodRequestsObject implements InputMethodRequests {
 	@Override
 	public
 	String getSelectedText() {
-        return "";
+        return area.getSelectedText();
     }
     @Override
 	public
     int getLocationOffset(int x, int y) {
-        return 0;
+    	return 0;
     }
     @Override
 	public
