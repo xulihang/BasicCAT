@@ -83,6 +83,9 @@ Public Sub DesignerCreateView(Base As Pane, Lbl As Label, Props As Map)
 	Dim r As Reflector
 	r.Target = JO
 	r.AddEventFilter("Scroll", "javafx.scene.input.ScrollEvent.SCROLL")
+	Dim r As Reflector
+	r.Target = JO
+	r.AddEventFilter("KeyPressed", "javafx.scene.input.KeyEvent.KEY_PRESSED")
 	
 	'BaseChanged Listener
 	'Add an eventlistener to the ReadOnlyObjectProperty "layoutBoundsProperty" on the Base Pane so that we can change the internal layout to fit
@@ -432,13 +435,24 @@ Sub InputMethodTextChanged_Event(MethodName As String,Args() As Object) As Objec
 End Sub
 
 Sub Scroll_Filter (EventData As Event)
-	If mBase.Height>totalHeightEstimate Then
+	If mBase.Height>totalHeightEstimate-2*offset Then
 		Dim e As JavaObject = EventData
 		Dim Parent As Node
 		Parent=mBase.Parent
 		Dim ParentJO As JavaObject=Parent
 		Dim event As Object=e.RunMethod("copyFor",Array(e.RunMethod("getSource",Null),Parent))
 		ParentJO.RunMethod("fireEvent",Array(event))
+		EventData.Consume
+	End If
+End Sub
+
+Sub KeyPressed_Filter (EventData As Event)
+	Dim e As JavaObject = EventData
+	Dim code As String = e.RunMethod("getCode", Null)
+	If code = "ENTER" Then
+		If SubExists(mCallBack,mEventName & "_KeyPressed") Then
+			CallSubDelayed2(mCallBack,mEventName & "_KeyPressed",code)
+		End If
 		EventData.Consume
 	End If
 End Sub

@@ -211,6 +211,6 @@ ModuleClosedNodes7=
 ModuleClosedNodes70=
 ModuleClosedNodes8=
 ModuleClosedNodes9=
-NavigationStack=SearchView,lv_Filter,125,0,SearchView,et_Filter,114,0,RichTextArea,Class_Globals,24,0,RichTextArea,DesignerCreateView,78,2,Main,ListViewParent_Resize,1075,0,RichTextArea,LineHeight,307,1,RichTextArea,totalHeightEstimate2,312,0,RichTextArea,totalHeightEstimate,318,4,RichTextArea,AdjustHeight,326,0,RichTextArea,Scroll_Filter,427,1
+NavigationStack=Project,saveWorkFile,2218,0,RichTextArea,KeyPressed_Filter,444,0,RichTextArea,InputMethodTextChanged_Event,423,0,RichTextArea,InitializePatterns,359,0,Main,MenuBar1_Action,324,0,Main,ListViewParent_Resize,1075,0,RichTextArea,Scroll_Filter,431,1,RichTextArea,totalHeightEstimate2,315,0,RichTextArea,totalHeightEstimate,317,2,RichTextArea,AdjustHeight,329,0
 SelectedBuild=0
 VisibleModules=1,2,3,4,5,6,7,8,9,10,35,11

@@ -1369,7 +1369,7 @@ End Sub
 
 Sub changeSegment(offset As Int,targetTextArea As RichTextArea)
 	Try
-		targetTextArea.Text=targetTextArea.Text.Replace(CRLF,"")
+		'targetTextArea.Text=targetTextArea.Text.Replace(CRLF,"")
 		saveTranslation(targetTextArea)
 		Dim pane As Pane
 		pane=targetTextArea.Parent
