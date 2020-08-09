@@ -51,8 +51,7 @@ Public Sub DesignerCreateView(Base As Pane, Lbl As Label, Props As Map)
 	'Assign vars to globals
 	mBase = Base
 	mBase.Tag=Me
-	CSSUtils.SetBorder(mBase,0.5,fx.Colors.DarkGray,3)
-	
+	SetDefaultBorder
 	'So that we can Call Runmethod on the Base Panel to run non exposed methods
 	mBaseJO = Base
 
@@ -239,11 +238,25 @@ Sub setWrapText(wrap As Boolean)
 	JO.RunMethod("setWrapText",Array(wrap))
 End Sub
 
+Sub SetDefaultBorder
+	CSSUtils.SetBorder(mBase,0.5,fx.Colors.DarkGray,3)
+	'CSSUtils.SetStyleProperty(mBase,"-fx-effect","null")
+End Sub
+
+Sub SetBorderInHighlight
+	CSSUtils.SetBorder(mBase,0.5,fx.Colors.Blue,3)
+	'CSSUtils.SetStyleProperty(mBase,"-fx-effect","dropshadow(gaussian, skyblue , 3, 0.5, 0, 0)")
+End Sub
+
 Sub FocusChanged_Event (MethodName As String,Args() As Object) As Object							'ignore
-	Log("focus")
-	Log(Args(2))
+	Dim hasFocus As Boolean=Args(2)
+	If hasFocus Then
+		SetBorderInHighlight
+	Else
+		SetDefaultBorder
+	End If
 	If SubExists(mCallBack,mEventName & "_FocusChanged") Then
-		CallSubDelayed2(mCallBack,mEventName & "_FocusChanged",Args(2))
+		CallSubDelayed2(mCallBack,mEventName & "_FocusChanged",hasFocus)
 	End If
 End Sub
 
