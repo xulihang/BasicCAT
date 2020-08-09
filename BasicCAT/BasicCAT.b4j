@@ -1326,7 +1326,7 @@ Sub ListViewParent_Resize
 			Continue
 		End Try
 		Dim lineHeightTimes As Double
-		lineHeightTimes=preferencesMap.GetDefault("lineheight",2/3)
+		lineHeightTimes=preferencesMap.GetDefault("lineheight",0)
 		Dim sourceTa As RichTextArea = p.GetNode(0).Tag
 		Dim targetTa As RichTextArea = p.GetNode(1).Tag
 		sourceTa.BasePane.Left=0

@@ -344,11 +344,6 @@ Public Sub LineHeight As Double
 	Return Utils.MeasureMultilineTextHeight(Font,mBase.Width-2*offset,"a")
 End Sub
 
-Public Sub totalHeightEstimate2 As Double
-	Dim height As Double=Max(50,Utils.MeasureMultilineTextHeight(Font,mBase.Width-2*offset,getText))
-	Return height
-End Sub
-
 Public Sub totalHeightEstimate As Double
 	Dim height As Double=50
 	Try

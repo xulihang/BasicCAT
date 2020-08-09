@@ -630,8 +630,14 @@ Sub darkenTextArea(ta As RichTextArea)
 End Sub
 
 Sub MeasureMultilineTextHeight (Font As Font, Width As Double, Text As String) As Double
-	Dim jo As JavaObject = Me
-	Return jo.RunMethod("MeasureMultilineTextHeight", Array(Font, Text, Width))
+	Dim height As Double=10
+	Try
+		Dim jo As JavaObject = Me
+		height=jo.RunMethod("MeasureMultilineTextHeight", Array(Font, Text, Width))
+	Catch
+		Log(LastException)
+	End Try
+	Return height
 End Sub
 
 Sub isList(o As Object) As Boolean

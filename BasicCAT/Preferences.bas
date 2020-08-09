@@ -109,7 +109,7 @@ Sub categoryListView_SelectedIndexChanged(Index As Int)
 			SettingPane.RemoveAllNodes
 			SettingPane.LoadLayout("appearance")
 			loadFont
-			lineHeightTextField.Text=unsavedPreferences.GetDefault("lineheight",0.6)
+			lineHeightTextField.Text=unsavedPreferences.GetDefault("lineheight",0)
 			UnderlineSpacesCheckBox.Checked=unsavedPreferences.GetDefault("underline_spaces",False)
 			If unsavedPreferences.ContainsKey("darktheme") Then
 				DarkThemeCheckBox.Checked=unsavedPreferences.get("darktheme")
