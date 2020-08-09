@@ -211,6 +211,6 @@ ModuleClosedNodes7=
 ModuleClosedNodes70=
 ModuleClosedNodes8=
 ModuleClosedNodes9=
-NavigationStack=Main,ListViewParent_Resize,1068,0,Preferences,Class_Globals,31,0,Preferences,categoryListView_SelectedIndexChanged,105,0,Preferences,lineHeightTextField_TextChanged,446,0,CustomListView,InsertAtTextItem,196,0,CustomListView,CreateLabel,608,0,SearchView,show,44,0,Utils,MeasureMultilineTextHeight,630,6,RichTextArea,LineHeight,339,4,RichTextArea,totalHeightEstimate,342,0
+NavigationStack=Preferences,Class_Globals,31,0,Preferences,categoryListView_SelectedIndexChanged,105,0,Preferences,lineHeightTextField_TextChanged,446,0,CustomListView,InsertAtTextItem,196,0,CustomListView,CreateLabel,608,0,SearchView,show,44,0,Utils,MeasureMultilineTextHeight,630,6,RichTextArea,LineHeight,339,4,RichTextArea,totalHeightEstimate,348,0,Project,onSelectionChanged,1145,0,Project,targetTextArea_SelectedTextChanged,1137,0
 SelectedBuild=0
 VisibleModules=1,2,3,4,5,6,7,8,9,10,35,11,34,13,58,16

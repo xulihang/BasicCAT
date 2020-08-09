@@ -1141,16 +1141,12 @@ End Sub
 
 Sub targetTextArea_SelectedTextChanged(old As Object, new As Object)
 	cursorReachEnd=False
-    Log(old)
-	Log(new)
 	Dim ta As RichTextArea
 	ta=Sender
     onSelectionChanged(new,ta,False)
 End Sub
 
 Sub onSelectionChanged(selectedText As String,ta As RichTextArea,isSource As Boolean)
-	Log("selectedText")
-	Log(selectedText)
 	If selectedText<>"" Then
 		If isSource Then
 		    Main.sourceTermTextField.Text=selectedText
