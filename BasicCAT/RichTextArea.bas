@@ -349,11 +349,13 @@ Public Sub totalHeightEstimate As Double
 	Try
 		height=Max(height,JO.RunMethod("getTotalHeightEstimate",Null))
 	Catch
-		Log(LastException)
+		'Log(LastException)
+		Return mBase.Height
 	End Try
 	height=height+2*offset
 	Return height
 End Sub
+
 
 Sub AdjustHeight
 	mBase.SetSize(mBase.Width,totalHeightEstimate)
