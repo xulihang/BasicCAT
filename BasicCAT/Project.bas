@@ -1942,7 +1942,8 @@ Sub setPaneStatus(extra As Map,segmentPane As Pane)
 	End If
 	If extra.ContainsKey("note") Then
 		If extra.Get("note")<>"" Then
-			CSSUtils.SetStyleProperty(segmentPane.GetNode(1),"-fx-background-color","green")
+			Dim ta As RichTextArea=segmentPane.GetNode(1).Tag
+			ta.DefaultBorderColor=fx.Colors.RGB(0,128,0)
 		End If
 	End If
 End Sub

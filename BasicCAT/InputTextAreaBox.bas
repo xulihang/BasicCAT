@@ -38,7 +38,8 @@ Sub Button1_MouseClicked (EventData As MouseEvent)
 		Main.currentProject.contentIsChanged
 		Dim p As Pane=Main.editorLV.Items.Get(Main.currentProject.lastEntry)
 		If p.NumberOfNodes<>0 Then
-			CSSUtils.SetStyleProperty(p.GetNode(1),"-fx-background-color","green")
+			Dim ta As RichTextArea=p.GetNode(1).Tag
+			ta.DefaultBorderColor=fx.Colors.RGB(0,128,0)
 		End If
 	Else if TextArea1.Text="" Then
 		Dim extra As Map
@@ -47,9 +48,9 @@ Sub Button1_MouseClicked (EventData As MouseEvent)
 		Main.currentProject.contentIsChanged
 		Dim p As Pane=Main.editorLV.Items.Get(Main.currentProject.lastEntry)
 		If p.NumberOfNodes<>0 Then
-			CSSUtils.SetStyleProperty(p.GetNode(1),"-fx-background-color","")
+			Dim ta As RichTextArea=p.GetNode(1).Tag
+			ta.resetBorderColor
 		End If
 	End If
-
 	frm.Close
 End Sub

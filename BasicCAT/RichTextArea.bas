@@ -26,10 +26,11 @@ Private Sub Class_Globals
 	'For string matching
 	Private BRACKET_PATTERN  As String
 	Private SPACE_PATTERN As String
-	Private offset As Int=2
+	Private offset As Int=5
 	Public Font As Font
 	Public Tag As Object
 	Private previousComposedText As String
+	Private mDefaultBorderColor As Paint=fx.Colors.DarkGray
 End Sub
 
 'Initializes the object.
@@ -63,7 +64,6 @@ Public Sub DesignerCreateView(Base As Pane, Lbl As Label, Props As Map)
 	setupIM
 	'Cast the wrapped view to a node so we can use B4x Node methods on it.
 	CustomViewNode = GetObject
-	
 	'Add the stylesheet to colour matching words to the code area node
 	'JO.RunMethodJO("getStylesheets",Null).RunMethod("add",Array(File.GetUri(File.DirAssets,"richtext.css")))
 	
@@ -238,20 +238,35 @@ Sub setWrapText(wrap As Boolean)
 	JO.RunMethod("setWrapText",Array(wrap))
 End Sub
 
-Sub SetDefaultBorder
-	CSSUtils.SetBorder(mBase,0.5,fx.Colors.DarkGray,3)
+Public Sub resetBorderColor
+	mDefaultBorderColor=fx.Colors.DarkGray
+End Sub
+
+Public Sub setDefaultBorderColor(color As Paint)
+	mDefaultBorderColor=color
+	SetDefaultBorder
+End Sub
+
+Public Sub SetDefaultBorder
+	Dim width As Double
+	If mDefaultBorderColor<>fx.Colors.DarkGray Then
+		width=3
+	Else
+		width=0.5
+	End If
+	CSSUtils.SetBorder(mBase,width,mDefaultBorderColor,3)
 	'CSSUtils.SetStyleProperty(mBase,"-fx-effect","null")
 End Sub
 
-Sub SetBorderInHighlight
-	CSSUtils.SetBorder(mBase,0.5,fx.Colors.Blue,3)
-	'CSSUtils.SetStyleProperty(mBase,"-fx-effect","dropshadow(gaussian, skyblue , 3, 0.5, 0, 0)")
+Public Sub SetBorderInHighlight(color As Paint)
+	CSSUtils.SetBorder(mBase,3,color,3)
+	'CSSUtils.SetStyleProperty(mBase,"-fx-effect","dropshadow(gaussian, skyblue , 3, 1, 0, 0)")
 End Sub
 
 Sub FocusChanged_Event (MethodName As String,Args() As Object) As Object							'ignore
 	Dim hasFocus As Boolean=Args(2)
 	If hasFocus Then
-		SetBorderInHighlight
+		SetBorderInHighlight(fx.Colors.RGB(135,206,235))
 	Else
 		SetDefaultBorder
 	End If
