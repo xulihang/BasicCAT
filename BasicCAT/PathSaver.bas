@@ -13,7 +13,12 @@ Sub previousPath(kind As String) As String
 	Dim settingsPath As String=File.Combine(File.DirData("BasicCAT"),"path.map")
 	If File.Exists(settingsPath,"") Then
 		Dim settings As Map = File.ReadMap(settingsPath,"")
-		Return settings.GetDefault(kind,File.DirApp)
+		Dim path As String=settings.GetDefault(kind,File.DirApp)
+		If File.Exists(path,"") Then
+			Return path
+		Else
+			Return File.DirApp
+		End If 
 	Else
 		Return File.DirApp
 	End If
