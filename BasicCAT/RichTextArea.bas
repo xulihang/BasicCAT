@@ -80,6 +80,10 @@ Public Sub DesignerCreateView(Base As Pane, Lbl As Label, Props As Map)
 	Dim Event As Object = JO.CreateEvent("javafx.beans.value.ChangeListener","FocusChanged","")
 	JO.RunMethodJO("focusedProperty",Null).RunMethod("addListener",Array(Event))
 	
+	Dim r As Reflector
+	r.Target = JO
+	r.AddEventFilter("Scroll", "javafx.scene.input.ScrollEvent.SCROLL")
+	
 	'BaseChanged Listener
 	'Add an eventlistener to the ReadOnlyObjectProperty "layoutBoundsProperty" on the Base Pane so that we can change the internal layout to fit
 	Dim Event As Object = JO.CreateEvent("javafx.beans.value.ChangeListener","BaseResized","")
@@ -309,8 +313,19 @@ Public Sub LineHeight As Double
 	Return Utils.MeasureMultilineTextHeight(Font,mBase.Width-2*offset,"a")
 End Sub
 
-Public Sub totalHeightEstimate As Double
+Public Sub totalHeightEstimate2 As Double
 	Dim height As Double=Max(50,Utils.MeasureMultilineTextHeight(Font,mBase.Width-2*offset,getText))
+	Return height
+End Sub
+
+Public Sub totalHeightEstimate As Double
+	Dim height As Double=50
+	Try
+		height=Max(height,JO.RunMethod("getTotalHeightEstimate",Null))
+	Catch
+		Log(LastException)
+	End Try
+	height=height+2*offset
 	Return height
 End Sub
 
@@ -413,5 +428,17 @@ Sub InputMethodTextChanged_Event(MethodName As String,Args() As Object) As Objec
 		Next
 		previousComposedText=sb.ToString
 		JO.RunMethod("insertText",Array(JO.RunMethod("getCaretPosition",Null), sb.ToString))
+	End If
+End Sub
+
+Sub Scroll_Filter (EventData As Event)
+	If mBase.Height>totalHeightEstimate Then
+		Dim e As JavaObject = EventData
+		Dim Parent As Node
+		Parent=mBase.Parent
+		Dim ParentJO As JavaObject=Parent
+		Dim event As Object=e.RunMethod("copyFor",Array(e.RunMethod("getSource",Null),Parent))
+		ParentJO.RunMethod("fireEvent",Array(event))
+		EventData.Consume
 	End If
 End Sub
