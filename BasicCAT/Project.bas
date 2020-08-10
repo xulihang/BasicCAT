@@ -22,7 +22,7 @@ Sub Class_Globals
 	Public completed As Int
 	Private cmClicked As Boolean=False
 	Private cm As ContextMenu
-	Private cursorReachEnd As Boolean=False
+	Private previousTaSelectionEnd As Int=-1
 	Private projectGit As git
 	Public contentChanged As Boolean=False
 	Private SegEnabledFiles As List
@@ -1140,7 +1140,6 @@ Sub sourceTextArea_SelectedTextChanged(old As Object, new As Object)
 End Sub
 
 Sub targetTextArea_SelectedTextChanged(old As Object, new As Object)
-	cursorReachEnd=False
 	Dim ta As RichTextArea
 	ta=Sender
     onSelectionChanged(new,ta,False)
@@ -1346,25 +1345,22 @@ Sub targetTextArea_KeyPressed (result As String)
 	Log(result)
 	Dim targetTextArea As RichTextArea
 	targetTextArea=Sender
+	Dim selectionEnd As Int=targetTextArea.SelectionEnd
 	If result="ENTER" Then
 		changeSegment(1,targetTextArea)
-	Else if result="DOWN" Then
-		If 	cursorReachEnd=False Then
-			cursorReachEnd=True
-		Else
+	Else if result="DOWN" And selectionEnd=previousTaSelectionEnd Then
 			changeSegment(1,targetTextArea)
-		End If
-	Else if result="UP" Then
-		If 	cursorReachEnd=False Then
-			cursorReachEnd=True
-		Else
+	Else if result="UP" And selectionEnd=previousTaSelectionEnd Then
 			changeSegment(-1,targetTextArea)
-		End If
+	Else
+		previousTaSelectionEnd=selectionEnd
 	End If
+	
 End Sub
 
 Sub changeSegment(offset As Int,targetTextArea As RichTextArea)
 	Try
+		previousTaSelectionEnd=-1
 		'targetTextArea.Text=targetTextArea.Text.Replace(CRLF,"")
 		saveTranslation(targetTextArea)
 		Dim pane As Pane
@@ -1379,6 +1375,12 @@ Sub changeSegment(offset As Int,targetTextArea As RichTextArea)
 		Dim nextTA As RichTextArea
 		nextTA=nextPane.GetNode(1).Tag
 		nextTA.RequestFocus
+		Select offset
+			Case -1
+			    nextTA.setSelection(nextTA.Length,nextTA.Length)
+			Case 1
+			    nextTA.setSelection(0,0)
+		End Select
 		lastEntry=Main.editorLV.Items.IndexOf(nextPane)
 		lastFilename=currentFilename
 		showTM(nextTA)

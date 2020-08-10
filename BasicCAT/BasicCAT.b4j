@@ -185,8 +185,8 @@ Library8=jrandomaccessfile
 Library9=jb4xencryption
 Module1=FileChooserUtils
 Module10=preTranslateDialog
-Module11=Preferences
-Module12=RichTextArea
+Module11=RichTextArea
+Module12=Preferences
 Module13=PathSaver
 Module14=SearchView
 Module15=git
@@ -553,12 +553,14 @@ Sub MenuBar1_Action
 			If currentProject.path="" Then
 				Dim fc As FileChooser
 				fc.Initialize
+				fc.InitialDirectory=PathSaver.previousPath("project")
 				fc.Title="Please enter the folder name to store the project."
 				Dim path As String
 				path=fc.ShowSave(MainForm)
 				If path="" Then
 					Return
 				End If
+				PathSaver.savePath("project",path)
 				If File.Exists(path,"") Then
 					fx.Msgbox(MainForm,"There has already been a file.","")
 					Return
