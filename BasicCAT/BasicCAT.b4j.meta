@@ -211,6 +211,6 @@ ModuleClosedNodes7=
 ModuleClosedNodes70=
 ModuleClosedNodes8=
 ModuleClosedNodes9=
-NavigationStack=Project,targetTextArea_SelectedTextChanged,1140,6,RichTextArea,TextChanged_Event,376,0,RichTextArea,Class_Globals,27,2,RichTextArea,SelectedTextChanged_Event,384,6,RichTextArea,DesignerCreateView,73,0,Project,addKeyEvent,1127,0,Project,sourceTextArea_KeyPressed,1277,0,Project,Class_Globals,18,2,Project,targetTextArea_KeyPressed,1348,6,Project,changeSegment,1373,6
+NavigationStack=RichTextArea,Class_Globals,27,2,RichTextArea,SelectedTextChanged_Event,384,6,RichTextArea,DesignerCreateView,73,0,Project,addKeyEvent,1127,0,Project,Class_Globals,18,2,Project,targetTextArea_KeyPressed,1348,6,Project,sourceTextArea_KeyPressed,1285,0,Project,targetTextArea_TextChanged,997,0,Project,onSelectionChanged,1165,0,Project,changeSegment,1376,6
 SelectedBuild=0
 VisibleModules=1,2,3,4,5,6,7,8,9,10,11

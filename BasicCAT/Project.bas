@@ -1360,7 +1360,6 @@ End Sub
 
 Sub changeSegment(offset As Int,targetTextArea As RichTextArea)
 	Try
-		previousTaSelectionEnd=-1
 		'targetTextArea.Text=targetTextArea.Text.Replace(CRLF,"")
 		saveTranslation(targetTextArea)
 		Dim pane As Pane
@@ -1381,6 +1380,7 @@ Sub changeSegment(offset As Int,targetTextArea As RichTextArea)
 			Case 1
 			    nextTA.setSelection(0,0)
 		End Select
+		previousTaSelectionEnd=nextTA.SelectionEnd
 		lastEntry=Main.editorLV.Items.IndexOf(nextPane)
 		lastFilename=currentFilename
 		showTM(nextTA)
