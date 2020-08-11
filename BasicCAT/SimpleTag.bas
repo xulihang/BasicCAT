@@ -28,9 +28,6 @@ Public Sub Convert(pXml As String,revert As Boolean,original As String) As Strin
 		Return pXml
 	End If
 	Dim originalTags As List=getTags(original)
-	If revert And tags.Size<>originalTags.Size Then
-		Return pXml
-	End If
 	Dim parts As List
 	parts.Initialize
 	Dim previousEndIndex As Int=0
@@ -41,20 +38,46 @@ Public Sub Convert(pXml As String,revert As Boolean,original As String) As Strin
 			parts.Add(textBefore)
 		End If
 		If revert Then
-			Dim originalTag As Tag=originalTags.Get(i)
-			parts.Add(originalTag.html)
+			parts.Add(FindEquavalentTag(tag,originalTags).html)
 		Else
 			parts.Add(SimplifiedTagString(tag))
 		End If
 		
 		previousEndIndex=tag.index+tag.html.Length
 	Next
+	Dim textAfter As String
+	textAfter=pXml.SubString2(previousEndIndex,pXml.Length)
+	If textAfter<>"" Then
+		parts.Add(textAfter)
+	End If
 	Dim sb As StringBuilder
 	sb.Initialize
 	For Each s As String In parts
 		sb.Append(s)
 	Next
 	Return sb.ToString
+End Sub
+
+Sub FindEquavalentTag(tag As Tag,originalTags As List) As Tag
+	For Each originaltag As Tag In originalTags
+		Dim subtractedName As String=tag.name
+		Dim id As Int=-1
+		For i=0 To tag.name.Length-1
+			If IsNumber(tag.name.CharAt(i))=True Then
+				Try
+					id=subtractedName.SubString2(i,tag.name.Length)
+					subtractedName=subtractedName.SubString2(0,i)
+				Catch
+					Log(LastException)
+				End Try
+				Exit
+			End If
+		Next
+		If id=originaltag.ID And subtractedName=originaltag.name And tag.kind=originaltag.kind Then
+			Return originaltag
+		End If
+	Next
+	Return tag
 End Sub
 
 Sub SimplifiedTagString(tag As Tag) As String
