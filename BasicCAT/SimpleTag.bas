@@ -22,40 +22,45 @@ End Sub
 
 
 Public Sub Convert(pXml As String,revert As Boolean,original As String) As String
-	TagsCount.Clear
-	Dim tags As List=getTags(pXml)
-	If tags.Size=0 Then
-		Return pXml
-	End If
-	Dim originalTags As List=getTags(original)
-	Dim parts As List
-	parts.Initialize
-	Dim previousEndIndex As Int=0
-	For i=0 To tags.Size-1
-		Dim tag As Tag=tags.Get(i)
-		Dim textBefore As String=pXml.SubString2(previousEndIndex,tag.index)
-		If textBefore<>"" Then
-			parts.Add(textBefore)
+	Try
+		TagsCount.Clear
+		Dim tags As List=getTags(pXml)
+		If tags.Size=0 Then
+			Return pXml
 		End If
-		If revert Then
-			parts.Add(FindEquavalentTag(tag,originalTags).html)
-		Else
-			parts.Add(SimplifiedTagString(tag))
-		End If
+		Dim originalTags As List=getTags(original)
+		Dim parts As List
+		parts.Initialize
+		Dim previousEndIndex As Int=0
+		For i=0 To tags.Size-1
+			Dim tag As Tag=tags.Get(i)
+			Dim textBefore As String=pXml.SubString2(previousEndIndex,tag.index)
+			If textBefore<>"" Then
+				parts.Add(textBefore)
+			End If
+			If revert Then
+				parts.Add(FindEquavalentTag(tag,originalTags).html)
+			Else
+				parts.Add(SimplifiedTagString(tag))
+			End If
 		
-		previousEndIndex=tag.index+tag.html.Length
-	Next
-	Dim textAfter As String
-	textAfter=pXml.SubString2(previousEndIndex,pXml.Length)
-	If textAfter<>"" Then
-		parts.Add(textAfter)
-	End If
-	Dim sb As StringBuilder
-	sb.Initialize
-	For Each s As String In parts
-		sb.Append(s)
-	Next
-	Return sb.ToString
+			previousEndIndex=tag.index+tag.html.Length
+		Next
+		Dim textAfter As String
+		textAfter=pXml.SubString2(previousEndIndex,pXml.Length)
+		If textAfter<>"" Then
+			parts.Add(textAfter)
+		End If
+		Dim sb As StringBuilder
+		sb.Initialize
+		For Each s As String In parts
+			sb.Append(s)
+		Next
+		Return sb.ToString
+	Catch
+		Log(LastException)
+	End Try
+	Return pXml
 End Sub
 
 Sub FindEquavalentTag(tag As Tag,originalTags As List) As Tag
