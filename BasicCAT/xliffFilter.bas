@@ -10,15 +10,8 @@ Sub Process_Globals
 	Private addedMid As Int
 End Sub
 
-Sub createWorkFile(filename As String,path As String,sourceLang As String,sentenceLevel As Boolean) As ResumableSub
-	Dim workfile As Map
-	workfile.Initialize
-	workfile.Put("filename",filename)
-	Dim isSegEnabled As Boolean
-	Dim sourceFiles As List
-	sourceFiles.Initialize
-	
-	Dim files As List
+Sub escaped(path As String,filename As String) As String
+	'Log(File.combine(File.Combine(path,"source"),filename))
 	Dim xmlstring As String=File.ReadString(File.Combine(path,"source"),filename)
 	xmlstring=XMLUtils.escapedText(xmlstring,"source","xliff")
 	If xmlstring.Contains("<seg-source>")=False Then
@@ -28,11 +21,23 @@ Sub createWorkFile(filename As String,path As String,sourceLang As String,senten
 		xmlstring=XMLUtils.escapedText(xmlstring,"mrk","xliff")
 	End If
 	
-    Log("escape done")
-    'Log(xmlstring)
+	Log("escape done")
+	'Log(xmlstring)
+	Return xmlstring
+End Sub
+
+Sub createWorkFile(filename As String,path As String,sourceLang As String,sentenceLevel As Boolean) As ResumableSub
+	Dim workfile As Map
+	workfile.Initialize
+	workfile.Put("filename",filename)
+	Dim isSegEnabled As Boolean
+	Dim sourceFiles As List
+	sourceFiles.Initialize
 	
-	files=getFilesList(xmlstring)
-	
+	Dim files As List
+	files=getFilesList(escaped(path,filename))
+	Dim st As SimpleTag
+	st.Initialize
 	For Each fileMap As Map In files
 		Try
 			Dim body As Map
@@ -54,6 +59,7 @@ Sub createWorkFile(filename As String,path As String,sourceLang As String,senten
 			Dim inbetweenContent As String=""
 			Dim text As String
 			text=tu.Get(0)
+			text=st.Convert(text,False,"")
 			Dim id As String
 			id=tu.Get(1)
 			Dim index As Int=-1
@@ -104,7 +110,6 @@ Sub createWorkFile(filename As String,path As String,sourceLang As String,senten
 					Dim extra As Map
 					extra.Initialize
 					extra.Put("id",id)
-					
 					bitext.Add(extra)
 					inbetweenContent=""
 
@@ -343,6 +348,7 @@ Sub generateFile(filename As String,path As String,projectFile As Map)
 			End If
 		Next
 	Next
+	revertTags(translationMap,path,filename)
 	Dim xmlString As String
 	xmlString=XMLUtils.getXmlFromMapWithoutIndent(insertTranslation(translationMap,filename,path,isSegEnabled))
 	xmlString=XMLUtils.unescapedText(xmlString,"source","xliff")
@@ -351,6 +357,40 @@ Sub generateFile(filename As String,path As String,projectFile As Map)
 	'Log(xmlString)
 	File.WriteString(File.Combine(path,"target"),filename,xmlString)
 	Main.updateOperation(filename&" generated!")
+End Sub
+
+Sub revertTags(translationMap As Map,path As String, filename As String)
+	Dim st As SimpleTag
+	st.Initialize
+	Dim files As List
+	files=getFilesList(escaped(path,filename))
+	Log(files)
+	For Each fileMap As Map In files
+		Try
+			Dim body As Map
+			body=fileMap.Get("body")
+		Catch
+			Continue
+		End Try
+		Dim attributes As Map
+		attributes=fileMap.Get("Attributes")
+		Dim innerfileName As String
+		innerfileName=attributes.Get("original")
+		For Each tu As List In getTransUnits(fileMap)
+			Dim text As String
+			text=tu.Get(0)
+			Dim id As String
+			id=tu.Get(1)
+			Dim segmentKey As String=id&innerfileName
+			If translationMap.ContainsKey(segmentKey) Then
+				Dim dataMap As Map
+				dataMap=translationMap.Get(segmentKey)
+				Dim translation As String = dataMap.Get("translation")
+				dataMap.Put("translation",st.Convert(translation,True,text))
+				translationMap.Put(segmentKey,dataMap)
+			End If
+		Next
+	Next
 End Sub
 
 Sub checkSegContinuous(xmlstring As String) As Boolean
