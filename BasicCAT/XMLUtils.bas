@@ -10,6 +10,86 @@ Sub Process_Globals
 End Sub
 
 
+Public Sub EscapeXml(Raw As String) As String
+	Dim sb As StringBuilder
+	sb.Initialize
+	For i = 0 To Raw.Length - 1
+		Dim c As Char = Raw.CharAt(i)
+		Select c
+			Case QUOTE
+				sb.Append("&quot;")
+			Case "'"
+				sb.Append("&apos;")
+			Case "<"
+				sb.Append("&lt;")
+			Case ">"
+				sb.Append("&gt;")
+			Case "&"
+				sb.Append("&amp;")
+			Case Else
+				sb.Append(c)
+		End Select
+	Next
+	Return sb.ToString
+End Sub
+
+Sub printChild(node As XmlNode)
+	For Each children As XmlNode In node.Children
+		Log(children.Name)
+		printChild(children)
+	Next
+End Sub
+
+
+Sub parse(xml As String) As XmlNode
+	Dim parser As XmlParser
+	parser.Initialize
+	Dim root As XmlNode = parser.Parse(xml)
+	If root.Children.Size=1 Then
+		root=root.Children.Get(0)
+		If root.Name="?xml" Then
+			root=root.Children.Get(0)
+		End If
+	End If
+	Log(root.Name)
+	Return root
+End Sub
+
+Sub asString(Node As XmlNode) As String
+	Dim builder As XMLBuilder2
+	builder.Initialize
+	buildNode(builder,Node,builder.Doc)
+	Return builder.asString
+End Sub
+
+Sub asStringWithoutXMLHead(node As XmlNode) As String
+	Return asString(node).Replace($"<?xml version="1.0" encoding="UTF-8" standalone="no"?>"$,"")
+End Sub
+
+Sub buildNode(builder As XMLBuilder2, node As XmlNode,Parent As JavaObject) As JavaObject
+	Dim element As JavaObject=builder.e(node.Name)
+	setAttr(builder,element,node.Attributes)
+	builder.appendChild(Parent,element)
+	For Each child As XmlNode In node.Children
+		Dim childNode As JavaObject
+		If child.Name="text" Then
+			childNode=builder.t(child.Text)
+		Else
+			childNode=buildNode(builder,child,element)
+		End If
+		builder.appendChild(element,childNode)
+	Next
+	Return element
+End Sub
+
+Sub setAttr(builder As XMLBuilder2, element As JavaObject, attributes As Map)
+	If attributes.IsInitialized Then
+		For Each key As String In attributes.Keys
+			builder.setAttributeNode(builder.createAttribute(key,attributes.Get(key)),element)
+		Next
+	End If
+End Sub
+
 Sub getXmlMap(xmlstring As String) As Map
 	Dim ParsedData As Map
 	Dim xm As Xml2Map
