@@ -245,7 +245,7 @@ Sub generateFile(filename As String,path As String,projectFile As Map)
 				'translation=fullsource.Replace(source,target)
 				translation=filterGenericUtils.relaceAtTheRightPosition(source,target,fullsource)
 				If Utils.LanguageHasSpace(projectFile.Get("target"))=False Then
-					translation=segmentation.removeSpacesAtBothSides(File.DirApp,"zh",translation,True)
+					translation=segmentation.removeSpacesAtBothSides(Main.currentProject.path,Main.currentProject.projectFile.Get("target"),translation,Utils.getMap("settings",projectFile).GetDefault("remove_space",True))
 				End If
 			End If
 			Dim extra As Map
@@ -295,7 +295,7 @@ Sub generateFile(filename As String,path As String,projectFile As Map)
 	xmlString=XMLUtils.asString(insertTranslation(translationMap,filename,path,isSegEnabled))
 	'Log(xmlString)
 	File.WriteString(File.Combine(path,"target"),filename,xmlString)
-
+	Main.updateOperation(filename&" generated!")
 End Sub
 
 Sub revertTags(translationMap As Map,path As String, filename As String)

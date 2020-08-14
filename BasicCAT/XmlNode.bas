@@ -47,7 +47,8 @@ Public Sub getinnerXML As String
 			Return node.Text
 		End If
 	End If
-	Dim xml As String=XMLUtils.asStringWithoutXMLHead(Me)
+	'unescape: <g1>&amp;</g1>-><g1>&</g1>
+	Dim xml As String=HandleXMLEntities(XMLUtils.asStringWithoutXMLHead(Me),False)
 	Try
 		Dim matcher As Matcher
 		matcher=Regex.Matcher("(<.*?>).*(</.*?>)",xml)
@@ -66,31 +67,49 @@ Public Sub setinnerXML(xml As String)
 	If Children.Size=1 Then
 		Dim node As XmlNode=Children.Get(0)
 		If node.Name="text" Then
-			node.Text=XMLUtils.EscapeXML(xml)
+			node.Text=xml
 			Return
 		End If
 	End If
-	Dim sb As StringBuilder
-	sb.Initialize
-	sb.Append("<").Append(Name).Append(">")
-	sb.append(xml)
-	sb.Append("</").Append(Name).Append(">")
+
 	Dim parser As XmlParser
 	parser.Initialize
-	Dim node As XmlNode=parser.Parse(EscapeXML(sb.ToString))
-	If node.Name=Name Then
-		node=node.Children.Get(0)
-	End If
+	'escape: <g1>&</g1>-><g1>&amp;</g1>
+	Dim escaped As String=HandleXMLEntities(xml,True)
+	Dim node As XmlNode
+	Try
+		node=parser.Parse(escaped)
+	Catch
+		Log(LastException.Message)
+		Dim sb As StringBuilder
+		sb.Initialize
+		sb.Append("<").Append(Name).Append(">")
+		sb.append(escaped)
+		sb.Append("</").Append(Name).Append(">")
+		node=parser.Parse(sb.ToString)
+		'Log("-------")
+		'Log(sb.ToString)
+		'Log(node.Name)
+		'Log(Name)
+		Dim child As XmlNode=node.Children.Get(0)
+		If child.Name=Name Then
+			node=node.Children.Get(0)
+		End If
+	End Try
 	Children=node.Children
 	Attributes=node.Attributes
 End Sub
 
-Public Sub EscapeXML(xml As String) As String
+Public Sub HandleXMLEntities(xml As String,escape As Boolean) As String
 	Dim st As SimpleTag
 	st.Initialize
 	Dim tags As List=st.getTags(xml)
 	If tags.Size=0 Then
-		Return XMLUtils.EscapeXml(xml)
+		If escape Then
+			Return XMLUtils.EscapeXml(xml)
+		Else
+			Return XMLUtils.UnescapeXml(xml)
+		End If
 	End If
 	Dim parts As List
 	parts.Initialize
@@ -98,7 +117,12 @@ Public Sub EscapeXML(xml As String) As String
 	For i=0 To tags.Size-1
 		Dim tag As Tag=tags.Get(i)
 		Dim textBefore As String=xml.SubString2(previousEndIndex,tag.index)
-		textBefore=XMLUtils.EscapeXml(textBefore)
+		If escape Then
+			textBefore=XMLUtils.EscapeXml(textBefore)
+		Else
+			textBefore=XMLUtils.UnescapeXml(textBefore)
+		End If
+		
 		If textBefore<>"" Then
 			parts.Add(textBefore)
 		End If
@@ -107,8 +131,12 @@ Public Sub EscapeXML(xml As String) As String
 	Next
 	Dim textAfter As String
 	textAfter=xml.SubString2(previousEndIndex,xml.Length)
-	textAfter=XMLUtils.EscapeXml(textAfter)
 	If textAfter<>"" Then
+		If escape Then
+			textAfter=XMLUtils.EscapeXml(textAfter)
+		Else
+			textAfter=XMLUtils.UnescapeXml(textAfter)
+		End If
 		parts.Add(textAfter)
 	End If
 	Dim sb As StringBuilder
@@ -116,7 +144,5 @@ Public Sub EscapeXML(xml As String) As String
 	For Each s As String In parts
 		sb.Append(s)
 	Next
-	'Log("escaped")
-	'Log(sb.ToString)
 	Return sb.ToString
 End Sub

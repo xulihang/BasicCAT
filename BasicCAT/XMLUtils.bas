@@ -7,8 +7,8 @@ Version=6.51
 'Static code module
 Sub Process_Globals
 	Private fx As JFX
+	Private Entities As Map
 End Sub
-
 
 Public Sub EscapeXml(Raw As String) As String
 	Dim sb As StringBuilder
@@ -33,6 +33,41 @@ Public Sub EscapeXml(Raw As String) As String
 	Return sb.ToString
 End Sub
 
+Public Sub UnescapeXml(Raw As String) As String
+	Dim sb As StringBuilder
+	sb.Initialize
+	Dim i As Int=0
+	Dim n As Int=Raw.Length
+	Do While i<n
+		For Each key As String In getEntitiesMap.Keys
+			If i+key.Length>n Then
+				Continue
+			End If
+			If Raw.SubString2(i,i+key.Length)=key Then
+				sb.Append(getEntitiesMap.Get(key))
+				i=i+key.Length
+				Exit
+			End If
+		Next
+		sb.Append(Raw.CharAt(i))
+		i=i+1
+	Loop
+	Return sb.ToString
+End Sub
+
+Sub getEntitiesMap As Map
+	If Entities.IsInitialized=False Then
+		Entities.Initialize
+		Entities.Put("&quot;",QUOTE)
+		Entities.Put("&apos;","'")
+		Entities.Put("&lt;","<")
+		Entities.Put("&gt;",">")
+		Entities.Put("&amp;","&")
+	End If
+	Return Entities
+End Sub
+
+
 Sub printChild(node As XmlNode)
 	For Each children As XmlNode In node.Children
 		Log(children.Name)
@@ -51,7 +86,6 @@ Sub parse(xml As String) As XmlNode
 			root=root.Children.Get(0)
 		End If
 	End If
-	Log(root.Name)
 	Return root
 End Sub
 
