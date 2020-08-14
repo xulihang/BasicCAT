@@ -1408,10 +1408,10 @@ Sub sourceTextArea_FocusChanged (HasFocus As Boolean)
 	TextArea1=Sender
 	If HasFocus Then
 		TextArea1.Tag=TextArea1.Text
-		TextArea1.Editable=True
 	Else
-		TextArea1.Text=TextArea1.Tag
-		TextArea1.Editable=False
+		If TextArea1.Tag<>TextArea1.Text Then
+			TextArea1.Text=TextArea1.Tag
+		End If
 	End If
 End Sub
 
