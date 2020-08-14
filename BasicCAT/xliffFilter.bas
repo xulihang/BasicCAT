@@ -140,13 +140,9 @@ End Sub
 Sub getSegmentedSourceList(mrkList As List) As List
 	Dim segmentedSourceList As List
 	segmentedSourceList.Initialize
-	For Each mrk As Map In mrkList
-		'Dim attributes As Map
-		'attributes=mrk.Get("Attributes")
-		'Dim mid As Int
-		'mid=attributes.Get("mid")
+	For Each mrk As XmlNode In mrkList
 		Dim text As String
-		text=mrk.Get("Text")
+		text=mrk.innerXML
 		segmentedSourceList.Add(text)
 	Next
 	Return segmentedSourceList
@@ -183,14 +179,15 @@ Sub addTransUnit(transUnit As XmlNode,tidyTransUnits As List,groupIndex As Int)
 	source=transUnit.Get("source").Get(0)
 	Dim text As String
 	text=source.innerXML
-	Dim segSource As Map
-	segSource.Initialize
+	
 	Dim mrkList As List
-	mrkList.Initialize
-	'If transUnit.ContainsKey("seg-source") Then
-	'	segSource=transUnit.Get("seg-source")
-	'	mrkList=XMLUtils.GetElements(segSource,"mrk")
-	'End If
+	If transUnit.Contains("seg-source") Then
+		Dim segSource As XmlNode
+		segSource=transUnit.Get("seg-source").Get(0)
+		mrkList=segSource.Get("mrk")
+	Else
+		mrkList.Initialize
+	End If
 	
 	Dim oneTransUnit As List
 	oneTransUnit.Initialize
@@ -381,41 +378,21 @@ Sub updateTransUnit(transUnit As XmlNode,originalFilename As String,translationM
 		Dim segList As List
 		segList=dataMap.Get("seg")
 		If originalFilename=dataMap.Get("filename") Then
-
 			Dim bitext As List
 			If isSegEnabled Then
-				If segList.Size=1 Then
-					bitext=segList.Get(0)
+				Dim mrkList As List
+				mrkList.Initialize
+				Dim mid As Int=0
+				For Each bitext As List In segList
 					If isSegContinuous Then
-						'segSource.Put("mrk",buildMrk(addedMid,bitext.Get(0)))
-						'targetMap.Put("mrk",buildMrk(addedMid,bitext.Get(1)))
+						mrkList.Add(buildMrk(addedMid,bitext.Get(1)))
 						addedMid=addedMid+1
 					Else
-						'segSource.Put("mrk",buildMrk(0,bitext.Get(0)))
-						'targetMap.Put("mrk",buildMrk(0,bitext.Get(1)))
+						mrkList.Add(buildMrk(mid,bitext.Get(1)))
+						mid=mid+1
 					End If
-				Else
-					Dim mrkList As List
-					mrkList.Initialize
-					'Dim sourceMrkList As List
-					'sourceMrkList.Initialize
-					Dim mid As Int=0
-
-					For Each bitext As List In segList
-						If isSegContinuous Then
-							'sourceMrkList.Add(buildMrk(addedMid,bitext.Get(0)))
-							mrkList.Add(buildMrk(addedMid,bitext.Get(1)))
-							addedMid=addedMid+1
-						Else
-							'sourceMrkList.Add(buildMrk(mid,bitext.Get(0)))
-							mrkList.Add(buildMrk(mid,bitext.Get(1)))
-							mid=mid+1
-						End If
-
-					Next
-					'segSource.Put("mrk",sourceMrkList)
-					'targetMap.Put("mrk",mrkList)
-				End If
+				Next
+				targetNode.replaceChildren("mrk",mrkList)
 			Else
 				targetNode.innerXML=dataMap.Get("translation")
 			End If
@@ -423,18 +400,20 @@ Sub updateTransUnit(transUnit As XmlNode,originalFilename As String,translationM
 	End If
 End Sub
 
-Sub buildMrk(mid As Int,text As String) As Map
-	Dim mrkMap As Map
-	mrkMap.Initialize
-	Dim attributes As Map
-	attributes.Initialize
-	attributes.Put("mid",mid)
-	'Log("mid"&mid)
-	attributes.Put("mtype","seg")
-	mrkMap.Put("Attributes",attributes)
-	mrkMap.Put("Text",text)
-	Return mrkMap
+Sub buildMrk(mid As Int,text As String) As XmlNode
+	Dim mrk As XmlNode
+	mrk.Initialize
+	mrk.Name="mrk"
+	mrk.Children.Initialize
+	mrk.innerXML=text
+	Dim att As Map
+	att.Initialize
+	att.Put("mid",mid)
+	att.Put("mtype","seg")
+	mrk.Attributes=att
+	Return mrk
 End Sub
+
 
 Sub addNecessaryTags(target As String,source As String) As String
 	Dim tagMatcher As Matcher

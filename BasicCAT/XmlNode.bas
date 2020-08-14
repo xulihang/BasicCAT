@@ -40,6 +40,20 @@ Sub Contains(key As String) As Boolean
 	Return False
 End Sub
 
+Public Sub replaceChildren(nodeName As String,nodes As List)
+	For i=0 To Children.Size-1
+		Dim node As XmlNode=Children.Get(i)
+		If node.Name=nodeName Then
+			If nodes.Size<>0 Then
+				Children.Set(i,nodes.Get(0))
+				nodes.RemoveAt(0)
+			Else
+				Return
+			End If
+		End If
+	Next
+End Sub
+
 Public Sub getinnerXML As String
 	If Children.Size=1 Then
 		Dim node As XmlNode=Children.Get(0)
@@ -97,7 +111,6 @@ Public Sub setinnerXML(xml As String)
 		End If
 	End Try
 	Children=node.Children
-	Attributes=node.Attributes
 End Sub
 
 Public Sub HandleXMLEntities(xml As String,escape As Boolean) As String
