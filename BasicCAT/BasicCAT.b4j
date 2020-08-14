@@ -705,22 +705,24 @@ Sub editSource
 		sourceEditor.Initialize(source,fullsource)
 		Dim editResult As Map
 		editResult=sourceEditor.ShowAndWait
-		source=editResult.GetDefault("source","")
-		fullsource=editResult.GetDefault("fullsource","")
-		segment.Set(0,source)
-		segment.Set(2,fullsource)
-		If editorLV.Items.Size<>0 Then
-			Try
-				Dim p As Pane
-				p=editorLV.Items.Get(currentProject.lastEntry)
-			Catch
-				Return
-				Log(LastException)
-			End Try
-			Dim sourceTextArea As RichTextArea=p.GetNode(0).Tag
-			sourceTextArea.Text=source
+		If source<>editResult.GetDefault("source",source) Then
+			source=editResult.GetDefault("source",source)
+			fullsource=editResult.GetDefault("fullsource",fullsource)
+			segment.Set(0,source)
+			segment.Set(2,fullsource)
+			If editorLV.Items.Size<>0 Then
+				Try
+					Dim p As Pane
+					p=editorLV.Items.Get(currentProject.lastEntry)
+				Catch
+					Return
+					Log(LastException)
+				End Try
+				Dim sourceTextArea As RichTextArea=p.GetNode(0).Tag
+				sourceTextArea.Text=source
+			End If
+			currentProject.contentIsChanged
 		End If
-		currentProject.contentIsChanged
 	End If
 End Sub
 

@@ -53,15 +53,9 @@ Sub mergeInternalSegment(segments As List,index As Int,targetLang As String,exte
 	If tagsNum(source)=1 Then
 		source=tagsAtBothSidesRemovedText(source)
 	End If
-	
-	If extension="xlf" Then
-		If tagsNum(source)=2 And Regex.IsMatch("<.*?>",source) Then
-			source=tagsAtBothSidesRemovedText(source)
-		End If
-	Else
-		If tagsNum(source)>=2 And Regex.IsMatch("<.*?>",source) Then
-			source=tagsAtBothSidesRemovedText(source)
-		End If
+
+	If tagsNum(source)>=2 And Regex.IsMatch("<.*?>",source) Then
+		source=tagsAtBothSidesRemovedText(source)
 	End If
 
 	fullsource=fullsource&nextFullSource

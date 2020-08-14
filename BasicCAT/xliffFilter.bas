@@ -73,12 +73,7 @@ Sub createWorkFile(filename As String,path As String,sourceLang As String,senten
 					Continue
 				Else
 					Dim sourceShown As String=source
-					If filterGenericUtils.tagsNum(sourceShown)=1 Then
-						sourceShown=filterGenericUtils.tagsAtBothSidesRemovedText(sourceShown)
-					End If
-					If filterGenericUtils.tagsNum(sourceShown)=2 And Regex.IsMatch("<.*?>",sourceShown) Then
-						sourceShown=filterGenericUtils.tagsAtBothSidesRemovedText(sourceShown)
-					End If
+					sourceShown=removeTags(sourceShown)
 
 					bitext.add(sourceShown.Trim)
 					Dim target As String=""
@@ -105,12 +100,7 @@ Sub createWorkFile(filename As String,path As String,sourceLang As String,senten
 					If previousExtra.Get("id")=id Then
 						Dim sourceShown As String
 						sourceShown=previousBitext.Get(0)&source.Trim
-						If filterGenericUtils.tagsNum(sourceShown)=1 Then
-							sourceShown=filterGenericUtils.tagsAtBothSidesRemovedText(sourceShown)
-						End If
-						If filterGenericUtils.tagsNum(sourceShown)=2 And Regex.IsMatch("<.*?>",sourceShown) Then
-							sourceShown=filterGenericUtils.tagsAtBothSidesRemovedText(sourceShown)
-						End If
+						sourceShown=removeTags(sourceShown)
 						previousBitext.Set(0,sourceShown)
 						previousBitext.Set(2,previousBitext.Get(2)&bitext.Get(2))
 						inbetweenContent=""
@@ -135,6 +125,16 @@ Sub createWorkFile(filename As String,path As String,sourceLang As String,senten
 	json.Initialize(workfile)
 	File.WriteString(File.Combine(path,"work"),filename&".json",json.ToPrettyString(4))
 	Return True
+End Sub
+
+Sub removeTags(sourceShown As String) As String
+	If filterGenericUtils.tagsNum(sourceShown)=1 Then
+		sourceShown=filterGenericUtils.tagsAtBothSidesRemovedText(sourceShown)
+	End If
+	If filterGenericUtils.tagsNum(sourceShown)>=2 And Regex.IsMatch("<.*?>",sourceShown) Then
+		sourceShown=filterGenericUtils.tagsAtBothSidesRemovedText(sourceShown)
+	End If
+	Return sourceShown
 End Sub
 
 Sub getSegmentedSourceList(mrkList As List) As List

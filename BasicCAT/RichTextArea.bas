@@ -308,11 +308,13 @@ End Sub
 
 Public Sub setText(str As String)
 	JO.RunMethod("replaceText",Array As Object(0, Length, str))
+	updateStyleSpans
 End Sub
 
 'Replaces a range of characters with the given text.
 Public Sub ReplaceText(Start As Int, ThisEnd As Int, str As String)
 	JO.RunMethod("replaceText",Array As Object(Start, ThisEnd, str))
+	updateStyleSpans
 End Sub
 
 'Get/Set the CodeArea Editable
@@ -373,10 +375,14 @@ End Sub
 
 'Callback from TextProperty Listener when the codearea text changes
 Sub TextChanged_Event(MethodName As String,Args() As Object) As Object							'ignore
-	JO.RunMethod("setStyleSpans",Array(0,ComputeHighlightingB4x(getText)))
+	updateStyleSpans
 	If SubExists(mCallBack,mEventName & "_TextChanged") Then
 		CallSubDelayed3(mCallBack,mEventName & "_TextChanged",Args(1),Args(2))
 	End If
+End Sub
+
+Sub updateStyleSpans
+	JO.RunMethod("setStyleSpans",Array(0,ComputeHighlightingB4x(getText)))
 End Sub
 
 Sub SelectedTextChanged_Event(MethodName As String,Args() As Object) As Object							'ignore
