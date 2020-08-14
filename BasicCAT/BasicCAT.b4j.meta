@@ -226,6 +226,6 @@ ModuleClosedNodes74=
 ModuleClosedNodes75=
 ModuleClosedNodes8=
 ModuleClosedNodes9=
-NavigationStack=xliffFilter,buildMrk,432,0,xliffFilter,getSegmentedSourceList,133,0,xliffFilter,createWorkFile,34,0,xliffFilter,addTransUnit,201,0,xliffFilter,generateFile,285,0,xliffFilter,insertTranslation,344,0,xliffFilter,updateNode,355,0,xliffFilter,updateTransUnit,385,0,XMLBuilder2,Class_Globals,0,0,XMLUtils,UnescapeXml,31,0,XMLUtils,buildNode,103,0
+NavigationStack=xliffFilter,addTransUnit,201,0,xliffFilter,generateFile,285,0,xliffFilter,insertTranslation,344,0,xliffFilter,updateNode,355,0,XMLBuilder2,Class_Globals,0,0,XmlNode,replaceChildren,40,0,XmlNode,setinnerXML,85,0,xliffFilter,updateTransUnit,385,0,XMLUtils,buildNode,103,0,XMLUtils,UnescapeXml,36,0
 SelectedBuild=0
 VisibleModules=1,2,3,4,5,6,7,8,9,10,11,13,16,25,48,52,63,22,14,12

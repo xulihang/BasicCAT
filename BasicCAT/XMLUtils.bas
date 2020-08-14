@@ -40,7 +40,7 @@ Public Sub UnescapeXml(Raw As String) As String
 	Dim n As Int=Raw.Length
 	Do While i<n
 		For Each key As String In getEntitiesMap.Keys
-			If i+key.Length>n Then
+			If i+key.Length>=n Then
 				Continue
 			End If
 			If Raw.SubString2(i,i+key.Length)=key Then
