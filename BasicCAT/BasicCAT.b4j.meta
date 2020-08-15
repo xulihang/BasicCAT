@@ -226,6 +226,6 @@ ModuleClosedNodes74=
 ModuleClosedNodes75=
 ModuleClosedNodes8=
 ModuleClosedNodes9=
-NavigationStack=Main,ListViewParent_Resize,1063,0,RichTextArea,InputMethodTextChanged_Event,457,0,RichTextArea,Scroll_Filter,472,0,RichTextArea,TextChanged_Event,375,0,RichTextArea,AdjustBorder,275,0,RichTextArea,FocusChanged_Event,264,0,Visual Designer,main.bjl,-100,6,Main,MenuBar1_Action,343,2,Main,tmTableView_MouseClicked,1197,1,Main,fillWithTMOrMT,531,6
+NavigationStack=Project,sourceTextArea_MouseClicked,1273,0,Project,addTextAreaToSegmentPane,1116,0,Project,sourceTextArea_SelectedTextChanged,1129,0,Project,Class_Globals,12,5,Project,open,76,0,Project,sourceTextArea_KeyPressed,1334,1,Project,targetTextArea_KeyPressed,1350,6,RichTextArea,getSelection,289,0,txtFilter,splitSegment,239,0,Project,swithTextArea,1360,6
 SelectedBuild=0
 VisibleModules=1,2,3,4,5,6,7,8,9,10,21

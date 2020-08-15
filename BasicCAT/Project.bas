@@ -1338,6 +1338,8 @@ Sub sourceTextArea_KeyPressed (result As String)
 			Dim selectedText As String=sourceTextArea.Text.SubString2(sourceTextArea.SelectionStart,sourceTextArea.SelectionEnd)
 			showWordMeaning(selectedText,sourceTextArea)
 		End If
+	Else if result="TAB" Then
+		swithTextArea(sourceTextArea,1)
 	End If
 End Sub
 
@@ -1352,10 +1354,21 @@ Sub targetTextArea_KeyPressed (result As String)
 			changeSegment(1,targetTextArea)
 	Else if result="UP" And selectionEnd=previousTaSelectionEnd Then
 			changeSegment(-1,targetTextArea)
+	Else if result="TAB" Then
+		swithTextArea(targetTextArea,0)
 	Else
 		previousTaSelectionEnd=selectionEnd
 	End If
-	
+End Sub
+
+Sub swithTextArea(ta As RichTextArea,index As Int)
+	If ta.Text.SubString2(0,ta.SelectionEnd).EndsWith("	") Then
+		Return
+	End If
+	Dim pane As Pane
+	pane=ta.Parent
+	Dim targetTA As RichTextArea=pane.GetNode(index).Tag
+	targetTA.RequestFocus
 End Sub
 
 Sub changeSegment(offset As Int,targetTextArea As RichTextArea)
