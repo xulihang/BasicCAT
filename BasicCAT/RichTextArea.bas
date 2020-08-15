@@ -265,13 +265,17 @@ End Sub
 
 Sub FocusChanged_Event (MethodName As String,Args() As Object) As Object							'ignore
 	Dim hasFocus As Boolean=Args(2)
+	If SubExists(mCallBack,mEventName & "_FocusChanged") Then
+		CallSubDelayed2(mCallBack,mEventName & "_FocusChanged",hasFocus)
+	End If
+	CallSubDelayed2(Me,"AdjustBorder",hasFocus)
+End Sub
+
+Sub AdjustBorder(hasFocus As Boolean)
 	If hasFocus Then
 		SetBorderInHighlight(fx.Colors.RGB(135,206,235))
 	Else
 		SetDefaultBorder
-	End If
-	If SubExists(mCallBack,mEventName & "_FocusChanged") Then
-		CallSubDelayed2(mCallBack,mEventName & "_FocusChanged",hasFocus)
 	End If
 End Sub
 

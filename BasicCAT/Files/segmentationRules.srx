@@ -5,7 +5,7 @@
 <formathandle type="end" include="yes"></formathandle>
 <formathandle type="isolated" include="no"></formathandle>
 <okpsrx:options oneSegmentIncludesAll="no" trimLeadingWhitespaces="yes" trimTrailingWhitespaces="yes" useJavaRegex="yes" useIcu4JBreakRules="no" treatIsolatedCodesAsWhitespace="no"></okpsrx:options>
-<okpsrx:sample language="en" useMappedRules="yes">阿朱说：“小姐。”灵儿说：“那……”段誉仔细听着。感叹号！问号？省略号……分号；冒号：引号“”阿萨德</okpsrx:sample>
+<okpsrx:sample language="en" useMappedRules="yes"></okpsrx:sample>
 <okpsrx:rangeRule></okpsrx:rangeRule>
 </header>
 <body>
@@ -32,7 +32,7 @@
 <afterbreak>\s+</afterbreak>
 </rule>
 <rule break="yes">
-<beforebreak>\w+[\p{Pe}\p{Po}"]*[\.?!:]+[\p{Pe}\p{Po}"]*</beforebreak>
+<beforebreak>\w+[\p{Pe}\p{Po}"]*[\.?!:]+[\p{Pe}\p{Po}"”]*</beforebreak>
 <afterbreak>\s+\P{Ll}</afterbreak>
 </rule>
 <rule break="yes">
@@ -41,7 +41,7 @@
 </rule>
 <!--CJK break characters-->
 <rule break="yes">
-<beforebreak>[\u3002\ufe52\uff0e\uff61\u2049\ufe56\uff1f\u203c\u2048\u2762\u2763\ufe57\uff01”…]+</beforebreak>
+<beforebreak>[\u3002\ufe52\uff0e\uff61\u2049\ufe56\uff1f\u203c\u2048\u2762\u2763\ufe57\uff01…]+[”]*</beforebreak>
 <afterbreak></afterbreak>
 </rule>
 </languagerule>
