@@ -1,6 +1,6 @@
 _Generate target files
 Go to the next untranslated segment
-Fill with the first matched TM
+Fill with TM/MT
 Fill with the next tag
 Copy source text to target
 Search and Replace

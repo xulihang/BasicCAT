@@ -599,8 +599,16 @@ Sub MenuBar1_Action
 					Return
 				End If
 			Next
-		Case "Fill with the first matched TM"
-			fillWithTM
+		Case "Fill with the 1st one"
+			fillWithTMOrMT(0,True)
+		Case "Fill with the 2nd one"
+			fillWithTMOrMT(1,True)
+		Case "Fill with the 3rd one"
+			fillWithTMOrMT(2,True)
+		Case "Fill with the 4th one"
+			fillWithTMOrMT(3,True)
+		Case "Fill with the 5th one"
+			fillWithTMOrMT(4,True)
 		Case "Fill with the next tag"
 			fillWithTheNextTag
 		Case "Copy source text to target"
@@ -778,12 +786,16 @@ Sub setAutosave(enabled As Boolean)
 	projectAutoSaver.Enabled=enabled
 End Sub
 
-Sub fillWithTM
-	If tmTableView.Items.Size<>0 Then
-		Log(tmTableView.SelectedRow)
-		If tmTableView.SelectedRow=-1 Then
-			tmTableView.SelectedRow=0
+Sub fillWithTMOrMT(index As Int,fromShortcut As Boolean)
+	If tmTableView.Items.Size>0 Then
+		If fromShortcut Then
+			If tmTableView.Items.Size-1>=index Then
+				tmTableView.SelectedRow=index
+			Else
+				Return
+			End If
 		End If
+		
 		If tmTableView.SelectedRowValues<>Null And editorLV.Items.Size<>0 Then
 			Try
 				Dim pane As Pane
@@ -1455,7 +1467,7 @@ End Sub
 
 Sub tmTableView_MouseClicked (EventData As MouseEvent)
 	If EventData.ClickCount=2 Then
-		fillWithTM
+		fillWithTMOrMT(0,False)
 	End If
 End Sub
 
