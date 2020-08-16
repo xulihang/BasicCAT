@@ -19,6 +19,8 @@ Sub extract(sl As String,tl As String,filepath As String,outputDir As String) As
 	filename=File.GetName(filepath)
 	dir=File.GetFileParent(filepath)
 	extension=getExtension(filename)
+	Log("dir"&dir)
+	Log("filename"&filename)
 	Log("extension"&extension)
 	Dim fcConfMap As Map
 	fcConfMap=getfcConfMap
@@ -27,9 +29,9 @@ Sub extract(sl As String,tl As String,filepath As String,outputDir As String) As
 		settings=fcConfMap.Get(extension)
 		Dim configId As String
 		configId=settings.Get("configId")
-		args.AddAll(Array As String("-jar",tikalPath,"-x","-sl",sl,"-tl",tl,filepath,"-fc",configId,"-od",outputDir))
+		args.AddAll(Array As String("-cp",Quoted(tikalLibPath),"net.sf.okapi.applications.tikal.Main","-x","-sl",sl,"-tl",tl,Quoted(filepath),"-fc",configId,"-od",Quoted(outputDir)))
 	Else
-		args.AddAll(Array As String("-jar",tikalPath,"-x","-sl",sl,"-tl",tl,filepath,"-od",outputDir))
+		args.AddAll(Array As String("-cp",Quoted(tikalLibPath),"net.sf.okapi.applications.tikal.Main","-x","-sl",sl,"-tl",tl,Quoted(filepath),"-od",Quoted(outputDir)))
 	End If
 	sh.Initialize("sh","java",args)
 	sh.Run(-1)
@@ -40,6 +42,7 @@ Sub extract(sl As String,tl As String,filepath As String,outputDir As String) As
 		File.Copy(filepath,"",outputDir,filename)
 		Success=True
 	Else
+	    Log(StdOut)
 		Log("Error: " & StdErr)
 		Success=False
 	End If
@@ -66,13 +69,13 @@ Sub merge(filepath As String,sourceDir As String,outputDir As String) As Resumab
 		configId=settings.Get("configId")
 		If settings.ContainsKey("oe") Then
 			Dim outPutEncoding As String=settings.Get("oe")
-			args.AddAll(Array As String("-jar",tikalPath,"-m",filepath,"-fc",configId,"-sd",sourceDir,"-od",outputDir,"-oe",outPutEncoding))
+			args.AddAll(Array As String("-cp",tikalLibPath,"net.sf.okapi.applications.tikal.Main","-m",Quoted(filepath),"-fc",configId,"-sd",Quoted(sourceDir),"-od",Quoted(outputDir),"-oe",outPutEncoding))
 		Else	
-			args.AddAll(Array As String("-jar",tikalPath,"-m",filepath,"-fc",configId,"-sd",sourceDir,"-od",outputDir))
+			args.AddAll(Array As String("-cp",tikalLibPath,"net.sf.okapi.applications.tikal.Main","-m",Quoted(filepath),"-fc",configId,"-sd",Quoted(sourceDir),"-od",Quoted(outputDir)))
 		End If
 		
 	Else
-		args.AddAll(Array As String("-jar",tikalPath,"-m",filepath,"-sd",sourceDir,"-od",outputDir))
+		args.AddAll(Array As String("-cp",tikalLibPath,"net.sf.okapi.applications.tikal.Main","-m",Quoted(filepath),"-sd",Quoted(sourceDir),"-od",Quoted(outputDir)))
 	End If
 	Log(args)
 	sh.Initialize("sh","java",args)
@@ -89,7 +92,20 @@ Sub merge(filepath As String,sourceDir As String,outputDir As String) As Resumab
 	Return Success
 End Sub
 
-Sub tikalPath As String
+Sub Quoted(text As String) As String
+	Dim sb As StringBuilder
+	sb.Initialize
+	sb.Append($"""$)
+	sb.Append(text)
+	sb.Append($"""$)
+	Return sb.ToString
+End Sub
+
+Sub tikalLibPath As String
+	Return File.Combine(File.Combine(File.Combine(File.DirApp,"okapi"),"lib"),"*")
+End Sub
+
+Sub tikalPath As String 'ignore
 	Return File.Combine(File.Combine(File.Combine(File.DirApp,"okapi"),"lib"),"tikal.jar")
 End Sub
 
