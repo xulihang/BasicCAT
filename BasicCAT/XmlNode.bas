@@ -93,7 +93,7 @@ Public Sub setinnerXML(xml As String)
 	Try
 		node=parser.Parse(xml)
 	Catch
-		Log(LastException.Message)
+		'Log(LastException.Message)
 		Dim sb As StringBuilder
 		sb.Initialize
 		sb.Append("<").Append(Name).Append(">")

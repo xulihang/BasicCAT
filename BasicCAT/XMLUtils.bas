@@ -333,7 +333,7 @@ Sub pickSmallerXML(text As String,tag As String,trailTag As String) As String
 		If index>5 Then
 			Exit
 		End If
-		endIndex=matcher.GetEnd(0)+1
+		endIndex=matcher.GetEnd(0)
 	Loop
 	xml=text.SubString2(0,endIndex)
 	
@@ -343,5 +343,6 @@ Sub pickSmallerXML(text As String,tag As String,trailTag As String) As String
 		startIndex=matcher.GetStart(0)
 	Loop
 	xml=xml&text.SubString2(startIndex,text.Length)
+	'File.WriteString(File.DirApp,"out.xml",xml)
 	Return xml
 End Sub
