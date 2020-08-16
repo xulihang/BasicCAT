@@ -1338,13 +1338,12 @@ Sub ListViewParent_Resize
 	End If
 	Dim itemWidth As Double = lv.Width
 	Dim ExtraSize As Int
-	ExtraSize=10
+	ExtraSize=3
 	For i = Max(0, FirstVisibleIndex - ExtraSize) To Min(LastVisibleIndex + ExtraSize,editorLV.Items.Size - 1)
         Try
 			Dim p As Pane
 			p=lv.Items.Get(i)
         Catch
-	        Log(LastException)
 			Continue
 		End Try
 		Dim lineHeightTimes As Double
@@ -1358,7 +1357,7 @@ Sub ListViewParent_Resize
 		Dim sourceHeight,targetHeight As Double
 		sourceHeight=sourceTa.totalHeightEstimate+lineHeightTimes*sourceTa.LineHeight
 		targetHeight=targetTa.totalHeightEstimate+lineHeightTimes*targetTa.LineHeight
-		Dim h As Double=Max(sourceHeight,targetHeight)
+		Dim h As Double=Max(25,Max(sourceHeight,targetHeight))
 		sourceTa.BasePane.SetSize(itemWidth/2-20dip,h)
 		targetTa.BasePane.SetSize(itemWidth/2-20dip,h)
 		p.Left=0

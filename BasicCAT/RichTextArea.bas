@@ -351,7 +351,7 @@ Public Sub LineHeight As Double
 End Sub
 
 Public Sub totalHeightEstimate As Double
-	Dim height As Double=50
+	Dim height As Double=20
 	Try
 		height=Max(height,JO.RunMethod("getTotalHeightEstimate",Null))
 	Catch

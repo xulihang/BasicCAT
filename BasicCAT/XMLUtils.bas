@@ -343,6 +343,5 @@ Sub pickSmallerXML(text As String,tag As String,trailTag As String) As String
 		startIndex=matcher.GetStart(0)
 	Loop
 	xml=xml&text.SubString2(startIndex,text.Length)
-	File.WriteString(File.DirApp,"out.xml",xml)
 	Return xml
 End Sub
