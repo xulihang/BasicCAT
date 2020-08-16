@@ -7,118 +7,55 @@ Version=6.51
 'Static code module
 Sub Process_Globals
 	Private fx As JFX
-	Private parser As SaxParser
-	Private tuvs As List
-	Private tus As List
-	Private aSourceLang,aTargetLang As String
-	Private numbers As Int
 End Sub
 
-Sub parse(dir As String,filename As String)
-	tus.Initialize
-	tuvs.Initialize
+Sub getTransUnits(dir As String,filename As String) As List
+	Dim xml As String=File.ReadString(dir,filename)
+	Dim parser As XmlParser
 	parser.Initialize
-	Dim in As InputStream
-	in = File.OpenInput(dir, filename) 'This file was added with the file manager.
-	parser.Parse(in, "Parser") '"Parser" is the events subs prefix.
-	in.Close
-	Log("tus:"&tus)
+	Dim root As XmlNode=XMLUtils.Parse(xml)
+	Dim body As XmlNode=root.Get("body").Get(0)
+	Dim tus As List=body.Get("tu")
+	Return tus
 End Sub
 
-Sub Parser_StartElement (Uri As String, Name As String, Attributes As Attributes)
-    If Name="tuv" Or Name="tu" Then
-		Dim map1 As Map
-		map1.Initialize
-		Dim attr As Map
-		attr.Initialize
-		For i=0 To Attributes.Size-1
-			attr.Put(Attributes.GetName(i),Attributes.GetValue(i))
-		Next
-		map1.Put("Attributes",attr)
-		Select Name 
-			Case "tuv"
-				tuvs.Add(map1)
-			Case "tu"
-				tus.Add(map1)
-		End Select
-		
-	End If
-End Sub
-
-Sub Parser_EndElement (Uri As String, Name As String, Text As StringBuilder)
-	If Name="seg" Then
-		numbers=numbers+1
-		Dim map1 As Map = tuvs.Get(tuvs.Size-1)
-		Dim Attributes As Map =map1.Get("Attributes")
-		'Log(Attributes.GetValue2("","xml:lang"))
-		Dim lang As String
-		If Attributes.ContainsKey("xml:lang") Then
-			lang=Attributes.Get("xml:lang")
-		else if Attributes.ContainsKey("lang") Then
-			lang=Attributes.Get("lang")
-		End If
-		lang=lang.ToLowerCase
-		'Log("lang: "&lang)
-		If lang.StartsWith(aSourceLang) Or lang.StartsWith(aTargetLang) Then
-			map1.Put("Text",Text.ToString)
-		Else
-			tuvs.RemoveAt(tuvs.Size-1)
-		End If
-		'Log(map1)
-		'Log(numbers)
-	else if Name="note" Then
-		Dim map1 As Map = tus.Get(tus.Size-1)
-		map1.Put("note",Text.ToString)
-	Else if Name = "tu" Then
-		Dim newList As List
-		newList.Initialize
-		newList.AddAll(tuvs)
-		Dim map1 As Map = tus.Get(tus.Size-1)
-		map1.Put("tuv",newList)
-		tuvs.Clear
-	End If
-End Sub
-
-
-Sub importedListQuick(dir As String,filename As String,sourceLang As String,targetLang As String) As List
+Sub importedList(dir As String,filename As String,sourceLang As String,targetLang As String) As List
 	Dim segments As List
 	segments.Initialize
-	aSourceLang=sourceLang.ToLowerCase
-	aTargetLang=targetLang.ToLowerCase
-	
-	parse(dir,filename)
-	For Each tu As Map In tus
+	sourceLang=sourceLang.ToLowerCase
+	targetLang=targetLang.ToLowerCase
+	Dim tus As List=getTransUnits(dir,filename)
+	For Each tu As XmlNode In tus
 		Dim tuvList As List= tu.Get("tuv")
-		Dim bitext As List
-		bitext.Initialize
+		Dim segment As List
+		segment.Initialize
 		Dim targetMap As Map
 		targetMap.Initialize
-		bitext.Add("source")
-		bitext.Add("target")
+		segment.Add("source")
+		segment.Add("target")
 		Dim addedTimes As Int=0
-		For Each tuv As Map In tuvList
-			Dim Attributes As Map =tuv.Get("Attributes")
-			'Log(Attributes.GetValue2("","xml:lang"))
+		For Each tuv As XmlNode In tuvList
 			Dim lang As String
-			If Attributes.ContainsKey("xml:lang") Then
-				lang=Attributes.Get("xml:lang")
-			else if Attributes.ContainsKey("lang") Then
-				lang=Attributes.Get("lang")
+			Dim seg As XmlNode=tuv.Get("seg").Get(0)
+			If tuv.Attributes.ContainsKey("xml:lang") Then
+				lang=tuv.Attributes.Get("xml:lang")
+			else if tuv.Attributes.ContainsKey("lang") Then
+				lang=tuv.Attributes.Get("lang")
 			End If
 			lang=lang.ToLowerCase
 			If lang.StartsWith(sourceLang) Then
-				bitext.Set(0,tuv.Get("Text"))
+				segment.Set(0,seg.innerXML)
 				addedTimes=addedTimes+1
 			else if lang.StartsWith(targetLang) Then
-				bitext.Set(1,tuv.Get("Text"))
+				segment.Set(1,seg.innerXML)
 				addedTimes=addedTimes+1
-			Else 
+			Else
 				Continue
 			End If
-			If Attributes.ContainsKey("creationid") And Attributes.ContainsKey("creationdate") Then
+			If tuv.Attributes.ContainsKey("creationid") And tuv.Attributes.ContainsKey("creationdate") Then
 				Try
 					Dim creationdate As String
-					creationdate=Attributes.Get("creationdate")
+					creationdate=tuv.Attributes.Get("creationdate")
 					DateTime.DateFormat="yyyyMMdd"
 					DateTime.TimeFormat="HHmmss"
 					Dim date As String
@@ -126,7 +63,7 @@ Sub importedListQuick(dir As String,filename As String,sourceLang As String,targ
 					date=creationdate.SubString2(0,creationdate.IndexOf("T"))
 					time=creationdate.SubString2(creationdate.IndexOf("T")+1,creationdate.IndexOf("Z"))
 					targetMap.Put("createdTime",DateTime.DateTimeParse(date,time))
-					targetMap.Put("creator",Attributes.Get("creationid"))
+					targetMap.Put("creator",tuv.Attributes.Get("creationid"))
 				Catch
 					Log(LastException)
 				End Try
@@ -135,89 +72,13 @@ Sub importedListQuick(dir As String,filename As String,sourceLang As String,targ
 		If addedTimes<>2 Then
 			Continue
 		End If
-		If tu.ContainsKey("note") Then
-			targetMap.Put("note",tu.Get("note"))
+		If tu.Contains("note") Then
+			Dim node As XmlNode=tu.Get("note").Get(0)
+			targetMap.Put("note",node.innerXML)
 		End If
-		bitext.Add(filename)
-		bitext.Add(targetMap)
-		segments.Add(bitext)
-	Next
-
-	Return segments
-End Sub
-
-Sub importedList(dir As String,filename As String,sourceLang As String,targetLang As String) As List
-	Dim segments As List
-	segments.Initialize
-	Dim tmxString As String
-	tmxString=XMLUtils.escapedText(File.ReadString(dir,filename),"seg","tmx")
-	Dim tmxMap As Map
-	tmxMap=XMLUtils.getXmlMap(tmxString)
-	'Log(tmxMap)
-	Dim tmxroot As Map
-	tmxroot=tmxMap.Get("tmx")
-	Dim body As Map
-	body=tmxroot.Get("body")
-	Dim tuList As List
-	tuList=XMLUtils.GetElements(body,"tu")
-	For Each tu As Map In tuList
-		Dim bitext As List
-		bitext.Initialize
-		Dim tuvList As List
-		tuvList=XMLUtils.GetElements(tu,"tuv")
-		Dim targetMap As Map
-		targetMap.Initialize
-		bitext.Add("source")
-		bitext.Add("target")
-		For Each tuv As Map In tuvList
-			Dim attributes As Map
-			attributes=tuv.Get("Attributes")
-			Dim lang As String
-			If attributes.ContainsKey("lang") Then
-				lang=attributes.Get("lang")
-			else if attributes.ContainsKey("xml:lang") Then
-				lang=attributes.Get("xml:lang")
-			End If
-			lang=lang.ToLowerCase
-			If lang.StartsWith(sourceLang) Then
-				bitext.Set(0,tuv.Get("seg"))
-			else if lang.StartsWith(targetLang) Then
-				bitext.Set(1,tuv.Get("seg"))
-				targetMap.Put("text",tuv.Get("seg"))
-				If tuv.ContainsKey("Attributes") Then
-					Dim attributes As Map
-					attributes=tuv.Get("Attributes")
-					If attributes.ContainsKey("creationid") And attributes.ContainsKey("creationdate") Then
-						Try
-							Dim creationdate As String
-							creationdate=attributes.Get("creationdate")
-							DateTime.DateFormat="yyyyMMdd"
-							DateTime.TimeFormat="HHmmss"
-							Dim date As String
-							Dim time As String
-							date=creationdate.SubString2(0,creationdate.IndexOf("T"))
-							time=creationdate.SubString2(creationdate.IndexOf("T")+1,creationdate.IndexOf("Z"))
-							'Log("date: "&date)
-							'Log("time: "&time)
-							'Log(DateTime.DateTimeParse(date,time))
-							targetMap.Put("createdTime",DateTime.DateTimeParse(date,time))
-							targetMap.Put("creator",attributes.Get("creationid"))
-						Catch
-							Log(LastException)
-						End Try
-					End If
-				End If
-			End If
-		Next
-		If tu.ContainsKey("note") Then
-			targetMap.Put("note",tu.Get("note"))
-		End If
-        'Log(tu)
-		
-		
-		bitext.Add(filename)
-		bitext.Add(targetMap)
-		segments.Add(bitext)
+		segment.Add(filename)
+		segment.Add(targetMap)
+		segments.Add(segment)
 	Next
 	Return segments
 End Sub
