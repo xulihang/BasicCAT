@@ -39,18 +39,23 @@ Public Sub UnescapeXml(Raw As String) As String
 	Dim i As Int=0
 	Dim n As Int=Raw.Length
 	Do While i<n
+		Dim appended As Boolean=False
 		For Each key As String In getEntitiesMap.Keys
-			If i+key.Length>=n Then
+			If i+key.Length>n Then
 				Continue
 			End If
-			If Raw.SubString2(i,i+key.Length)=key Then
+			Dim str As String=Raw.SubString2(i,i+key.Length)
+			If str=key Then
 				sb.Append(getEntitiesMap.Get(key))
 				i=i+key.Length
+				appended=True
 				Exit
 			End If
 		Next
-		sb.Append(Raw.CharAt(i))
-		i=i+1
+		If appended=False Then
+			sb.Append(Raw.CharAt(i))
+			i=i+1
+		End If
 	Loop
 	Return sb.ToString
 End Sub
