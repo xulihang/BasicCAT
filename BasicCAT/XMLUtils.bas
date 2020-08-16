@@ -10,6 +10,55 @@ Sub Process_Globals
 	Private Entities As Map
 End Sub
 
+
+Public Sub HandleXMLEntities(xml As String,escape As Boolean) As String
+	Dim st As SimpleTag
+	st.Initialize
+	Dim tags As List=st.getTags(xml)
+	If tags.Size=0 Then
+		If escape Then
+			Return EscapeXml(xml)
+		Else
+			Return UnescapeXml(xml)
+		End If
+	End If
+	Dim parts As List
+	parts.Initialize
+	Dim previousEndIndex As Int=0
+	For i=0 To tags.Size-1
+		Dim tag As Tag=tags.Get(i)
+		Dim textBefore As String=xml.SubString2(previousEndIndex,tag.index)
+		If escape Then
+			textBefore=EscapeXml(textBefore)
+		Else
+			textBefore=UnescapeXml(textBefore)
+		End If
+		
+		If textBefore<>"" Then
+			parts.Add(textBefore)
+		End If
+		parts.Add(tag.html)
+		previousEndIndex=tag.index+tag.html.Length
+	Next
+	Dim textAfter As String
+	textAfter=xml.SubString2(previousEndIndex,xml.Length)
+	If textAfter<>"" Then
+		If escape Then
+			textAfter=EscapeXml(textAfter)
+		Else
+			textAfter=UnescapeXml(textAfter)
+		End If
+		parts.Add(textAfter)
+	End If
+	Dim sb As StringBuilder
+	sb.Initialize
+	For Each s As String In parts
+		sb.Append(s)
+	Next
+	Return sb.ToString
+End Sub
+
+
 Public Sub EscapeXml(Raw As String) As String
 	Dim sb As StringBuilder
 	sb.Initialize
@@ -294,5 +343,6 @@ Sub pickSmallerXML(text As String,tag As String,trailTag As String) As String
 		startIndex=matcher.GetStart(0)
 	Loop
 	xml=xml&text.SubString2(startIndex,text.Length)
+	File.WriteString(File.DirApp,"out.xml",xml)
 	Return xml
 End Sub

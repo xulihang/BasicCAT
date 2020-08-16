@@ -9,8 +9,7 @@ Sub Process_Globals
 	Private fx As JFX
 End Sub
 
-Sub getTransUnits(dir As String,filename As String) As List
-	Dim xml As String=File.ReadString(dir,filename)
+Sub getTransUnits(xml As String) As List
 	Dim parser As XmlParser
 	parser.Initialize
 	Dim root As XmlNode=XMLUtils.Parse(xml)
@@ -19,12 +18,17 @@ Sub getTransUnits(dir As String,filename As String) As List
 	Return tus
 End Sub
 
-Sub importedList(dir As String,filename As String,sourceLang As String,targetLang As String) As List
+Sub importedList(dir As String, filename As String, sourceLang As String,targetLang As String) As List
+	Dim xml As String=File.ReadString(dir,filename)
+	Return importedList2(xml,filename,sourceLang,targetLang)
+End Sub
+
+Sub importedList2(xml As String,filename As String,sourceLang As String,targetLang As String) As List
 	Dim segments As List
 	segments.Initialize
 	sourceLang=sourceLang.ToLowerCase
 	targetLang=targetLang.ToLowerCase
-	Dim tus As List=getTransUnits(dir,filename)
+	Dim tus As List=getTransUnits(xml)
 	For Each tu As XmlNode In tus
 		Dim tuvList As List= tu.Get("tuv")
 		Dim segment As List
@@ -44,10 +48,10 @@ Sub importedList(dir As String,filename As String,sourceLang As String,targetLan
 			End If
 			lang=lang.ToLowerCase
 			If lang.StartsWith(sourceLang) Then
-				segment.Set(0,seg.innerXML)
+				segment.Set(0,removeTMXTags(seg.innerText))
 				addedTimes=addedTimes+1
 			else if lang.StartsWith(targetLang) Then
-				segment.Set(1,seg.innerXML)
+				segment.Set(1,removeTMXTags(seg.innerText))
 				addedTimes=addedTimes+1
 			Else
 				Continue
@@ -74,7 +78,7 @@ Sub importedList(dir As String,filename As String,sourceLang As String,targetLan
 		End If
 		If tu.Contains("note") Then
 			Dim node As XmlNode=tu.Get("note").Get(0)
-			targetMap.Put("note",node.innerXML)
+			targetMap.Put("note",node.innerText)
 		End If
 		segment.Add(filename)
 		segment.Add(targetMap)
@@ -83,216 +87,143 @@ Sub importedList(dir As String,filename As String,sourceLang As String,targetLan
 	Return segments
 End Sub
 
-Sub export(segments As List,sourceLang As String,targetLang As String,path As String,includeTag As Boolean,isUniversal As Boolean)
-	Dim rootmap As Map
-	rootmap.Initialize
-	Dim tmxMap As Map
-	tmxMap.Initialize
-	tmxMap.Put("Attributes",CreateMap("version":"1.4"))
-	Dim headerAttributes As Map
-	headerAttributes.Initialize
-	headerAttributes.Put("creationtool","BasicCAT")
-	headerAttributes.Put("creationtoolversion","1.0.0")
-	headerAttributes.put("adminlang",sourceLang)
-	headerAttributes.put("srclang",sourceLang)
-	headerAttributes.put("segtype","sentence")
-	headerAttributes.put("o-tmf","BasicCAT")
-	tmxMap.Put("header",headerAttributes)
-	Dim body As Map
-	body.Initialize
+Sub removeTMXTags(text As String) As String
+	Dim tags As String
+	tags="(bpt|ept)"
+	text=Regex.Replace2($"</*${tags}.*?>"$,32,text,"")
+	Return text
+End Sub
+
+Sub CreateNode(name As String) As XmlNode
+	Dim node As XmlNode
+	node.Initialize
+	node.Name=name
+	node.Attributes.Initialize
+	node.Children.Initialize
+	Return node
+End Sub
+
+Sub export(segments As List,sourceLang As String,targetLang As String,path As String,includeTag As Boolean,isTMXTags As Boolean)
+	Dim tmxNode As XmlNode
+	tmxNode=CreateNode("tmx")
+	tmxNode.Attributes.Put("version","1.4")
+	Dim header As XmlNode
+	header=CreateNode("header")
+	header.Attributes.Put("creationtool","BasicCAT")
+	header.Attributes.Put("creationtoolversion","1.0.0")
+	header.Attributes.put("adminlang",sourceLang)
+	header.Attributes.put("srclang",sourceLang)
+	header.Attributes.put("segtype","sentence")
+	header.Attributes.put("o-tmf","BasicCAT")
+	Dim body As XmlNode
+	body=CreateNode("body")
 	Dim tuList As List
 	tuList.Initialize
-	For Each bitext As List In segments
-		Dim tuMap As Map
-		tuMap.Initialize
+	For Each segment As List In segments
+		Dim tu As XmlNode
+		tu=CreateNode("tu")
 		Dim tuvList As List
 		tuvList.Initialize
-
-		Dim index As Int=0
-		For Each seg As String In bitext
-			Dim targetMap As Map
-			targetMap=bitext.Get(2)
-			
+		Dim targetMap As Map
+		targetMap=segment.Get(2)
+		For i=0 To 1
+			Dim seg As String=segment.Get(i)
 			If includeTag=False Then
 				seg=Regex.Replace2("<.*?>",32,seg,"")
 			End If
-			index=index+1
-			If index = 2 Then
-				Dim targetTuvMap As Map
-				targetTuvMap=CreateMap("seg":seg)
-				Dim attributes As Map
-				attributes.Initialize
-				attributes.Put("xml:lang",targetLang)
+			If i = 1 Then
+				Dim targetTuv As XmlNode
+				targetTuv=CreateNode("tuv")
+				targetTuv.Attributes.Put("xml:lang",targetLang)
 				If targetMap.ContainsKey("creator") Then
-					attributes.Put("creationid",targetMap.Get("creator"))
+					targetTuv.attributes.Put("creationid",targetMap.Get("creator"))
 				End If
 				If targetMap.ContainsKey("createdTime") Then
 					Dim creationDate As String
 					DateTime.DateFormat="yyyyMMdd"
 					DateTime.TimeFormat="HHmmss"
 					creationDate=DateTime.Date(targetMap.Get("createdTime"))&"T"&DateTime.Time(targetMap.Get("createdTime"))&"Z"
-					attributes.Put("creationdate",creationDate)
+					targetTuv.attributes.Put("creationdate",creationDate)
 				End If
-		
-				If attributes.Size<>0 Then
-					targetTuvMap.Put("Attributes",attributes)
-				End If
-				tuvList.Add(targetTuvMap)
-			Else if index = 1 Then 
-				tuvList.Add(CreateMap("Attributes":CreateMap("xml:lang":sourceLang),"seg":seg))
+				Dim segNode As XmlNode
+				segNode=CreateNode("seg")
+				setNodeText(segNode,seg,isTMXTags)
+				targetTuv.Children.Add(segNode)
+				tuvList.Add(targetTuv)
+			Else if i = 0 Then
+				Dim sourceTuv As XmlNode
+				sourceTuv=CreateNode("tuv")
+				sourceTuv.Attributes.Put("xml:lang",sourceLang)
+				Dim segNode As XmlNode
+				segNode=CreateNode("seg")
+				setNodeText(segNode,seg,isTMXTags)
+				sourceTuv.Children.Add(segNode)
+				tuvList.Add(sourceTuv)
 			End If
 		Next
-		
-
-		
 		If targetMap.ContainsKey("note") Then
 			If targetMap.Get("note")<>"" Then
-				tuMap.Put("note",targetMap.Get("note"))
+				Dim note As XmlNode
+				note=CreateNode("note")
+				Dim textNode As XmlNode
+				textNode=CreateNode("text")
+				textNode.Text=targetMap.Get("note")
+				note.Children.Add(textNode)
+				tu.Children.InsertAt(0,note)
 			End If
 		End If
-		
-		
-		
-		tuMap.Put("tuv",tuvList)
-		tuList.Add(tuMap)
+		tu.Children.AddAll(tuvList)
+		tuList.Add(tu)
 	Next
-	body.Put("tu",tuList)
-	tmxMap.Put("body",body)
-	rootmap.Put("tmx",tmxMap)
-	Dim tmxstring As String
-	Try
-		tmxstring=XMLUtils.getXmlFromMap(rootmap)
-	Catch
-		fx.Msgbox(Main.MainForm,"export failed because of tag problem","")
-		Return
-		Log(LastException)
-	End Try
-
-	If includeTag=True And isUniversal=True Then
-		tmxstring=XMLUtils.unescapedText(tmxstring,"seg","tmx")
-		tmxstring=convertTags(tmxstring)
-		
-	End If
-	
-	File.WriteString(path,"",tmxstring)
+	body.Children=tuList
+	tmxNode.Children.Add(header)
+	tmxNode.Children.Add(body)
+	File.WriteString(path,"",XMLUtils.asString(tmxNode))
 End Sub
 
-Sub convertTags(xmlstring As String) As String
-	Dim inSegMatcher As Matcher
-	inSegMatcher=Regex.Matcher2("<seg>(.*?)</seg>",32,xmlstring)
-	Dim replacements As List
-	replacements.Initialize
-	Do While inSegMatcher.Find
-
-		Dim group As String 
-		group=convertOneSeg(inSegMatcher.Group(1))
-		If group<>inSegMatcher.Group(1) Then
-			Dim replacement As Map
-			replacement.Initialize
-			replacement.Put("start",inSegMatcher.GetStart(1))
-			replacement.Put("end",inSegMatcher.GetEnd(1))
-			replacement.Put("group",group)
-			replacements.InsertAt(0,replacement)
-		End If
-	Loop
-	
-	Dim new As String=xmlstring
-	For Each replacement As Map In replacements
-		Dim startIndex,endIndex As Int
-		Dim group As String
-		startIndex=replacement.Get("start")
-		endIndex=replacement.Get("end")
-		group=replacement.Get("group")
-		Dim sb As StringBuilder
-		sb.Initialize
-		sb.Append(new.SubString2(0,startIndex))
-		sb.Append(group)
-		sb.Append(new.SubString2(endIndex,new.Length))
-		new=sb.ToString
-	Next
-	
-	Return new
+Sub setNodeText(node As XmlNode,text As String,isTMXTags As Boolean)
+	If isTMXTags=True Then
+		Try
+			node.innerXML=convertToTMXTags(XMLUtils.HandleXMLEntities(text,True))
+			Return
+		Catch
+			Log(LastException)
+		End Try
+    End If
+	node.Children.Clear
+	Dim textNode As XmlNode
+	textNode.Initialize
+	textNode.Name="text"
+	textNode.Text=text
+	node.Children.Add(textNode)
 End Sub
 
-Sub convertOneSeg(seg As String) As String
-	Dim tagMatcher As Matcher
-	tagMatcher=Regex.Matcher2("<(bpt|ept|hi|it|ph|sub|ut).*?>",32,seg)
-	Dim replacements As List
-	replacements.Initialize
-	Do While tagMatcher.Find
-		Dim group As String
-		If tagMatcher.Match.Contains("/>")=False Then
-			group=convertToUniversalTag(tagMatcher.Group(0)&"</"&tagMatcher.Group(1)&">")
-			group=group.Replace("</"&tagMatcher.Group(1)&">","")
-			group=group.Replace("/>",">")
+Sub convertToTMXTags(xml As String) As String
+	Dim sb As StringBuilder
+	sb.Initialize
+	Dim matcher As Matcher
+	matcher=Regex.Matcher("</*(.*?)(\d+) *>",xml)
+	Dim previousEndIndex As Int=0
+	Do While matcher.Find
+		sb.Append(xml.SubString2(previousEndIndex,matcher.GetStart(0)))
+		previousEndIndex=matcher.GetEnd(0)
+		If matcher.Group(1).StartsWith("g") Then
+			Dim id As Int=matcher.Group(2)
+			If matcher.match.Contains("/") Then
+				sb.Append($"<ept i="${id}">"$)
+				sb.Append(XMLUtils.EscapeXml(matcher.match))
+				sb.Append("</ept>")
+			Else
+				sb.Append($"<bpt i="${id}">"$)
+				sb.Append(XMLUtils.EscapeXml(matcher.match))
+				sb.Append("</bpt>")
+			End If
 		Else
-			group=convertToUniversalTag(tagMatcher.Group(0))
+			sb.Append(matcher.Match)
 		End If
-		If group<>tagMatcher.Group(0) Then
-			Dim replacement As Map
-			replacement.Initialize
-			replacement.Put("start",tagMatcher.GetStart(0))
-			replacement.Put("end",tagMatcher.GetEnd(0))
-			replacement.Put("group",group)
-			replacements.InsertAt(0,replacement)
-		End If
-
 	Loop
-	
-	Dim new As String=seg
-	For Each replacement As Map In replacements
-		Dim startIndex,endIndex As Int
-		Dim group As String
-		startIndex=replacement.Get("start")
-		endIndex=replacement.Get("end")
-		group=replacement.Get("group")
-		Dim sb As StringBuilder
-		sb.Initialize
-		sb.Append(new.SubString2(0,startIndex))
-		sb.Append(group)
-		sb.Append(new.SubString2(endIndex,new.Length))
-		new=sb.ToString
-	Next
-	
-	Return new
-End Sub
-
-Sub convertToUniversalTag(xmlstring As String) As String
-	Log("xml"&xmlstring)
-	Try
-		Dim inlineTagMap As Map
-		inlineTagMap=XMLUtils.getXmlMap(xmlstring)
-		
-		Dim innerMap As Map
-		innerMap=inlineTagMap.GetValueAt(0)
-
-		Dim attributes As Map
-		attributes=innerMap.Get("Attributes")
-		If attributes.ContainsKey("id") And attributes.ContainsKey("x")=False Then
-			attributes.Put("x",attributes.Get("id"))
-		End If
-	
-		Dim keys As List
-		keys.Initialize
-		For Each key As String In attributes.keys
-			keys.add(key)
-		Next
-	
-		For Each key As String In keys
-			If key<>"x" And key<>"pos" And key<>"datatype" And key<>"i" And key<>"assoc" And key<>"type" Then
-				attributes.Remove(key)
-			End If
-		Next
-
-		Dim result As String=XMLUtils.getXmlFromMap(inlineTagMap)
-		result=Regex.Replace("<\?xml.*?>",result,"")
-		result=result.Trim
-
-	Catch
-		Log(LastException)
-		result=xmlstring
-		
-	End Try
-	Log(result&"result")
-	Return result
+	If previousEndIndex<>xml.Length-1 Then
+		sb.Append(xml.SubString2(previousEndIndex,xml.Length))
+	End If
+	Return sb.ToString
 End Sub

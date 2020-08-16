@@ -142,7 +142,7 @@ Sub getSegmentedSourceList(mrkList As List) As List
 	segmentedSourceList.Initialize
 	For Each mrk As XmlNode In mrkList
 		Dim text As String
-		text=mrk.innerXML
+		text=mrk.innerText
 		segmentedSourceList.Add(text)
 	Next
 	Return segmentedSourceList
@@ -178,7 +178,7 @@ Sub addTransUnit(transUnit As XmlNode,tidyTransUnits As List,groupIndex As Int)
 	Dim source As XmlNode
 	source=transUnit.Get("source").Get(0)
 	Dim text As String
-	text=source.innerXML
+	text=source.innerText
 	
 	Dim mrkList As List
 	If transUnit.Contains("seg-source") Then
@@ -199,7 +199,7 @@ Sub addTransUnit(transUnit As XmlNode,tidyTransUnits As List,groupIndex As Int)
 		Dim target As String
 		Dim targetNode As XmlNode
 		targetNode=transUnit.Get("target").get(0)
-		target=targetNode.innerXML
+		target=targetNode.innerText
 		If text<>target And target<>"null" Then
 			oneTransUnit.Add(target)
 		End If
@@ -394,7 +394,7 @@ Sub updateTransUnit(transUnit As XmlNode,originalFilename As String,translationM
 				Next
 				targetNode.replaceChildren("mrk",mrkList)
 			Else
-				targetNode.innerXML=dataMap.Get("translation")
+				targetNode.innerText=dataMap.Get("translation")
 			End If
 		End If
 	End If
@@ -405,7 +405,7 @@ Sub buildMrk(mid As Int,text As String) As XmlNode
 	mrk.Initialize
 	mrk.Name="mrk"
 	mrk.Children.Initialize
-	mrk.innerXML=text
+	mrk.innerText=text
 	Dim att As Map
 	att.Initialize
 	att.Put("mid",mid)

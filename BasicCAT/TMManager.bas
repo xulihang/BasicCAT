@@ -206,12 +206,12 @@ Sub exportToFile
 				TMX.export(segments,Main.currentProject.projectFile.Get("source"),Main.currentProject.projectFile.Get("target"),path,False,False)
 			Case fx.DialogResponse.POSITIVE
 				Dim result2 As Int
-				result2=fx.Msgbox2(frm,"Convert tags to universal tags?","","Yes","Cancel","No",fx.MSGBOX_CONFIRMATION)
+				result2=fx.Msgbox2(frm,"How to handle tags?","","Keep the original format","Cancel","Conform to TMX Specification",fx.MSGBOX_CONFIRMATION)
 				Select result2
 					Case fx.DialogResponse.NEGATIVE
-						TMX.export(segments,Main.currentProject.projectFile.Get("source"),Main.currentProject.projectFile.Get("target"),path,True,False)
-					Case fx.DialogResponse.POSITIVE
 						TMX.export(segments,Main.currentProject.projectFile.Get("source"),Main.currentProject.projectFile.Get("target"),path,True,True)
+					Case fx.DialogResponse.POSITIVE
+						TMX.export(segments,Main.currentProject.projectFile.Get("source"),Main.currentProject.projectFile.Get("target"),path,True,False)
 					Case fx.DialogResponse.CANCEL
 						Return
 				End Select

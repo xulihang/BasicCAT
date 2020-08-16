@@ -5,7 +5,7 @@ Type=Class
 Version=7.8
 @EndOfDesignText@
 Sub Class_Globals
-    Private index As Int
+	Private index As Int
 	Private xml As String
 	Type Tag(html As String,name As String,ID As Int,kind As Int,index As Int)
 	Private TagsCount As Map
@@ -148,10 +148,15 @@ End Sub
 Sub TagEnd(result As Map) As Tag
 	Dim tag As Tag=CreateTag(result)
 	If result.Get("kind")=TagKind.EndTag Then
-		Dim StartTag As Tag
-		StartTag=StartTags.Get(StartTags.Size-1)
-		StartTags.RemoveAt(StartTags.Size-1)
-		tag.ID=StartTag.ID
+		Try
+			Dim StartTag As Tag
+			StartTag=StartTags.Get(StartTags.Size-1)
+			StartTags.RemoveAt(StartTags.Size-1)
+			tag.ID=StartTag.ID
+		Catch
+			Log(LastException)
+			tag.ID=-1
+		End Try
 	Else
 		IncreaseCount(tag)
 	End If
@@ -164,9 +169,9 @@ Sub getTagNameAndKind(tagHtml As String) As Map
 	result.Initialize
 	Dim kind As Int
 	Dim name As String
-    If tagHtml.Contains(">")=False Then
+	If tagHtml.Contains(">")=False Then
 		Return result
-    End If
+	End If
 	If tagHtml.Contains("/") Then 'end tag <x1/></g>
 		If tagHtml.LastIndexOf("/")+1=tagHtml.LastIndexOf(">") Then
 			kind=TagKind.SelfClosingTag

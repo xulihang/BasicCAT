@@ -99,44 +99,11 @@ Sub importTMX(path As String,sourceLang As String,targetLang As String)
 		Dim tmxString As String
 		tmxString=File.ReadString(path,"")
 		tmxString=XMLUtils.pickSmallerXML(tmxString,"tu","body")
-
-		tmxString=XMLUtils.escapedText(tmxString,"seg","tmx")
-
-		Dim tmxMap As Map
-		tmxMap=XMLUtils.getXmlMap(tmxString)
-
-		Dim tmxroot As Map
-		tmxroot=tmxMap.Get("tmx")
-		Dim body As Map
-		body=tmxroot.Get("body")
-		Dim tuList As List
-		tuList=XMLUtils.GetElements(body,"tu")
+		Dim segments As List=TMX.importedList2(tmxString,File.GetName(path),sourceLang,targetLang)
 		Dim i As Int
-		For Each tu As Map In tuList
-			Dim tuvList As List
-			tuvList=XMLUtils.GetElements(tu,"tuv")
-			Dim source As String
-			Dim target As String
-
-			For Each tuv As Map In tuvList
-				Dim attributes As Map
-				attributes=tuv.Get("Attributes")
-
-				Dim lang As String
-				If attributes.ContainsKey("lang") Then
-					lang=attributes.Get("lang")
-				else if attributes.ContainsKey("xml:lang") Then
-					lang=attributes.Get("xml:lang")
-				End If
-				lang=lang.ToLowerCase
-				If lang.StartsWith(sourceLang) Then
-					source=tuv.Get("seg")
-				else if lang.StartsWith(targetLang) Then
-					target=tuv.Get("seg")
-				End If
-			Next
+		For Each segment As List In segments
 			i=i+1
-			ListView1.Items.Add(buildTMItemText(source,target))
+			ListView1.Items.Add(buildTMItemText(segment.Get(0),segment.Get(1)))
 			If i=5 Then
 				ListView1.Items.Add("......")
 				Exit
