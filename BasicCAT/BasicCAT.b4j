@@ -431,6 +431,11 @@ Sub init
 	Drag.Initialize(projectTreeTableView, "Drag")
 	loadPlugins
 	setupStyleSheets
+	If Utils.DetectOS="mac" Then
+		MainForm.RootPane.SetAnchors(mainSplitPane,0,0,0,20)
+		Dim menuBarJO As JavaObject=MenuBar1
+		menuBarJO.RunMethod("setUseSystemMenuBar",Array(True))
+	End If
 	'CSSUtils.SetStyleProperty(lowerRightSplitPane,"-fx-base","rgba(60, 63, 65, 255)")
 End Sub
 

@@ -10,10 +10,23 @@ Sub Process_Globals
 	Private menus As Map
 End Sub
 
+'windows, mac or linux
+Sub DetectOS As String
+	Dim os As String = GetSystemProperty("os.name", "").ToLowerCase
+	If os.Contains("win") Then
+		Return "windows"
+	Else If os.Contains("mac") Then
+		Return "mac"
+	Else
+		Return "linux"
+	End If
+End Sub
+
 Sub escapeSQL(text As String) As String
 	For Each str As String In Array As String("'",$"""$,":",";","(",")","[","]","|","\","@")
 		text=text.Replace(str,"'"&str)
 	Next
+	Return text
 End Sub
 
 Sub removeDuplicated(source As List)
