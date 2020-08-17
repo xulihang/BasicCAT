@@ -187,36 +187,36 @@ Library8=jrandomaccessfile
 Library9=jb4xencryption
 Module1=FileChooserUtils
 Module10=preTranslateDialog
-Module11=RichTextArea
-Module12=XMLUtils
-Module13=XmlNode
-Module14=TMX
-Module15=idmlFilter
-Module16=Xml2Map
-Module17=XmlParser
-Module18=xliffFilter
-Module19=SimpleTag
+Module11=Utils
+Module12=TMDB
+Module13=RichTextArea
+Module14=XMLUtils
+Module15=XmlNode
+Module16=TMX
+Module17=idmlFilter
+Module18=Xml2Map
+Module19=XmlParser
 Module2=Project
-Module20=importDialog
-Module21=TMManager
-Module22=Utils
-Module23=tikal
-Module24=editDistance
-Module25=pdfbox
-Module26=Preferences
-Module27=XMLBuilder2
-Module28=idmlUtils
-Module29=filterGenericUtils
+Module20=xliffFilter
+Module21=SimpleTag
+Module22=importDialog
+Module23=TMManager
+Module24=tikal
+Module25=editDistance
+Module26=pdfbox
+Module27=Preferences
+Module28=XMLBuilder2
+Module29=idmlUtils
 Module3=segmentation
-Module30=SourceTextEditor
-Module31=Previewer
-Module32=git
-Module33=MT
-Module34=TagKind
-Module35=PathSaver
-Module36=SearchView
-Module37=InputTextAreaBox
-Module38=TMDB
+Module30=filterGenericUtils
+Module31=SourceTextEditor
+Module32=Previewer
+Module33=git
+Module34=MT
+Module35=TagKind
+Module36=PathSaver
+Module37=SearchView
+Module38=InputTextAreaBox
 Module39=LanguageUtils
 Module4=CustomListView
 Module40=TermManager
@@ -431,12 +431,16 @@ Sub init
 	Drag.Initialize(projectTreeTableView, "Drag")
 	loadPlugins
 	setupStyleSheets
+	'useMacMenuBar
+	'CSSUtils.SetStyleProperty(lowerRightSplitPane,"-fx-base","rgba(60, 63, 65, 255)")
+End Sub
+
+Sub useMacMenuBar
 	If Utils.DetectOS="mac" Then
 		MainForm.RootPane.SetAnchors(mainSplitPane,0,0,0,20)
 		Dim menuBarJO As JavaObject=MenuBar1
 		menuBarJO.RunMethod("setUseSystemMenuBar",Array(True))
 	End If
-	'CSSUtils.SetStyleProperty(lowerRightSplitPane,"-fx-base","rgba(60, 63, 65, 255)")
 End Sub
 
 Sub setupStyleSheets
