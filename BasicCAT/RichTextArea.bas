@@ -80,6 +80,13 @@ Public Sub DesignerCreateView(Base As Pane, Lbl As Label, Props As Map)
 	Dim Event As Object = JO.CreateEvent("javafx.beans.value.ChangeListener","FocusChanged","")
 	JO.RunMethodJO("focusedProperty",Null).RunMethod("addListener",Array(Event))
 	
+	Dim Event As Object = JO.CreateEvent("javafx.beans.value.ChangeListener","RedoAvailable","")
+	JO.RunMethodJO("redoAvailableProperty",Null).RunMethod("addListener",Array(Event))
+	
+	Dim Event As Object = JO.CreateEvent("javafx.beans.value.ChangeListener","UndoAvailable","")
+	JO.RunMethodJO("undoAvailableProperty",Null).RunMethod("addListener",Array(Event))
+	
+	
 	Dim r As Reflector
 	r.Target = JO
 	r.AddEventFilter("Scroll", "javafx.scene.input.ScrollEvent.SCROLL")
