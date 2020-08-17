@@ -62,6 +62,7 @@ Public Sub DesignerCreateView(Base As Pane, Lbl As Label, Props As Map)
 	'Initialize our wrapper object
 	JO.InitializeNewInstance("org.fxmisc.richtext.CodeArea",Null)
 	setupIM
+	addContextMenu
 	'Cast the wrapped view to a node so we can use B4x Node methods on it.
 	CustomViewNode = GetObject
 	'Add the stylesheet to colour matching words to the code area node
@@ -393,6 +394,7 @@ Sub SelectedTextChanged_Event(MethodName As String,Args() As Object) As Object		
 	If SubExists(mCallBack,mEventName & "_SelectedTextChanged") Then
 		CallSubDelayed3(mCallBack,mEventName & "_SelectedTextChanged",Args(1),Args(2))
 	End If
+	updateContextMenuBasedOnSelection(Args(2))
 End Sub
 
 'Setup for pattern matching
@@ -490,4 +492,80 @@ Sub KeyPressed_Filter (EventData As Event)
 		End If
 		EventData.Consume
 	End If
+End Sub
+
+Sub UndoAvailable_Event(MethodName As String,Args() As Object) As Object							'ignore
+	updateContextMenuInTermsofUndoRedo
+End Sub
+
+Sub RedoAvailable_Event(MethodName As String,Args() As Object) As Object							'ignore
+	updateContextMenuInTermsofUndoRedo
+End Sub
+
+Sub addContextMenu
+	Dim cm As ContextMenu
+	cm.Initialize("cm")
+	Dim style As String=$"-fx-font-size:16px;-fx-font-family:"serif";"$
+	For Each text As String In Array("Cut","Copy","Paste","Undo","Redo","Select all")
+		Dim mi As MenuItem
+		mi.Initialize(text,"mi")
+		Dim miJO As JavaObject=mi
+		miJO.RunMethod("setStyle",Array(style))
+		cm.MenuItems.Add(mi)
+	Next
+	JO.RunMethod("setContextMenu",Array(cm))
+	updateContextMenuBasedOnSelection("")
+	updateContextMenuInTermsofUndoRedo
+End Sub
+
+Sub updateContextMenuBasedOnSelection(new As String)
+	Dim cm As ContextMenu=JO.RunMethod("getContextMenu",Null)
+	For Each mi As MenuItem In cm.MenuItems
+		If mi.Text="Copy" Or mi.Text="Cut" Then
+			If new="" Then
+				mi.Enabled=False
+			Else
+				mi.Enabled=True
+			End If
+		End If
+	Next
+End Sub
+
+Sub updateContextMenuInTermsofUndoRedo
+	Dim cm As ContextMenu=JO.RunMethod("getContextMenu",Null)
+	For Each mi As MenuItem In cm.MenuItems
+		Select mi.Text
+			Case "Undo"
+				If JO.RunMethod("isUndoAvailable",Null) Then
+					mi.Enabled=True
+				Else
+					mi.Enabled=False
+				End If
+			Case "Redo"
+				If JO.RunMethod("isRedoAvailable",Null) Then
+					mi.Enabled=True
+				Else
+					mi.Enabled=False
+				End If
+		End Select
+	Next
+End Sub
+
+
+Sub mi_Action
+	Dim mi As MenuItem=Sender
+	Select mi.Text
+		Case "Copy"
+			JO.RunMethod("copy",Null)
+		Case "Cut"
+			JO.RunMethod("cut",Null)
+		Case "Paste"
+			JO.RunMethod("paste",Null)
+		Case "Select all"
+			setSelection(0,getText.Length)
+		Case "Undo"
+			JO.RunMethod("undo",Null)
+		Case "Redo"
+			JO.RunMethod("redo",Null)
+	End Select
 End Sub
