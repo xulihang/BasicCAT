@@ -1344,7 +1344,7 @@ Sub sourceTextArea_KeyPressed (result As String)
 End Sub
 
 Sub targetTextArea_KeyPressed (result As String)
-	Log(result)
+	'Log(result)
 	Dim targetTextArea As RichTextArea
 	targetTextArea=Sender
 	Dim selectionEnd As Int=targetTextArea.SelectionEnd
