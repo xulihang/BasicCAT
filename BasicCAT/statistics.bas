@@ -69,7 +69,7 @@ Sub fillData(filename As String) As String
 	Return one
 End Sub
 
-Sub fillTotalData As String
+Sub fillTotalData() As String
 	Dim percent As String
 	percent=totalTargetSentences/totalSourceSentences*100
 	percent=percent.SubString2(0,Min(4,percent.Length))&"%"
@@ -88,7 +88,8 @@ Sub fillTotalData As String
 End Sub
 
 Sub buildTable
-	Dim result As String
+	Dim result As StringBuilder
+	result.Initialize
 	Dim htmlhead As String
 	htmlhead=$"<!DOCTYPE HTML>
 	<html>
@@ -112,16 +113,16 @@ Sub buildTable
 	<th>Source</th><th>Target</th>
 
 	</tr>"$
-	result=result&htmlhead
+	result.Append(htmlhead)
 	Dim htmlend As String
 	htmlend="</table></body></html>"
 
 	For Each filename As String In Main.currentProject.files
-		result=result&fillData(filename)
+		result.Append(fillData(filename))
 	Next
-	result=result&fillTotalData
-	result=result&htmlend
-	WebView1.LoadHtml(result)
+	result.Append(fillTotalData)
+	result.Append(htmlend)
+	WebView1.LoadHtml(result.ToString)
 End Sub
 
 Sub calculateWords(text As String,lang As String) As Int
@@ -137,12 +138,13 @@ End Sub
 
 Sub calculateWordsForLanguageWithSpace(text As String) As Int
 	text=TagRemoved(text)
+	text=Regex.Replace(" +",text," ")
 	Return Regex.Split(" ",text).Length
 End Sub
 
 Sub calculateHanzi(text As String) As Int
 	text=TagRemoved(text)
-	text=Regex.Replace("[\x00-\x19\x21-\xff]+",text,"字")
+	text=Regex.Replace("[\x00-\x19\x21-\xff]+",text,"字") 'Replace English words to Hanzi
 	text=text.Replace(" ","")
 	Return text.Length
 End Sub
