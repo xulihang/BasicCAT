@@ -148,7 +148,7 @@ Sub calculateHanzi(text As String) As Int
 End Sub
 
 Sub TagRemoved(text As String) As String
-	text=Regex.Replace2("<.*?>",32,text," T ")
+	text=Regex.Replace2("<.*?>",32,text,"")
 	Return text
 End Sub
 
