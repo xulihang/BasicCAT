@@ -440,6 +440,9 @@ End Sub
 
 
 Sub addNecessaryTags(target As String,source As String) As String
+	Dim sb As StringBuilder
+	sb.Initialize
+	sb.Append(target)
 	Dim tagMatcher As Matcher
 	tagMatcher=Regex.Matcher2("<.*?>",32,source)
 	Dim tagsList As List
@@ -455,9 +458,9 @@ Sub addNecessaryTags(target As String,source As String) As String
 		End If
 	Loop
 	For Each tag As String In tagsList
-		target=target&tag
+		sb.Append(tag)
 	Next
-	Return target
+	Return sb.ToString
 End Sub
 
 
