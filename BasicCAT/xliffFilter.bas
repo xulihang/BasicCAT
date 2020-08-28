@@ -38,28 +38,31 @@ Sub createWorkFile(filename As String,path As String,sourceLang As String,senten
 		attributes=fileNode.Attributes
 		Dim innerfileName As String
 		innerfileName=attributes.get("original")
-		For Each tu As List In getTransUnits(body)
+		For Each tu As Map In getTransUnits(body)
 			Dim inbetweenContent As String=""
 			Dim text As String
-			text=tu.Get(0)
-			text=st.Convert(text,False,"")
+			text=tu.Get("source")
+			
 			Dim id As String
-			id=tu.Get(1)
-			Dim index As Int=-1
+			id=tu.Get("id")
+			
 			Dim segmentedText As List
 			Dim mrkList As List
-			mrkList=tu.Get(2)
-
+			mrkList=tu.Get("mrkList")
+			Dim targetMrkList As List
+			targetMrkList=tu.Get("targetMrkList")
 
 			If mrkList.Size<>0 Then
 				isSegEnabled=True
-				segmentedText=getSegmentedSourceList(mrkList)
+				segmentedText=getSegmentedSourceList(mrkList,st)
 			Else
 				isSegEnabled=False
+				text=st.Convert(text,False,"")
 				wait for (segmentation.segmentedTxt(text,sentenceLevel,sourceLang,path)) Complete (resultList As List)
 				segmentedText=resultList
 			End If
-
+			
+			Dim index As Int=-1
 			For Each source As String In segmentedText
 				'Log("source"&source)
 				index=index+1
@@ -74,14 +77,23 @@ Sub createWorkFile(filename As String,path As String,sourceLang As String,senten
 				Else
 					Dim sourceShown As String=source
 					sourceShown=removeTags(sourceShown)
-
 					bitext.add(sourceShown.Trim)
+					
 					Dim target As String=""
-					If segmentedText.Size=1 And isSegEnabled=False Then
-						If tu.Size=5 Then
-							target=tu.Get(4)
+					If isSegEnabled=False Then
+						If segmentedText.Size=1 Then
+							If tu.ContainsKey("target") Then
+								target=tu.Get("target")
+							End If
 						End If
+					Else
+						Dim mrk As XmlNode=targetMrkList.Get(index)
+						target=mrk.innerText
 					End If
+					If target<>"" Then
+						target=st.Convert(target,False,"")
+					End If
+					
 					bitext.Add(target)
 					bitext.Add(inbetweenContent&source) 'inbetweenContent contains crlf and spaces between sentences
 					bitext.Add(innerfileName)
@@ -137,12 +149,13 @@ Sub removeTags(sourceShown As String) As String
 	Return sourceShown
 End Sub
 
-Sub getSegmentedSourceList(mrkList As List) As List
+Sub getSegmentedSourceList(mrkList As List,st As SimpleTag) As List
 	Dim segmentedSourceList As List
 	segmentedSourceList.Initialize
 	For Each mrk As XmlNode In mrkList
 		Dim text As String
 		text=mrk.innerText
+		text=st.Convert(text,False,"")
 		segmentedSourceList.Add(text)
 	Next
 	Return segmentedSourceList
@@ -181,6 +194,7 @@ Sub addTransUnit(transUnit As XmlNode,tidyTransUnits As List,groupIndex As Int)
 	text=source.innerText
 	
 	Dim mrkList As List
+	Dim targetMrkList As List
 	If transUnit.Contains("seg-source") Then
 		Dim segSource As XmlNode
 		segSource=transUnit.Get("seg-source").Get(0)
@@ -189,21 +203,31 @@ Sub addTransUnit(transUnit As XmlNode,tidyTransUnits As List,groupIndex As Int)
 		mrkList.Initialize
 	End If
 	
-	Dim oneTransUnit As List
+	Dim oneTransUnit As Map
 	oneTransUnit.Initialize
-	oneTransUnit.Add(text)
-	oneTransUnit.Add(id)
-	oneTransUnit.Add(mrkList)
-	oneTransUnit.Add(groupIndex)
+	oneTransUnit.put("source",text)
+	oneTransUnit.Put("id",id)
+	oneTransUnit.Put("mrkList",mrkList)
+	oneTransUnit.Put("groupIndex",groupIndex)
+	
 	If transUnit.Contains("target") Then
 		Dim target As String
 		Dim targetNode As XmlNode
 		targetNode=transUnit.Get("target").get(0)
 		target=targetNode.innerText
 		If text<>target And target<>"null" Then
-			oneTransUnit.Add(target)
+			oneTransUnit.Put("target",target)
+		End If
+		If targetNode.Contains("mrk") Then
+			targetMrkList=targetNode.Get("mrk")
 		End If
 	End If
+	
+	If targetMrkList.IsInitialized=False Then
+		targetMrkList.Initialize
+	End If
+	
+	oneTransUnit.Put("targetMrkList",targetMrkList)
 	tidyTransUnits.Add(oneTransUnit)
 End Sub
 
@@ -306,11 +330,11 @@ Sub revertTags(translationMap As Map,path As String, filename As String)
 		attributes=fileNode.Attributes
 		Dim innerfileName As String
 		innerfileName=attributes.Get("original")
-		For Each tu As List In getTransUnits(body)
+		For Each tu As Map In getTransUnits(body)
 			Dim text As String
-			text=tu.Get(0)
+			text=tu.Get("source")
 			Dim id As String
-			id=tu.Get(1)
+			id=tu.Get("id")
 			Dim segmentKey As String=id&innerfileName
 			If translationMap.ContainsKey(segmentKey) Then
 				Dim dataMap As Map
