@@ -258,7 +258,7 @@ Sub exportToMarkdownWithNotes(segments As List,path As String,filename As String
 		translation=fullsource.Replace(source,target)
 		If LanguageHasSpace(targetLang)=False Then
 			If source<>target Then
-				translation=segmentation.removeSpacesAtBothSides(projectPath,targetLang,translation,settings.GetDefault("remove_space",True))
+				translation=segmentation.removeSpacesAtBothSides(projectPath,targetLang,translation,settings.GetDefault("remove_space",False))
 			End If
 		End If
 		text.Append(translation)
@@ -315,7 +315,7 @@ Sub exportToBiParagraph(segments As List,path As String,filename As String,sourc
 		translation=fullsource.Replace(source,target)
 		If LanguageHasSpace(targetLang)=False Then
 			If source<>target Then
-				translation=segmentation.removeSpacesAtBothSides(projectPath,targetLang,translation,settings.GetDefault("remove_space",True))
+				translation=segmentation.removeSpacesAtBothSides(projectPath,targetLang,translation,settings.GetDefault("remove_space",False))
 			End If
 		End If
 		sourceText.Append(fullsource)

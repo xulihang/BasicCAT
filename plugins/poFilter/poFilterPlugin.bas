@@ -294,7 +294,7 @@ Sub generateFile(filename As String,path As String,projectFile As Map,BCATMain A
 				'translation=fullsource.Replace(source,target)
 				translation=filterGenericUtils.relaceAtTheRightPosition(source,target,fullsource)
 				If Utils.LanguageHasSpace(projectFile.Get("target"))=False Then
-					translation=segmentation.removeSpacesAtBothSides(path,projectFile.Get("target"),translation,Utils.getMap("settings",projectFile).GetDefault("remove_space",True))
+					translation=segmentation.removeSpacesAtBothSides(path,projectFile.Get("target"),translation,Utils.getMap("settings",projectFile).GetDefault("remove_space",False))
 				End If
 			End If
 			'Log("translation"&translation)
@@ -524,7 +524,7 @@ Sub previewText(editorLV As ListView,segments As List,lastEntry As Int,projectFi
 			End If
 			translation=fullsource.Replace(source,target)
 			If Utils.LanguageHasSpace(targetLang)=False Then
-				translation=segmentation.removeSpacesAtBothSides(path,targetLang,translation,settings.GetDefault("remove_space",True))
+				translation=segmentation.removeSpacesAtBothSides(path,targetLang,translation,settings.GetDefault("remove_space",False))
 			End If
 		End If
 		If i=lastEntry Then
