@@ -107,7 +107,22 @@ Public Sub setinnerText(s As String)
 			Return
 		End If
 	End If
-	setinnerXML(XMLUtils.HandleXMLEntities(s,True))
+	Try
+		setinnerXML(XMLUtils.HandleXMLEntities(s,True))
+	Catch
+		Log(LastException)
+		Children.Clear
+		Children.Add(CreateTextNode(s))
+	End Try
+End Sub
+
+Sub CreateTextNode (s As String) As XmlNode
+	Dim xe As XmlNode
+	xe.Initialize
+	xe.Children.Initialize
+	xe.Name = "text"
+	xe.Text=s
+	Return xe
 End Sub
 
 Public Sub getinnerText As String

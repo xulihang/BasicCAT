@@ -110,18 +110,28 @@ Public Sub getTags(pXml As String) As List
 	For index=0 To xml.Length-1
 		If CurrentChar="<" Then
 			Dim result As Map=getTagNameAndKind(TextUntil(">"))
-			If result.ContainsKey("kind") Then
-				Dim kind As Int=result.Get("kind")
-				If kind=TagKind.StartTag Then
-					tagsList.Add(TagStart(result))
-				Else
-					tagsList.Add(TagEnd(result))
+			If result.ContainsKey("name") Then
+				If isXLIFFTag(result.Get("name")) Then
+					Dim kind As Int=result.Get("kind")
+					If kind=TagKind.StartTag Then
+						tagsList.Add(TagStart(result))
+					Else
+						tagsList.Add(TagEnd(result))
+					End If
 				End If
 			End If
-
 		End If
 	Next
 	Return tagsList
+End Sub
+
+Sub isXLIFFTag(tagName As String) As Boolean
+	For Each name As String In Regex.Split(",","bpt,ept,it,ph,g,bx,ex,x,sub,mrk")
+		If Regex.Replace("\d",tagName,"")=name Then
+			Return True
+		End If
+	Next
+	Return False
 End Sub
 
 Sub CreateTag(result As Map) As Tag
