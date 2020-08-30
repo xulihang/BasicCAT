@@ -110,12 +110,15 @@ Public Sub getTags(pXml As String) As List
 	For index=0 To xml.Length-1
 		If CurrentChar="<" Then
 			Dim result As Map=getTagNameAndKind(TextUntil(">"))
-			Dim kind As Int=result.Get("kind")
-			If kind=TagKind.StartTag Then
-				tagsList.Add(TagStart(result))
-			Else
-				tagsList.Add(TagEnd(result))
+			If result.ContainsKey("kind") Then
+				Dim kind As Int=result.Get("kind")
+				If kind=TagKind.StartTag Then
+					tagsList.Add(TagStart(result))
+				Else
+					tagsList.Add(TagEnd(result))
+				End If
 			End If
+
 		End If
 	Next
 	Return tagsList
@@ -170,6 +173,9 @@ Sub getTagNameAndKind(tagHtml As String) As Map
 	Dim kind As Int
 	Dim name As String
 	If tagHtml.Contains(">")=False Then
+		Return result
+	End If
+	If tagHtml.SubString2(1,tagHtml.Length).Contains("<") Then
 		Return result
 	End If
 	If tagHtml.Contains("/") Then 'end tag <x1/></g>
