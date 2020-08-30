@@ -56,12 +56,6 @@ Public Sub replaceChildren(nodeName As String,nodes As List)
 End Sub
 
 Public Sub getinnerXML As String
-	If Children.Size=1 Then
-		Dim node As XmlNode=Children.Get(0)
-		If node.Name="text" Then
-			Return node.Text
-		End If
-	End If
 	Dim xml As String=XMLUtils.asStringWithoutXMLHead(Me)
 	Try
 		Dim matcher As Matcher
@@ -78,14 +72,6 @@ Public Sub getinnerXML As String
 End Sub
 
 Public Sub setinnerXML(xml As String)
-	If Children.Size=1 Then
-		Dim node As XmlNode=Children.Get(0)
-		If node.Name="text" Then
-			node.Text=xml
-			Return
-		End If
-	End If
-
 	Dim parser As XmlParser
 	parser.Initialize
 
@@ -114,10 +100,23 @@ End Sub
 
 Public Sub setinnerText(s As String)
 	'escape: <g1>&</g1>-><g1>&amp;</g1>
+	If Children.Size=1 Then
+		Dim node As XmlNode=Children.Get(0)
+		If node.Name="text" Then
+			node.Text=s
+			Return
+		End If
+	End If
 	setinnerXML(XMLUtils.HandleXMLEntities(s,True))
 End Sub
 
 Public Sub getinnerText As String
 	'unescape: <g1>&amp;</g1>-><g1>&</g1>
+	If Children.Size=1 Then
+		Dim node As XmlNode=Children.Get(0)
+		If node.Name="text" Then
+			Return node.Text
+		End If
+	End If
 	Return XMLUtils.HandleXMLEntities(getinnerXML,False)
 End Sub
