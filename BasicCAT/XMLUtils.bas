@@ -346,3 +346,54 @@ Sub pickSmallerXML(text As String,tag As String,trailTag As String) As String
 	'File.WriteString(File.DirApp,"out.xml",xml)
 	Return xml
 End Sub
+
+Sub isXLIFFTag(tagName As String) As Boolean
+	For Each name As String In Regex.Split(",","bpt,ept,it,ph,g,bx,ex,x,sub,mrk")
+		If Regex.Replace("\d",tagName,"")=name Then
+			Return True
+		End If
+	Next
+	Return False
+End Sub
+
+Public Sub EncloseTagText(s As String) As String
+	Dim sb As StringBuilder
+	sb.Initialize
+	Dim parts As List
+	parts.Initialize
+	Dim tags As List
+	tags.Initialize
+	Dim matcher As Matcher
+	'&lt;g id="1"&lt;
+	matcher=Regex.Matcher("&lt;/*(.*?)/*&gt;",s)
+	Dim previousEndIndex As Int=0
+	Do While matcher.Find
+		Dim textBefore As String=s.SubString2(previousEndIndex,matcher.GetStart(0))
+		If textBefore<>"" Then
+			parts.Add(textBefore)
+		End If
+		Dim name As String=matcher.Group(1)
+		If name.Contains(" ") Then
+			name=name.SubString2(0,name.IndexOf(" "))
+		End If
+		If isXLIFFTag(name) Then
+			parts.Add($"`${matcher.Match}`"$)
+		Else
+			parts.Add(matcher.Match)
+		End If
+		previousEndIndex=matcher.GetEnd(0)
+	Loop
+	Dim textAfter As String
+	textAfter=s.SubString2(previousEndIndex,s.Length)
+	If textAfter<>"" Then
+		parts.Add(textAfter)
+	End If
+	For Each part As String In parts
+		sb.Append(part)
+	Next
+	Return sb.ToString
+End Sub
+
+Public Sub DiscloseTagText(s As String) As String
+	Return Regex.Replace("`(&lt;.*?&gt;)`",s,"$1")
+End Sub

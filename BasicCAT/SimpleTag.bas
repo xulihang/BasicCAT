@@ -109,6 +109,9 @@ Public Sub getTags(pXml As String) As List
 	tagsList.Initialize
 	For index=0 To xml.Length-1
 		If CurrentChar="<" Then
+			If PreviousChar="`" Then 'do not process tags like `<g>` 
+				Continue
+			End If
 			Dim result As Map=getTagNameAndKind(TextUntil(">"))
 			If result.ContainsKey("name") Then
 				If isXLIFFTag(result.Get("name")) Then
@@ -231,4 +234,18 @@ End Sub
 
 Sub CurrentChar As String
 	Return xml.CharAt(index)
+End Sub
+
+
+Sub PreviousChar As String
+	Try
+		If index>0 Then
+			Return xml.CharAt(index-1)
+		Else
+			Return ""
+		End If
+	Catch
+		Log(LastException)
+	End Try
+    Return ""
 End Sub

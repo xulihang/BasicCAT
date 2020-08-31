@@ -1603,17 +1603,15 @@ Sub showTM(targetTextArea As RichTextArea)
 	sourceTA=pane.GetNode(0).Tag
 	Dim targetTA As RichTextArea
 	targetTA=pane.GetNode(1).Tag
-	Log(sourceTA.Text)
-	
-	
+
 	If projectTM.currentSource=sourceTA.Text Then 'avoid loading the same many times
 		Return
 	End If
 	Main.tmTableView.Items.Clear
 	Main.LoadHTMLWithBackground(Main.LogWebView,"")
 	projectTM.currentSource=sourceTA.Text
-	Log("source")
-	Log(sourceTA.Text)
+	'Log("source")
+	'Log(sourceTA.Text)
 	showMT(sourceTA.Text,targetTextArea)
 	
 	Dim matchrate As Double
