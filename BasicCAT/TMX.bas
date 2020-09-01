@@ -129,7 +129,7 @@ Sub export(segments As List,sourceLang As String,targetLang As String,path As St
 		For i=0 To 1
 			Dim seg As String=segment.Get(i)
 			If includeTag=False Then
-				seg=Regex.Replace2("<.*?>",32,seg,"")
+				seg=XMLUtils.TagsRemoved(seg,False)
 			End If
 			If i = 1 Then
 				Dim targetTuv As XmlNode
@@ -184,7 +184,9 @@ End Sub
 Sub setNodeText(node As XmlNode,text As String,isTMXTags As Boolean)
 	If isTMXTags=True Then
 		Try
-			node.innerXML=convertToTMXTags(XMLUtils.HandleXMLEntities(text,True))
+			text=XMLUtils.HandleXMLEntities(text,True)
+			text=Regex.Replace2("`(&lt;.*?&gt;)`",32,text,"$1")
+			node.innerXML=convertToTMXTags(text)
 			Return
 		Catch
 			Log(LastException)
@@ -202,13 +204,14 @@ Sub convertToTMXTags(xml As String) As String
 	Dim sb As StringBuilder
 	sb.Initialize
 	Dim matcher As Matcher
-	matcher=Regex.Matcher("</*(.*?)(\d+) *>",xml)
+	matcher=Regex.Matcher("</*(.*?)(\d+) */*>",xml)
 	Dim previousEndIndex As Int=0
 	Do While matcher.Find
 		sb.Append(xml.SubString2(previousEndIndex,matcher.GetStart(0)))
 		previousEndIndex=matcher.GetEnd(0)
 		If matcher.Group(1).StartsWith("g") Then
-			Dim id As Int=matcher.Group(2)
+			Dim id As Int
+			id=matcher.Group(2)
 			If matcher.match.Contains("/") Then
 				sb.Append($"<ept i="${id}">"$)
 				sb.Append(XMLUtils.EscapeXml(matcher.match))
@@ -218,6 +221,10 @@ Sub convertToTMXTags(xml As String) As String
 				sb.Append(XMLUtils.EscapeXml(matcher.match))
 				sb.Append("</bpt>")
 			End If
+		Else If matcher.Group(1).StartsWith("x") Then
+			sb.Append("<ph>")
+			sb.Append(XMLUtils.EscapeXml(matcher.Match))
+			sb.Append("</ph>")
 		Else
 			sb.Append(matcher.Match)
 		End If

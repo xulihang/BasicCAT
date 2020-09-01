@@ -110,7 +110,9 @@ Public Sub getTags(pXml As String) As List
 	For index=0 To xml.Length-1
 		If CurrentChar="<" Then
 			If PreviousChar="`" Then 'do not process tags like `<g>` 
-				Continue
+				If HasClosingBackquote(TextUntil("`")) Then
+					Continue
+				End If
 			End If
 			Dim result As Map=getTagNameAndKind(TextUntil(">"))
 			If result.ContainsKey("name") Then
@@ -126,6 +128,17 @@ Public Sub getTags(pXml As String) As List
 		End If
 	Next
 	Return tagsList
+End Sub
+
+Sub HasClosingBackquote(s As String) As Boolean
+	If s.IndexOf("<")<>s.LastIndexOf("<") Then
+		Return False
+	End If
+	If (s.IndexOf(">")+1)=s.IndexOf("`") Then
+		Return True
+	Else
+		Return False
+	End If
 End Sub
 
 Sub isXLIFFTag(tagName As String) As Boolean

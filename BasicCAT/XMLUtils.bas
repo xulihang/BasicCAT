@@ -10,12 +10,22 @@ Sub Process_Globals
 	Private Entities As Map
 End Sub
 
+Public Sub TagsRemoved(s As String,keepWrap As Boolean) As String
+	s=Regex.Replace2("`<(.*?)>`",32,s,"`&lt;$1&gt;`")
+	s=Regex.Replace2("<.*?>",32,s,"")
+	If keepWrap Then
+		s=Regex.Replace2("`&lt;(.*?)&gt;`",32,s,"`<$1>`")
+	Else
+		s=Regex.Replace2("`&lt;(.*?)&gt;`",32,s,"<$1>")
+	End If
+	Return s
+End Sub
 
 Public Sub HandleXMLEntities(xml As String,escape As Boolean) As String
 	Dim st As SimpleTag
 	st.Initialize
-	Dim tags As List=st.getTags(xml)
-	If tags.Size=0 Then
+	Dim Tags As List=st.getTags(xml)
+	If Tags.Size=0 Then
 		If escape Then
 			Return EscapeXml(xml)
 		Else
