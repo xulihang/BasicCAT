@@ -411,8 +411,13 @@ Public Sub EncloseTagText(s As String,XMLEscaped As Boolean) As String
 End Sub
 
 '`&lt;g id="1"&gt;` -> &lt;g id="1"&gt;
-Public Sub DiscloseTagText(s As String) As String
-	Return Regex.Replace("`(&lt;.*?&gt;)`",s,"$1")
+Public Sub DiscloseTagText(s As String,escaped As Boolean) As String
+	If escaped Then
+		Return Regex.Replace("`(&lt;.*?&gt;)`",s,"$1")
+	Else
+		Return Regex.Replace("`(<.*?>)`",s,"$1")
+	End If
+	
 End Sub
 
 Sub XMLToText(xml As String) As String
@@ -426,7 +431,7 @@ Sub TextToXML(s As String) As String
 	'escape: <g1>&</g1>-><g1>&amp;</g1> 'xliff tags not escaped except they are enclosed with ``
 	Dim Xml As String=HandleXMLEntities(s,True)
 	'disclose tags: `&lt;g&gt;` -> &lt;g&gt;
-	Xml=DiscloseTagText(Xml)
+	Xml=DiscloseTagText(Xml,True)
 	Return Xml
 End Sub
 

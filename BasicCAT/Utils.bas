@@ -71,15 +71,15 @@ Sub splitByFind(text As String,find As String,textSegments As List)
 	Dim length As Int
 	length=text.Length-find.Length
 	For i=0 To length
-		Log(i)
+		'Log(i)
 		Dim endIndex As Int
 		endIndex=i+find.Length
 		currentSegment=text.SubString2(i,endIndex)
-		Log(currentSegment)
+		'Log(currentSegment)
 		If currentSegment=find Then
-			Log(True)
+			'Log(True)
 			Dim textBefore As String
-			Log(textLeft)
+			'Log(textLeft)
 			textBefore=textLeft.SubString2(0,textLeft.IndexOf(find))
 			If textBefore<>"" Then
 				textSegments.Add(textBefore)

@@ -74,38 +74,31 @@ End Sub
 Public Sub setinnerXML(xml As String)
 	Dim parser As XmlParser
 	parser.Initialize
-
 	Dim node As XmlNode
-	Try
-		node=parser.Parse(xml)
-	Catch
-		'Log(LastException.Message)
-		Dim sb As StringBuilder
-		sb.Initialize
-		sb.Append("<").Append(Name).Append(">")
-		sb.append(xml)
-		sb.Append("</").Append(Name).Append(">")
-		node=parser.Parse(sb.ToString)
-		'Log("-------")
-		'Log(sb.ToString)
-		'Log(node.Name)
-		'Log(Name)
-		Dim child As XmlNode=node.Children.Get(0)
-		If child.Name=Name Then
-			node=node.Children.Get(0)
-		End If
-	End Try
+	Dim sb As StringBuilder
+	sb.Initialize
+	sb.Append("<").Append(Name).Append(">")
+	sb.append(xml)
+	sb.Append("</").Append(Name).Append(">")
+	node=parser.Parse(sb.ToString)
+	'Log("-------")
+	'Log(sb.ToString)
+	'Log(node.Name)
+	'Log(Name)
+	Dim child As XmlNode=node.Children.Get(0)
+	If child.Name=Name Then
+		node=node.Children.Get(0)
+	End If
 	Children=node.Children
 End Sub
 
 Public Sub setinnerText(s As String)
-	If Children.Size=1 Then
-		Dim node As XmlNode=Children.Get(0)
-		If node.Name="text" Then
-			node.Text=s
-			Return
-		End If
-	End If
+	'If XMLUtils.XmlNodeContainsOnlyText(Me) Then
+	'	Children.Clear
+	'	s=XMLUtils.DiscloseTagText(s,False)
+	'	Children.Add(CreateTextNode(s))
+	'	Return
+	'End If
 	Try
 		setinnerXML(XMLUtils.TextToXML(s))
 	Catch
@@ -125,11 +118,8 @@ Sub CreateTextNode (s As String) As XmlNode
 End Sub
 
 Public Sub getinnerText As String
-	If Children.Size=1 Then
-		Dim node As XmlNode=Children.Get(0)
-		If node.Name="text" Then
-			Return node.Text
-		End If
-	End If
+	'If XMLUtils.XmlNodeContainsOnlyText(Me) Then
+	'	Return XMLUtils.EncloseTagText(XMLUtils.XmlNodeText(Me),False)
+	'End If
 	Return XMLUtils.XMLToText(getinnerXML)
 End Sub
