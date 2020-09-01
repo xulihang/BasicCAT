@@ -35,8 +35,8 @@ Public Sub HandleXMLEntities(xml As String,escape As Boolean) As String
 	Dim parts As List
 	parts.Initialize
 	Dim previousEndIndex As Int=0
-	For i=0 To tags.Size-1
-		Dim tag As Tag=tags.Get(i)
+	For i=0 To Tags.Size-1
+		Dim tag As Tag=Tags.Get(i)
 		Dim textBefore As String=xml.SubString2(previousEndIndex,tag.index)
 		If escape Then
 			textBefore=EscapeXml(textBefore)
@@ -366,7 +366,14 @@ Sub isXLIFFTag(tagName As String) As Boolean
 	Return False
 End Sub
 
-Public Sub EncloseTagText(s As String) As String
+'&lt;g id="1"&gt; -> `&lt;g id="1"&gt;`
+Public Sub EncloseTagText(s As String,XMLEscaped As Boolean) As String
+	Dim pattern As String
+	If XMLEscaped Then
+		pattern="&lt;/*(.*?)/*&gt;"
+	Else
+		pattern="</*(.*?)/*>"
+	End If
 	Dim sb As StringBuilder
 	sb.Initialize
 	Dim parts As List
@@ -374,8 +381,7 @@ Public Sub EncloseTagText(s As String) As String
 	Dim tags As List
 	tags.Initialize
 	Dim matcher As Matcher
-	'&lt;g id="1"&lt;
-	matcher=Regex.Matcher("&lt;/*(.*?)/*&gt;",s)
+	matcher=Regex.Matcher(pattern,s)
 	Dim previousEndIndex As Int=0
 	Do While matcher.Find
 		Dim textBefore As String=s.SubString2(previousEndIndex,matcher.GetStart(0))
@@ -404,6 +410,45 @@ Public Sub EncloseTagText(s As String) As String
 	Return sb.ToString
 End Sub
 
+'`&lt;g id="1"&gt;` -> &lt;g id="1"&gt;
 Public Sub DiscloseTagText(s As String) As String
 	Return Regex.Replace("`(&lt;.*?&gt;)`",s,"$1")
 End Sub
+
+Sub XMLToText(xml As String) As String
+	'enclose tags: &lt;g&gt; -> `&lt;g&gt;`
+	xml=EncloseTagText(xml,True)
+	'unescape: <g1>&amp;</g1>-><g1>&</g1>
+	Return HandleXMLEntities(xml,False)
+End Sub
+
+Sub TextToXML(s As String) As String
+	'escape: <g1>&</g1>-><g1>&amp;</g1> 'xliff tags not escaped except they are enclosed with ``
+	Dim Xml As String=HandleXMLEntities(s,True)
+	'disclose tags: `&lt;g&gt;` -> &lt;g&gt;
+	Xml=DiscloseTagText(Xml)
+	Return Xml
+End Sub
+
+Sub XmlNodeText(node As XmlNode) As String
+	Dim sb As StringBuilder
+	sb.Initialize
+	For Each child As XmlNode In node.Children
+		If child.Name="text" Then
+			sb.Append(child.Text)
+		End If
+	Next
+	Return sb.ToString
+End Sub
+
+Sub XmlNodeContainsOnlyText(node As XmlNode) As Boolean
+	For Each child As XmlNode In node.Children
+		If child.Name<>"text" Then
+			Return False
+		End If
+	Next
+	Return True
+End Sub
+
+
+

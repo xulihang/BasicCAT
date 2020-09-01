@@ -48,10 +48,10 @@ Sub importedList2(xml As String,filename As String,sourceLang As String,targetLa
 			End If
 			lang=lang.ToLowerCase
 			If lang.StartsWith(sourceLang) Then
-				segment.Set(0,removeTMXTags(seg.innerText))
+				segment.Set(0,getSegText(seg))
 				addedTimes=addedTimes+1
 			else if lang.StartsWith(targetLang) Then
-				segment.Set(1,removeTMXTags(seg.innerText))
+				segment.Set(1,getSegText(seg))
 				addedTimes=addedTimes+1
 			Else
 				Continue
@@ -87,11 +87,43 @@ Sub importedList2(xml As String,filename As String,sourceLang As String,targetLa
 	Return segments
 End Sub
 
-Sub removeTMXTags(text As String) As String
+Sub getSegText(seg As XmlNode) As String
+	If XMLUtils.XmlNodeContainsOnlyText(seg) Then
+		Dim text As String=XMLUtils.XmlNodeText(seg)
+		Return text
+	End If
+	Return XMLUtils.XMLToText(removeTMXTags(seg.innerXML))
+End Sub
+
+Sub removeTMXTags(s As String) As String
+	'<bpt i="1">&lt;g1&gt;</bpt>
+	Dim sb As StringBuilder
+	sb.Initialize
+	Dim parts As List
+	parts.Initialize
 	Dim tags As String
-	tags="(bpt|ept)"
-	text=Regex.Replace2($"</*${tags}.*?>"$,32,text,"")
-	Return text
+	tags="(bpt|ept|ph)"
+	Dim previousEndIndex As Int=0
+	Dim matcher As Matcher
+	matcher=Regex.Matcher($"<${tags}.*?>(.*?)</${tags}>"$,s)
+	Do While matcher.Find
+		Dim textBefore As String
+		textBefore=s.SubString2(previousEndIndex,matcher.GetStart(0))
+		If textBefore<>"" Then
+			parts.Add(textBefore)
+		End If
+		parts.add(XMLUtils.UnescapeXml(matcher.Group(2)))
+		previousEndIndex=matcher.GetEnd(0)
+	Loop
+	Dim textAfter As String
+	textAfter=s.SubString2(previousEndIndex,s.Length)
+	If textAfter<>"" Then
+		parts.Add(textAfter)
+	End If
+	For Each part As String In parts
+		sb.Append(part)
+	Next
+	Return Regex.Replace($"<${tags}.*?>"$,sb.ToString,"")
 End Sub
 
 Sub CreateNode(name As String) As XmlNode

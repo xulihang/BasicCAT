@@ -107,11 +107,7 @@ Public Sub setinnerText(s As String)
 		End If
 	End If
 	Try
-		'escape: <g1>&</g1>-><g1>&amp;</g1> 'xliff tags not escaped except they are enclosed with ``
-		Dim xml As String=XMLUtils.HandleXMLEntities(s,True)
-		'disclose tags: `&lt;g&gt;` -> &lt;g&gt;
-		xml=XMLUtils.DiscloseTagText(xml)
-		setinnerXML(xml)
+		setinnerXML(XMLUtils.TextToXML(s))
 	Catch
 		Log(LastException)
 		Children.Clear
@@ -135,9 +131,5 @@ Public Sub getinnerText As String
 			Return node.Text
 		End If
 	End If
-	Dim xml As String=getinnerXML
-	'enclose tags: &lt;g&gt; -> `&lt;g&gt;`
-	xml=XMLUtils.EncloseTagText(xml)
-	'unescape: <g1>&amp;</g1>-><g1>&</g1>
-	Return XMLUtils.HandleXMLEntities(xml,False)
+	Return XMLUtils.XMLToText(getinnerXML)
 End Sub
