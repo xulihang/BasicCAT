@@ -22,7 +22,7 @@ Sub DetectOS As String
 	End If
 End Sub
 
-Sub escapeSQL(text As String) As String
+Sub SQLSpecialCharactersRemoved(text As String) As String
 	For Each str As String In Array As String("'",$"""$,":",";","(",")","[","]","|","\","@")
 		text=text.Replace(str,"'"&str)
 	Next

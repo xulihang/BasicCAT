@@ -77,7 +77,7 @@ Sub addHanziWords(source As String) As List
 End Sub
 
 Sub removePunctuation(source As String,replacement As String) As String
-	source=Regex.Replace($"[。！？，“”'",\[\]\(\)\.\!\?\*\^\-:;\\|]"$,source,replacement)
+	source=Regex.Replace($"[%&_。！？，“”'",/\[\]\(\)\.\!\?\*\^\-:;\\|]"$,source,replacement)
 	Return source
 End Sub
 

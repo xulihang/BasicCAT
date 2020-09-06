@@ -1445,7 +1445,7 @@ Sub targetTextArea_FocusChanged (HasFocus As Boolean)
 	If HasFocus Then
 		
         Log("hasFocus")
-		Log(TextArea1.Text)
+		'Log(TextArea1.Text)
 		'Log(previousEntry)
 		'Log(lastEntry)
 		showTM(TextArea1)
@@ -1456,7 +1456,7 @@ Sub targetTextArea_FocusChanged (HasFocus As Boolean)
 		Log("loseFocus")
 		'Log("previous"&previousEntry)
 		'Log("lastentry"&lastEntry)
-		Log(TextArea1.Text)
+		'Log(TextArea1.Text)
 		If previousEntry<>lastEntry Then
 			languagecheck(TextArea1,lastEntry)
 		End If
@@ -1667,7 +1667,7 @@ Sub showMT(source As String,targetTextArea As RichTextArea)
 		If Utils.get_isEnabled(engine&"_isEnabled",mtPreferences)=True Then
 			wait for (MT.getMT(source,projectFile.Get("source"),projectFile.Get("target"),engine)) Complete (Result As String)
 			If Result<>"" Then
-				Log("mt:"&Result)
+				'Log("mt:"&Result)
 				Dim row()  As Object = Array As String("","",Result,engine)
 				Main.tmTableView.Items.Add(row)
 				Main.changeWhenSegmentOrSelectionChanges
