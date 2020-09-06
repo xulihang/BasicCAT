@@ -156,7 +156,7 @@ Sub tagsAtBothSidesRemovedText(text As String) As String
 		newList.RemoveAt(0)
 		newList.RemoveAt(newList.Size-1)
 	Loop
-	
+
 	'for single tag
 	If tagscount=1 Then
 		Dim firstItem,lastItem As String
@@ -196,14 +196,14 @@ Sub tagsAreAPair(tag1 As String,tag2 As String) As Boolean
 			tagType=1 '<g1>
 		End If
 	End If
-	Log(beginId)
+	'Log(beginId)
 	Dim tag2Matcher As Matcher
 	tag2Matcher=Regex.Matcher2($"</[a-z].*?(\d*)>"$,32,tag2)
 	Dim endId As Int=-1
 	If tag2Matcher.Find Then
 		Try
 			endId=tag2Matcher.Group(1)
-			Log(endId)
+			'Log(endId)
 			If endId=beginId And tagType=1 Then
 				Return True
 			End If

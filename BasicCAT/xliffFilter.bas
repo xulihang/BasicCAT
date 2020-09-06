@@ -76,7 +76,7 @@ Sub createWorkFile(filename As String,path As String,sourceLang As String,senten
 					Continue
 				Else
 					Dim sourceShown As String=source
-					sourceShown=removeTags(sourceShown)
+					sourceShown=removeTags(sourceShown.Trim)
 					bitext.add(sourceShown.Trim)
 					
 					Dim target As String=""
