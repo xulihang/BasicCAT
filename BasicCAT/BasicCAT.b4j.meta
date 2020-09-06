@@ -226,6 +226,6 @@ ModuleClosedNodes74=
 ModuleClosedNodes75=
 ModuleClosedNodes8=
 ModuleClosedNodes9=
-NavigationStack=Utils,exportToBiParagraph,311,6,txtFilter,previewText,276,0,idmlFilter,generateFile,669,0,segmentation,removeSpacesAtBothSides,181,0,Utils,exportToMarkdownWithNotes,254,0,xliffFilter,createWorkFile,72,1,xliffFilter,removeTags,137,6,filterGenericUtils,mergeInternalSegment,51,0,filterGenericUtils,tagsAtBothSidesRemovedText,152,2,filterGenericUtils,tagsAreAPair,199,0
+NavigationStack=txtFilter,previewText,276,0,txtFilter,mergeSegment,200,0,filterGenericUtils,tagsRemoved,107,6,Main,addTextAreaToSegmentPane,1590,0,Project,addTextAreaToSegmentPane,1099,0,filterGenericUtils,Process_Globals,4,0,txtFilter,splitSegment,205,6,xliffFilter,splitSegment,554,1,idmlFilter,splitSegment,1279,5,filterGenericUtils,splitInternalSegment,5,6
 SelectedBuild=0
 VisibleModules=1,2,3,4,5,6,7,8,9,10,13,11,16,15

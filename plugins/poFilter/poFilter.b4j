@@ -12,6 +12,7 @@ Library4=jxmlsax
 Library5=xmlbuilder
 Library6=jxui
 Library7=javaobject
+Library8=cssutils
 Module1=poFilterPlugin
 Module2=Xml2Map
 Module3=Map2Xml
@@ -20,10 +21,11 @@ Module5=SRX
 Module6=segmentation
 Module7=filterGenericUtils
 Module8=Utils
+Module9=RichTextArea
 NumberOfFiles=2
-NumberOfLibraries=7
-NumberOfModules=8
-Version=7.51
+NumberOfLibraries=8
+NumberOfModules=9
+Version=7.8
 @EndOfDesignText@
 #Region Project Attributes 
 	#MainFormWidth: 600

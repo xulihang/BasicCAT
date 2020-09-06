@@ -32,7 +32,7 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 		Case "mergeSegment"
 			mergeSegment(Params.Get("MainForm"),Params.Get("sourceTextArea"),Params.Get("editorLV"),Params.Get("segments"),Params.Get("projectFile"))
 		Case "splitSegment"
-			splitSegment(Params.Get("main"),Params.Get("sourceTextArea"),Params.Get("editorLV"),Params.Get("segments"),Params.Get("projectFile"))
+			splitSegment(Params.Get("main"),Params.Get("sourceTextArea"),Params.Get("editorLV"),Params.Get("segments"))
 		Case "previewText"
 			Return previewText(Params.Get("editorLV"),Params.Get("segments"),Params.Get("lastEntry"),Params.Get("projectFile"),Params.Get("path"))
 	End Select
@@ -416,41 +416,8 @@ Sub mergeSegment(MainForm As Form,sourceTextArea As RichTextArea,editorLV As Lis
 	editorLV.Items.RemoveAt(editorLV.Items.IndexOf(sourceTextArea.Parent)+1)
 End Sub
 
-Sub splitSegment(BCATMain As Object,sourceTextArea As RichTextArea,editorLV As ListView,segments As List,projectFile As Map)
-	Dim index As Int
-	index=editorLV.Items.IndexOf(sourceTextArea.Parent)
-	Dim source As String
-	Dim newSegmentPane As Pane
-	newSegmentPane.Initialize("segmentPane")
-	source=sourceTextArea.Text.SubString2(sourceTextArea.SelectionEnd,sourceTextArea.Text.Length)
-	If source.Trim="" Then
-		Return
-	End If
-	sourceTextArea.Text=sourceTextArea.Text.SubString2(0,sourceTextArea.SelectionEnd)
-	sourceTextArea.Text=sourceTextArea.Text.Replace(CRLF,"")
-	sourceTextArea.Tag=sourceTextArea.Text
-	CallSub3(BCATMain,"addTextAreaToSegmentPane",newSegmentPane,source)
-	Dim bitext,newBiText As List
-	bitext=segments.Get(index)
-	
-	Dim fullsource As String
-	fullsource=bitext.Get(2)
-	
-	bitext.Set(0,sourceTextArea.Text)
-	bitext.Set(2,fullsource.SubString2(0,fullsource.IndexOf(sourceTextArea.Text)+sourceTextArea.Text.Length))
-	
-	
-	newBiText.Initialize
-	newBiText.Add(source)
-	newBiText.Add("")
-	newBiText.Add(fullsource.SubString2(fullsource.IndexOf(sourceTextArea.Text)+sourceTextArea.Text.Length,fullsource.Length))
-	newBiText.Add(bitext.Get(3))
-	newBiText.Add(bitext.Get(4))
-	segments.set(index,bitext)
-	segments.InsertAt(index+1,newBiText)
-
-
-	editorLV.Items.InsertAt(editorLV.Items.IndexOf(sourceTextArea.Parent)+1,newSegmentPane)
+Sub splitSegment(BCATMain As Object,sourceTextArea As RichTextArea,editorLV As ListView,segments As List)
+	filterGenericUtils.splitInternalSegment(sourceTextArea,True,BCATMain,editorLV,segments)
 End Sub
 
 Sub shouldAddSpace(sourceLang As String,targetLang As String,index As Int,segmentsList As List) As Boolean

@@ -9,6 +9,51 @@ Sub Process_Globals
 	Private fx As JFX
 End Sub
 
+Sub splitInternalSegment(sourceTextArea As RichTextArea,removeTags As Boolean,BCATMain As Object,editorLV As ListView,segments As List)
+	Dim index As Int
+	index=editorLV.Items.IndexOf(sourceTextArea.Parent)
+	Dim source,nextSource As String
+	Dim nextSegmentPane As Pane
+	nextSegmentPane.Initialize("segmentPane")
+	source=sourceTextArea.Text.SubString2(0,sourceTextArea.SelectionEnd)
+	nextSource=sourceTextArea.Text.SubString2(sourceTextArea.SelectionEnd,sourceTextArea.Text.Length)
+	Dim bitext,newBiText As List
+	bitext=segments.Get(index)
+	If nextSource.Trim="" Then
+		Return
+	End If
+	
+	Dim fullsource As String
+	fullsource=bitext.Get(2)
+	'Log("nextSource:"&nextSource)
+	Dim sourceShown,nextSourceShown As String
+	sourceShown=source.Trim
+	nextSourceShown=nextSource.Trim
+	
+	If removeTags Then
+		sourceShown=tagsRemoved(sourceShown)
+		nextSourceShown=tagsRemoved(nextSourceShown)
+	End If
+	
+	sourceTextArea.Text=sourceShown
+	sourceTextArea.Tag=sourceShown
+	CallSub3(BCATMain,"addTextAreaToSegmentPane",nextSegmentPane,nextSourceShown)
+	bitext.Set(0,sourceShown)
+	bitext.Set(2,fullsource.SubString2(0,fullsource.IndexOf(sourceShown)+sourceShown.Length))
+	
+	
+	newBiText.Initialize
+	newBiText.Add(nextSourceShown)
+	newBiText.Add("")
+	newBiText.Add(fullsource.SubString2(fullsource.IndexOf(sourceShown)+sourceShown.Length,fullsource.Length))
+	newBiText.Add(bitext.Get(3))
+	newBiText.Add(bitext.Get(4))
+
+	segments.set(index,bitext)
+	segments.InsertAt(index+1,newBiText)
+	editorLV.Items.InsertAt(editorLV.Items.IndexOf(sourceTextArea.Parent)+1,nextSegmentPane)
+End Sub
+
 Sub mergeInternalSegment(segments As List,index As Int,targetLang As String,extension As String)
 	Dim bitext,nextBiText As List
 	bitext=segments.Get(index)
@@ -70,6 +115,17 @@ Sub mergeInternalSegment(segments As List,index As Int,targetLang As String,exte
 	bitext.Set(1,target&targetWhitespace&nextTarget)
 	bitext.Set(2,fullsource)
 	segments.RemoveAt(index+1)
+End Sub
+
+Sub tagsRemoved(source As String) As String
+	If tagsNum(source)=1 Then
+		source=tagsAtBothSidesRemovedText(source)
+	End If
+
+	If tagsNum(source)>=2 And Regex.IsMatch("<.*?>",source) Then
+		source=tagsAtBothSidesRemovedText(source)
+	End If
+	Return source
 End Sub
 
 Sub relaceAtTheRightPosition(source As String,target As String,fullSource As String) As String

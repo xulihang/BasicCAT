@@ -558,42 +558,7 @@ End Sub
 
 
 Sub splitSegment(sourceTextArea As RichTextArea)
-	Dim index As Int
-	index=Main.editorLV.Items.IndexOf(sourceTextArea.Parent)
-	Dim source As String
-	Dim newSegmentPane As Pane
-	newSegmentPane.Initialize("segmentPane")
-	source=sourceTextArea.Text.SubString2(sourceTextArea.SelectionEnd,sourceTextArea.Text.Length)
-	Dim bitext,newBiText As List
-	bitext=Main.currentProject.segments.Get(index)
-	If source.Trim="" Then
-		Return
-	End If
-	
-	Dim fullsource As String
-	fullsource=bitext.Get(2)
-
-	sourceTextArea.Text=sourceTextArea.Text.SubString2(0,sourceTextArea.SelectionEnd)
-	sourceTextArea.Text=sourceTextArea.Text.Replace(CRLF,"")
-	sourceTextArea.Tag=sourceTextArea.Text
-	Main.currentProject.addTextAreaToSegmentPane(newSegmentPane,source,"")
-	
-	
-	bitext.Set(0,sourceTextArea.Text)
-	bitext.Set(2,fullsource.SubString2(0,fullsource.IndexOf(sourceTextArea.Text)+sourceTextArea.Text.Length))
-	
-	
-	newBiText.Initialize
-	newBiText.Add(source)
-	newBiText.Add("")
-	newBiText.Add(fullsource.SubString2(fullsource.IndexOf(sourceTextArea.Text)+sourceTextArea.Text.Length,fullsource.Length))
-	newBiText.Add(bitext.Get(3))
-	newBiText.Add(bitext.Get(4))
-	Main.currentProject.segments.set(index,bitext)
-	Main.currentProject.segments.InsertAt(index+1,newBiText)
-
-
-	Main.editorLV.Items.InsertAt(Main.editorLV.Items.IndexOf(sourceTextArea.Parent)+1,newSegmentPane)
+	filterGenericUtils.splitInternalSegment(sourceTextArea,True,Main,Main.editorLV,Main.currentProject.segments)
 End Sub
 
 Sub previewText As String
