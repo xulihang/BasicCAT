@@ -4,5 +4,6 @@ ModuleBreakpoints0=
 ModuleBreakpoints1=
 ModuleClosedNodes0=
 ModuleClosedNodes1=
+NavigationStack=Main,AppStart,13,0,cloudtranslationMTPlugin,Class_Globals,0,0,cloudtranslationMTPlugin,getMap,57,0,cloudtranslationMTPlugin,Run,26,0,cloudtranslationMTPlugin,GetNiceName,13,0,cloudtranslationMTPlugin,translate,42,6
 SelectedBuild=0
 VisibleModules=1

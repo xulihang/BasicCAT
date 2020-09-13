@@ -17,7 +17,7 @@ End Sub
 
 ' must be available
 public Sub GetNiceName() As String
-	Return "cloudtranslationMT"
+	Return "fiskmoMT"
 End Sub
 
 ' must be available
@@ -39,24 +39,34 @@ End Sub
 
 Sub translate(source As String, sourceLang As String, targetLang As String,preferencesMap As Map) As ResumableSub
 	Dim target As String
-	Dim params As String
 	Dim su As StringUtils
-	source=su.EncodeUrl(source,"UTF-8")
-	params="lang="&sourceLang&"_"&targetLang&"&src="&source
-	Dim url As String=getMap("cloudtranslation",getMap("mt",preferencesMap)).GetDefault("url","https://sz-nmt-1.cloudtranslation.com/nmt")
 	Dim job As HttpJob
 	job.Initialize("job",Me)
-	job.Download(url&"?"&params)
+	'http://localhost:8500/MTRestService/Translate
+	Dim url As String
+	url=getMap("fiskmo",getMap("mt",preferencesMap)).GetDefault("url","http://localhost:8500/MTRestService/Translate")
+	
+	Dim params As String
+	params="?tokenCode=&input="&su.EncodeUrl(source,"UTF8")&"&srcLangCode="&sourceLang&"&trgLangCode="&targetLang&"&modelTag="
+	job.Download(url&params)
 	wait For (job) JobDone(job As HttpJob)
 	If job.Success Then
 		Log(job.GetString)
-		target=job.GetString
+		Try
+			Dim x2m As Xml2Map
+			x2m.Initialize
+			Dim s As Map= x2m.Parse(job.GetString).Get("string")
+			target=s.Get("Text")
+		Catch
+			Log(LastException)
+		End Try
 	Else
 		target=""
 	End If
 	job.Release
 	Return target
 End Sub
+
 
 Sub getMap(key As String,parentmap As Map) As Map
 	Return parentmap.Get(key)
