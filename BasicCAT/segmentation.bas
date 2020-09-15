@@ -40,40 +40,40 @@ Sub segmentedTxt(text As String,sentenceLevel As Boolean,sourceLang As String,pa
 	Dim splitted As List
 	splitted.Initialize
 	splitted.AddAll(Regex.Split(CRLF,text))
-	If sentenceLevel Then
-		Dim index As Int=-1
-		'Log("para"&splitted)
-		For Each para As String In splitted
-			index=index+1
+	
+	Dim paraIndex As Int=-1
+	For Each para As String In splitted
+		paraIndex=paraIndex+1
+	    If sentenceLevel Then 
 			wait for (paragraphInSegments(para)) Complete (resultList As List)
 			segments.AddAll(resultList)
-			'Log(para)
-			'Log(segments)
-			'Log(segments.Size)
-			If segments.Size>0 Then
-				Dim last As String
-				last=segments.Get(segments.Size-1)
+		Else
+			segments.Add(para)
+	    End If		
+		'Log("paraIndex:"&paraIndex)
+		AppendCRLF(segments,paraIndex,text,splitted)
+	Next
 
-				If index<>splitted.Size-1 Then
-					last=last&CRLF
-				Else if text.EndsWith(CRLF)=True Then
-					last=last&CRLF
-				End If
-				segments.set(segments.Size-1,last)
-			Else
-				segments.Add(para&CRLF) ' if there are several LFs at the beginning
-			End If
-		Next
-	Else
-		For Each s As String In splitted 
-			s=s&CRLF 'add removed LF
-			segments.Add(s)
-		Next
-	End If
-
-	'Log(segments)
 	Return segments
 End Sub
+
+Sub AppendCRLF(segments As List,paraIndex As Int,text As String,splitted As List)
+	If segments.Size>0 Then
+		Dim last As String
+		last=segments.Get(segments.Size-1)
+		If paraIndex<>splitted.Size-1 Then
+			last=last&CRLF
+		Else if text.EndsWith(CRLF)=True Then
+			last=last&CRLF
+		End If
+		segments.set(segments.Size-1,last)
+	Else
+		Dim para As String=splitted.Get(paraIndex)
+		segments.Add(para&CRLF) ' if there are several LFs at the beginning
+	End If
+End Sub
+
+
 
 Sub paragraphInSegments(text As String) As ResumableSub
 	Dim previousText As String
