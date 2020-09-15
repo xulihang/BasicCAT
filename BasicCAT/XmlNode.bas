@@ -56,15 +56,20 @@ Public Sub replaceChildren(nodeName As String,nodes As List)
 End Sub
 
 Public Sub getinnerXML As String
+	If Children.Size=0 Then
+		Return ""
+	End If
 	Dim xml As String=XMLUtils.asStringWithoutXMLHead(Me)
 	Try
+		Log(xml)
 		Dim matcher As Matcher
-		matcher=Regex.Matcher("(<.*?>).*(</.*?>)",xml)
+		matcher=Regex.Matcher2("(<.*?>).*(</.*?>)",32,xml)
 		Dim parts As List
 		parts.Initialize
-		matcher.Find
-		xml=xml.SubString2(0,matcher.GetStart(2))
-		xml=xml.SubString2(matcher.GetEnd(1),xml.Length)
+		If matcher.Find Then
+			xml=xml.SubString2(0,matcher.GetStart(2))
+			xml=xml.SubString2(matcher.GetEnd(1),xml.Length)
+		End If
 	Catch
 		Log(LastException)
 	End Try

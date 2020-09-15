@@ -68,6 +68,8 @@ Sub AppendCRLF(segments As List,paraIndex As Int,text As String,splitted As List
 		End If
 		segments.set(segments.Size-1,last)
 	Else
+		'Log("segments size = 0")
+		'Log(splitted)
 		Dim para As String=splitted.Get(paraIndex)
 		segments.Add(para&CRLF) ' if there are several LFs at the beginning
 	End If
