@@ -65,7 +65,10 @@ Sub segmentedTxt(text As String,sentenceLevel As Boolean,sourceLang As String,pa
 			End If
 		Next
 	Else
-		segments.AddAll(splitted)
+		For Each s As String In splitted 
+			s=s&CRLF 'add removed LF
+			segments.Add(s)
+		Next
 	End If
 
 	'Log(segments)
