@@ -34,6 +34,14 @@ Public Sub StatusBarColor(dir As String) As Paint
 	Return fx.Colors.White
 End Sub
 
+Public Sub RichTextHighLightColor(dir As String) As Paint
+	If File.Exists(dir,"richtext_highlightcolor") Then
+		Dim rgb As String=File.ReadString(dir,"richtext_highlightcolor").Trim
+		Return getPaintFromRGB(rgb,fx.Colors.DarkGray)
+	End If
+	Return fx.Colors.DarkGray
+End Sub
+
 Sub getPaintFromRGB(rgb As String,default As Paint) As Paint
 	Try
 		Dim r,g,b As Int

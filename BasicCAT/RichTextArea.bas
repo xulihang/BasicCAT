@@ -30,7 +30,8 @@ Private Sub Class_Globals
 	Public Font As Font
 	Public Tag As Object
 	Private previousComposedText As String
-	Private mDefaultBorderColor As Paint=fx.Colors.DarkGray
+	Private mDefaultBorderColor As Paint
+	Private mHighLightColor As Paint
 End Sub
 
 'Initializes the object.
@@ -43,6 +44,8 @@ Public Sub Initialize (vCallBack As Object, vEventName As String)
 	mCallBack = vCallBack
 	mEventName = vEventName
 	Font=fx.DefaultFont(15)
+	mDefaultBorderColor=fx.Colors.DarkGray
+	mHighLightColor=fx.Colors.RGB(135,206,235)
 End Sub
 
 Public Sub DesignerCreateView(Base As Pane, Lbl As Label, Props As Map)
@@ -255,6 +258,10 @@ Public Sub setDefaultBorderColor(color As Paint)
 	SetDefaultBorder
 End Sub
 
+Public Sub getDefaultBorderColor As Paint
+	return mDefaultBorderColor
+End Sub
+
 Public Sub SetDefaultBorder
 	Dim width As Double
 	If mDefaultBorderColor<>fx.Colors.DarkGray Then
@@ -281,10 +288,18 @@ End Sub
 
 Sub AdjustBorder(hasFocus As Boolean)
 	If hasFocus Then
-		SetBorderInHighlight(fx.Colors.RGB(135,206,235))
+		SetBorderInHighlight(mHighLightColor)
 	Else
 		SetDefaultBorder
 	End If
+End Sub
+
+Public Sub setHighLightColor(color As Paint)
+	mHighLightColor=color
+End Sub
+
+Public Sub getHighLightColor As Paint
+	Return mHighLightColor
 End Sub
 
 Sub KeyPressed_Event (MethodName As String, Args() As Object) As Object 'ignore

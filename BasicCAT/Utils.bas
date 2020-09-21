@@ -632,17 +632,6 @@ Sub richTextCSS As String
 	If Main.preferencesMap.GetDefault("customCSS_enabled",False)=True Then
 		text=Theme.RichTextColor(Main.preferencesMap.GetDefault("customCSSDir",File.DirApp))
 		sb.Append(CRLF).Append(text)
-	Else
-		If Main.preferencesMap.GetDefault("darktheme",False) Then
-			text=$".styled-text-area .text {
-	 		-fx-fill: white;
-	 		}
-    		.styled-text-area .caret {
-      		  -fx-stroke: white;
-    		}
-			"$
-			sb.Append(CRLF).Append(text)
-		End If
 	End If
 	
     Return sb.ToString
