@@ -93,7 +93,6 @@ Sub applyButton_MouseClicked (EventData As MouseEvent)
 End Sub
 
 Sub categoryListView_SelectedIndexChanged(Index As Int)
-	
 	Log(Index)
 	Select Index
 		Case 0
@@ -106,10 +105,6 @@ Sub categoryListView_SelectedIndexChanged(Index As Int)
 			If unsavedPreferences.ContainsKey("autosaveInterval") Then
 				AutoSaveTextField.Text=unsavedPreferences.Get("autosaveInterval")
 			End If
-			CustomCSSCheckBox.Checked=unsavedPreferences.GetDefault("customCSS_enabled",False)
-			If unsavedPreferences.ContainsKey("customCSSDir") Then
-				CSSDirLabel.Text=unsavedPreferences.Get("customCSSDir")
-			End If
 		Case 1
 			'appearance
 			SettingPane.RemoveAllNodes
@@ -117,6 +112,10 @@ Sub categoryListView_SelectedIndexChanged(Index As Int)
 			loadFont
 			lineHeightTextField.Text=unsavedPreferences.GetDefault("lineheight",0)
 			UnderlineSpacesCheckBox.Checked=unsavedPreferences.GetDefault("underline_spaces",False)
+			CustomCSSCheckBox.Checked=unsavedPreferences.GetDefault("customCSS_enabled",False)
+			If unsavedPreferences.ContainsKey("customCSSDir") Then
+				CSSDirLabel.Text=unsavedPreferences.Get("customCSSDir")
+			End If
 			If unsavedPreferences.ContainsKey("darktheme") Then
 				DarkThemeCheckBox.Checked=unsavedPreferences.get("darktheme")
 			End If

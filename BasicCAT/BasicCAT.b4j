@@ -1358,6 +1358,7 @@ Sub ListViewParent_Resize
 	If lv.Items.Size=0 Then
 		Return
 	End If
+	Dim ScrollBarWidth As Double=20dip
 	Dim itemWidth As Double = lv.Width
 	Dim ExtraSize As Int
 	ExtraSize=3
@@ -1373,17 +1374,17 @@ Sub ListViewParent_Resize
 		Dim sourceTa As RichTextArea = p.GetNode(0).Tag
 		Dim targetTa As RichTextArea = p.GetNode(1).Tag
 		sourceTa.BasePane.Left=0
-		sourceTa.BasePane.SetSize(itemWidth/2-20dip,50)
-		targetTa.BasePane.Left=itemWidth/2-20dip
-		targetTa.BasePane.SetSize(itemWidth/2-20dip,50)
+		sourceTa.BasePane.SetSize(itemWidth/2-ScrollBarWidth,50)
+		targetTa.BasePane.Left=itemWidth/2-ScrollBarWidth
+		targetTa.BasePane.SetSize(itemWidth/2-ScrollBarWidth,50)
 		Dim sourceHeight,targetHeight As Double
 		sourceHeight=sourceTa.totalHeightEstimate+lineHeightTimes*sourceTa.LineHeight
 		targetHeight=targetTa.totalHeightEstimate+lineHeightTimes*targetTa.LineHeight
 		Dim h As Double=Max(25,Max(sourceHeight,targetHeight))
-		sourceTa.BasePane.SetSize(itemWidth/2-20dip,h)
-		targetTa.BasePane.SetSize(itemWidth/2-20dip,h)
+		sourceTa.BasePane.SetSize(itemWidth/2-ScrollBarWidth,h)
+		targetTa.BasePane.SetSize(itemWidth/2-ScrollBarWidth,h)
 		p.Left=0
-		p.SetSize(itemWidth-40dip,h)
+		p.SetSize(itemWidth-ScrollBarWidth*2,h)
 	Next
 End Sub
 
