@@ -1359,6 +1359,11 @@ Sub ListViewParent_Resize
 		Return
 	End If
 	Dim ScrollBarWidth As Double=20dip
+	
+	If preferencesMap.GetDefault("customCSS_enabled",False)=True Then
+		ScrollBarWidth=Theme.ScrollBarWidth(preferencesMap.GetDefault("customCSSDir",File.DirApp))
+	End If
+	
 	Dim itemWidth As Double = lv.Width
 	Dim ExtraSize As Int
 	ExtraSize=3

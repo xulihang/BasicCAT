@@ -19,6 +19,13 @@ Public Sub load(form As Form,dir As String)
 	End If
 End Sub
 
+Public Sub ScrollBarWidth(dir As String) As Double
+	If File.Exists(dir,"scrollbar_width") Then
+		Return File.ReadString(dir,"scrollbar_width").Trim
+	End If
+	Return 20dip
+End Sub
+
 Public Sub StatusBarColor(dir As String) As Paint
 	If File.Exists(dir,"statusbar_bgcolor") Then
 		Dim rgb As String=File.ReadString(dir,"statusbar_bgcolor").Trim
