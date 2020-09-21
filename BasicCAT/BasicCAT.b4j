@@ -187,25 +187,25 @@ Library8=jrandomaccessfile
 Library9=jb4xencryption
 Module1=FileChooserUtils
 Module10=preTranslateDialog
-Module11=Utils
-Module12=TMDB
-Module13=LanguageUtils
-Module14=xliffFilter
-Module15=idmlFilter
-Module16=filterGenericUtils
-Module17=XmlNode
-Module18=XMLUtils
-Module19=Previewer
+Module11=XmlNode
+Module12=xliffFilter
+Module13=statistics
+Module14=ITP
+Module15=RichTextArea
+Module16=Utils
+Module17=TMDB
+Module18=LanguageUtils
+Module19=idmlFilter
 Module2=Project
-Module20=ITP
-Module21=searchAndReplaceDialog
-Module22=TMX
-Module23=MT
-Module24=SimpleTag
-Module25=XmlParser
-Module26=XMLBuilder2
-Module27=statistics
-Module28=RichTextArea
+Module20=filterGenericUtils
+Module21=XMLUtils
+Module22=Previewer
+Module23=searchAndReplaceDialog
+Module24=TMX
+Module25=MT
+Module26=SimpleTag
+Module27=XmlParser
+Module28=XMLBuilder2
 Module29=Xml2Map
 Module3=segmentation
 Module30=importDialog
@@ -258,11 +258,12 @@ Module72=TBX
 Module73=CallSubUtils
 Module74=viewSegment
 Module75=coordinate
+Module76=Theme
 Module8=KeyValueStore
 Module9=ProjectSettings
 NumberOfFiles=79
 NumberOfLibraries=26
-NumberOfModules=75
+NumberOfModules=76
 Version=7.8
 @EndOfDesignText@
 #Region Project Attributes 
@@ -445,12 +446,16 @@ End Sub
 
 Sub setupStyleSheets
 	'MainForm.Stylesheets.Add(File.GetUri(File.DirAssets, "custom.css"))
-	If preferencesMap.GetDefault("darktheme",False)=True Then
-		MainForm.Stylesheets.Add(File.GetUri(File.DirAssets, "dark.css"))
-		CSSUtils.SetStyleProperty(TabPane1,"-fx-base","rgba(60, 63, 65, 255)")
-		CSSUtils.SetBackgroundColor(statusBar,fx.Colors.DarkGray)
-		LoadHTMLWithBackground(LogWebView,"")
+	If preferencesMap.GetDefault("customCSS_enabled",False)=True Then
+		Theme.load(MainForm,preferencesMap.GetDefault("customCSSDir",File.DirApp))
+	Else
+		If preferencesMap.GetDefault("darktheme",False)=True Then
+			MainForm.Stylesheets.Add(File.GetUri(File.DirAssets, "dark.css"))
+			CSSUtils.SetStyleProperty(TabPane1,"-fx-base","rgba(60, 63, 65, 255)")
+			CSSUtils.SetBackgroundColor(statusBar,fx.Colors.DarkGray)
+		End If
 	End If
+	LoadHTMLWithBackground(LogWebView,"")
 End Sub
 
 Public Sub initializeNLP(sourcelang As String)
@@ -1534,20 +1539,36 @@ Sub tmTableView_SelectedRowChanged(Index As Int, Row() As Object)
 End Sub
 
 Public Sub LoadHTMLWithBackground(wv As WebView,html As String)
+	Dim bgColor,highlightColor,textColor As String
+    textColor="black"
+	
 	If preferencesMap.GetDefault("darktheme",False)=True Then
-		html=html.Replace("<body>","<body bgcolor=#95999C>")
-		html=html.Replace($"color="red""$,$"color="#C80000""$)
+		bgColor="#95999C"
+		highlightColor="#C80000"
+	End If
+	
+	If preferencesMap.GetDefault("customCSS_enabled",False)=True Then
+		bgColor=Theme.WebViewBGColor(preferencesMap.GetDefault("customCSSDir",File.DirApp))
+		textColor=Theme.WebViewTextColor(preferencesMap.GetDefault("customCSSDir",File.DirApp))
+	End If
+	
+	If bgColor<>"" Then
+		html=html.Replace("<body>","<body bgcolor="&bgColor&" text="&textColor&">")
+		If highlightColor<>"" Then
+			html=html.Replace($"color="red""$,$"color="${highlightColor}""$)
+		End If
 		If html="" Then
 			Dim s As StringBuilder
 			s.Initialize
 			s.Append("<!DOCTYPE html>")
 			s.Append("<html>")
-			s.Append("<body bgcolor=#95999C>")
+			s.Append("<body bgcolor="&bgColor&" text="&textColor&">")
 			s.Append("</body>")
 			s.Append("</html>")
 			html=s.ToString
 		End If
 	End If
+	
 	wv.LoadHtml(html)
 End Sub
 
@@ -1850,9 +1871,23 @@ Public Sub setTextAreaStyle(ta As RichTextArea,FontNameKey As String)
 		ta.FontFamily=familyName
 		ta.FontSzie=size
 	End If
-	If preferencesMap.GetDefault("darktheme",False) Then
-		Utils.darkenTextArea(ta)
+	If preferencesMap.GetDefault("customCSS_enabled",False)=True Then
+		Dim bgcolor As String=Theme.RichTextBGColor(preferencesMap.GetDefault("customCSSDir",File.DirApp))
+		Try
+			Dim r,g,b As Int
+			r=Regex.Split(",",bgcolor)(0)
+			g=Regex.Split(",",bgcolor)(1)
+			b=Regex.Split(",",bgcolor)(2)
+		    CSSUtils.SetBackgroundColor(ta.GetObject,fx.Colors.RGB(r,g,b))
+		Catch
+			Log(LastException)
+		End Try
+	Else
+		If preferencesMap.GetDefault("darktheme",False) Then
+			CSSUtils.SetBackgroundColor(ta.GetObject,fx.Colors.Black)
+		End If
 	End If
+
 End Sub
 
 Public Sub addTextAreaToSegmentPane(segmentpane As Pane,source As String)

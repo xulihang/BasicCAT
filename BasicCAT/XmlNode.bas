@@ -61,7 +61,6 @@ Public Sub getinnerXML As String
 	End If
 	Dim xml As String=XMLUtils.asStringWithoutXMLHead(Me)
 	Try
-		Log(xml)
 		Dim matcher As Matcher
 		matcher=Regex.Matcher2("(<.*?>).*(</.*?>)",32,xml)
 		Dim parts As List

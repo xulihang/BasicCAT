@@ -41,6 +41,8 @@ Sub Class_Globals
 	Private lookupShowSourceCheckBox As CheckBox
 	Private DarkThemeCheckBox As CheckBox
 	Private UnderlineSpacesCheckBox As CheckBox
+	Private CSSDirLabel As Label
+	Private CustomCSSCheckBox As CheckBox
 End Sub
 
 'Initializes the object. You can add parameters to this method if needed.
@@ -103,6 +105,10 @@ Sub categoryListView_SelectedIndexChanged(Index As Int)
 			End If
 			If unsavedPreferences.ContainsKey("autosaveInterval") Then
 				AutoSaveTextField.Text=unsavedPreferences.Get("autosaveInterval")
+			End If
+			CustomCSSCheckBox.Checked=unsavedPreferences.GetDefault("customCSS_enabled",False)
+			If unsavedPreferences.ContainsKey("customCSSDir") Then
+				CSSDirLabel.Text=unsavedPreferences.Get("customCSSDir")
 			End If
 		Case 1
 			'appearance
@@ -456,4 +462,18 @@ End Sub
 
 Sub UnderlineSpacesCheckBox_CheckedChange(Checked As Boolean)
 	unsavedPreferences.Put("underline_spaces",Checked)
+End Sub
+
+Sub ChooseCustomCSSButton_MouseClicked (EventData As MouseEvent)
+	Dim dc As DirectoryChooser
+	dc.Initialize
+	Dim path As String=dc.Show(frm)
+	If File.Exists(path,"") Then
+		CSSDirLabel.Text=path
+		unsavedPreferences.Put("customCSSDir",path)
+	End If
+End Sub
+
+Sub CustomCSSCheckBox_CheckedChange(Checked As Boolean)
+	unsavedPreferences.Put("customCSS_enabled",Checked)
 End Sub
