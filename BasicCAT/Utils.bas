@@ -612,26 +612,39 @@ Sub rightTrim(text As String) As String
 End Sub
 
 Sub richTextCSS As String
-	Dim tags As String=$".bracket{
+	Dim tags As String
+	Dim spaces As String
+	If Main.preferencesMap.GetDefault("darktheme",False) Then
+		tags=$".bracket{
+-fx-fill: maroon;
+}"$
+		spaces=$".space{
+-fx-underline:true;
+-fx-fill: maroon;
+}"$
+	Else
+		tags=$".bracket{
 -fx-fill: darkgray;
 }"$
-	Dim spaces As String=$".space{
+		spaces=$".space{
 -fx-underline:true;
 -fx-fill: darkgray;
 }"$
+	End If
+
 
     Dim sb As StringBuilder
 	sb.Initialize
-	sb.Append(tags)
 	If Main.preferencesMap.GetDefault("underline_spaces",False) Then
-		sb.Append(CRLF).Append(spaces)
+		sb.Append(spaces)
 	End If
 	
 	Dim text As String
-	
 	If Main.preferencesMap.GetDefault("customCSS_enabled",False)=True Then
 		text=Theme.RichTextColor(Main.preferencesMap.GetDefault("customCSSDir",File.DirApp))
 		sb.Append(CRLF).Append(text)
+	Else
+		sb.Append(CRLF).Append(tags)
 	End If
 	
     Return sb.ToString

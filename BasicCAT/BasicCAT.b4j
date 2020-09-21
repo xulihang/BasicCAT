@@ -186,7 +186,7 @@ Library7=jsql
 Library8=jrandomaccessfile
 Library9=jb4xencryption
 Module1=FileChooserUtils
-Module10=Preferences
+Module10=TM
 Module11=RichTextArea
 Module12=Theme
 Module13=Utils
@@ -229,7 +229,7 @@ Module46=TermManager
 Module47=PDF2TXT
 Module48=LanguagePairSelector
 Module49=TMEditor
-Module5=TM
+Module5=Term
 Module50=dictWebView
 Module51=HistoryViewer
 Module52=serverLauncher
@@ -240,7 +240,7 @@ Module56=SRX
 Module57=progressDialog
 Module58=opennlp
 Module59=languageChooser
-Module6=Term
+Module6=KeyValueStore
 Module60=MTCompare
 Module61=HistoryRecord
 Module62=Map2Xml
@@ -251,15 +251,15 @@ Module66=icu4j
 Module67=FileUtils
 Module68=POIWord
 Module69=FontPicker
-Module7=KeyValueStore
+Module7=ProjectSettings
 Module70=TermEditor
 Module71=InputBox
 Module72=TBX
 Module73=CallSubUtils
 Module74=viewSegment
 Module75=coordinate
-Module8=ProjectSettings
-Module9=preTranslateDialog
+Module8=preTranslateDialog
+Module9=Preferences
 NumberOfFiles=79
 NumberOfLibraries=26
 NumberOfModules=75
@@ -1887,6 +1887,7 @@ End Sub
 
 Public Sub setTextAreaStyle(ta As RichTextArea,FontNameKey As String)
 	Dim cssPath As String
+	
 	If File.Exists(currentProject.path,"config/richtext.css") Then
 		cssPath=File.Combine(currentProject.path,"config/richtext.css")
 	Else

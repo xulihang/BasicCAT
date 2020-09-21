@@ -259,7 +259,7 @@ Public Sub setDefaultBorderColor(color As Paint)
 End Sub
 
 Public Sub getDefaultBorderColor As Paint
-	return mDefaultBorderColor
+	Return mDefaultBorderColor
 End Sub
 
 Public Sub SetDefaultBorder
