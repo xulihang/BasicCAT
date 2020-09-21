@@ -824,8 +824,10 @@ Sub fillWithTMOrMT(index As Int,fromShortcut As Boolean)
 				Log(LastException)
 				Return
 			End Try
-			Dim source As String=tmTableView.SelectedRowValues(1)
-			Dim translation As String=tmTableView.SelectedRowValues(2)
+			Dim sourceLbl As Label=tmTableView.SelectedRowValues(1)
+			Dim translationLbl As Label=tmTableView.SelectedRowValues(2)
+			Dim source As String=sourceLbl.Text
+			Dim translation As String=translationLbl.Text
 			currentProject.setTranslation(currentProject.lastEntry,translation,True,source)
 			currentProject.fillOne(currentProject.lastEntry,translation)
 			'Dim targetTextArea As TextArea
@@ -1524,15 +1526,17 @@ Sub tmTableView_SelectedRowChanged(Index As Int, Row() As Object)
 			Log(LastException)
 			Return
 		End Try
-
+        Dim sourceLbl,translationLbl As Label
+		sourceLbl=Row(1)
+		translationLbl=Row(2)
 		Dim sourceTextArea As RichTextArea
 		sourceTextArea=pane.GetNode(0).Tag
-		If Row(1)="" Then
-			LoadHTMLWithBackground(LogWebView,Utils.buildHtmlString(Row(2)))
+		If sourceLbl.Text="" Then
+			LoadHTMLWithBackground(LogWebView,Utils.buildHtmlString(translationLbl.Text))
 			Return
 		End If
 		Dim html As String
-		html=editDistance.showDiff(sourceTextArea.Text,Row(1)).Replace("</body>","<p>"&Row(2)&"</p></body>")
+		html=editDistance.showDiff(sourceTextArea.Text,sourceLbl.Text).Replace("</body>","<p>"&translationLbl.Text&"</p></body>")
 		LoadHTMLWithBackground(LogWebView,html)
 	End If
 

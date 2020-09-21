@@ -1636,15 +1636,16 @@ Sub showTM(targetTextArea As RichTextArea)
 		If matchList.Get(1)=sourceTA.Text And isExternal=False And targetTA.Text=matchList.Get(2) Then
 			Continue 'itself
 		End If
-		Dim row()  As Object = Array As String(matchList.Get(0),matchList.Get(1),matchList.Get(2),matchList.Get(3))
+		Dim row() As Object = Array As Object(Utils.LabelWithText(matchList.Get(0)), _ 
+												Utils.LabelWithText(matchList.Get(1)), _ 
+												Utils.LabelWithText(matchList.Get(2)), _ 
+												Utils.LabelWithText(matchList.Get(3)))
         If index=0 Then
 			Main.tmTableView.Items.InsertAt(0,row)
 		    index=index+1
 		Else
 			Main.tmTableView.Items.Add(row)
         End If
-		
-		
 	Next
 	Log(DateTime.Now-time)
 	
@@ -1668,7 +1669,7 @@ Sub showMT(source As String,targetTextArea As RichTextArea)
 			wait for (MT.getMT(source,projectFile.Get("source"),projectFile.Get("target"),engine)) Complete (Result As String)
 			If Result<>"" Then
 				'Log("mt:"&Result)
-				Dim row()  As Object = Array As String("","",Result,engine)
+				Dim row() As Object = Array As Object(Utils.LabelWithText(""),Utils.LabelWithText(""),Utils.LabelWithText(Result),Utils.LabelWithText(engine))
 				Main.tmTableView.Items.Add(row)
 				Main.changeWhenSegmentOrSelectionChanges
 			End If

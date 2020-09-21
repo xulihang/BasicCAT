@@ -648,6 +648,13 @@ Sub richTextCSS As String
     Return sb.ToString
 End Sub
 
+Sub LabelWithText(text As String) As Label
+	Dim lbl As Label
+	lbl.Initialize("")
+	lbl.Text=text
+	Return lbl
+End Sub
+
 Sub MeasureMultilineTextHeight (Font As Font, Width As Double, Text As String) As Double
 	Dim height As Double=10
 	Try
