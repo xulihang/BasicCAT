@@ -447,6 +447,7 @@ Sub setupStyleSheets
 	'MainForm.Stylesheets.Add(File.GetUri(File.DirAssets, "custom.css"))
 	If preferencesMap.GetDefault("customCSS_enabled",False)=True Then
 		Theme.load(MainForm,preferencesMap.GetDefault("customCSSDir",File.DirApp))
+		CSSUtils.SetBackgroundColor(statusBar,Theme.StatusBarColor(preferencesMap.GetDefault("customCSSDir",File.DirApp)))
 	Else
 		If preferencesMap.GetDefault("darktheme",False)=True Then
 			MainForm.Stylesheets.Add(File.GetUri(File.DirAssets, "dark.css"))
@@ -1900,16 +1901,8 @@ Public Sub setTextAreaStyle(ta As RichTextArea,FontNameKey As String)
 		ta.FontSzie=size
 	End If
 	If preferencesMap.GetDefault("customCSS_enabled",False)=True Then
-		Dim bgcolor As String=Theme.RichTextBGColor(preferencesMap.GetDefault("customCSSDir",File.DirApp))
-		Try
-			Dim r,g,b As Int
-			r=Regex.Split(",",bgcolor)(0)
-			g=Regex.Split(",",bgcolor)(1)
-			b=Regex.Split(",",bgcolor)(2)
-		    CSSUtils.SetBackgroundColor(ta.GetObject,fx.Colors.RGB(r,g,b))
-		Catch
-			Log(LastException)
-		End Try
+		Dim bgcolor As Paint=Theme.RichTextBGColor(preferencesMap.GetDefault("customCSSDir",File.DirApp))
+		CSSUtils.SetBackgroundColor(ta.GetObject,bgcolor)
 	Else
 		If preferencesMap.GetDefault("darktheme",False) Then
 			CSSUtils.SetBackgroundColor(ta.GetObject,fx.Colors.Black)

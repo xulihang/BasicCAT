@@ -19,6 +19,27 @@ Public Sub load(form As Form,dir As String)
 	End If
 End Sub
 
+Public Sub StatusBarColor(dir As String) As Paint
+	If File.Exists(dir,"statusbar_bgcolor") Then
+		Dim rgb As String=File.ReadString(dir,"statusbar_bgcolor").Trim
+		Return getPaintFromRGB(rgb,fx.Colors.White)
+	End If
+	Return fx.Colors.White
+End Sub
+
+Sub getPaintFromRGB(rgb As String,default As Paint) As Paint
+	Try
+		Dim r,g,b As Int
+		r=Regex.Split(",",rgb)(0)
+		g=Regex.Split(",",rgb)(1)
+		b=Regex.Split(",",rgb)(2)
+		Return fx.Colors.Rgb(r,g,b)
+	Catch
+		Log(LastException)
+	End Try
+	Return default
+End Sub
+
 Public Sub WebViewBGColor(dir As String) As String
 	If File.Exists(dir,"webview_bgcolor") Then
 		Return File.ReadString(dir,"webview_bgcolor").Trim
@@ -43,10 +64,10 @@ Public Sub RichTextColor(dir As String) As String
 	End If
 End Sub
 
-Public Sub RichTextBGColor(dir As String) As String
+Public Sub RichTextBGColor(dir As String) As Paint
 	If File.Exists(dir,"richtext_bgcolor") Then
-		Return File.ReadString(dir,"richtext_bgcolor").Trim
-	Else
-		Return ""
+		Dim rgb As String=File.ReadString(dir,"richtext_bgcolor").Trim
+		Return getPaintFromRGB(rgb,fx.Colors.White)
 	End If
+	Return fx.Colors.White
 End Sub
