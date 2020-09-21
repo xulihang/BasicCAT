@@ -186,84 +186,83 @@ Library7=jsql
 Library8=jrandomaccessfile
 Library9=jb4xencryption
 Module1=FileChooserUtils
-Module10=preTranslateDialog
-Module11=XmlNode
-Module12=xliffFilter
-Module13=statistics
-Module14=ITP
-Module15=RichTextArea
-Module16=Utils
-Module17=TMDB
-Module18=LanguageUtils
-Module19=idmlFilter
+Module10=XmlNode
+Module11=xliffFilter
+Module12=statistics
+Module13=ITP
+Module14=RichTextArea
+Module15=Utils
+Module16=TMDB
+Module17=LanguageUtils
+Module18=idmlFilter
+Module19=filterGenericUtils
 Module2=Project
-Module20=filterGenericUtils
-Module21=XMLUtils
-Module22=Previewer
-Module23=searchAndReplaceDialog
-Module24=TMX
-Module25=MT
-Module26=SimpleTag
-Module27=XmlParser
-Module28=XMLBuilder2
-Module29=Xml2Map
+Module20=XMLUtils
+Module21=Previewer
+Module22=searchAndReplaceDialog
+Module23=TMX
+Module24=MT
+Module25=SimpleTag
+Module26=XmlParser
+Module27=XMLBuilder2
+Module28=Xml2Map
+Module29=importDialog
 Module3=segmentation
-Module30=importDialog
-Module31=TMManager
-Module32=tikal
-Module33=editDistance
-Module34=pdfbox
-Module35=Preferences
-Module36=idmlUtils
-Module37=SourceTextEditor
-Module38=git
-Module39=TagKind
-Module4=CustomListView
-Module40=PathSaver
-Module41=SearchView
-Module42=InputTextAreaBox
-Module43=TermManager
-Module44=PDF2TXT
-Module45=LanguagePairSelector
-Module46=TMEditor
-Module47=dictWebView
-Module48=HistoryViewer
-Module49=serverLauncher
-Module5=txtFilter
-Module50=TextFlow
-Module51=AutoSaver
-Module52=MTParamsFiller
-Module53=ClientKVS
-Module54=SRX
-Module55=LanguageTool
-Module56=progressDialog
-Module57=confirmReviewDialog
-Module58=opennlp
-Module59=languageChooser
-Module6=TM
-Module60=MTCompare
-Module61=HistoryRecord
-Module62=Map2Xml
-Module63=ErrorReporter
-Module64=OperationDialog
-Module65=zip4j
-Module66=icu4j
-Module67=FileUtils
-Module68=POIWord
-Module69=FontPicker
-Module7=Term
-Module70=TermEditor
-Module71=InputBox
-Module72=TBX
-Module73=CallSubUtils
-Module74=viewSegment
-Module75=coordinate
-Module76=Theme
-Module8=KeyValueStore
-Module9=ProjectSettings
+Module30=TMManager
+Module31=tikal
+Module32=editDistance
+Module33=pdfbox
+Module34=Preferences
+Module35=idmlUtils
+Module36=SourceTextEditor
+Module37=git
+Module38=TagKind
+Module39=PathSaver
+Module4=txtFilter
+Module40=SearchView
+Module41=InputTextAreaBox
+Module42=TermManager
+Module43=PDF2TXT
+Module44=LanguagePairSelector
+Module45=TMEditor
+Module46=dictWebView
+Module47=HistoryViewer
+Module48=serverLauncher
+Module49=TextFlow
+Module5=TM
+Module50=AutoSaver
+Module51=MTParamsFiller
+Module52=ClientKVS
+Module53=SRX
+Module54=LanguageTool
+Module55=progressDialog
+Module56=confirmReviewDialog
+Module57=opennlp
+Module58=languageChooser
+Module59=MTCompare
+Module6=Term
+Module60=HistoryRecord
+Module61=Map2Xml
+Module62=ErrorReporter
+Module63=OperationDialog
+Module64=zip4j
+Module65=icu4j
+Module66=FileUtils
+Module67=POIWord
+Module68=FontPicker
+Module69=TermEditor
+Module7=KeyValueStore
+Module70=InputBox
+Module71=TBX
+Module72=CallSubUtils
+Module73=viewSegment
+Module74=coordinate
+Module75=Theme
+Module8=ProjectSettings
+Module9=preTranslateDialog
 NumberOfFiles=79
 NumberOfLibraries=26
-NumberOfModules=76
+NumberOfModules=75
 Version=7.8
 @EndOfDesignText@
 #Region Project Attributes 
@@ -329,7 +328,7 @@ Sub Process_Globals
 	Private MenuBar1 As MenuBar
 	Public pre As Previewer
 	Private operationLabel As Label
-	Private checkLV As CustomListView
+	Private checkLV As ListView
 	Public nlp As opennlp
 	Public plugin As ABPlugin
 	Private dw As dictWebView
@@ -1466,8 +1465,9 @@ End Sub
 Sub searchTableView_MouseClicked (EventData As MouseEvent)
 	If EventData.PrimaryButtonPressed Then
 		If searchTableView.SelectedRowValues<>Null Then
+			Dim indexLbl As Label=searchTableView.SelectedRowValues(0)
 			Dim index As Int
-			index=searchTableView.SelectedRowValues(0)
+			index=indexLbl.Text
 			Log(index)
 			Log(currentProject.segments.Get(index))
 			Dim context As String
@@ -1476,8 +1476,12 @@ Sub searchTableView_MouseClicked (EventData As MouseEvent)
 			'	segment=currentProject.segments.Get(i)
 			'	context=segment.Get(2)&context
 			'Next
-			For Each row() As String In searchTableView.Items
-				context=context&row(0)&" "&row(1)&CRLF&"  "&row(2)&CRLF&CRLF
+			For Each row() As Object In searchTableView.Items
+				Dim indexLbl,sourceLbl,targetLbl As Label
+				indexLbl=row(0)
+				sourceLbl=row(1)
+				targetLbl=row(2)
+				context=context&indexLbl.Text&" "&sourceLbl.Text&CRLF&"  "&targetLbl.Text&CRLF&CRLF
 			Next
 			Dim viewSegmentForm As viewSegment
 			viewSegmentForm.Initialize
@@ -1582,8 +1586,9 @@ Sub searchTableView_Action
 	Select mi.Text
 		Case "Go to the segment"
 			If searchTableView.SelectedRowValues<>Null Then
+				Dim lbl As Label=searchTableView.SelectedRowValues(0)
 				Dim index As Int
-				index=searchTableView.SelectedRowValues(0)
+				index=lbl.Text
 				editorLV.ScrollTo(index)
 			End If
 	End Select
@@ -1627,11 +1632,14 @@ Sub toggleTableOrWebView(selected As Boolean,tb As ToggleButton, wv As WebView,t
 		tb.Text="C"
 		tv.Visible=False
 		Dim index As Int=0
-		For Each row() As String In tv.Items
+		For Each row() As Object In tv.Items
 			index=index+1
-			html=html&index&"<br/>"&row(1).Replace(searchTableView.Tag,$"<span id="selected">${searchTableView.Tag}</span>"$)&"<br />"&row(2).Replace(searchTableView.Tag,$"<span id="selected">${searchTableView.Tag}</span>"$)&"<br />"&"<br />"
+			Dim sourceLbl,targetLbl As Label
+			sourceLbl=row(1)
+			targetLbl=row(2)
+			html=html&index&"<br/>"&sourceLbl.Text.Replace(searchTableView.Tag,$"<span id="selected">${searchTableView.Tag}</span>"$)&"<br />"&targetLbl.Text.Replace(searchTableView.Tag,$"<span id="selected">${searchTableView.Tag}</span>"$)&"<br />"&"<br />"
 		Next
-		wv.LoadHtml(htmlhead&html&htmlend)
+		LoadHTMLWithBackground(wv,htmlhead&html&htmlend)
 	End If
 End Sub
 
@@ -1644,9 +1652,12 @@ Sub toggleTableOrTextArea(selected As Boolean,tb As ToggleButton, ta As TextArea
 		tv.Visible=False
 		ta.Text=""
 		Dim index As Int=0
-		For Each row() As String In tv.Items
+		For Each row() As Object In tv.Items
+			Dim sourceLbl,targetLbl As Label
+			sourceLbl=row(1)
+			targetLbl=row(2)
 			index=index+1
-			ta.Text=ta.Text&index&CRLF&row(1)&CRLF&row(2)&CRLF&CRLF
+			ta.Text=ta.Text&index&CRLF&sourceLbl.Text&CRLF&targetLbl.Text&CRLF&CRLF
 		Next
 	End If
 End Sub
@@ -1683,14 +1694,10 @@ Public Sub updateOperation(info As String)
 	End If
 End Sub
 
-Sub checkLV_MouseClicked (EventData As MouseEvent)
-	
-End Sub
-
 Public Sub addCheckList(matches As List,entry As Int,context As String)
 	Try
 		TabPane1.SelectedIndex=2
-		checkLV.Clear
+		checkLV.Items.Clear
 		Dim match As Map=matches.Get(0)
 		Log("match"&match)
 		'match.Get("shortMessage")
@@ -1713,12 +1720,13 @@ Public Sub addCheckList(matches As List,entry As Int,context As String)
 		tf.AddText(context.SubString2(offset,offset+length)).SetColor(fx.Colors.Red)
 		tf.AddText(context.SubString2(offset+length,context.Length))
 		Dim p As Pane=tf.CreateTextFlow
-		p.SetSize(checkLV.AsView.Width,Utils.MeasureMultilineTextHeight(fx.DefaultFont(15),checkLV.AsView.Width,tf.getText))
+		p.SetSize(checkLV.Width,Utils.MeasureMultilineTextHeight(fx.DefaultFont(15),checkLV.Width,tf.getText))
 		Dim tagList As List
 		tagList.Initialize
 		tagList.Add(matches)
 		tagList.Add(entry)
-		checkLV.Add(p,tagList)
+		p.Tag=tagList
+		checkLV.Items.Add(p)
 		For Each replace As Map In replacements
 			Dim replacement As String
 			replacement=replace.Get("value")
@@ -1729,7 +1737,11 @@ Public Sub addCheckList(matches As List,entry As Int,context As String)
 			values.Add(replacement)
 			values.Add(entry)
 			values.Add(matches)
-			checkLV.AddTextItem("replacement: "&replacement,values)
+			Dim lbl As Label
+			lbl.Initialize("")
+			lbl.Text="replacement: "&replacement
+			lbl.Tag=values
+			checkLV.Items.Add(lbl)
 		Next
 	Catch
 		Log(LastException)
@@ -1737,55 +1749,67 @@ End Try
 End Sub
 
 Public Sub getCheckLVSize As Int
-	Return checkLV.Size
+	Return checkLV.Items.Size
 End Sub
 
 Public Sub checkLVClear
-	checkLV.Clear
+	checkLV.Items.Clear
 End Sub
 
 Public Sub noErrors
-	checkLV.Clear
-	checkLV.AddTextItem("No errors","")
+	checkLV.items.Clear
+	checkLV.Items.Add(Utils.LabelWithText("No errors"))
 End Sub
 
-Sub checkLV_ItemClick (Index As Int, Value As Object)
-	checkLV.Clear
-	Try
-		If Index=0 Then
-			Dim tagList As List
-			tagList=Value
-			Dim matches As List=tagList.Get(0)
-			Dim entry As Int
-			entry=tagList.Get(1)
-			If matches.Size>1 Then
-				matches.RemoveAt(0)
-				currentProject.showReplacements(matches,entry)
-			End If
+Sub checkLV_MouseClicked (EventData As MouseEvent)
+	If checkLV.SelectedItem<>Null Then
+		Dim index As Int=checkLV.SelectedIndex
+		Dim value As Object
+		If checkLV.SelectedItem Is Pane Then
+			Dim p As Pane=checkLV.SelectedItem
+			value=p.tag
+		else if checkLV.SelectedItem Is Label Then
+			Dim lbl As Label=checkLV.SelectedItem
+			value=lbl.Tag
 		Else
-			If Value<>"" Then
+			value=""
+		End If	
+		checkLV.Items.Clear
+		Try
+			If index=0 Then
 				Dim tagList As List
-				tagList=Value
-				Dim offset,length,entry As Int
-				offset=tagList.Get(0)
-				length=tagList.Get(1)
-				Dim replacement As String
-				replacement=tagList.Get(2)
-				entry=tagList.Get(3)
-				Dim p As Pane
-				p=editorLV.Items.Get(entry)
-				Dim targetTextArea As RichTextArea
-				targetTextArea=p.GetNode(1).Tag
-				targetTextArea.Text=targetTextArea.Text.SubString2(0,offset)&replacement&targetTextArea.Text.SubString2(offset+length,targetTextArea.Text.Length)
-				Sleep(0)
-				targetTextArea.SetSelection(targetTextArea.Text.Length,targetTextArea.Text.Length)
-				targetTextArea.RequestFocus
+				tagList=value
+				Dim matches As List=tagList.Get(0)
+				Dim entry As Int
+				entry=tagList.Get(1)
+				If matches.Size>1 Then
+					matches.RemoveAt(0)
+					currentProject.showReplacements(matches,entry)
+				End If
+			Else
+				If value<>"" Then
+					Dim tagList As List
+					tagList=value
+					Dim offset,length,entry As Int
+					offset=tagList.Get(0)
+					length=tagList.Get(1)
+					Dim replacement As String
+					replacement=tagList.Get(2)
+					entry=tagList.Get(3)
+					Dim p As Pane
+					p=editorLV.Items.Get(entry)
+					Dim targetTextArea As RichTextArea
+					targetTextArea=p.GetNode(1).Tag
+					targetTextArea.Text=targetTextArea.Text.SubString2(0,offset)&replacement&targetTextArea.Text.SubString2(offset+length,targetTextArea.Text.Length)
+					Sleep(0)
+					targetTextArea.SetSelection(targetTextArea.Text.Length,targetTextArea.Text.Length)
+					targetTextArea.RequestFocus
+				End If
 			End If
-		End If
-	Catch
-		Log(LastException)
-	End Try
-
+		Catch
+			Log(LastException)
+		End Try
+	End If
 End Sub
 
 

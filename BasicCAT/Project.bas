@@ -1206,7 +1206,9 @@ Sub onSelectionChanged(selectedText As String,ta As RichTextArea,isSource As Boo
 			End If
 		Next
 		For Each segment As List In result
-			Dim row()  As Object = Array As String(segment.Get(5),segment.Get(0),segment.Get(1))
+			Dim row() As Object = Array As Object(Utils.LabelWithText(segment.Get(segment.Size-1)), _ 
+													Utils.LabelWithText(segment.Get(0)), _ 
+													Utils.LabelWithText(segment.Get(1)))
 			Main.searchTableView.Items.Add(row)
 		Next
 		Main.changeWhenSegmentOrSelectionChanges
