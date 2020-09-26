@@ -226,6 +226,6 @@ ModuleClosedNodes74=
 ModuleClosedNodes75=
 ModuleClosedNodes8=
 ModuleClosedNodes9=
-NavigationStack=confirmReviewDialog,Class_Globals,8,0,Main,Process_Globals,46,0,Utils,buildHtmlString,522,0,confirmReviewDialog,loadHtml,61,0,editDistance,compareStrings,16,0,Main,tmTableView_SelectedRowChanged,1282,0,editDistance,showDiff,21,0,editDistance,interpret,173,0,confirmReviewDialog,loadNextOne,43,6,editDistance,genHtmlResult,251,6
+NavigationStack=editDistance,calculateEditDistance,42,0,editDistance,revealOperation,90,0,editDistance,interpret,231,6,editDistance,genHtmlResult,224,6,editDistance,showDiff,19,6,Utils,buildHtmlString,522,0,editDistance,TextInParts,282,6,editDistance,compareStrings,8,0,confirmReviewDialog,loadNextOne,45,6,editDistance,getTextInParts,25,1
 SelectedBuild=0
 VisibleModules=1,2,3,4,5,6,7,8,9,10,28,18,26,19,35,15,11,37

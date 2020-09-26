@@ -44,9 +44,27 @@ Sub loadNextOne
 		If review<>segment.Get(1) Then
 			Dim sb As StringBuilder
 			sb.Initialize
+			
 			sb.Append("<p>source:&nbsp;").Append(onerow(0)).Append("</p>")
 			sb.Append("<p>target:&nbsp;").Append(segment.Get(1)).Append("</p>")
 			sb.Append("<p>review:&nbsp;").Append(review).Append("</p>")
+			
+			Dim parts As Map=editDistance.getTextInParts(segment.Get(1),review)
+			sb.Append("<p>diff:</p>")
+			Dim str1Parts,str2Parts As List
+			str1Parts=parts.Get("str1")
+			str2Parts=parts.Get("str2")
+			sb.Append("<p>")
+			For Each part As String In str1Parts
+				sb.Append(part)
+			Next
+			sb.Append("</p>")
+			sb.Append("<p>")
+			For Each part As String In str2Parts
+				sb.Append(part)
+			Next
+			sb.Append("</p>")
+			
 			loadHtml(sb.ToString)
 		Else
 			loadNextOne

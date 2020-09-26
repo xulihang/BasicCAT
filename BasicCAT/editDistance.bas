@@ -25,10 +25,19 @@ Sub showDiff(source1 As String,source2 As String) As String
 	str1=source1
 	str2=source2
 	calculateEditDistance
-	Return interpret(revealOperation)
+	Dim result As Map=interpret(revealOperation)
+	Return genHtmlResult(TextInParts(result))
 End Sub
 
-Sub getSimilarity(source1 As String,source2 As String) As ResumableSub
+Sub getTextInParts(source1 As String,source2 As String) As Map
+	str1=source1
+	str2=source2
+	calculateEditDistance
+	Dim result As Map=interpret(revealOperation)
+	Return TextInParts(result)
+End Sub
+
+Public Sub getSimilarity(source1 As String,source2 As String) As ResumableSub
 	str1=source1
 	str2=source2
 	Sleep(0)
@@ -94,7 +103,6 @@ Sub calculateEditDistance As Int
 End Sub
 
 Sub revealOperation As List
-
 	Dim maxLength As Int
 	maxLength=Max(str1.Length,str2.Length)
 	Dim list1 As List
@@ -177,7 +185,7 @@ Sub getWayAndPos(x As Int,y As Int) As Map
 	Return map1
 End Sub
 
-Sub interpret(list1 As List) As String
+Sub interpret(list1 As List) As Map
 	Dim add,del,substitute,diff As String
 	Dim diffList,diffPosList,addList,addPosList As List
 	diffList.Initialize
@@ -219,43 +227,78 @@ Sub interpret(list1 As List) As String
 	del=su.Reverse(del)
 	substitute=su.Reverse(substitute)
 	'Log(add&del&substitute)
-	Return genHtmlResult(addList,diffList,addPosList,diffPosList)
+	Dim result As Map
+	result.Initialize
+	result.Put("addList",addList)
+	result.Put("diffList",diffList)
+	result.Put("addPosList",addPosList)
+	result.Put("diffPosList",diffPosList)
+	Return result
 End Sub
 
-Sub genHtmlResult(addList As List,diffList As List,addPosList As List,diffPosList As List) As String
+Sub genHtmlResult(strs As Map) As String
+	Dim str1parts,str2parts As List
+	str1parts=strs.Get("str1")
+	str2parts=strs.Get("str2")
 	Dim sb As StringBuilder
 	sb.Initialize
-	For i=0 To str1.Length-1
-		Dim text As String
-		text=str1.CharAt(i)
-		If diffList.IndexOf(text)<>-1 And diffList.Size<>0 Then
-			If diffPosList.Get(diffList.IndexOf(text))=i Then
-				diffPosList.RemoveAt(diffList.IndexOf(text))
-				diffList.RemoveAt(diffList.IndexOf(text))
-				text="<font color="&Chr(34)&"red"&Chr(34)&">"&text&"</font>"
-			End If
-		End If
-		sb.Append(text)
+	sb.Append("<!DOCTYPE HTML><html><body>")
+	sb.Append("<p>")
+	For Each part As String In str1parts
+		sb.Append(part)
 	Next
-	'content="<p>"&content&"</p><p>"
-	sb.Insert(0,"<p>")
 	sb.Append("</p><p>")
 	
-	For i=0 To str2.Length-1
-		Dim text As String
-		text=str2.CharAt(i)
-		If addList.IndexOf(text)<>-1 And addList.Size<>0 Then
-			
-			If addPosList.Get(addList.IndexOf(text))=i Then
-				addPosList.RemoveAt(addList.IndexOf(text))
-				addList.RemoveAt(addList.IndexOf(text))
-				text="<font color="&Chr(34)&"green"&Chr(34)&">"&text&"</font>"
-			End If
-		End If
-		sb.Append(text)
+	sb.Append("<p>")
+	For Each part As String In str2parts
+		sb.Append(part)
 	Next
 	sb.Append("</p>")
-	sb.Insert(0,"<!DOCTYPE HTML><html><body>")
 	sb.Append("</body></html>")
 	Return sb.ToString
 End Sub
+
+Sub TextInParts(result As Map) As Map
+	Dim addList,diffList,addPosList,diffPosList As List
+	addList=result.Get("addList")
+	diffList=result.Get("diffList")
+	addPosList=result.Get("addPosList")
+	diffPosList=result.Get("diffPosList")
+	Dim str1Parts As List
+	str1Parts.Initialize
+	For i=0 To str1.Length-1
+		Dim Text As String
+		Text=str1.CharAt(i)
+		If diffList.IndexOf(Text)<>-1 And diffList.Size<>0 Then
+			If diffPosList.Get(diffList.IndexOf(Text))=i Then
+				diffPosList.RemoveAt(diffList.IndexOf(Text))
+				diffList.RemoveAt(diffList.IndexOf(Text))
+				Text="<font color="&Chr(34)&"red"&Chr(34)&">"&Text&"</font>"
+			End If
+		End If
+		str1Parts.add(Text)
+	Next
+	
+	Dim str2Parts As List
+	str2Parts.Initialize
+	For i=0 To str2.Length-1
+		Dim Text As String
+		Text=str2.CharAt(i)
+		If addList.IndexOf(Text)<>-1 And addList.Size<>0 Then
+			
+			If addPosList.Get(addList.IndexOf(Text))=i Then
+				addPosList.RemoveAt(addList.IndexOf(Text))
+				addList.RemoveAt(addList.IndexOf(Text))
+				Text="<font color="&Chr(34)&"green"&Chr(34)&">"&Text&"</font>"
+			End If
+		End If
+		str2Parts.Add(Text)
+	Next
+	
+	Dim strs As Map
+	strs.Initialize
+	strs.Put("str1",str1Parts)
+	strs.Put("str2",str2Parts)
+	Return strs
+End Sub
+
