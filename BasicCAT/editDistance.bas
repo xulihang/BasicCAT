@@ -223,7 +223,8 @@ Sub interpret(list1 As List) As String
 End Sub
 
 Sub genHtmlResult(addList As List,diffList As List,addPosList As List,diffPosList As List) As String
-	Dim content As String
+	Dim sb As StringBuilder
+	sb.Initialize
 	For i=0 To str1.Length-1
 		Dim text As String
 		text=str1.CharAt(i)
@@ -234,9 +235,11 @@ Sub genHtmlResult(addList As List,diffList As List,addPosList As List,diffPosLis
 				text="<font color="&Chr(34)&"red"&Chr(34)&">"&text&"</font>"
 			End If
 		End If
-		content=content&text
+		sb.Append(text)
 	Next
-	content="<p>"&content&"</p><p>"
+	'content="<p>"&content&"</p><p>"
+	sb.Insert(0,"<p>")
+	sb.Append("</p><p>")
 	
 	For i=0 To str2.Length-1
 		Dim text As String
@@ -249,9 +252,10 @@ Sub genHtmlResult(addList As List,diffList As List,addPosList As List,diffPosLis
 				text="<font color="&Chr(34)&"green"&Chr(34)&">"&text&"</font>"
 			End If
 		End If
-		content=content&text
+		sb.Append(text)
 	Next
-	content=content&"</p>"
-	content="<!DOCTYPE HTML><html><body>"&content&"</body></html>"
-	Return content
+	sb.Append("</p>")
+	sb.Insert(0,"<!DOCTYPE HTML><html><body>")
+	sb.Append("</body></html>")
+	Return sb.ToString
 End Sub
