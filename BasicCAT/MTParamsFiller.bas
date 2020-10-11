@@ -40,38 +40,47 @@ Public Sub showAndWait As Map
 End Sub
 
 Sub init(engineName As String)
+	Dim emptyMap As Map
+	emptyMap.Initialize
 	Select engineName
 		Case "baidu"
-			setTableView(Array As String("appid","key"))
+			setTableView(Array As String("appid","key"),emptyMap)
 		Case "yandex"
-			setTableView(Array As String("key"))
+			setTableView(Array As String("key"),emptyMap)
 		Case "youdao"
-			setTableView(Array As String("appid","key"))
+			setTableView(Array As String("appid","key"),emptyMap)
 		Case "google"
-			setTableView(Array As String("key"))
+			setTableView(Array As String("key"),emptyMap)
 		Case "microsoft"
-			setTableView(Array As String("key"))
+			setTableView(Array As String("key"),emptyMap)
 		Case "mymemory"
-			setTableView(Array As String("email"))
+			setTableView(Array As String("email"),emptyMap)
 		Case "ali"
-			setTableView(Array As String("accesskeyId","accesskeySecret"))
+			setTableView(Array As String("accesskeyId","accesskeySecret"),emptyMap)
 		Case "ali-ecommerce"
-			setTableView(Array As String("scene"))
+			setTableView(Array As String("scene"),emptyMap)
 	End Select
 	If MT.getMTPluginList.IndexOf(engineName)<>-1 Then
 		wait for (Main.plugin.RunPlugin(engineName&"MT","getParams",Null)) complete (result As List)
-		setTableView(result)
+		Dim DefaultParamValues As Map
+		Try
+			wait for (Main.plugin.RunPlugin(engineName&"MT","getDefaultParamValues",Null)) complete (DefaultParamValues As Map)
+		Catch
+			DefaultParamValues=emptyMap
+			Log(LastException)
+		End Try
+		setTableView(result,DefaultParamValues)
 	End If
 End Sub
 
-Sub setTableView(paramsList As List)
+Sub setTableView(paramsList As List,DefaultParamValues As Map)
 	paramsTableView.SetColumns(Array As String("param","value"))
 	For Each item As String In paramsList
 		Dim Row1() As Object
 		If params.ContainsKey(item) Then
 			Row1=Array (item, params.Get(item))
 		Else
-			Row1=Array (item, "")
+			Row1=Array (item, DefaultParamValues.GetDefault(item,""))
 		End If
 		paramsTableView.Items.Add(Row1)
 		params.Put(Row1(0),Row1(1))

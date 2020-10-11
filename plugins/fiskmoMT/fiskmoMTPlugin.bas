@@ -32,6 +32,8 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 		Case "translate"
 			wait for (translate(Params.Get("source"),Params.Get("sourceLang"),Params.Get("targetLang"),Params.Get("preferencesMap"))) complete (result As String)
 			Return result
+		Case "getDefaultParamValues"
+			Return CreateMap("url":"http://localhost:8500/MTRestService/Translate")
 	End Select
 	Return ""
 End Sub
