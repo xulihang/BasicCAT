@@ -206,16 +206,18 @@ Sub mtTableView_MouseClicked (EventData As MouseEvent)
 		Log(mtTableView.SelectedRowValues(0))
 		Dim engineName As String
 		engineName=mtTableView.SelectedRowValues(0)
-
-        Dim filler As MTParamsFiller
-		filler.Initialize(engineName,preferencesMap)
-		mtPreferences.Put(engineName,filler.showAndWait)
-		Log(mtPreferences)
-
-		unsavedPreferences.Put("mt",mtPreferences)
+		ShowMTParamsFiller(engineName)
 	End If
-	
 End Sub
+
+Sub ShowMTParamsFiller(engineName As String)
+	Dim filler As MTParamsFiller
+	filler.Initialize(engineName,preferencesMap)
+	mtPreferences.Put(engineName,filler.showAndWait)
+	Log(mtPreferences)
+	unsavedPreferences.Put("mt",mtPreferences)
+End Sub
+
 
 Sub loadMT
 	For Each item As String In MT.getMTList
@@ -258,15 +260,18 @@ Sub chkbox_CheckedChange(Checked As Boolean)
 		isfilled=False
 	End If
 	
-	If isfilled=True Then
-		mtPreferences.Put(engine&"_isEnabled",Checked)
-	Else
+	If isfilled=False Then
 		If Checked Then
-			fx.Msgbox(frm,"params are not filled completely","")
+			Dim response As Int=fx.Msgbox2(frm,"params for "&engine&" are not filled completely, the engine may not work.","","Continue","Abort","Fill params",fx.MSGBOX_CONFIRMATION)
+			If response=fx.DialogResponse.CANCEL Then
+				chkbox.Checked=False
+				Return
+			else if response=fx.DialogResponse.NEGATIVE Then
+				ShowMTParamsFiller(engine)
+			End If
 		End If
-		chkbox.Checked=False
-		
 	End If
+	mtPreferences.Put(engine&"_isEnabled",Checked)
 End Sub
 
 
