@@ -10,6 +10,7 @@ Sub Class_Globals
 	Private result As Map
 	Private rateTextField As TextField
 	Private mtComboBox As ComboBox
+	Private IntervalSpinner As Spinner
 End Sub
 
 'Initializes the object. You can add parameters to this method if needed.
@@ -43,6 +44,7 @@ Sub applyMTButton_MouseClicked (EventData As MouseEvent)
 	engine=mtComboBox.Items.Get(mtComboBox.SelectedIndex)
 	If engine<>"" And Utils.getMap("mt",Main.preferencesMap).Get(engine&"_isEnabled")=True Then
 		result.Put("engine",engine)
+		result.Put("interval",IntervalSpinner.Value)
 		result.Put("type","MT")
 	Else
 		fx.Msgbox(frm,"The engine is not enabled","")

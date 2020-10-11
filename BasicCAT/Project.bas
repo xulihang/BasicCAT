@@ -1904,6 +1904,10 @@ Sub preTranslate(options As Map)
 					fillOne(index,resultList.Get(2))
 				End If
 			Else if options.Get("type")="MT" Then
+				Dim interval As Int=options.GetDefault("interval",0)
+				If interval>0 Then
+					Sleep(interval*1000)
+				End If
 				wait for (MT.getMT(bitext.Get(0),projectFile.Get("source"),projectFile.Get("target"),options.Get("engine"))) Complete (translation As String)
 				If translation<>"" Then
 					setTranslation(index,translation,False,"")
