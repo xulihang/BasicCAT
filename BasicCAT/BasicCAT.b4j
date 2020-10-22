@@ -615,7 +615,11 @@ Sub MenuBar1_Action
 				Dim bitext As List
 				bitext=currentProject.segments.Get(i)
 				If bitext.Get(1)="" Then
-					editorLV.ScrollTo(i)
+					editorLV.ScrollTo(Max(0,i-1))
+					If Abs(currentProject.lastEntry-i)>20 Then
+						Sleep(500)
+						editorLV.ScrollTo(Max(0,i-1))
+					End If
 					Return
 				End If
 			Next
