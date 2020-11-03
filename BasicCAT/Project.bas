@@ -1767,6 +1767,13 @@ Sub showTerm(targetTextArea As RichTextArea)
 		Dim lbl2 As Label
 		lbl2=p.GetNode(1)
 		lbl2.Text=termList.Get(1)
+		'add for autocomplete
+		If targetTextArea.Tag Is List Then
+			Dim tagList As List=targetTextArea.Tag
+			If tagList.IndexOf(lbl2.Text)=-1 Then
+				tagList.Add(lbl2.Text)
+			End If
+		End If
 		Dim mi As MenuItem
 		mi.Initialize("View Info","viewInfoMI")
 		mi.Tag=termList
