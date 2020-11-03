@@ -154,6 +154,7 @@ Sub conflictsUnSolvedFilename(dirPath As String,filename As String) As String
 	Return "conflictsSolved"
 End Sub
 
+'replace match in text to replacement
 Sub replaceOnce(text As String,match As String,replacement As String) As String
 	Try
 		text=text.SubString2(0,text.IndexOf(match))&replacement&text.SubString2(text.IndexOf(match)+match.Length,text.Length)

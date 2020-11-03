@@ -1264,9 +1264,14 @@ Sub mi_Action
 		p=Main.editorLV.Items.Get(lastEntry)
 		Dim targetTextArea As RichTextArea
 		targetTextArea=p.GetNode(1).Tag
-		targetTextArea.Text=targetTextArea.Text.SubString2(0,targetTextArea.SelectionStart)&Utils.replaceOnce(mi.Text,mi.Tag,"")&targetTextArea.Text.SubString2(targetTextArea.SelectionStart,targetTextArea.Text.Length)
+		Dim before,replace,after As String
+		before=targetTextArea.Text.SubString2(0,targetTextArea.SelectionStart)
+		'eg. mi.text: replace mi.tag: t
+		replace=Utils.replaceOnce(mi.Text,mi.Tag,"")
+		after=targetTextArea.Text.SubString2(targetTextArea.SelectionStart,targetTextArea.Text.Length)
+		targetTextArea.Text=before&replace&after
 		Sleep(0)
-		targetTextArea.SetSelection(targetTextArea.Text.Length,targetTextArea.Text.Length)
+		targetTextArea.SetSelection(before.Length+replace.Length,before.Length+replace.Length)
 	Catch
 		Log(LastException)
 	End Try
@@ -1765,13 +1770,21 @@ Sub showTerm(targetTextArea As RichTextArea)
 		Dim lbl2 As Label
 		lbl2=p.GetNode(1)
 		lbl2.Text=termList.Get(1)
-		'add for autocomplete
+		
+		#region for autocomplete
 		If targetTextArea.Tag Is List Then
 			Dim tagList As List=targetTextArea.Tag
 			If tagList.IndexOf(lbl2.Text)=-1 Then
 				tagList.Add(lbl2.Text)
 			End If
+		Else
+			Dim tagList As List
+			tagList.Initialize
+			tagList.Add(lbl2.Text)
+			targetTextArea.Tag=tagList
 		End If
+		#end region
+
 		Dim mi As MenuItem
 		mi.Initialize("View Info","viewInfoMI")
 		mi.Tag=termList
