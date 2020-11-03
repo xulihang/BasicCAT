@@ -187,37 +187,37 @@ Library8=jrandomaccessfile
 Library9=jb4xencryption
 Module1=FileChooserUtils
 Module10=RichTextArea
-Module11=XMLBuilder2
-Module12=MTParamsFiller
-Module13=TMX
-Module14=XmlNode
-Module15=XMLUtils
-Module16=xliffFilter
-Module17=TMManager
-Module18=confirmReviewDialog
-Module19=Utils
+Module11=idmlUtils
+Module12=XMLBuilder2
+Module13=MTParamsFiller
+Module14=TMX
+Module15=XmlNode
+Module16=XMLUtils
+Module17=xliffFilter
+Module18=TMManager
+Module19=confirmReviewDialog
 Module2=Project
-Module20=editDistance
-Module21=TM
-Module22=Theme
-Module23=LanguageTool
-Module24=searchAndReplaceDialog
-Module25=statistics
-Module26=ITP
-Module27=TMDB
-Module28=LanguageUtils
-Module29=idmlFilter
+Module20=Utils
+Module21=editDistance
+Module22=TM
+Module23=Theme
+Module24=LanguageTool
+Module25=searchAndReplaceDialog
+Module26=statistics
+Module27=ITP
+Module28=TMDB
+Module29=LanguageUtils
 Module3=segmentation
-Module30=filterGenericUtils
-Module31=Previewer
-Module32=MT
-Module33=SimpleTag
-Module34=XmlParser
-Module35=Xml2Map
-Module36=importDialog
-Module37=tikal
-Module38=pdfbox
-Module39=idmlUtils
+Module30=idmlFilter
+Module31=filterGenericUtils
+Module32=Previewer
+Module33=MT
+Module34=SimpleTag
+Module35=XmlParser
+Module36=Xml2Map
+Module37=importDialog
+Module38=tikal
+Module39=pdfbox
 Module4=txtFilter
 Module40=SourceTextEditor
 Module41=git
@@ -258,11 +258,13 @@ Module72=TBX
 Module73=CallSubUtils
 Module74=viewSegment
 Module75=coordinate
+Module76=EnumClass
+Module77=jieba
 Module8=preTranslateDialog
 Module9=Preferences
 NumberOfFiles=79
 NumberOfLibraries=26
-NumberOfModules=75
+NumberOfModules=77
 Version=7.8
 @EndOfDesignText@
 #Region Project Attributes 
@@ -279,6 +281,7 @@ Version=7.8
 #AdditionalJar: icu4j
 #AdditionalJar: richtextfx-fat-0.10.5
 #AdditionalJar: RichTextInputMethod
+#AdditionalJar: jieba-analysis-1.0.2
 
 '-------- for jgit
 #AdditionalJar: org.eclipse.jgit-5.1.1.201809181055-r
@@ -340,6 +343,7 @@ Sub Process_Globals
 	Private projectAutoSaver As AutoSaver
 	Public TargetFileGeneratingProgress As Progress
 	Private statusBar As Pane
+	Public jieba1 As jieba
 End Sub
 
 Sub AppStart (Form1 As Form, Args() As String)

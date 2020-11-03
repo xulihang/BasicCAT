@@ -51,20 +51,23 @@ Sub getAllSegmentTranslation(text As String,engine As String) As ResumableSub
 	Dim pattern As String
 	If sourceLang.StartsWith("zh") Then
 		pattern=""
-		wait for (getStanfordTokenizedResult(text,address,sourceLang)) Complete (resultList As List)
-		wordList.AddAll(resultList)
-		Log(resultList)
+		If Main.jieba1.IsInitialized=False Then
+			Main.jieba1.Initialize
+		End If
+		'wait for (getStanfordTokenizedResult(text,address,sourceLang)) Complete (resultList As List)
+		wordList.AddAll(Main.jieba1.segmented(text,"SEARCH"))
 	Else
 		pattern=" "
+		wordList.AddAll(Regex.Split(pattern,text))
 	End If
-	
-	wordList.AddAll(Regex.Split(pattern,text))
+	removePunctuationsAndDuplicated(wordList)
 
+    Log(wordList)
 	For Each word As String In wordList
 		wait for (MT.getMT(word,sourceLang,targetLang,engine)) Complete (result As String)
 		translationList.Add(result)
 	Next
-	
+	Log(translationList)
 	If address<>"" Then
 		If languageIsSupported(sourceLang) Then
 			Dim grams As List
@@ -85,6 +88,20 @@ Sub getAllSegmentTranslation(text As String,engine As String) As ResumableSub
 	End If
 	
 	Return duplicatedRemovedList(translationList)
+End Sub
+
+Sub removePunctuationsAndDuplicated(words As List)
+	Dim map1 As Map
+	map1.Initialize
+	For Each part As String In words
+		If Regex.IsMatch("[。！？\.\!\?]",part)=False Then
+			map1.Put(part,"")
+		End If
+	Next
+	words.Clear
+	For Each key As String In map1.Keys
+		words.add(key)
+	Next
 End Sub
 
 Sub getStanfordTokenizedResult(sentence As String, address As String,lang As String) As ResumableSub

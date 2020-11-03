@@ -1042,7 +1042,8 @@ Sub targetTextArea_TextChanged (Old As String, New As String)
 	End If
 	'Log("old"&Old)
 	'Log("last"&lastString)
-
+    
+	'autocomplete
 	If cmClicked=True Then
 		cmClicked=False
 	Else
@@ -1078,7 +1079,7 @@ Sub targetTextArea_TextChanged (Old As String, New As String)
 			If cm.MenuItems.Size<>0 Then
 				Dim map1 As Map
 				map1=Utils.GetScreenPosition(ta.BasePane)
-				Log(map1)
+				'Log(map1)
 				Dim jo As JavaObject = cm
 				jo.RunMethod("show", Array(ta.BasePane, map1.Get("x")+ta.Width/10, map1.Get("y")+ta.Height))
 			End If
@@ -1906,7 +1907,7 @@ Sub preTranslate(options As Map)
 			Else if options.Get("type")="MT" Then
 				Dim interval As Int=options.GetDefault("interval",0)
 				If interval>0 Then
-					Sleep(interval*1000)
+					Sleep(interval)
 				End If
 				wait for (MT.getMT(bitext.Get(0),projectFile.Get("source"),projectFile.Get("target"),options.Get("engine"))) Complete (translation As String)
 				If translation<>"" Then
