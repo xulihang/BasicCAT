@@ -29,25 +29,10 @@ Sub convertLanguageCodeForChinese(lang As String) As String
 	End If
 End Sub
 
-Sub getAllSegmentTranslation(text As String,engine As String) As ResumableSub
-	Dim sourceLang,targetLang As String
-	sourceLang=Main.currentProject.projectFile.Get("source")
-	targetLang=Main.currentProject.projectFile.Get("target")
+Sub getWords(text As String,sourceLang As String) As List
 	sourceLang=convertLanguageCodeForChinese(sourceLang)
-	
-	'Log("text:"&text)
-	Dim translationList As List
-	translationList.Initialize
-	
-	Dim address As String=""
-	If Main.preferencesMap.ContainsKey("corenlp_address") Then
-		address=Main.preferencesMap.Get("corenlp_address")
-	End If
-	'Log("address:"&address)
-
 	Dim wordList As List
 	wordList.Initialize
-	
 	Dim pattern As String
 	If sourceLang.StartsWith("zh") Then
 		pattern=""
@@ -61,13 +46,16 @@ Sub getAllSegmentTranslation(text As String,engine As String) As ResumableSub
 		wordList.AddAll(Regex.Split(pattern,text))
 	End If
 	removePunctuationsAndDuplicated(wordList)
+	Log(wordList)
+	Return wordList
+End Sub
 
-    Log(wordList)
-	For Each word As String In wordList
-		wait for (MT.getMT(word,sourceLang,targetLang,engine)) Complete (result As String)
-		translationList.Add(result)
-	Next
-	Log(translationList)
+Sub getGrams(text As String,sourceLang As String,wordList As List) As ResumableSub
+	Dim grams As List
+	Dim address As String=""
+	If Main.preferencesMap.ContainsKey("corenlp_address") Then
+		address=Main.preferencesMap.Get("corenlp_address")
+	End If
 	If address<>"" Then
 		If languageIsSupported(sourceLang) Then
 			Dim grams As List
@@ -76,17 +64,31 @@ Sub getAllSegmentTranslation(text As String,engine As String) As ResumableSub
 			grams.AddAll(getGramsFromStringViaRe(result))
 			duplicatedRemovedList2(grams,wordList)
 			Log("grams"&grams)
-			For Each gram As String In grams
-				wait for (MT.getMT(gram,sourceLang,targetLang,engine)) Complete (result As String)
-				translationList.Add(result)
-			Next
 		End If
+	Else
+		grams.Initialize
 	End If
+	Return grams
+End Sub
 
+Sub getTranslation(wordList As List,grams As List,engine As String) As ResumableSub
+	Dim sourceLang,targetLang As String
+	sourceLang=Main.currentProject.projectFile.Get("source")
+	targetLang=Main.currentProject.projectFile.Get("target")
+	Dim translationList As List
+	translationList.Initialize
+	For Each word As String In wordList
+		wait for (MT.getMT(word,sourceLang,targetLang,engine)) Complete (result As String)
+		translationList.Add(result)
+	Next
+	For Each gram As String In grams
+		wait for (MT.getMT(gram,sourceLang,targetLang,engine)) Complete (result As String)
+		translationList.Add(result)
+	Next
+	Log(translationList)
 	If Main.preferencesMap.GetDefault("addSourceWords",False) Then
 		translationList.AddAll(wordList)
 	End If
-	
 	Return duplicatedRemovedList(translationList)
 End Sub
 

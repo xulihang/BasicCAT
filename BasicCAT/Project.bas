@@ -1570,24 +1570,13 @@ Sub replacementMi_Action
 	End Try
 End Sub
 
-Sub loadITPSegments(targetTextArea As RichTextArea,engine As String,fullTranslation As String)
-	If Main.preferencesMap.ContainsKey("autocompleteEnabled") Then
-		If Main.preferencesMap.Get("autocompleteEnabled")=False Then
-			Return
-		End If
-	Else
-		Return
-	End If
-	Dim pane As Pane
-	pane=targetTextArea.Parent
-	Dim sourceTA As RichTextArea
-	sourceTA=pane.GetNode(0).Tag
+Sub loadITPSegments(targetTextArea As RichTextArea,words As List,grams As List,engine As String,fullTranslation As String)
 	Dim result As List
 	result.Initialize
-	wait for (ITP.getAllSegmentTranslation(sourceTA.Text,engine)) Complete (segmentTranslations As List)
+	wait for (ITP.getTranslation(words,grams,engine)) Complete (segmentTranslations As List)
 	result.Add(fullTranslation)
 	result.AddAll(segmentTranslations)
-	If Utils.isList(targetTextArea.Tag) Then
+	If targetTextArea.Tag Is List Then
 		Dim list1 As List
 		list1=targetTextArea.Tag
 		list1.AddAll(result)
@@ -1667,6 +1656,13 @@ Sub showMT(source As String,targetTextArea As RichTextArea)
 	Else
 		Return
 	End If
+ 
+	Dim autocompleteEnabled As Boolean=Main.preferencesMap.GetDefault("autocompleteEnabled",False)
+	If autocompleteEnabled Then
+        Dim words As List
+		words=ITP.getWords(source,projectFile.Get("source"))
+		wait for (ITP.getGrams(source,projectFile.Get("source"),words)) Complete (grams As List)
+	End If
 	For Each engine As String In MT.getMTList
 		If Utils.get_isEnabled(engine&"_isEnabled",mtPreferences)=True Then
 			wait for (MT.getMT(source,projectFile.Get("source"),projectFile.Get("target"),engine)) Complete (Result As String)
@@ -1676,7 +1672,9 @@ Sub showMT(source As String,targetTextArea As RichTextArea)
 				Main.tmTableView.Items.Add(row)
 				Main.changeWhenSegmentOrSelectionChanges
 			End If
-			loadITPSegments(targetTextArea,engine,Result)
+			If autocompleteEnabled Then
+				loadITPSegments(targetTextArea,words,grams,engine,Result)
+			End If
 		End If
 	Next
 End Sub

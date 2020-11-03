@@ -232,6 +232,6 @@ ModuleClosedNodes76=
 ModuleClosedNodes77=
 ModuleClosedNodes8=
 ModuleClosedNodes9=
-NavigationStack=opennlp,posTag,30,0,opennlp,lemmatizedSentence,41,0,jieba,segmented,11,0,ITP,removePunctuationsAndDuplicated,93,6,Main,showDictDropdown,776,0,ITP,getAllSegmentTranslation,25,6,Main,showQuickfillDropdown,642,0,Utils,isList,664,0,Project,targetTextArea_TextChanged,1042,1,Project,showTM,1593,0,Project,showTerm,1763,6
+NavigationStack=ITP,duplicatedRemovedList,229,0,ITP,getLongGrams,205,0,ITP,convertLanguageCodeForChinese,25,0,ITP,duplicatedRemovedList2,241,0,ITP,getWords,25,0,Project,replacementMi_Action,1565,0,ITP,getTranslation,67,0,Project,showMT,1669,6,Project,loadITPSegments,1577,6,ITP,getGrams,66,6
 SelectedBuild=0
 VisibleModules=1,2,3,4,5,6,7,8,9,10,27,76,77,58,20
