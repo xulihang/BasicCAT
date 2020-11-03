@@ -1,0 +1,43 @@
+﻿AppType=JavaFX
+Build1=Default,org.xulihang.basiccat
+Group=Default Group
+Library1=jcore
+Library2=jfx
+Library3=json
+Library4=jxmlsax
+Library5=xmlbuilder
+Library6=jxui
+Library7=javaobject
+Library8=jokhttputils2
+Library9=jstringutils
+Module1=papagoMTPlugin
+NumberOfFiles=0
+NumberOfLibraries=9
+NumberOfModules=1
+Version=7.8
+@EndOfDesignText@
+#Region Project Attributes 
+	#MainFormWidth: 600
+	#MainFormHeight: 600 
+#End Region
+
+Sub Process_Globals
+	Private fx As JFX
+	Public MainForm As Form
+
+End Sub
+
+Sub AppStart (Form1 As Form, Args() As String)
+	MainForm = Form1
+	'MainForm.RootPane.LoadLayout("Layout1") 'Load the layout file.
+	MainForm.Show
+    Dim n As papagoMTPlugin
+	n.Initialize
+	wait for (n.translate("Hello","en","zh",null)) complete (result As String)
+	Log(result)
+End Sub
+
+'Return true to allow the default exceptions handler to handle the uncaught exception.
+Sub Application_Error (Error As Exception, StackTrace As String) As Boolean
+	Return True
+End Sub
