@@ -26,7 +26,7 @@ Private Sub Class_Globals
 	'For string matching
 	Private BRACKET_PATTERN  As String
 	Private SPACE_PATTERN As String
-	Private offset As Int=5
+	Private offset As Int=8
 	Public Font As Font
 	Public Tag As Object
 	Private previousComposedText As String
@@ -46,6 +46,9 @@ Public Sub Initialize (vCallBack As Object, vEventName As String)
 	Font=fx.DefaultFont(15)
 	mDefaultBorderColor=fx.Colors.DarkGray
 	mHighLightColor=fx.Colors.RGB(135,206,235)
+	If File.Exists(File.DirData("BasicCAT"),"offset") Then
+		offset=File.ReadString(File.DirData("BasicCAT"),"offset")
+	End If
 End Sub
 
 Public Sub DesignerCreateView(Base As Pane, Lbl As Label, Props As Map)
