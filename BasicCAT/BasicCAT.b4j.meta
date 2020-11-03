@@ -226,6 +226,6 @@ ModuleClosedNodes74=
 ModuleClosedNodes75=
 ModuleClosedNodes8=
 ModuleClosedNodes9=
-NavigationStack=MTParamsFiller,Initialize,11,0,MTParamsFiller,setTableView,76,5,Preferences,lookupControlCheckBox_CheckedChange,265,0,MTParamsFiller,Class_Globals,0,0,MTParamsFiller,init,60,6,MTParamsFiller,paramsTableView_MouseClicked,106,6,Preferences,mtTableView_MouseClicked,202,1,Preferences,ShowMTParamsFiller,206,0,Preferences,loadMT,217,0,Preferences,chkbox_CheckedChange,259,6,Main,MenuBar1_Action,353,2
+NavigationStack=Visual Designer,main.bjl,-100,1,Project,Class_Globals,23,0,Project,targetTextArea_FocusChanged,1446,0,Project,showMT,1666,0,Project,showTM,1652,0,Main,MenuBar1_Action,453,6,Main,Process_Globals,43,4,Visual Designer,editor.bjl,-100,2,Main,MainForm_FocusChanged,1689,0,Main,editorLV_Action,1702,6
 SelectedBuild=0
 VisibleModules=1,2,3,4,5,6,7,8,9,10

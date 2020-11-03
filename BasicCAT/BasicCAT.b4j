@@ -187,32 +187,32 @@ Library8=jrandomaccessfile
 Library9=jb4xencryption
 Module1=FileChooserUtils
 Module10=RichTextArea
-Module11=MTParamsFiller
-Module12=TMX
-Module13=XmlNode
-Module14=XMLUtils
-Module15=xliffFilter
-Module16=TMManager
-Module17=confirmReviewDialog
-Module18=Utils
-Module19=editDistance
+Module11=XMLBuilder2
+Module12=MTParamsFiller
+Module13=TMX
+Module14=XmlNode
+Module15=XMLUtils
+Module16=xliffFilter
+Module17=TMManager
+Module18=confirmReviewDialog
+Module19=Utils
 Module2=Project
-Module20=TM
-Module21=Theme
-Module22=LanguageTool
-Module23=searchAndReplaceDialog
-Module24=statistics
-Module25=ITP
-Module26=TMDB
-Module27=LanguageUtils
-Module28=idmlFilter
-Module29=filterGenericUtils
+Module20=editDistance
+Module21=TM
+Module22=Theme
+Module23=LanguageTool
+Module24=searchAndReplaceDialog
+Module25=statistics
+Module26=ITP
+Module27=TMDB
+Module28=LanguageUtils
+Module29=idmlFilter
 Module3=segmentation
-Module30=Previewer
-Module31=MT
-Module32=SimpleTag
-Module33=XmlParser
-Module34=XMLBuilder2
+Module30=filterGenericUtils
+Module31=Previewer
+Module32=MT
+Module33=SimpleTag
+Module34=XmlParser
 Module35=Xml2Map
 Module36=importDialog
 Module37=tikal
@@ -1959,4 +1959,13 @@ Sub MainForm_FocusChanged (HasFocus As Boolean)
 			End If
 		End If
 	End If
+End Sub
+
+
+Sub editorLV_Action
+	Dim mi As MenuItem=Sender
+	Select mi.Text
+		Case "Deselect"
+			editorLV.SelectedIndex=-1
+	End Select
 End Sub
