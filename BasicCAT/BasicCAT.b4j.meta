@@ -226,6 +226,6 @@ ModuleClosedNodes74=
 ModuleClosedNodes75=
 ModuleClosedNodes8=
 ModuleClosedNodes9=
-NavigationStack=Visual Designer,editor.bjl,-100,2,Main,editorLV_Action,1697,6,Main,MainForm_FocusChanged,1691,0,idmlUtils,FontWeightNumToNameForSourceHS,65,0,RichTextArea,AdjustHeight,382,0,RichTextArea,totalHeightEstimate,380,0,RichTextArea,CreateLayout,166,0,RichTextArea,DesignerCreateView,105,0,RichTextArea,Initialize,43,6,RichTextArea,Class_Globals,8,0
+NavigationStack=RichTextArea,UpdateLayout,187,0,Main,MainForm_FocusChanged,1687,0,RichTextArea,setEnabled,205,0,RichTextArea,setLineHeightTimes,206,5,RichTextArea,Class_Globals,28,4,RichTextArea,AdjustHeight,394,0,RichTextArea,Scroll_Filter,501,0,Main,ListViewParent_Resize,1125,6,RichTextArea,totalHeightEstimate,385,6,RichTextArea,totalHeight,394,2
 SelectedBuild=0
 VisibleModules=1,2,3,4,5,6,7,8,9,10,39

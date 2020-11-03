@@ -1382,13 +1382,15 @@ Sub ListViewParent_Resize
 		lineHeightTimes=preferencesMap.GetDefault("lineheight",0)
 		Dim sourceTa As RichTextArea = p.GetNode(0).Tag
 		Dim targetTa As RichTextArea = p.GetNode(1).Tag
+		sourceTa.LineHeightTimes=lineHeightTimes
+		targetTa.LineHeightTimes=lineHeightTimes
 		sourceTa.BasePane.Left=0
 		sourceTa.BasePane.SetSize(itemWidth/2-ScrollBarWidth,50)
 		targetTa.BasePane.Left=itemWidth/2-ScrollBarWidth
 		targetTa.BasePane.SetSize(itemWidth/2-ScrollBarWidth,50)
 		Dim sourceHeight,targetHeight As Double
-		sourceHeight=sourceTa.totalHeightEstimate+lineHeightTimes*sourceTa.LineHeight
-		targetHeight=targetTa.totalHeightEstimate+lineHeightTimes*targetTa.LineHeight
+		sourceHeight=sourceTa.totalHeight
+		targetHeight=targetTa.totalHeight
 		Dim h As Double=Max(25,Max(sourceHeight,targetHeight))
 		sourceTa.BasePane.SetSize(itemWidth/2-ScrollBarWidth,h)
 		targetTa.BasePane.SetSize(itemWidth/2-ScrollBarWidth,h)

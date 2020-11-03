@@ -32,6 +32,7 @@ Private Sub Class_Globals
 	Private previousComposedText As String
 	Private mDefaultBorderColor As Paint
 	Private mHighLightColor As Paint
+	Private mLineHeightTimes As Double=0
 End Sub
 
 'Initializes the object.
@@ -206,6 +207,10 @@ Sub setEnabled(enabled As Boolean)
 	Else
 		CustomViewNode.Alpha=1.0
 	End If
+End Sub
+
+Sub setLineHeightTimes(times As Double)
+	mLineHeightTimes=times
 End Sub
 
 Sub getBasePane As Pane
@@ -388,6 +393,20 @@ Public Sub totalHeightEstimate As Double
 	Return height
 End Sub
 
+Public Sub totalHeight As Double
+	Dim height As Double=20
+	Try
+		height=Max(height,JO.RunMethod("getTotalHeightEstimate",Null))
+		If mLineHeightTimes>0 Then
+			height=height+mLineHeightTimes*LineHeight
+		End If
+	Catch
+		'Log(LastException)
+		Return mBase.Height
+	End Try
+	height=height+2*offset
+	Return height
+End Sub
 
 Sub AdjustHeight
 	mBase.SetSize(mBase.Width,totalHeightEstimate)
