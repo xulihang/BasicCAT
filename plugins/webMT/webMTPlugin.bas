@@ -108,7 +108,7 @@ Public Sub translate(text As String,preferencesMap As Map) As ResumableSub
 	targetLang=params(1)
 	targetClass=params(2)
 	WebView1.LoadHtml("Loading...")
-	Sleep(1000)
+	Sleep(100)
 	WebView1.LoadUrl(TemplateURLFilled(TemplateTextField.Text,sourceLang,targetLang,text))
 	wait for (GetTranslaton(targetClass,timeout)) Complete (translation As String)
 	Return translation
@@ -120,7 +120,7 @@ End Sub
 
 Sub LoadURLBasedOnTemplate(template As String,sourceLang As String,targetLang As String,targetClass As String,text As String)
 	WebView1.LoadHtml("Loading...")
-	Sleep(1000)
+	Sleep(100)
 	WebView1.LoadUrl(TemplateURLFilled(template,sourceLang,targetLang,text))
 	GetTranslaton(targetClass,5000)
 End Sub
@@ -167,13 +167,20 @@ Sub TemplateURLFilled(template As String,sourceLang As String,targetLang As Stri
 		else if matcher1.Group(1)="targetLang" Then
 			replace=targetLang
 		else if matcher1.Group(1)="text" Then
-			replace=text
+			replace=EncodeURL(text)
 		End If
 		url=url.Replace(matcher1.Match,replace)
 		matcher1=Regex.Matcher(pattern,url)
 	Loop
 	Log(url)
 	Return url
+End Sub
+
+Sub EncodeURL(text As String) As String
+	Dim su As StringUtils
+	text=su.EncodeUrl(text,"UTF8")
+	'text=text.Replace("+","%20")
+	Return text
 End Sub
 
 Sub Button1_MouseClicked (EventData As MouseEvent)
