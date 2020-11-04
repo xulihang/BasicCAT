@@ -351,6 +351,7 @@ Sub createProjectFiles
 	configsList.Initialize
 	configsList.Add("segmentationRules.srx")
 	configsList.Add("dictList.txt")
+	configsList.Add("stopwords.txt")
 	For Each filename As String In configsList
 		If File.Exists(configPath,filename)=False Then
 			File.Copy(File.DirAssets,filename,configPath,filename)
@@ -1632,6 +1633,7 @@ Sub loadITPSegments(targetTextArea As RichTextArea,words As List,grams As List,e
 	If Main.preferencesMap.GetDefault("addSourceWords",False) Then
 		result.AddAll(words)
 	End If
+	result=StopWordsRemoved(result)
 	Log(result)
 	If targetTextArea.Tag Is List Then
 		Dim list1 As List
@@ -1640,6 +1642,23 @@ Sub loadITPSegments(targetTextArea As RichTextArea,words As List,grams As List,e
 		targetTextArea.Tag=ITP.duplicatedRemovedList(list1)
 	Else
 		targetTextArea.Tag=result
+	End If
+End Sub
+
+Sub StopWordsRemoved(list1 As List) As List
+	Dim configPath As String=File.Combine(path,"config")
+	If File.Exists(configPath,"stopwords.txt") Then
+		Dim new As List
+		new.Initialize
+		Dim stopwords As List=File.ReadList(configPath,"stopwords.txt")
+		For Each item As String In list1
+			If stopwords.IndexOf(item.ToLowerCase)=-1 Then
+				new.Add(item)
+			End If
+		Next
+		Return new
+	Else
+		Return list1
 	End If
 End Sub
 
