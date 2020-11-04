@@ -1055,6 +1055,7 @@ Sub ShowITPContextMenu(ta As RichTextArea,lastString As String)
 		If (ta.Tag Is List And lastString.Length>0) Or (ta.Tag Is List And ta.SelectionStart=0) Then
 			Dim segmentsList As List
 			segmentsList=ta.Tag
+			Log(segmentsList)
 			Dim maxSuggestionNum As Int
 			maxSuggestionNum=Main.preferencesMap.GetDefault("maxSuggestionNum",5)
 			Dim suggestions As List
@@ -1628,6 +1629,7 @@ Sub loadITPSegments(targetTextArea As RichTextArea,words As List,grams As List,e
 	wait for (ITP.getTranslation(words,grams,engine)) Complete (segmentTranslations As List)
 	result.Add(fullTranslation)
 	result.AddAll(segmentTranslations)
+	'Log(result)
 	If targetTextArea.Tag Is List Then
 		Dim list1 As List
 		list1=targetTextArea.Tag

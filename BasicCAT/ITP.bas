@@ -203,7 +203,7 @@ Sub getGramsFromStringViaRe(text As String) As List
 	getLongGrams(text,gramsList,"VP")
 	getLongGrams(text,gramsList,"PP")
 
-	Return duplicatedRemovedList(gramsList)
+	Return duplicatedGramsRemovedList(gramsList)
 End Sub
 
 Sub getLongGrams(text As String,gramsList As List,item As String)
@@ -235,13 +235,24 @@ Sub getLongGrams(text As String,gramsList As List,item As String)
 	End If
 End Sub
 
-Sub duplicatedRemovedList(list1 As List) As List
+Sub duplicatedGramsRemovedList(list1 As List) As List
 	Dim newList As List
 	newList.Initialize
 	For Each item As String In list1 
 		Dim matcher As Matcher
 		matcher=Regex.Matcher(",|，",item) ' remove grams with comma
 		If newList.IndexOf(item)=-1 And matcher.Find=False Then
+			newList.Add(item)
+		End If
+	Next
+	Return newList
+End Sub
+
+Sub duplicatedRemovedList(list1 As List) As List
+	Dim newList As List
+	newList.Initialize
+	For Each item As String In list1 
+		If newList.IndexOf(item)=-1  Then
 			newList.Add(item)
 		End If
 	Next
