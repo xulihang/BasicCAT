@@ -1055,7 +1055,6 @@ Sub ShowITPContextMenu(ta As RichTextArea,lastString As String)
 		If (ta.Tag Is List And lastString.Length>0) Or (ta.Tag Is List And ta.SelectionStart=0) Then
 			Dim segmentsList As List
 			segmentsList=ta.Tag
-			Log(segmentsList)
 			Dim maxSuggestionNum As Int
 			maxSuggestionNum=Main.preferencesMap.GetDefault("maxSuggestionNum",5)
 			Dim suggestions As List
@@ -1821,16 +1820,19 @@ Sub showTerm(targetTextArea As RichTextArea)
 		lbl2.Text=termList.Get(1)
 		
 		#region for autocomplete
-		If targetTextArea.Tag Is List Then
-			Dim tagList As List=targetTextArea.Tag
-			If tagList.IndexOf(lbl2.Text)=-1 Then
+		Dim autocompleteEnabled As Boolean=Main.preferencesMap.GetDefault("autocompleteEnabled",False)
+		If autocompleteEnabled Then
+			If targetTextArea.Tag Is List Then
+				Dim tagList As List=targetTextArea.Tag
+				If tagList.IndexOf(lbl2.Text)=-1 Then
+					tagList.Add(lbl2.Text)
+				End If
+			Else
+				Dim tagList As List
+				tagList.Initialize
 				tagList.Add(lbl2.Text)
+				targetTextArea.Tag=tagList
 			End If
-		Else
-			Dim tagList As List
-			tagList.Initialize
-			tagList.Add(lbl2.Text)
-			targetTextArea.Tag=tagList
 		End If
 		#end region
 
