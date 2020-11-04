@@ -1016,7 +1016,7 @@ Sub targetTextArea_TextChanged (Old As String, New As String)
 	End If
 	
 
-	
+	#region autocomplete
 	Old=Old.SubString2(0,Min(ta.SelectionStart,Old.Length))
 	New=New.SubString2(0,Min(ta.SelectionStart,New.Length))
 	Dim lastString As String
@@ -1041,12 +1041,18 @@ Sub targetTextArea_TextChanged (Old As String, New As String)
 	End If
 
 	'Log("old"&Old)
-	'Log("last"&lastString)
-	'autocomplete
+	'Log("last"&lastString&"last")
+	'Log(ta.SelectionStart)
+	ShowITPContextMenu(ta,lastString)
+	#end region
+	CallSubDelayed(Main, "ListViewParent_Resize")
+End Sub
+
+Sub ShowITPContextMenu(ta As RichTextArea,lastString As String)
 	If cmClicked=True Then
 		cmClicked=False
 	Else
-		If ta.Tag Is List Then
+		If (ta.Tag Is List And lastString.Length>0) Or (ta.Tag Is List And ta.SelectionStart=0) Then
 			Dim segmentsList As List
 			segmentsList=ta.Tag
 			Dim maxSuggestionNum As Int
@@ -1055,21 +1061,26 @@ Sub targetTextArea_TextChanged (Old As String, New As String)
 			suggestions.Initialize
 			Dim num As Int=0
 			For Each text As String In segmentsList
-				If text.ToLowerCase.StartsWith(lastString.ToLowerCase) And text<>lastString Then
-					num=num+1
-					If text.StartsWith(lastString) Then
-						suggestions.Add(text)
-					Else
-						suggestions.Add(text.ToLowerCase)
+				If lastString.Length>0 Then
+					If text.ToLowerCase.StartsWith(lastString.ToLowerCase) And text<>lastString Then
+						num=num+1
+						If text.StartsWith(lastString) Then
+							suggestions.Add(text)
+						Else
+							suggestions.Add(text.ToLowerCase)
+						End If
 					End If
+				Else
+					num=num+1
+					suggestions.Add(text)
 				End If
 				If num>=maxSuggestionNum Then
 					Exit
 				End If
 			Next
+
 			If suggestions.Size>0 Then
-				If ContextMenuItemsChanged(cm,suggestions) Then
-					Log("cm changed")
+				If ContextMenuItemsChanged(cm,suggestions) Or cm.MenuItems.Size=0 Then
 					cm.MenuItems.Clear
 					Sleep(0)
 					For Each suggestion As String In suggestions
@@ -1078,9 +1089,6 @@ Sub targetTextArea_TextChanged (Old As String, New As String)
 						mi.Tag=lastString
 						cm.MenuItems.Add(mi)
 					Next
-					'Dim map1 As Map
-					'map1=Utils.GetScreenPosition(ta.BasePane)
-					'Log(map1)
 					Dim optional As JavaObject=ta.CaretBounds
 					Dim boundingbox As JavaObject=optional.RunMethod("get",Null)
 					Dim maxX,maxY As Double
@@ -1100,7 +1108,6 @@ Sub targetTextArea_TextChanged (Old As String, New As String)
 			End If
 		End If
 	End If
-	CallSubDelayed(Main, "ListViewParent_Resize")
 End Sub
 
 Sub ContextMenuItemsChanged(cm1 As ContextMenu,list1 As List) As Boolean
@@ -1296,9 +1303,13 @@ Sub mi_Action
 		p=Main.editorLV.Items.Get(lastEntry)
 		Dim targetTextArea As RichTextArea
 		targetTextArea=p.GetNode(1).Tag
-		If targetTextArea.Text.SubString2(targetTextArea.SelectionEnd-1,targetTextArea.SelectionEnd)=" " Then
-			Return
+		If targetTextArea.Text<>"" Then
+			If targetTextArea.Text.SubString2(targetTextArea.SelectionEnd-1,targetTextArea.SelectionEnd)=" " Then
+				cmClicked=False
+				Return
+			End If
 		End If
+
 		Dim before,replace,after As String
 		before=targetTextArea.Text.SubString2(0,targetTextArea.SelectionStart)
 		'eg. mi.text: vision mi.tag: vi
@@ -1494,7 +1505,6 @@ Sub targetTextArea_FocusChanged (HasFocus As Boolean)
 		showTM(TextArea1)
 		showTerm(TextArea1)
 		Main.updateSegmentLabel(Main.editorLV.Items.IndexOf(TextArea1.Parent),segments.Size)
-
 	Else
 		Log("loseFocus")
 		'Log("previous"&previousEntry)
