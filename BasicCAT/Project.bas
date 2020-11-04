@@ -1078,11 +1078,16 @@ Sub targetTextArea_TextChanged (Old As String, New As String)
 						mi.Tag=lastString
 						cm.MenuItems.Add(mi)
 					Next
-					Dim map1 As Map
-					map1=Utils.GetScreenPosition(ta.BasePane)
+					'Dim map1 As Map
+					'map1=Utils.GetScreenPosition(ta.BasePane)
 					'Log(map1)
+					Dim optional As JavaObject=ta.CaretBounds
+					Dim boundingbox As JavaObject=optional.RunMethod("get",Null)
+					Dim maxX,maxY As Double
+					maxX=boundingbox.RunMethod("getMaxX",Null)
+					maxY=boundingbox.RunMethod("getMaxY",Null)
 					Dim jo As JavaObject = cm
-					jo.RunMethod("show", Array(ta.BasePane, map1.Get("x")+ta.Width/10, map1.Get("y")+ta.Height))
+					jo.RunMethod("show", Array(ta.BasePane, maxX, maxY))
 					jo.RunMethodJO("getSkin",Null).RunMethodJO("getNode",Null).RunMethodJO("lookup",Array(".menu-item")).RunMethod("requestFocus",Null)
 					'cm.getSkin().getNode().lookup(".menu-item").requestFocus();
 				Else

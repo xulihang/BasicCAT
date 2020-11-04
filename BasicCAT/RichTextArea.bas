@@ -5,7 +5,7 @@ Type=Class
 Version=4.19
 @EndOfDesignText@
 #IgnoreWarnings: 12
-#Event: TextChanged(Text As String)
+#Event: TextChanged(Old As String, New As String)
 #DesignerProperty: Key: Editable, DisplayName: Editable, FieldType: Boolean, DefaultValue: True, Description: Whether the text of the CodeView is Editable
 'Class module
 Private Sub Class_Globals
@@ -193,6 +193,10 @@ End Sub
 'Update the layout as needed when the Base Pane has changed size.
 Private Sub UpdateLayout
 	
+End Sub
+
+Public Sub getCaretBounds As JavaObject
+	Return JO.RunMethod("getCaretBounds",Null)
 End Sub
 
 Public Sub setLeft(left As Int)
