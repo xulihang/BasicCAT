@@ -77,18 +77,16 @@ Sub getTranslation(wordList As List,grams As List,engine As String) As Resumable
 	targetLang=Main.currentProject.projectFile.Get("target")
 	Dim translationList As List
 	translationList.Initialize
-	For Each word As String In wordList
-		wait for (MT.getMT(word,sourceLang,targetLang,engine)) Complete (result As String)
-		translationList.Add(result)
-	Next
+	If Main.preferencesMap.GetDefault("autocomplete_translate_words",False) Then
+		For Each word As String In wordList
+			wait for (MT.getMT(word,sourceLang,targetLang,engine)) Complete (result As String)
+			translationList.Add(result)
+		Next
+	End If
 	For Each gram As String In grams
 		wait for (MT.getMT(gram,sourceLang,targetLang,engine)) Complete (result As String)
 		translationList.Add(result)
 	Next
-	Log(translationList)
-	If Main.preferencesMap.GetDefault("addSourceWords",False) Then
-		translationList.AddAll(wordList)
-	End If
 	Return duplicatedRemovedList(translationList)
 End Sub
 

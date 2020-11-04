@@ -43,6 +43,7 @@ Sub Class_Globals
 	Private UnderlineSpacesCheckBox As CheckBox
 	Private CSSDirLabel As Label
 	Private CustomCSSCheckBox As CheckBox
+	Private TranslateWordsCheckBox As CheckBox
 End Sub
 
 'Initializes the object. You can add parameters to this method if needed.
@@ -158,7 +159,7 @@ Sub categoryListView_SelectedIndexChanged(Index As Int)
 			If unsavedPreferences.ContainsKey("addSourceWords") Then
 				sourceWordsListCheckBox.Checked=unsavedPreferences.Get("addSourceWords")
 			End If
-			
+			TranslateWordsCheckBox.Checked=unsavedPreferences.GetDefault("autocomplete_translate_words",False)
 		Case 5
 			'Language Check
 			SettingPane.RemoveAllNodes
@@ -438,7 +439,9 @@ Sub SaveGeneralButton_MouseClicked (EventData As MouseEvent)
 	unsavedPreferences.Put("autosaveInterval",AutoSaveTextField.Text)
 End Sub
 
-
+Sub TranslateWordsCheckBox_CheckedChange(Checked As Boolean)
+	unsavedPreferences.Put("autocomplete_translate_words",Checked)
+End Sub
 
 Sub maxSuggestionNumSpinner_ValueChanged (Value As Object)
 	unsavedPreferences.Put("maxSuggestionNum",Value)

@@ -1628,7 +1628,11 @@ Sub loadITPSegments(targetTextArea As RichTextArea,words As List,grams As List,e
 	wait for (ITP.getTranslation(words,grams,engine)) Complete (segmentTranslations As List)
 	'result.Add(fullTranslation)
 	result.AddAll(segmentTranslations)
-	'Log(result)
+	result.AddAll(ITP.getWords(fullTranslation,projectFile.Get("target")))
+	If Main.preferencesMap.GetDefault("addSourceWords",False) Then
+		result.AddAll(words)
+	End If
+	Log(result)
 	If targetTextArea.Tag Is List Then
 		Dim list1 As List
 		list1=targetTextArea.Tag
