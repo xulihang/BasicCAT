@@ -669,14 +669,6 @@ Sub MeasureMultilineTextHeight (Font As Font, Width As Double, Text As String) A
 	Return height
 End Sub
 
-Sub isList(o As Object) As Boolean
-	If GetType(o)="java.util.ArrayList" Then
-		Return True
-	Else
-		Return False
-	End If
-End Sub
-
 Sub isChinese(text As String) As Boolean
 	Dim jo As JavaObject
 	jo=Me

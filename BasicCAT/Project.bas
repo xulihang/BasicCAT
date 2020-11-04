@@ -1025,7 +1025,6 @@ Sub targetTextArea_TextChanged (Old As String, New As String)
 	Else
 		lastString=New
 	End If
-
 	If Utils.LanguageHasSpace(projectFile.Get("target"))=False Then
 		Old=Regex.Replace("[a-zA-Z]|[^\u4e00-\u9fa5]",Old,"")
 		New=Regex.Replace("[a-zA-Z]|[^\u4e00-\u9fa5]",New,"")
@@ -1040,52 +1039,80 @@ Sub targetTextArea_TextChanged (Old As String, New As String)
 			lastString=wordList.Get(wordList.Size-1)
 		End If
 	End If
+
 	'Log("old"&Old)
 	'Log("last"&lastString)
-    
 	'autocomplete
 	If cmClicked=True Then
 		cmClicked=False
 	Else
-		If Utils.isList(ta.Tag) Then
-			cm.MenuItems.Clear
-			Sleep(0)
+		If ta.Tag Is List Then
 			Dim segmentsList As List
 			segmentsList=ta.Tag
-			Dim maxSuggestionNum As Int=5
-			If Main.preferencesMap.ContainsKey("maxSuggestionNum") Then
-				maxSuggestionNum=Main.preferencesMap.Get("maxSuggestionNum")
-			End If
+			Dim maxSuggestionNum As Int
+			maxSuggestionNum=Main.preferencesMap.GetDefault("maxSuggestionNum",5)
+			Dim suggestions As List
+			suggestions.Initialize
 			Dim num As Int=0
 			For Each text As String In segmentsList
 				If text.ToLowerCase.StartsWith(lastString.ToLowerCase) And text<>lastString Then
 					num=num+1
 					If text.StartsWith(lastString) Then
-						Dim mi As MenuItem
-						mi.Initialize(text, "mi")
-						mi.Tag=lastString
-						cm.MenuItems.Add(mi)
+						suggestions.Add(text)
 					Else
-						Dim mi As MenuItem
-						mi.Initialize(text.ToLowerCase, "mi")
-						mi.Tag=lastString
-						cm.MenuItems.Add(mi)
+						suggestions.Add(text.ToLowerCase)
 					End If
 				End If
-				If num=maxSuggestionNum Then
+				If num>=maxSuggestionNum Then
 					Exit
 				End If
 			Next
-			If cm.MenuItems.Size<>0 Then
-				Dim map1 As Map
-				map1=Utils.GetScreenPosition(ta.BasePane)
-				'Log(map1)
-				Dim jo As JavaObject = cm
-				jo.RunMethod("show", Array(ta.BasePane, map1.Get("x")+ta.Width/10, map1.Get("y")+ta.Height))
+			If suggestions.Size>0 Then
+				If ContextMenuItemsChanged(cm,suggestions) Then
+					Log("cm changed")
+					cm.MenuItems.Clear
+					Sleep(0)
+					For Each suggestion As String In suggestions
+						Dim mi As MenuItem
+						mi.Initialize(suggestion, "mi")
+						mi.Tag=lastString
+						cm.MenuItems.Add(mi)
+					Next
+					Dim map1 As Map
+					map1=Utils.GetScreenPosition(ta.BasePane)
+					'Log(map1)
+					Dim jo As JavaObject = cm
+					jo.RunMethod("show", Array(ta.BasePane, map1.Get("x")+ta.Width/10, map1.Get("y")+ta.Height))
+					jo.RunMethodJO("getSkin",Null).RunMethodJO("getNode",Null).RunMethodJO("lookup",Array(".menu-item")).RunMethod("requestFocus",Null)
+					'cm.getSkin().getNode().lookup(".menu-item").requestFocus();
+				Else
+					For Each mi As MenuItem In cm.MenuItems
+						mi.Tag=lastString
+					Next
+				End If
+			Else
+				cm.MenuItems.Clear
 			End If
 		End If
 	End If
 	CallSubDelayed(Main, "ListViewParent_Resize")
+End Sub
+
+Sub ContextMenuItemsChanged(cm1 As ContextMenu,list1 As List) As Boolean
+	Dim list2 As List
+	list2.Initialize
+	For Each mi As MenuItem In cm1.MenuItems
+		list2.Add(mi.Text)
+	Next
+	If list1.Size<>list2.Size Then
+		Return True
+	End If
+	For Each s As String In list1
+		If list2.IndexOf(s)=-1 Then
+			Return True
+		End If
+	Next
+	Return False
 End Sub
 
 Sub sourceTextArea_TextChanged (Old As String, New As String)
@@ -1264,9 +1291,12 @@ Sub mi_Action
 		p=Main.editorLV.Items.Get(lastEntry)
 		Dim targetTextArea As RichTextArea
 		targetTextArea=p.GetNode(1).Tag
+		If targetTextArea.Text.SubString2(targetTextArea.SelectionEnd-1,targetTextArea.SelectionEnd)=" " Then
+			Return
+		End If
 		Dim before,replace,after As String
 		before=targetTextArea.Text.SubString2(0,targetTextArea.SelectionStart)
-		'eg. mi.text: replace mi.tag: t
+		'eg. mi.text: vision mi.tag: vi
 		replace=Utils.replaceOnce(mi.Text,mi.Tag,"")
 		after=targetTextArea.Text.SubString2(targetTextArea.SelectionStart,targetTextArea.Text.Length)
 		targetTextArea.Text=before&replace&after
