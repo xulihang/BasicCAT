@@ -1303,10 +1303,12 @@ Sub mi_Action
 		p=Main.editorLV.Items.Get(lastEntry)
 		Dim targetTextArea As RichTextArea
 		targetTextArea=p.GetNode(1).Tag
-		If targetTextArea.Text<>"" Then
-			If targetTextArea.Text.SubString2(targetTextArea.SelectionEnd-1,targetTextArea.SelectionEnd)=" " Then
-				cmClicked=False
-				Return
+		If mi.Tag<>Null Then ' do not respond to space
+			If targetTextArea.Text<>"" Then
+				If targetTextArea.Text.SubString2(targetTextArea.SelectionEnd-1,targetTextArea.SelectionEnd)=" " Then
+					cmClicked=False
+					Return
+				End If
 			End If
 		End If
 

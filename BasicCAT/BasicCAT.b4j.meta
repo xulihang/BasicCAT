@@ -232,6 +232,6 @@ ModuleClosedNodes76=
 ModuleClosedNodes77=
 ModuleClosedNodes8=
 ModuleClosedNodes9=
-NavigationStack=dictWebView,WebView1_PageFinished,81,0,Project,removeFileMi_Action,949,0,filterGenericUtils,tagsRemovedText,176,0,Project,targetTextArea_SelectedTextChanged,1177,0,Project,targetTextArea_KeyPressed,1391,0,Project,segmentPane_MouseClicked,1131,0,Project,targetTextArea_FocusChanged,1498,3,Project,mi_Action,1310,6,Project,ShowITPContextMenu,1089,6,Project,targetTextArea_TextChanged,957,6
+NavigationStack=Project,targetTextArea_SelectedTextChanged,1177,0,Project,targetTextArea_KeyPressed,1391,0,Project,segmentPane_MouseClicked,1131,0,Project,targetTextArea_FocusChanged,1498,3,Project,targetTextArea_TextChanged,1040,6,Project,ShowITPContextMenu,1046,6,Project,showWordMeaning,1266,0,Project,sourceTextArea_KeyPressed,1386,0,Project,onSelectionChanged,1196,0,Project,mi_Action,1299,6
 SelectedBuild=0
 VisibleModules=1,2,3,4,5,6,7,8,9,10,15,53,34
