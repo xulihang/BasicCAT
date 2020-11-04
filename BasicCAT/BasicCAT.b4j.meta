@@ -232,6 +232,6 @@ ModuleClosedNodes76=
 ModuleClosedNodes77=
 ModuleClosedNodes8=
 ModuleClosedNodes9=
-NavigationStack=ITP,getWords,25,0,ITP,getTranslation,67,0,Project,loadITPSegments,1630,2,ITP,getGramsFromStringViaRe,199,0,Project,updateWithWorkfileMI_Action,851,0,Project,ShowITPContextMenu,1050,6,ITP,duplicatedRemovedList,246,0,ITP,duplicatedGramsRemovedList,231,0,ITP,duplicatedRemovedList2,258,0,Project,showMT,1706,0,Project,showTerm,1829,3
+NavigationStack=ITP,getTranslation,67,0,ITP,getGramsFromStringViaRe,199,0,Project,updateWithWorkfileMI_Action,851,0,Project,ShowITPContextMenu,1050,6,ITP,duplicatedRemovedList,246,0,ITP,duplicatedGramsRemovedList,231,0,ITP,duplicatedRemovedList2,258,0,Project,showMT,1706,0,Project,showTerm,1821,3,Project,loadITPSegments,1620,2
 SelectedBuild=0
 VisibleModules=1,2,3,4,5,6,7,8,9,10,15,53,34,11

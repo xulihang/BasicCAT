@@ -1626,7 +1626,7 @@ Sub loadITPSegments(targetTextArea As RichTextArea,words As List,grams As List,e
 	Dim result As List
 	result.Initialize
 	wait for (ITP.getTranslation(words,grams,engine)) Complete (segmentTranslations As List)
-	result.Add(fullTranslation)
+	'result.Add(fullTranslation)
 	result.AddAll(segmentTranslations)
 	'Log(result)
 	If targetTextArea.Tag Is List Then
