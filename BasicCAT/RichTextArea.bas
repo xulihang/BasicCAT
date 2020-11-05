@@ -6,7 +6,8 @@ Version=4.19
 @EndOfDesignText@
 #IgnoreWarnings: 12
 #Event: TextChanged(Old As String, New As String)
-#DesignerProperty: Key: Editable, DisplayName: Editable, FieldType: Boolean, DefaultValue: True, Description: Whether the text of the CodeView is Editable
+#DesignerProperty: Key: Editable, DisplayName: Editable, FieldType: Boolean, DefaultValue: True, Description: Whether the text of the view is Editable
+#DesignerProperty: Key: UseTextArea, DisplayName: UseTextArea, FieldType: Boolean, DefaultValue: False, Description: Use TextArea instead of RichTextFX
 'Class module
 Private Sub Class_Globals
 
@@ -33,6 +34,8 @@ Private Sub Class_Globals
 	Private mDefaultBorderColor As Paint
 	Private mHighLightColor As Paint
 	Private mLineHeightTimes As Double=0
+	Private ta As TextArea
+	Private mUseTextArea As Boolean=False
 End Sub
 
 'Initializes the object.
@@ -55,65 +58,82 @@ End Sub
 Public Sub DesignerCreateView(Base As Pane, Lbl As Label, Props As Map)
 	'Check this is not called from setup
 	If Not(Props.GetDefault("CVfromsetup",False)) Then DesignerCVCalled = True
-	
+	setUseTextArea(Props.GetDefault("UseTextArea",False))
 	'Assign vars to globals
 	mBase = Base
 	mBase.Tag=Me
-	SetDefaultBorder
+	
 	'So that we can Call Runmethod on the Base Panel to run non exposed methods
 	mBaseJO = Base
 
 	'This is passed from either the designer or setup
 	mForm = Props.get("Form")
 
-	'Initialize our wrapper object
-	JO.InitializeNewInstance("org.fxmisc.richtext.CodeArea",Null)
-	setupIM
-	addContextMenu
-	'Cast the wrapped view to a node so we can use B4x Node methods on it.
-	CustomViewNode = GetObject
-	'Add the stylesheet to colour matching words to the code area node
-	'JO.RunMethodJO("getStylesheets",Null).RunMethod("add",Array(File.GetUri(File.DirAssets,"richtext.css")))
-	
-	
-	'TextProperty Listener
-	'Add an eventlistener to the ObservableValue "textProperty" so that we can get changes to the text
-	Dim Event As Object = JO.CreateEvent("javafx.beans.value.ChangeListener","TextChanged","")
-	JO.RunMethodJO("textProperty",Null).RunMethod("addListener",Array(Event))
-	
-	Dim Event As Object = JO.CreateEvent("javafx.beans.value.ChangeListener","SelectedTextChanged","")
-	JO.RunMethodJO("selectedTextProperty",Null).RunMethod("addListener",Array(Event))
-	
-	Dim Event As Object = JO.CreateEvent("javafx.beans.value.ChangeListener","FocusChanged","")
-	JO.RunMethodJO("focusedProperty",Null).RunMethod("addListener",Array(Event))
-	
-	Dim Event As Object = JO.CreateEvent("javafx.beans.value.ChangeListener","RedoAvailable","")
-	JO.RunMethodJO("redoAvailableProperty",Null).RunMethod("addListener",Array(Event))
-	
-	Dim Event As Object = JO.CreateEvent("javafx.beans.value.ChangeListener","UndoAvailable","")
-	JO.RunMethodJO("undoAvailableProperty",Null).RunMethod("addListener",Array(Event))
-	
-	
-	Dim r As Reflector
-	r.Target = JO
-	r.AddEventFilter("Scroll", "javafx.scene.input.ScrollEvent.SCROLL")
-	Dim r As Reflector
-	r.Target = JO
-	r.AddEventFilter("KeyPressed", "javafx.scene.input.KeyEvent.KEY_PRESSED")
-	
-	'BaseChanged Listener
-	'Add an eventlistener to the ReadOnlyObjectProperty "layoutBoundsProperty" on the Base Pane so that we can change the internal layout to fit
-	Dim Event As Object = JO.CreateEvent("javafx.beans.value.ChangeListener","BaseResized","")
-	mBaseJO.RunMethodJO("layoutBoundsProperty",Null).RunMethod("addListener",Array(Event))
-	
-	Dim O As Object = JO.CreateEventFromUI("javafx.event.EventHandler","KeyPressed",Null)
-	JO.RunMethod("setOnKeyPressed",Array(O))
-	JO.RunMethod("setFocusTraversable",Array(True))
 
+	If mUseTextArea Then
+	#region event for ta
+		CSSUtils.SetBorder(mBase,0,mDefaultBorderColor,3)
+		Dim CJO As JavaObject = ta
+		Dim O As Object = CJO.CreateEventFromUI("javafx.event.EventHandler","KeyPressed",Null)
+		CJO.RunMethod("setOnKeyPressed",Array(O))
+		CJO.RunMethod("setFocusTraversable",Array(True))
+		Dim Obj As Reflector
+		Obj.Target = ta
+		Obj.AddChangeListener("taSelection", "selectionProperty")
+		Dim r As Reflector
+		r.Target = ta
+		r.AddEventFilter("KeyPressed", "javafx.scene.input.KeyEvent.KEY_PRESSED")
+	#end region
+	Else
+		SetDefaultBorder
+		'Initialize our wrapper object
+		JO.InitializeNewInstance("org.fxmisc.richtext.CodeArea",Null)
+		setupIM
+		addContextMenu
+		'Cast the wrapped view to a node so we can use B4x Node methods on it.
+		CustomViewNode = GetObject
+		'Add the stylesheet to colour matching words to the code area node
+		'JO.RunMethodJO("getStylesheets",Null).RunMethod("add",Array(File.GetUri(File.DirAssets,"richtext.css")))
 	
+	#region event for richtextfx
+		'TextProperty Listener
+		'Add an eventlistener to the ObservableValue "textProperty" so that we can get changes to the text
+		Dim Event As Object = JO.CreateEvent("javafx.beans.value.ChangeListener","TextChanged","")
+		JO.RunMethodJO("textProperty",Null).RunMethod("addListener",Array(Event))
+	
+		Dim Event As Object = JO.CreateEvent("javafx.beans.value.ChangeListener","SelectedTextChanged","")
+		JO.RunMethodJO("selectedTextProperty",Null).RunMethod("addListener",Array(Event))
+	
+		Dim Event As Object = JO.CreateEvent("javafx.beans.value.ChangeListener","FocusChanged","")
+		JO.RunMethodJO("focusedProperty",Null).RunMethod("addListener",Array(Event))
+	
+		Dim Event As Object = JO.CreateEvent("javafx.beans.value.ChangeListener","RedoAvailable","")
+		JO.RunMethodJO("redoAvailableProperty",Null).RunMethod("addListener",Array(Event))
+	
+		Dim Event As Object = JO.CreateEvent("javafx.beans.value.ChangeListener","UndoAvailable","")
+		JO.RunMethodJO("undoAvailableProperty",Null).RunMethod("addListener",Array(Event))
+	
+	
+		Dim r As Reflector
+		r.Target = JO
+		r.AddEventFilter("Scroll", "javafx.scene.input.ScrollEvent.SCROLL")
+		Dim r As Reflector
+		r.Target = JO
+		r.AddEventFilter("KeyPressed", "javafx.scene.input.KeyEvent.KEY_PRESSED")
+	
+		'BaseChanged Listener
+		'Add an eventlistener to the ReadOnlyObjectProperty "layoutBoundsProperty" on the Base Pane so that we can change the internal layout to fit
+		Dim Event As Object = JO.CreateEvent("javafx.beans.value.ChangeListener","BaseResized","")
+		mBaseJO.RunMethodJO("layoutBoundsProperty",Null).RunMethod("addListener",Array(Event))
+	
+		Dim O As Object = JO.CreateEventFromUI("javafx.event.EventHandler","KeyPressed",Null)
+		JO.RunMethod("setOnKeyPressed",Array(O))
+		JO.RunMethod("setFocusTraversable",Array(True))
+    #end region
+	End If
+
 	'Deal with properties we have been passed
 	setEditable(Props.Get("Editable"))
-	
 	
 	'Create your CustomView layout in sub CreateLayout
 	CreateLayout
@@ -173,7 +193,13 @@ End Sub
 Private Sub CreateLayout
 	
 	'Add the wrapper object to customview mBase
-    mBase.AddNode(CustomViewNode,offset,offset,mBase.Width-2*offset,mBase.Height-2*offset)
+	If mUseTextArea Then
+		offset=0
+		mBase.AddNode(ta,offset,offset,mBase.Width-2*offset,mBase.Height-2*offset)
+	Else
+		mBase.AddNode(CustomViewNode,offset,offset,mBase.Width-2*offset,mBase.Height-2*offset)
+	End If
+    
 	
 	'Add any other Nodes to the CustomView
 	
@@ -183,9 +209,11 @@ End Sub
 Private Sub BaseResized_Event(MethodName As String,Args() As Object) As Object			'ignore
 	
 	'Make our node added to the Base Pane the same size as the Base Pane
-    CustomViewNode.PrefWidth = mBase.Width-2*offset
-    CustomViewNode.PrefHeight = mBase.Height-2*offset
-	
+	If mUseTextArea=False Then
+		CustomViewNode.PrefWidth = mBase.Width-2*offset
+		CustomViewNode.PrefHeight = mBase.Height-2*offset
+	End If
+
 	'Make any changes needed to other integral nodes
 	UpdateLayout
 End Sub
@@ -195,7 +223,58 @@ Private Sub UpdateLayout
 	
 End Sub
 
-Public Sub getCaretBounds As JavaObject
+'RIGHT_TO_LEFT, LEFT_TO_RIGHT
+Public Sub SetNodeOrientation(value As String)
+	Dim enum1 As EnumClass
+	enum1.Initialize("javafx.geometry.NodeOrientation")
+	Dim taJO As JavaObject=ta
+	taJO.RunMethod("setNodeOrientation",Array(enum1.ValueOf(value)))
+End Sub
+
+Public Sub SetSize(width As Double,height As Double)
+	mBase.SetSize(width,height)
+	If mUseTextArea Then
+		ta.SetSize(width,height-3)
+	End If
+End Sub
+
+Public Sub setUseTextArea(use As Boolean)
+	mUseTextArea=use
+	If ta.IsInitialized=False Then
+		ta.Initialize("ta")
+	End If
+End Sub
+
+Public Sub getUseTextArea As Boolean
+	Return mUseTextArea
+End Sub
+
+Public Sub getCaretMaxX As Double
+	If mUseTextArea Then
+		Dim map1 As Map
+		map1=Utils.GetScreenPosition(ta)
+		Return map1.Get("x")+ta.Width/10
+	Else
+		Dim optional As JavaObject=getCaretBounds
+		Dim boundingbox As JavaObject=optional.RunMethod("get",Null)
+		Return boundingbox.RunMethod("getMaxX",Null)
+	End If
+
+End Sub
+
+Public Sub getCaretMaxY As Double
+	If mUseTextArea Then
+		Dim map1 As Map
+		map1=Utils.GetScreenPosition(ta)
+		Return map1.Get("y")+ta.Height
+	Else
+		Dim optional As JavaObject=getCaretBounds
+		Dim boundingbox As JavaObject=optional.RunMethod("get",Null)
+		Return boundingbox.RunMethod("getMaxY",Null)
+	End If
+End Sub
+
+Private Sub getCaretBounds As JavaObject
 	Return JO.RunMethod("getCaretBounds",Null)
 End Sub
 
@@ -205,11 +284,13 @@ End Sub
 
 Sub setEnabled(enabled As Boolean)
 	mBase.Enabled=enabled
-	If enabled=False Then
-		CustomViewNode.Alpha=0.5
-		'CSSUtils.SetBackgroundColor(CustomViewNode,fx.Colors.DarkGray)
-	Else
-		CustomViewNode.Alpha=1.0
+	If mUseTextArea=False Then
+		If enabled=False Then
+			CustomViewNode.Alpha=0.5
+			'CSSUtils.SetBackgroundColor(CustomViewNode,fx.Colors.DarkGray)
+		Else
+			CustomViewNode.Alpha=1.0
+		End If
 	End If
 End Sub
 
@@ -242,25 +323,47 @@ Sub getParent As Node
 End Sub
 
 Sub getSelectionStart As Double
-	Return getSelection(0)
+	If mUseTextArea Then
+		Return ta.SelectionStart
+	Else
+		Return getSelection(0)
+	End If
+
 End Sub
 
 Sub getSelectionEnd As Double
-	Return getSelection(1)
+	If mUseTextArea Then
+		Return ta.SelectionEnd
+	Else
+		Return getSelection(1)
+	End If
 End Sub
 
 Sub setSelection(startIndex As Int,endIndex As Int)
-	JO.RunMethod("selectRange",Array(startIndex,endIndex))
+	If mUseTextArea Then
+		ta.SetSelection(startIndex,endIndex)
+	Else
+		JO.RunMethod("selectRange",Array(startIndex,endIndex))
+	End If
 End Sub
 
 Sub RequestFocus
-	JO.RunMethod("requestFocus",Null)
+	If mUseTextArea Then
+		ta.RequestFocus
+	Else
+		JO.RunMethod("requestFocus",Null)
+	End If
 End Sub
 
 Sub setWrapText(wrap As Boolean)
-	JO.RunMethod("setWrapText",Array(wrap))
+	If mUseTextArea Then
+		ta.WrapText=wrap
+	Else
+		JO.RunMethod("setWrapText",Array(wrap))
+	End If
 End Sub
 
+#region border
 Public Sub resetBorderColor
 	mDefaultBorderColor=fx.Colors.DarkGray
 End Sub
@@ -290,14 +393,6 @@ Public Sub SetBorderInHighlight(color As Paint)
 	'CSSUtils.SetStyleProperty(mBase,"-fx-effect","dropshadow(gaussian, skyblue , 3, 1, 0, 0)")
 End Sub
 
-Sub FocusChanged_Event (MethodName As String,Args() As Object) As Object							'ignore
-	Dim hasFocus As Boolean=Args(2)
-	If SubExists(mCallBack,mEventName & "_FocusChanged") Then
-		CallSubDelayed2(mCallBack,mEventName & "_FocusChanged",hasFocus)
-	End If
-	CallSubDelayed2(Me,"AdjustBorder",hasFocus)
-End Sub
-
 Sub AdjustBorder(hasFocus As Boolean)
 	If hasFocus Then
 		SetBorderInHighlight(mHighLightColor)
@@ -313,6 +408,21 @@ End Sub
 Public Sub getHighLightColor As Paint
 	Return mHighLightColor
 End Sub
+#end region
+
+Sub FocusChanged_Event (MethodName As String,Args() As Object) As Object							'ignore
+	Dim hasFocus As Boolean=Args(2)
+	If SubExists(mCallBack,mEventName & "_FocusChanged") Then
+		CallSubDelayed2(mCallBack,mEventName & "_FocusChanged",hasFocus)
+	End If
+	CallSubDelayed2(Me,"AdjustBorder",hasFocus)
+End Sub
+
+Sub ta_FocusChanged (HasFocus As Boolean)
+	If SubExists(mCallBack,mEventName & "_FocusChanged") Then
+		CallSubDelayed2(mCallBack,mEventName & "_FocusChanged",HasFocus)
+	End If
+End Sub
 
 Sub KeyPressed_Event (MethodName As String, Args() As Object) As Object 'ignore
 	Dim KEvt As JavaObject = Args(0)
@@ -323,7 +433,7 @@ Sub KeyPressed_Event (MethodName As String, Args() As Object) As Object 'ignore
 	End If
 End Sub
 
-Sub getSelection As Int()
+private Sub getSelection As Int()
 	Dim indexRange As String=JO.RunMethodJO("getSelection",Null).RunMethod("toString",Null)
 	Dim selectionStart,selectionEnd As Int
 	selectionStart=Regex.Split(",",indexRange)(0)
@@ -338,16 +448,28 @@ End Sub
 
 'Gets the value of the property length.
 Public Sub Length As Int
-	Return JO.RunMethod("getLength",Null)
+	If mUseTextArea Then
+		Return ta.Text.Length
+	Else
+		Return JO.RunMethod("getLength",Null)
+	End If
 End Sub
 
 Public Sub getText As String
-	Return JO.RunMethod("getText",Null)
+	If mUseTextArea Then
+		Return ta.Text
+	Else
+		Return JO.RunMethod("getText",Null)
+	End If
 End Sub
 
 Public Sub setText(str As String)
-	JO.RunMethod("replaceText",Array As Object(0, Length, str))
-	updateStyleSpans
+	If mUseTextArea Then
+		ta.Text=str
+	Else
+		JO.RunMethod("replaceText",Array As Object(0, Length, str))
+		updateStyleSpans
+	End If
 End Sub
 
 'Replaces a range of characters with the given text.
@@ -358,11 +480,20 @@ End Sub
 
 'Get/Set the CodeArea Editable
 Public Sub setEditable(Editable As Boolean)
-	JO.RunMethod("setEditable",Array(Editable))
+	If mUseTextArea Then
+		ta.Editable=Editable
+	Else
+		JO.RunMethod("setEditable",Array(Editable))
+	End If
 End Sub
 
 Public Sub getEditable As Boolean
-	Return JO.RunMethod("isEditable",Null)
+	If mUseTextArea Then
+		Return ta.Editable
+	Else
+		Return JO.RunMethod("isEditable",Null)
+	End If
+	
 End Sub
 
 'Get the unwrapped object
@@ -399,16 +530,23 @@ End Sub
 
 Public Sub totalHeight As Double
 	Dim height As Double=20
-	Try
-		height=Max(height,JO.RunMethod("getTotalHeightEstimate",Null))
+	If mUseTextArea Then
+		height=Max(height,Utils.MeasureMultilineTextHeight(Font,mBase.Width-2*offset,getText))
 		If mLineHeightTimes>0 Then
 			height=height+mLineHeightTimes*LineHeight
 		End If
-	Catch
-		'Log(LastException)
-		Return mBase.Height
-	End Try
-	height=height+2*offset
+	Else
+		Try
+			height=Max(height,JO.RunMethod("getTotalHeightEstimate",Null))
+			If mLineHeightTimes>0 Then
+				height=height+mLineHeightTimes*LineHeight
+			End If
+		Catch
+			'Log(LastException)
+			Return mBase.Height
+		End Try
+		height=height+2*offset
+	End If
 	Return height
 End Sub
 
@@ -416,13 +554,27 @@ Sub AdjustHeight
 	mBase.SetSize(mBase.Width,totalHeightEstimate)
 End Sub
 
+'for textarea
+Sub getStyle As String
+	Return ta.Style
+End Sub
+
+'for textarea
+Sub setStyle(style As String)
+	ta.Style=style
+End Sub
+
 Sub setFontFamily(name As String)
-	CSSUtils.SetStyleProperty(JO,"-fx-font-family",name)
+	If mUseTextArea=False Then
+		CSSUtils.SetStyleProperty(JO,"-fx-font-family",name)
+	End If
 	Font=fx.CreateFont(name,Font.Size,False,False)
 End Sub
 
 Sub setFontSzie(pixel As Int)
-	CSSUtils.SetStyleProperty(JO,"-fx-font-size",pixel&"px")
+	If mUseTextArea=False Then
+		CSSUtils.SetStyleProperty(JO,"-fx-font-size",pixel&"px")
+	End If
 	Font=fx.CreateFont(Font.FamilyName,pixel,False,False)
 End Sub
 
@@ -431,6 +583,12 @@ Sub TextChanged_Event(MethodName As String,Args() As Object) As Object							'ig
 	updateStyleSpans
 	If SubExists(mCallBack,mEventName & "_TextChanged") Then
 		CallSubDelayed3(mCallBack,mEventName & "_TextChanged",Args(1),Args(2))
+	End If
+End Sub
+
+Sub ta_TextChanged (Old As String, New As String)
+	If SubExists(mCallBack,mEventName & "_TextChanged") Then
+		CallSubDelayed3(mCallBack,mEventName & "_TextChanged",Old,New)
 	End If
 End Sub
 
@@ -443,6 +601,13 @@ Sub SelectedTextChanged_Event(MethodName As String,Args() As Object) As Object		
 		CallSubDelayed3(mCallBack,mEventName & "_SelectedTextChanged",Args(1),Args(2))
 	End If
 	updateContextMenuBasedOnSelection(Args(2))
+End Sub
+
+Sub taSelection_changed(old As Object, new As Object)
+	Dim selected As String=ta.Text.SubString2(ta.SelectionStart,ta.SelectionEnd)
+	If SubExists(mCallBack,mEventName & "_SelectedTextChanged") Then
+		CallSubDelayed3(mCallBack,mEventName & "_SelectedTextChanged","",selected)
+	End If
 End Sub
 
 'Setup for pattern matching

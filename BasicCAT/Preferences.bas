@@ -45,6 +45,7 @@ Sub Class_Globals
 	Private CustomCSSCheckBox As CheckBox
 	Private TranslateWordsCheckBox As CheckBox
 	Private WebViewFontSizeSpinner As Spinner
+	Private UseRichTextAreaCheckBox As CheckBox
 End Sub
 
 'Initializes the object. You can add parameters to this method if needed.
@@ -115,6 +116,7 @@ Sub categoryListView_SelectedIndexChanged(Index As Int)
 			lineHeightTextField.Text=unsavedPreferences.GetDefault("lineheight",0)
 			WebViewFontSizeSpinner.Value=unsavedPreferences.GetDefault("webview_fontsize",18)
 			UnderlineSpacesCheckBox.Checked=unsavedPreferences.GetDefault("underline_spaces",False)
+			UseRichTextAreaCheckBox.Checked=unsavedPreferences.GetDefault("use_richtextarea",True)
 			CustomCSSCheckBox.Checked=unsavedPreferences.GetDefault("customCSS_enabled",False)
 			If unsavedPreferences.ContainsKey("customCSSDir") Then
 				CSSDirLabel.Text=unsavedPreferences.Get("customCSSDir")
@@ -489,4 +491,8 @@ End Sub
 
 Sub WebViewFontSizeSpinner_ValueChanged (Value As Object)
 	unsavedPreferences.Put("webview_fontsize",Value)
+End Sub
+
+Sub UseRichTextAreaCheckBox_CheckedChange(Checked As Boolean)
+	unsavedPreferences.Put("use_richtextarea",Checked)
 End Sub

@@ -9,6 +9,15 @@ Sub Process_Globals
 	Private fx As JFX
 End Sub
 
+Sub LanguageIsRight2Left(langcode As String) as Boolean
+	For Each lang As String In Array("ar")
+		If langcode.StartsWith(lang) Then
+			Return True
+		End If
+	Next
+	Return False
+End Sub
+
 Sub TokenizedList(text As String,sourceLang As String) As List
 	text=text.ToLowerCase
 	Dim words As List

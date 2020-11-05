@@ -1090,13 +1090,9 @@ Sub ShowITPContextMenu(ta As RichTextArea,lastString As String)
 						mi.Tag=lastString
 						cm.MenuItems.Add(mi)
 					Next
-					Dim optional As JavaObject=ta.CaretBounds
-					Dim boundingbox As JavaObject=optional.RunMethod("get",Null)
-					Dim maxX,maxY As Double
-					maxX=boundingbox.RunMethod("getMaxX",Null)
-					maxY=boundingbox.RunMethod("getMaxY",Null)
+
 					Dim jo As JavaObject = cm
-					jo.RunMethod("show", Array(ta.BasePane, maxX, maxY))
+					jo.RunMethod("show", Array(ta.BasePane, ta.CaretMaxX, ta.CaretMaxY))
 					jo.RunMethodJO("getSkin",Null).RunMethodJO("getNode",Null).RunMethodJO("lookup",Array(".menu-item")).RunMethod("requestFocus",Null)
 					'cm.getSkin().getNode().lookup(".menu-item").requestFocus();
 				Else
@@ -1145,21 +1141,32 @@ Public Sub createEmptyPane As Pane
 End Sub
 
 Public Sub addTextAreaToSegmentPane(segmentpane As Pane,source As String,target As String)
-	segmentpane.LoadLayout("segment")
+	If LanguageUtils.LanguageIsRight2Left(projectFile.Get("source")) Or LanguageUtils.LanguageIsRight2Left(projectFile.Get("target")) Or Main.preferencesMap.GetDefault("use_richtextarea",True)=False Then
+		segmentpane.LoadLayout("segmentUsingTextArea")
+	Else
+		segmentpane.LoadLayout("segment")
+	End If
+	
 	segmentpane.SetSize(Main.editorLV.Width,50dip)
 	Dim sourceTextArea As RichTextArea
 	sourceTextArea=segmentpane.GetNode(0).Tag
 	sourceTextArea.Text=source
-    sourceTextArea.WrapText=True
+	sourceTextArea.WrapText=True
 	Main.setTextAreaStyle(sourceTextArea,"sourceFont")
-	
 	addKeyEvent(sourceTextArea.BasePane,"sourceTextArea")
+	If LanguageUtils.LanguageIsRight2Left(projectFile.Get("source")) Then
+		sourceTextArea.SetNodeOrientation("RIGHT_TO_LEFT")
+	End If
+	
 	Dim targetTextArea As RichTextArea
 	targetTextArea=segmentpane.GetNode(1).Tag
 	targetTextArea.Text=target
 	targetTextArea.WrapText=True
 	Main.setTextAreaStyle(targetTextArea,"targetFont")
 	addKeyEvent(targetTextArea.BasePane,"targetTextArea")
+	If LanguageUtils.LanguageIsRight2Left(projectFile.Get("target")) Then
+		targetTextArea.SetNodeOrientation("RIGHT_TO_LEFT")
+	End If
 	
 	sourceTextArea.BasePane.Left=0
 	sourceTextArea.BasePane.SetSize(Main.editorLV.Width/2-20dip,50dip)

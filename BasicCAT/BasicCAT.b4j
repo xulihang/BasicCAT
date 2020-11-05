@@ -56,30 +56,31 @@ File57=segmentation_zh.conf
 File58=segmentation_zh_exception.conf
 File59=segmentationRules.srx
 File6=basiccat.jpg
-File60=serverLanucher.bjl
-File61=settingLanguagecheck.bjl
-File62=settingVersionControl.bjl
-File63=SourceEditor.bjl
-File64=statistics.bjl
-File65=stopwords.txt
-File66=supportedFiles.txt
-File67=tableview.bjl
-File68=tabpane.bjl
-File69=teamSetting.bjl
+File60=segmentUsingTextArea.bjl
+File61=serverLanucher.bjl
+File62=settingLanguagecheck.bjl
+File63=settingVersionControl.bjl
+File64=SourceEditor.bjl
+File65=statistics.bjl
+File66=stopwords.txt
+File67=supportedFiles.txt
+File68=tableview.bjl
+File69=tabpane.bjl
 File7=checkList.bjl
-File70=term.bjl
-File71=TermEditor.bjl
-File72=TermManager.bjl
-File73=termSetting.bjl
-File74=TMEditor.bjl
-File75=TMManager.bjl
-File76=tmSetting.bjl
-File77=upperRight.bjl
-File78=version.txt
-File79=viewSegment.bjl
+File70=teamSetting.bjl
+File71=term.bjl
+File72=TermEditor.bjl
+File73=TermManager.bjl
+File74=termSetting.bjl
+File75=TMEditor.bjl
+File76=TMManager.bjl
+File77=tmSetting.bjl
+File78=upperRight.bjl
+File79=version.txt
 File8=confirmReview.bjl
-File80=webview.css
-File81=wordLookupSetting.bjl
+File80=viewSegment.bjl
+File81=webview.css
+File82=wordLookupSetting.bjl
 File9=custom.css
 FileGroup1=Default Group
 FileGroup10=Default Group
@@ -161,6 +162,7 @@ FileGroup79=Default Group
 FileGroup8=Default Group
 FileGroup80=Default Group
 FileGroup81=Default Group
+FileGroup82=Default Group
 FileGroup9=Default Group
 Group=Default Group
 Library1=jcore
@@ -191,63 +193,63 @@ Library8=jrandomaccessfile
 Library9=jb4xencryption
 Module1=FileChooserUtils
 Module10=RichTextArea
-Module11=Utils
-Module12=dictWebView
-Module13=filterGenericUtils
-Module14=ITP
-Module15=EnumClass
-Module16=jieba
-Module17=opennlp
-Module18=idmlUtils
-Module19=XMLBuilder2
+Module11=Previewer
+Module12=Utils
+Module13=statistics
+Module14=MTCompare
+Module15=editDistance
+Module16=dictWebView
+Module17=filterGenericUtils
+Module18=ITP
+Module19=EnumClass
 Module2=Project
-Module20=MTParamsFiller
-Module21=TMX
-Module22=XmlNode
-Module23=XMLUtils
-Module24=xliffFilter
-Module25=TMManager
-Module26=confirmReviewDialog
-Module27=editDistance
-Module28=TM
-Module29=Theme
+Module20=jieba
+Module21=opennlp
+Module22=idmlUtils
+Module23=XMLBuilder2
+Module24=MTParamsFiller
+Module25=TMX
+Module26=XmlNode
+Module27=XMLUtils
+Module28=xliffFilter
+Module29=TMManager
 Module3=segmentation
-Module30=LanguageTool
-Module31=searchAndReplaceDialog
-Module32=statistics
-Module33=TMDB
-Module34=LanguageUtils
-Module35=idmlFilter
-Module36=Previewer
-Module37=MT
-Module38=SimpleTag
-Module39=XmlParser
+Module30=confirmReviewDialog
+Module31=TM
+Module32=Theme
+Module33=LanguageTool
+Module34=searchAndReplaceDialog
+Module35=TMDB
+Module36=LanguageUtils
+Module37=idmlFilter
+Module38=MT
+Module39=SimpleTag
 Module4=txtFilter
-Module40=Xml2Map
-Module41=importDialog
-Module42=tikal
-Module43=pdfbox
-Module44=SourceTextEditor
-Module45=git
-Module46=TagKind
-Module47=PathSaver
-Module48=SearchView
-Module49=InputTextAreaBox
+Module40=XmlParser
+Module41=Xml2Map
+Module42=importDialog
+Module43=tikal
+Module44=pdfbox
+Module45=SourceTextEditor
+Module46=git
+Module47=TagKind
+Module48=PathSaver
+Module49=SearchView
 Module5=Term
-Module50=TermManager
-Module51=PDF2TXT
-Module52=LanguagePairSelector
-Module53=TMEditor
-Module54=HistoryViewer
-Module55=serverLauncher
-Module56=TextFlow
-Module57=AutoSaver
-Module58=ClientKVS
-Module59=SRX
+Module50=InputTextAreaBox
+Module51=TermManager
+Module52=PDF2TXT
+Module53=LanguagePairSelector
+Module54=TMEditor
+Module55=HistoryViewer
+Module56=serverLauncher
+Module57=TextFlow
+Module58=AutoSaver
+Module59=ClientKVS
 Module6=KeyValueStore
-Module60=progressDialog
-Module61=languageChooser
-Module62=MTCompare
+Module60=SRX
+Module61=progressDialog
+Module62=languageChooser
 Module63=HistoryRecord
 Module64=Map2Xml
 Module65=ErrorReporter
@@ -266,7 +268,7 @@ Module76=viewSegment
 Module77=coordinate
 Module8=preTranslateDialog
 Module9=Preferences
-NumberOfFiles=81
+NumberOfFiles=82
 NumberOfLibraries=26
 NumberOfModules=77
 Version=7.8
@@ -1393,18 +1395,23 @@ Sub ListViewParent_Resize
 		Dim targetTa As RichTextArea = p.GetNode(1).Tag
 		sourceTa.LineHeightTimes=lineHeightTimes
 		targetTa.LineHeightTimes=lineHeightTimes
-		sourceTa.BasePane.Left=0
-		sourceTa.BasePane.SetSize(itemWidth/2-ScrollBarWidth,50)
-		targetTa.BasePane.Left=itemWidth/2-ScrollBarWidth
-		targetTa.BasePane.SetSize(itemWidth/2-ScrollBarWidth,50)
+		sourceTa.Left=0
+		sourceTa.SetSize(itemWidth/2-ScrollBarWidth,50)
+		targetTa.Left=itemWidth/2-ScrollBarWidth
+		targetTa.SetSize(itemWidth/2-ScrollBarWidth,50)
 		Dim sourceHeight,targetHeight As Double
 		sourceHeight=sourceTa.totalHeight
 		targetHeight=targetTa.totalHeight
 		Dim h As Double=Max(25,Max(sourceHeight,targetHeight))
-		sourceTa.BasePane.SetSize(itemWidth/2-ScrollBarWidth,h)
-		targetTa.BasePane.SetSize(itemWidth/2-ScrollBarWidth,h)
 		p.Left=0
-		p.SetSize(itemWidth-ScrollBarWidth*2,h)
+		If sourceTa.UseTextArea Then
+			p.SetSize(itemWidth-ScrollBarWidth*2,h+3)
+			h=h+3
+		Else
+			p.SetSize(itemWidth-ScrollBarWidth*2,h)
+		End If
+		sourceTa.SetSize(itemWidth/2-ScrollBarWidth,h)
+		targetTa.SetSize(itemWidth/2-ScrollBarWidth,h)
 	Next
 End Sub
 
@@ -1902,16 +1909,31 @@ Public Sub setLabelFont(lbl As Label,name As String)
 End Sub
 
 Public Sub setTextAreaStyle(ta As RichTextArea,FontNameKey As String)
-	Dim cssPath As String
 	
-	If File.Exists(currentProject.path,"config/richtext.css") Then
-		cssPath=File.Combine(currentProject.path,"config/richtext.css")
-	Else
-		cssPath=File.Combine(File.DirData("BasicCAT"),"richtext.css")
-		File.WriteString(cssPath,"",Utils.richTextCSS)
+	
+	If ta.UseTextArea=False Then
+		Dim cssPath As String
+		If File.Exists(currentProject.path,"config/richtext.css") Then
+			cssPath=File.Combine(currentProject.path,"config/richtext.css")
+		Else
+			cssPath=File.Combine(File.DirData("BasicCAT"),"richtext.css")
+			File.WriteString(cssPath,"",Utils.richTextCSS)
+		End If
+		'ta.GetObjectJO.RunMethodJO("getStylesheets",Null).RunMethod("clear",Null)
+		ta.GetObjectJO.RunMethodJO("getStylesheets",Null).RunMethod("add",Array(File.GetUri(cssPath,"")))
+		
+		If preferencesMap.GetDefault("customCSS_enabled",False)=True Then
+			Dim bgcolor As Paint=Theme.RichTextBGColor(preferencesMap.GetDefault("customCSSDir",File.DirApp))
+			CSSUtils.SetBackgroundColor(ta.GetObject,bgcolor)
+			ta.HighLightColor=Theme.RichTextHighLightColor(preferencesMap.GetDefault("customCSSDir",File.DirApp))
+		Else
+			If preferencesMap.GetDefault("darktheme",False) Then
+				CSSUtils.SetBackgroundColor(ta.GetObject,fx.Colors.RGB(151,152,154))
+				ta.HighLightColor=fx.Colors.ARGB(150,51,51,51)
+			End If
+		End If
 	End If
-	'ta.GetObjectJO.RunMethodJO("getStylesheets",Null).RunMethod("clear",Null)
-	ta.GetObjectJO.RunMethodJO("getStylesheets",Null).RunMethod("add",Array(File.GetUri(cssPath,"")))
+	
 	
 	If preferencesMap.ContainsKey(FontNameKey) Then
 		Dim fontPreference As Map
@@ -1922,18 +1944,11 @@ Public Sub setTextAreaStyle(ta As RichTextArea,FontNameKey As String)
 		size=fontPreference.get("Size")
 		ta.FontFamily=familyName
 		ta.FontSzie=size
-	End If
-	If preferencesMap.GetDefault("customCSS_enabled",False)=True Then
-		Dim bgcolor As Paint=Theme.RichTextBGColor(preferencesMap.GetDefault("customCSSDir",File.DirApp))
-		CSSUtils.SetBackgroundColor(ta.GetObject,bgcolor)
-		ta.HighLightColor=Theme.RichTextHighLightColor(preferencesMap.GetDefault("customCSSDir",File.DirApp))
-	Else
-		If preferencesMap.GetDefault("darktheme",False) Then
-			CSSUtils.SetBackgroundColor(ta.GetObject,fx.Colors.RGB(151,152,154))
-			ta.HighLightColor=fx.Colors.ARGB(150,51,51,51)
+		If ta.UseTextArea Then
+			ta.Style = $"-fx-font-family: ${familyName};
+		             -fx-font-size: ${size}px;"$
 		End If
 	End If
-
 End Sub
 
 Public Sub addTextAreaToSegmentPane(segmentpane As Pane,source As String)
