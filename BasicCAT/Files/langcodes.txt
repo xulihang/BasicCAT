@@ -1,4 +1,5 @@
 basiccat	language name	yandex	google	mymemory	bing	youdao	tencent	niutrans	sogouDeepI	sogou	baidu	ali	cloudtranslation	ali-ecommerce
+ar	Arabic													
 de	Germany													
 fi	Finnish										fin			
 el	Greek													
