@@ -21,12 +21,12 @@ Sub compareStrings
 	End If
 End Sub
 
-Sub showDiff(source1 As String,source2 As String) As String
+Sub showDiff(source1 As String,source2 As String,fontsize As Int) As String
 	str1=source1
 	str2=source2
 	calculateEditDistance
 	Dim result As Map=interpret(revealOperation)
-	Return genHtmlResult(TextInParts(result))
+	Return genHtmlResult(TextInParts(result),fontsize)
 End Sub
 
 Sub getTextInParts(source1 As String,source2 As String) As Map
@@ -236,13 +236,13 @@ Sub interpret(list1 As List) As Map
 	Return result
 End Sub
 
-Sub genHtmlResult(strs As Map) As String
+Sub genHtmlResult(strs As Map,fontsize As Int) As String
 	Dim str1parts,str2parts As List
 	str1parts=strs.Get("str1")
 	str2parts=strs.Get("str2")
 	Dim sb As StringBuilder
 	sb.Initialize
-	sb.Append("<!DOCTYPE HTML><html><body>")
+	sb.Append($"<!DOCTYPE HTML><html><head><style type="text/css">p {font-size: ${fontsize}px}</style></head><body>"$)
 	sb.Append("<p>")
 	For Each part As String In str1parts
 		sb.Append(part)

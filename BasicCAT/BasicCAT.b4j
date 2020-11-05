@@ -78,7 +78,8 @@ File77=upperRight.bjl
 File78=version.txt
 File79=viewSegment.bjl
 File8=confirmReview.bjl
-File80=wordLookupSetting.bjl
+File80=webview.css
+File81=wordLookupSetting.bjl
 File9=custom.css
 FileGroup1=Default Group
 FileGroup10=Default Group
@@ -159,6 +160,7 @@ FileGroup78=Default Group
 FileGroup79=Default Group
 FileGroup8=Default Group
 FileGroup80=Default Group
+FileGroup81=Default Group
 FileGroup9=Default Group
 Group=Default Group
 Library1=jcore
@@ -189,53 +191,53 @@ Library8=jrandomaccessfile
 Library9=jb4xencryption
 Module1=FileChooserUtils
 Module10=RichTextArea
-Module11=ITP
-Module12=EnumClass
-Module13=jieba
-Module14=opennlp
-Module15=Utils
-Module16=idmlUtils
-Module17=XMLBuilder2
-Module18=MTParamsFiller
-Module19=TMX
+Module11=Utils
+Module12=dictWebView
+Module13=filterGenericUtils
+Module14=ITP
+Module15=EnumClass
+Module16=jieba
+Module17=opennlp
+Module18=idmlUtils
+Module19=XMLBuilder2
 Module2=Project
-Module20=XmlNode
-Module21=XMLUtils
-Module22=xliffFilter
-Module23=TMManager
-Module24=confirmReviewDialog
-Module25=editDistance
-Module26=TM
-Module27=Theme
-Module28=LanguageTool
-Module29=searchAndReplaceDialog
+Module20=MTParamsFiller
+Module21=TMX
+Module22=XmlNode
+Module23=XMLUtils
+Module24=xliffFilter
+Module25=TMManager
+Module26=confirmReviewDialog
+Module27=editDistance
+Module28=TM
+Module29=Theme
 Module3=segmentation
-Module30=statistics
-Module31=TMDB
-Module32=LanguageUtils
-Module33=idmlFilter
-Module34=filterGenericUtils
-Module35=Previewer
-Module36=MT
-Module37=SimpleTag
-Module38=XmlParser
-Module39=Xml2Map
+Module30=LanguageTool
+Module31=searchAndReplaceDialog
+Module32=statistics
+Module33=TMDB
+Module34=LanguageUtils
+Module35=idmlFilter
+Module36=Previewer
+Module37=MT
+Module38=SimpleTag
+Module39=XmlParser
 Module4=txtFilter
-Module40=importDialog
-Module41=tikal
-Module42=pdfbox
-Module43=SourceTextEditor
-Module44=git
-Module45=TagKind
-Module46=PathSaver
-Module47=SearchView
-Module48=InputTextAreaBox
-Module49=TermManager
+Module40=Xml2Map
+Module41=importDialog
+Module42=tikal
+Module43=pdfbox
+Module44=SourceTextEditor
+Module45=git
+Module46=TagKind
+Module47=PathSaver
+Module48=SearchView
+Module49=InputTextAreaBox
 Module5=Term
-Module50=PDF2TXT
-Module51=LanguagePairSelector
-Module52=TMEditor
-Module53=dictWebView
+Module50=TermManager
+Module51=PDF2TXT
+Module52=LanguagePairSelector
+Module53=TMEditor
 Module54=HistoryViewer
 Module55=serverLauncher
 Module56=TextFlow
@@ -264,7 +266,7 @@ Module76=viewSegment
 Module77=coordinate
 Module8=preTranslateDialog
 Module9=Preferences
-NumberOfFiles=80
+NumberOfFiles=81
 NumberOfLibraries=26
 NumberOfModules=77
 Version=7.8
@@ -462,6 +464,7 @@ Sub setupStyleSheets
 		End If
 	End If
 	LoadHTMLWithBackground(LogWebView,"")
+	Utils.SetWebViewStyleSheet(LogWebView)
 End Sub
 
 Public Sub initializeNLP(sourcelang As String)
@@ -1554,12 +1557,13 @@ Sub tmTableView_SelectedRowChanged(Index As Int, Row() As Object)
 		translationLbl=Row(2)
 		Dim sourceTextArea As RichTextArea
 		sourceTextArea=pane.GetNode(0).Tag
+		Dim fontsize As Int=preferencesMap.GetDefault("webview_fontsize",18)
 		If sourceLbl.Text="" Then
-			LoadHTMLWithBackground(LogWebView,Utils.buildHtmlString(translationLbl.Text))
+			LoadHTMLWithBackground(LogWebView,Utils.buildHtmlString(translationLbl.Text,fontsize))
 			Return
 		End If
 		Dim html As String
-		html=editDistance.showDiff(sourceTextArea.Text,sourceLbl.Text).Replace("</body>","<p>"&translationLbl.Text&"</p></body>")
+		html=editDistance.showDiff(sourceTextArea.Text,sourceLbl.Text,fontsize).Replace("</body>","<p>"&translationLbl.Text&"</p></body>")
 		LoadHTMLWithBackground(LogWebView,html)
 	End If
 

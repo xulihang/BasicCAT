@@ -44,6 +44,7 @@ Sub Class_Globals
 	Private CSSDirLabel As Label
 	Private CustomCSSCheckBox As CheckBox
 	Private TranslateWordsCheckBox As CheckBox
+	Private WebViewFontSizeSpinner As Spinner
 End Sub
 
 'Initializes the object. You can add parameters to this method if needed.
@@ -112,6 +113,7 @@ Sub categoryListView_SelectedIndexChanged(Index As Int)
 			SettingPane.LoadLayout("appearance")
 			loadFont
 			lineHeightTextField.Text=unsavedPreferences.GetDefault("lineheight",0)
+			WebViewFontSizeSpinner.Value=unsavedPreferences.GetDefault("webview_fontsize",18)
 			UnderlineSpacesCheckBox.Checked=unsavedPreferences.GetDefault("underline_spaces",False)
 			CustomCSSCheckBox.Checked=unsavedPreferences.GetDefault("customCSS_enabled",False)
 			If unsavedPreferences.ContainsKey("customCSSDir") Then
@@ -483,4 +485,8 @@ End Sub
 
 Sub CustomCSSCheckBox_CheckedChange(Checked As Boolean)
 	unsavedPreferences.Put("customCSS_enabled",Checked)
+End Sub
+
+Sub WebViewFontSizeSpinner_ValueChanged (Value As Object)
+	unsavedPreferences.Put("webview_fontsize",Value)
 End Sub

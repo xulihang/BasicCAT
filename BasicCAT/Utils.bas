@@ -22,6 +22,14 @@ Sub DetectOS As String
 	End If
 End Sub
 
+Sub SetWebViewStyleSheet(wv As WebView)
+	Dim jo As JavaObject=wv
+	Dim uri As String=File.GetUri(File.DirAssets,"webview.css")
+	Dim we As JavaObject
+	we = jo.RunMethod("getEngine",Null)
+	we.RunMethod("setUserStyleSheetLocation",Array(uri))
+End Sub
+
 Sub SQLSpecialCharactersRemoved(text As String) As String
 	For Each str As String In Array As String("'",$"""$,":",";","(",")","[","]","|","\","@")
 		text=text.Replace(str,"'"&str)
@@ -527,10 +535,11 @@ Sub GetScreenPosition(n As Node) As Map
 	Return m
 End Sub
 
-Sub buildHtmlString(raw As String) As String
+Sub buildHtmlString(raw As String,fontsize As Int) As String
 	Dim result As String
 	Dim htmlhead As String
-	htmlhead="<!DOCTYPE HTML><html><head><meta charset="&Chr(34)&"utf-8"&Chr(34)&" /><style type="&Chr(34)&"text/css"&Chr(34)&">p {font-size: 18px}</style></head><body>"
+	htmlhead="<!DOCTYPE HTML><html><head><meta charset="&Chr(34)&"utf-8"&Chr(34)&" /><style type="&Chr(34)&"text/css"&Chr(34)&">p {font-size: "&fontsize&"px}</style></head><body>"
+	Log(htmlhead)
 	Dim htmlend As String
 	htmlend="</body></html>"
 	result=result&"<p>"&raw&"</p>"
