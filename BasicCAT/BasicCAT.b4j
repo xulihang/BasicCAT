@@ -1405,8 +1405,7 @@ Sub ListViewParent_Resize
 		Dim h As Double=Max(25,Max(sourceHeight,targetHeight))
 		p.Left=0
 		If sourceTa.UseTextArea Then
-			p.SetSize(itemWidth-ScrollBarWidth*2,h+3)
-			h=h+3
+			p.SetSize(itemWidth-ScrollBarWidth*2,h)
 		Else
 			p.SetSize(itemWidth-ScrollBarWidth*2,h)
 		End If
@@ -1921,19 +1920,29 @@ Public Sub setTextAreaStyle(ta As RichTextArea,FontNameKey As String)
 		End If
 		'ta.GetObjectJO.RunMethodJO("getStylesheets",Null).RunMethod("clear",Null)
 		ta.GetObjectJO.RunMethodJO("getStylesheets",Null).RunMethod("add",Array(File.GetUri(cssPath,"")))
-		
-		If preferencesMap.GetDefault("customCSS_enabled",False)=True Then
-			Dim bgcolor As Paint=Theme.RichTextBGColor(preferencesMap.GetDefault("customCSSDir",File.DirApp))
+	End If
+	
+	If preferencesMap.GetDefault("customCSS_enabled",False)=True Then
+		Dim rgb As String=Theme.RichTextBGColorRGB(preferencesMap.GetDefault("customCSSDir",File.DirApp))
+		Dim bgcolor As Paint=Theme.RichTextBGColor(preferencesMap.GetDefault("customCSSDir",File.DirApp))
+		If ta.UseTextArea Then
+			CSSUtils.SetStyleProperty(ta.ta,"-fx-control-inner-background","rgb("&rgb&")")
+			'CSSUtils.SetBackgroundColor(ta.ta,bgcolor)
+		Else
 			CSSUtils.SetBackgroundColor(ta.GetObject,bgcolor)
 			ta.HighLightColor=Theme.RichTextHighLightColor(preferencesMap.GetDefault("customCSSDir",File.DirApp))
-		Else
-			If preferencesMap.GetDefault("darktheme",False) Then
+		End If
+	Else
+		If preferencesMap.GetDefault("darktheme",False) Then
+			If ta.UseTextArea Then
+				CSSUtils.SetStyleProperty(ta.ta,"-fx-control-inner-background","rgb(151,152,154)")
+				'CSSUtils.SetBackgroundColor(ta.ta,bgcolor)
+			Else
 				CSSUtils.SetBackgroundColor(ta.GetObject,fx.Colors.RGB(151,152,154))
 				ta.HighLightColor=fx.Colors.ARGB(150,51,51,51)
 			End If
 		End If
 	End If
-	
 	
 	If preferencesMap.ContainsKey(FontNameKey) Then
 		Dim fontPreference As Map
@@ -1945,8 +1954,8 @@ Public Sub setTextAreaStyle(ta As RichTextArea,FontNameKey As String)
 		ta.FontFamily=familyName
 		ta.FontSzie=size
 		If ta.UseTextArea Then
-			ta.Style = $"-fx-font-family: ${familyName};
-		             -fx-font-size: ${size}px;"$
+			CSSUtils.SetStyleProperty(ta.ta,"-fx-font-family",familyName)
+			CSSUtils.SetStyleProperty(ta.ta,"-fx-font-size",size)
 		End If
 	End If
 End Sub

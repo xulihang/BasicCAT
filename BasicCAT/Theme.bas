@@ -86,3 +86,11 @@ Public Sub RichTextBGColor(dir As String) As Paint
 	End If
 	Return fx.Colors.White
 End Sub
+
+Public Sub RichTextBGColorRGB(dir As String) As String
+	If File.Exists(dir,"richtext_bgcolor") Then
+		Dim rgb As String=File.ReadString(dir,"richtext_bgcolor").Trim
+		Return rgb
+	End If
+	Return "255,255,255"
+End Sub

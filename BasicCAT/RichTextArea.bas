@@ -34,7 +34,7 @@ Private Sub Class_Globals
 	Private mDefaultBorderColor As Paint
 	Private mHighLightColor As Paint
 	Private mLineHeightTimes As Double=0
-	Private ta As TextArea
+	Public ta As TextArea
 	Private mUseTextArea As Boolean=False
 End Sub
 
@@ -234,7 +234,7 @@ End Sub
 Public Sub SetSize(width As Double,height As Double)
 	mBase.SetSize(width,height)
 	If mUseTextArea Then
-		ta.SetSize(width,height-3)
+		ta.SetSize(width,height-1)
 	End If
 End Sub
 
@@ -552,16 +552,6 @@ End Sub
 
 Sub AdjustHeight
 	mBase.SetSize(mBase.Width,totalHeightEstimate)
-End Sub
-
-'for textarea
-Sub getStyle As String
-	Return ta.Style
-End Sub
-
-'for textarea
-Sub setStyle(style As String)
-	ta.Style=style
 End Sub
 
 Sub setFontFamily(name As String)
