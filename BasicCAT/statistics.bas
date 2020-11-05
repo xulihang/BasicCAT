@@ -154,3 +154,17 @@ Sub TagRemoved(text As String) As String
 	Return text
 End Sub
 
+Sub Button1_MouseClicked (EventData As MouseEvent)
+	Dim sb As StringBuilder
+	sb.Initialize
+	For Each filename As String In Main.currentProject.files
+		Dim set As B4XSet
+		set.Initialize
+		For Each segment As List In Main.currentProject.getAllSegments(filename)
+			Dim source As String=segment.Get(0)
+			set.Add(source)
+		Next
+        sb.Append(filename).Append(": ").Append(set.Size).Append(CRLF)
+	Next
+	fx.Msgbox(frm,sb.ToString,"Result")
+End Sub
