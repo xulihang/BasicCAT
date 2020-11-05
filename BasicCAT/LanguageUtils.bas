@@ -9,8 +9,9 @@ Sub Process_Globals
 	Private fx As JFX
 End Sub
 
-Sub LanguageIsRight2Left(langcode As String) as Boolean
-	For Each lang As String In Array("ar")
+Sub LanguageIsRight2Left(langcode As String) As Boolean
+	'arabic,hebrew,kurdish,persian,urdu
+	For Each lang As String In Array As String("ar","he","ku","fa","ur")
 		If langcode.StartsWith(lang) Then
 			Return True
 		End If

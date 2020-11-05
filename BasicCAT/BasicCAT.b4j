@@ -1841,7 +1841,6 @@ Sub checkLV_MouseClicked (EventData As MouseEvent)
 	End If
 End Sub
 
-
 Sub addPositionChangedEvent(divider As Object,eventName As String)
 	Dim Obj As Reflector
 	Obj.Target = divider
@@ -1891,7 +1890,6 @@ Sub lbl_MouseClicked (EventData As MouseEvent)
 	End If
 End Sub
 
-
 Public Sub setLabelFont(lbl As Label,name As String)
 	If preferencesMap.ContainsKey(name) Then
 		Dim fontPreference As Map
@@ -1908,8 +1906,6 @@ Public Sub setLabelFont(lbl As Label,name As String)
 End Sub
 
 Public Sub setTextAreaStyle(ta As RichTextArea,FontNameKey As String)
-	
-	
 	If ta.UseTextArea=False Then
 		Dim cssPath As String
 		If File.Exists(currentProject.path,"config/richtext.css") Then
@@ -1961,7 +1957,6 @@ Public Sub setTextAreaStyle(ta As RichTextArea,FontNameKey As String)
 End Sub
 
 Public Sub addTextAreaToSegmentPane(segmentpane As Pane,source As String)
-	Log("add")
 	If currentProject.IsInitialized Then
 		currentProject.addTextAreaToSegmentPane(segmentpane,source,"")
 	End If
@@ -1996,7 +1991,6 @@ Sub MainForm_FocusChanged (HasFocus As Boolean)
 		End If
 	End If
 End Sub
-
 
 Sub editorLV_Action
 	Dim mi As MenuItem=Sender
