@@ -44,6 +44,7 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 		Case "translate"
 			If frm.Showing=False Then
 				frm.Show
+				updateParamsForGoogle(Params.Get("targetLang"))
 			End If
 			wait for (translate(Params.Get("source"),Params.Get("preferencesMap"))) complete (result As String)
 			Return result
@@ -89,6 +90,21 @@ Sub init
 	TemplateTextField.Text="https://translate.google.cn/#view=home&op=translate&sl={sourceLang}&tl={targetLang}&text={text}"
 	ParamsTextArea.Text=$"auto,zh-CN,translation
 Hello World!"$
+End Sub
+
+Sub updateParamsForGoogle(targetLang As String)
+	If TemplateTextField.Text.Contains("google") Then
+		targetLang=ConvertLang(targetLang)
+		ParamsTextArea.Text=$"auto,${targetLang},translation
+Hello World!"$
+	End If
+End Sub
+
+Sub ConvertLang(lang As String) As String
+	If lang="zh" Then
+		lang="zh-CN"
+	End If
+	Return lang
 End Sub
 
 Public Sub Show
@@ -145,6 +161,7 @@ Sub GetTranslaton(className As String,timeout As Int) As ResumableSub
 	Loop
 
 	Dim result As String=we.RunMethod("executeScript",Array As String(getClassJS&".innerText"))
+	result=result.Trim
 	Log("Translation:")
 	Log(result)
 	Return result

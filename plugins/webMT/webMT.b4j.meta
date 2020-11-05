@@ -4,6 +4,6 @@ ModuleBreakpoints0=
 ModuleBreakpoints1=
 ModuleClosedNodes0=
 ModuleClosedNodes1=
-NavigationStack=webMTPlugin,Run,42,6,webMTPlugin,Show,88,0,webMTPlugin,init,67,6,webMTPlugin,LoadURLBasedOnTemplate,116,0,webMTPlugin,Class_Globals,0,0,webMTPlugin,GetTranslaton,141,0,webMTPlugin,translate,105,6,Main,AppStart,13,6,webMTPlugin,TemplateURLFilled,171,0,webMTPlugin,EncodeURL,175,0
+NavigationStack=webMTPlugin,translate,105,6,Main,AppStart,13,6,webMTPlugin,TemplateURLFilled,171,0,webMTPlugin,EncodeURL,175,0,webMTPlugin,GetTranslaton,143,2,webMTPlugin,Class_Globals,0,0,webMTPlugin,ConvertLang,93,6,webMTPlugin,init,86,6,webMTPlugin,updateParamsForGoogle,93,6,webMTPlugin,Run,40,6
 SelectedBuild=0
 VisibleModules=1
