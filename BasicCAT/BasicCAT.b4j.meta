@@ -232,6 +232,6 @@ ModuleClosedNodes76=
 ModuleClosedNodes77=
 ModuleClosedNodes8=
 ModuleClosedNodes9=
-NavigationStack=Utils,buildHtmlString,534,6,editDistance,genHtmlResult,232,6,editDistance,showDiff,22,3,Main,tmTableView_SelectedRowChanged,1291,6,statistics,calculateHanzi,140,0,statistics,TagRemoved,149,0,statistics,buildTable,113,0,Visual Designer,statistics.bjl,-100,6,statistics,fillData,26,0,statistics,Button1_MouseClicked,158,6
+NavigationStack=Utils,buildHtmlString,534,6,editDistance,genHtmlResult,232,6,editDistance,showDiff,22,3,Main,tmTableView_SelectedRowChanged,1291,6,statistics,calculateHanzi,140,0,statistics,buildTable,113,0,Visual Designer,statistics.bjl,-100,6,statistics,TagRemoved,148,0,statistics,fillData,32,0,statistics,Button1_MouseClicked,165,6
 SelectedBuild=0
 VisibleModules=1,2,3,4,5,6,7,8,9,10,36,11,32,62,27

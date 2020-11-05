@@ -158,13 +158,17 @@ Sub Button1_MouseClicked (EventData As MouseEvent)
 	Dim sb As StringBuilder
 	sb.Initialize
 	For Each filename As String In Main.currentProject.files
+		Dim wordCount As Int
 		Dim set As B4XSet
 		set.Initialize
 		For Each segment As List In Main.currentProject.getAllSegments(filename)
 			Dim source As String=segment.Get(0)
-			set.Add(source)
+			If set.Contains(source)=False Then
+				set.Add(source)
+				wordCount=wordCount+calculateWords(source,Main.currentProject.projectFile.Get("source"))
+			End If
 		Next
-        sb.Append(filename).Append(": ").Append(set.Size).Append(CRLF)
+        sb.Append(filename).Append(": ").Append(set.Size).Append(" segments ").Append(wordCount).Append(" words").Append(CRLF)
 	Next
 	fx.Msgbox(frm,sb.ToString,"Result")
 End Sub
