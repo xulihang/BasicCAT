@@ -140,7 +140,6 @@ Sub getPositions(break As String,text As String) As Map
 	'Dim textLeft As String
 	Dim index As Int=-1
 	For Each rule As Map In rules
-		'Log(rule)
 		index=index+1
 		If rule.Get("break")<>break Then
 			Continue

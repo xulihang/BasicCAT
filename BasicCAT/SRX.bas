@@ -74,7 +74,7 @@ Sub readRules(filepath As String,lang As String) As List
 		Dim languageRuleName As String
 		languageRuleName=attributes.Get("languagerulename")
 		If languageRuleNames.IndexOf(languageRuleName)<>-1 Then
-			
+			'Log(languageRuleName)
 			Dim oneLangRules As List
 			oneLangRules=XMLUtils.GetElements(languageRule,"rule")
 

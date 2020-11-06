@@ -32,7 +32,7 @@
 <afterbreak>\s+</afterbreak>
 </rule>
 <rule break="yes">
-<beforebreak>\w+[\p{Pe}\p{Po}"]*[\.?!:]+[\p{Pe}\p{Po}"”]*</beforebreak>
+<beforebreak>[\p{Pe}\p{Po}"]*[\.?!:]+[\p{Pe}\p{Po}"”]*</beforebreak>
 <afterbreak>\s+\P{Ll}</afterbreak>
 </rule>
 <rule break="yes">
