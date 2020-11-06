@@ -532,7 +532,7 @@ Public Sub totalHeight As Double
 	Dim height As Double=20
 	If mUseTextArea Then
 		height=Max(height,Utils.MeasureMultilineTextHeight(Font,mBase.Width-2*offset-20,getText))
-		height=height+max(mLineHeightTimes,1.5)*LineHeight(20)
+		height=height+Max(mLineHeightTimes,1.5)*LineHeight(20)
 	Else
 		Try
 			height=Max(height,JO.RunMethod("getTotalHeightEstimate",Null))

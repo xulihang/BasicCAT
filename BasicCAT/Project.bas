@@ -1141,7 +1141,8 @@ Public Sub createEmptyPane As Pane
 End Sub
 
 Public Sub addTextAreaToSegmentPane(segmentpane As Pane,source As String,target As String)
-	If LanguageUtils.LanguageIsRight2Left(projectFile.Get("source")) Or LanguageUtils.LanguageIsRight2Left(projectFile.Get("target")) Or Main.preferencesMap.GetDefault("use_richtextarea",True)=False Then
+	Dim useRichTextArea As Boolean=Main.preferencesMap.GetDefault("use_richtextarea",True)
+	If useRichTextArea=False Then
 		segmentpane.LoadLayout("segmentUsingTextArea")
 	Else
 		segmentpane.LoadLayout("segment")
@@ -1155,7 +1156,11 @@ Public Sub addTextAreaToSegmentPane(segmentpane As Pane,source As String,target 
 	Main.setTextAreaStyle(sourceTextArea,"sourceFont")
 	addKeyEvent(sourceTextArea.BasePane,"sourceTextArea")
 	If LanguageUtils.LanguageIsRight2Left(projectFile.Get("source")) Then
-		sourceTextArea.SetNodeOrientation("RIGHT_TO_LEFT")
+		If useRichTextArea Then
+			sourceTextArea.GetObjectJO.RunMethodJO("getStylesheets",Null).RunMethod("add",Array(File.GetUri(File.DirAssets,"right-aligned-richtext.css")))
+		Else
+			sourceTextArea.SetNodeOrientation("RIGHT_TO_LEFT")
+		End If
 	End If
 	
 	Dim targetTextArea As RichTextArea
@@ -1165,7 +1170,11 @@ Public Sub addTextAreaToSegmentPane(segmentpane As Pane,source As String,target 
 	Main.setTextAreaStyle(targetTextArea,"targetFont")
 	addKeyEvent(targetTextArea.BasePane,"targetTextArea")
 	If LanguageUtils.LanguageIsRight2Left(projectFile.Get("target")) Then
-		targetTextArea.SetNodeOrientation("RIGHT_TO_LEFT")
+		If useRichTextArea Then
+			targetTextArea.GetObjectJO.RunMethodJO("getStylesheets",Null).RunMethod("add",Array(File.GetUri(File.DirAssets,"right-aligned-richtext.css")))
+		Else
+			targetTextArea.SetNodeOrientation("RIGHT_TO_LEFT")
+		End If
 	End If
 	
 	sourceTextArea.BasePane.Left=0
