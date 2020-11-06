@@ -512,8 +512,8 @@ Public Sub SetObject(Obj As Object)
 	JO = Obj
 End Sub
 
-Public Sub LineHeight As Double
-	Return Utils.MeasureMultilineTextHeight(Font,mBase.Width-2*offset,"a")
+Public Sub LineHeight(widthOffset As Int) As Double
+	Return Utils.MeasureMultilineTextHeight(Font,mBase.Width-2*offset-widthOffset,"a")
 End Sub
 
 Public Sub totalHeightEstimate As Double
@@ -531,15 +531,13 @@ End Sub
 Public Sub totalHeight As Double
 	Dim height As Double=20
 	If mUseTextArea Then
-		height=Max(height,Utils.MeasureMultilineTextHeight(Font,mBase.Width-2*offset,getText))
-		If mLineHeightTimes>0 Then
-			height=height+mLineHeightTimes*LineHeight
-		End If
+		height=Max(height,Utils.MeasureMultilineTextHeight(Font,mBase.Width-2*offset-20,getText))
+		height=height+max(mLineHeightTimes,1.5)*LineHeight(20)
 	Else
 		Try
 			height=Max(height,JO.RunMethod("getTotalHeightEstimate",Null))
 			If mLineHeightTimes>0 Then
-				height=height+mLineHeightTimes*LineHeight
+				height=height+mLineHeightTimes*LineHeight(0)
 			End If
 		Catch
 			'Log(LastException)

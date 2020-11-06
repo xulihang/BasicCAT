@@ -235,6 +235,6 @@ ModuleClosedNodes77=
 ModuleClosedNodes78=
 ModuleClosedNodes8=
 ModuleClosedNodes9=
-NavigationStack=segmentation,segmentedTxt2,41,6,segmentation,segmentedTxt,37,6,segmentation,segmentedTxtWithSpecifiedRules,38,4,segmentation,ResetPreviousLang,31,3,SegmentationRulesManager,ChooseSRXButton_MouseClicked,27,6,SegmentationRulesManager,TextArea1_TextChanged,44,6,Visual Designer,main.bjl,-100,3,Visual Designer,SegmentationRulesManager.bjl,-100,1,SegmentationRulesManager,Show,16,0,SegmentationRulesManager,Class_Globals,7,4,Main,MenuBar1_Action,459,6
+NavigationStack=Main,MenuBar1_Action,452,6,SegmentationRulesManager,Class_Globals,7,4,Visual Designer,SegmentationRulesManager.bjl,-100,6,SegmentationRulesManager,ChooseSRXButton_MouseClicked,25,6,SegmentationRulesManager,ReloadButton_MouseClicked,49,0,SegmentationRulesManager,TextArea1_TextChanged,42,6,RichTextArea,Length,445,0,RichTextArea,totalHeightEstimate,521,0,RichTextArea,LineHeight,510,3,RichTextArea,totalHeight,528,1
 SelectedBuild=0
 VisibleModules=1,2,3,4,5,6,7,8,9,10,78
