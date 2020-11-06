@@ -56,31 +56,32 @@ File57=segmentation_zh.conf
 File58=segmentation_zh_exception.conf
 File59=segmentationRules.srx
 File6=basiccat.jpg
-File60=segmentUsingTextArea.bjl
-File61=serverLanucher.bjl
-File62=settingLanguagecheck.bjl
-File63=settingVersionControl.bjl
-File64=SourceEditor.bjl
-File65=statistics.bjl
-File66=stopwords.txt
-File67=supportedFiles.txt
-File68=tableview.bjl
-File69=tabpane.bjl
+File60=SegmentationRulesManager.bjl
+File61=segmentUsingTextArea.bjl
+File62=serverLanucher.bjl
+File63=settingLanguagecheck.bjl
+File64=settingVersionControl.bjl
+File65=SourceEditor.bjl
+File66=statistics.bjl
+File67=stopwords.txt
+File68=supportedFiles.txt
+File69=tableview.bjl
 File7=checkList.bjl
-File70=teamSetting.bjl
-File71=term.bjl
-File72=TermEditor.bjl
-File73=TermManager.bjl
-File74=termSetting.bjl
-File75=TMEditor.bjl
-File76=TMManager.bjl
-File77=tmSetting.bjl
-File78=upperRight.bjl
-File79=version.txt
+File70=tabpane.bjl
+File71=teamSetting.bjl
+File72=term.bjl
+File73=TermEditor.bjl
+File74=TermManager.bjl
+File75=termSetting.bjl
+File76=TMEditor.bjl
+File77=TMManager.bjl
+File78=tmSetting.bjl
+File79=upperRight.bjl
 File8=confirmReview.bjl
-File80=viewSegment.bjl
-File81=webview.css
-File82=wordLookupSetting.bjl
+File80=version.txt
+File81=viewSegment.bjl
+File82=webview.css
+File83=wordLookupSetting.bjl
 File9=custom.css
 FileGroup1=Default Group
 FileGroup10=Default Group
@@ -163,6 +164,7 @@ FileGroup8=Default Group
 FileGroup80=Default Group
 FileGroup81=Default Group
 FileGroup82=Default Group
+FileGroup83=Default Group
 FileGroup9=Default Group
 Group=Default Group
 Library1=jcore
@@ -266,11 +268,12 @@ Module74=TBX
 Module75=CallSubUtils
 Module76=viewSegment
 Module77=coordinate
+Module78=SegmentationRulesManager
 Module8=preTranslateDialog
 Module9=Preferences
-NumberOfFiles=82
+NumberOfFiles=83
 NumberOfLibraries=26
-NumberOfModules=77
+NumberOfModules=78
 Version=7.8
 @EndOfDesignText@
 #Region Project Attributes 
@@ -729,6 +732,10 @@ Sub MenuBar1_Action
 			Dim mtc As MTCompare
 			mtc.Initialize
 			mtc.show
+		Case "Segmentation Rules Manager"
+			Dim srm As SegmentationRulesManager
+			srm.Initialize
+			srm.Show
 		Case "Documentation"
 			fx.ShowExternalDocument("http://docs.basiccat.org")
 		Case "_About"

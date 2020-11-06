@@ -13,13 +13,13 @@ Sub Process_Globals
 	Public cascade As Boolean=False
 End Sub
 
-Sub readRules(lang As String,path As String)
+Sub readRulesOfProject(lang As String,projectPath As String)
 	If rules.IsInitialized=False Then
 		rules.Initialize
 	End If
 	If previousLang<>lang Then
 		previousLang=lang
-		Dim configPath As String=File.Combine(path,"config")
+		Dim configPath As String=File.Combine(projectPath,"config")
 		If File.Exists(configPath,"segmentationRules.srx") Then
 			rules=SRX.readRules(File.Combine(configPath,"segmentationRules.srx"),lang)
 		Else
@@ -28,11 +28,33 @@ Sub readRules(lang As String,path As String)
 	End If
 End Sub
 
-Sub segmentedTxt(text As String,sentenceLevel As Boolean,sourceLang As String,path As String) As ResumableSub
+Public Sub UpdateRules(newRules As List)
+	rules=newRules
+End Sub
+
+Public Sub ResetPreviousLang
+	previousLang=""
+End Sub
+
+Sub segmentedTxt(text As String,sentenceLevel As Boolean,sourceLang As String,projectPath As String) As ResumableSub
+	readRulesOfProject(sourceLang,projectPath)
+	wait for (segmentedTxt2(text,sentenceLevel)) Complete (segments As List)
+	Return segments
+End Sub
+
+Sub segmentedTxtWithSpecifiedRules(text As String,sentenceLevel As Boolean,sourceLang As String,specifiedRules As List) As ResumableSub
+	UpdateRules(specifiedRules)
+	wait for (segmentedTxt2(text,sentenceLevel)) Complete (segments As List)
+	Return segments
+End Sub
+
+Sub segmentedTxt2(text As String,sentenceLevel As Boolean) As ResumableSub
 	'Log("text"&text)
-	readRules(sourceLang,path)
 	Dim segments As List
 	segments.Initialize
+	If rules.IsInitialized=False Then
+		Return segments
+	End If
     If text.Trim="" Then
 		segments.Add(text)
 		Return segments
@@ -189,8 +211,8 @@ Sub addPosition(pos As Int,breakPositions As Map,ruleIndex As Int)
 	End If
 End Sub
 
-Sub removeSpacesAtBothSides(path As String,targetLang As String,text As String,removeRedundantSpaces As Boolean) As String
-	readRules(targetLang,path)
+Sub removeSpacesAtBothSides(projectPath As String,targetLang As String,text As String,removeRedundantSpaces As Boolean) As String
+	readRulesOfProject(targetLang,projectPath)
 	Dim breakPositionsMap As Map=getPositions("yes",previousText&text)
 	Dim breakPositions As List
 	breakPositions.Initialize
