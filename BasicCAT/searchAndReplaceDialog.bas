@@ -12,6 +12,8 @@ Sub Class_Globals
 	Private resultListView As ListView
 	Private regexCheckBox As CheckBox
 	Private searchSourceCheckBox As CheckBox
+	Private sourceTextField As TextField
+	Private MatchBothCheckBox As CheckBox
 End Sub
 
 'Initializes the object. You can add parameters to this method if needed.
@@ -52,27 +54,43 @@ Sub showRegexResult
 			index=index+1
 			Dim tf As TextFlow
 			tf.Initialize
-			Dim source,target,pattern,sourceLeft,targetLeft As String
+			Dim source,target,sourcePattern,pattern,sourceLeft,targetLeft As String
 			source=bitext.Get(0)
 			target=bitext.Get(1)
 			sourceLeft=source
 			targetLeft=target
 			pattern=findTextField.Text
+			sourcePattern=sourceTextField.Text
 			'Log(pattern)
 			Dim textSegments As List
 			textSegments.Initialize
 			Dim sourceMatcher,targetMatcher As Matcher
-			sourceMatcher=Regex.Matcher(pattern,source)
+			sourceMatcher=Regex.Matcher(sourcePattern,source)
 			targetMatcher=Regex.Matcher(pattern,target)
 			Dim inSource,inTarget As Boolean
-			inSource=Regex.Matcher(pattern,source).Find
-			inTarget=Regex.Matcher(pattern,target).Find
+			If sourcePattern<>"" Then
+				inSource=Regex.Matcher(sourcePattern,source).Find
+			Else
+				inSource=False
+			End If
+			If pattern<>"" Then
+				inTarget=Regex.Matcher(pattern,target).Find
+			Else
+				inTarget=False
+			End If
+			
 		
 			Dim shouldShow As Boolean=False
 		
 			If searchSourceCheckBox.Checked Then
-				If inSource Or inTarget Then
-					shouldShow=True
+				If MatchBothCheckBox.Checked Then
+					If inSource And inTarget Then
+						shouldShow=True
+					End If
+				Else
+					If inSource Or inTarget Then
+						shouldShow=True
+					End If
 				End If
 			Else
 				If inTarget Then
@@ -166,10 +184,11 @@ Sub showResult
 	Dim index As Int=-1
 	For Each bitext As List In Main.currentProject.segments
 		index=index+1
-		Dim source,target,find,sourceLeft,targetLeft As String
+		Dim source,target,find,sourceFind,sourceLeft,targetLeft As String
 		source=bitext.Get(0)
 		target=bitext.Get(1)
 		find=findTextField.Text
+		sourceFind=sourceTextField.Text
 		targetLeft=target
 		sourceLeft=source
 		Dim tf As TextFlow
@@ -178,12 +197,31 @@ Sub showResult
 		textSegments.Initialize
 		
 		Dim shouldShow As Boolean=False
-		If searchSourceCheckBox.Checked Then
-			If source.Contains(find) Or target.Contains(find) Then
-				shouldShow=True
-			End If
+		Dim inSource,inTarget As Boolean
+		If sourceFind<>"" Then
+			inSource=source.Contains(sourceFind)
 		Else
-			If target.Contains(find) Then
+			inSource=False
+		End If
+		If find<>"" Then
+			inTarget=target.Contains(find)
+		Else
+			inTarget=False
+		End If
+		
+		If searchSourceCheckBox.Checked Then
+			If MatchBothCheckBox.Checked Then
+				If inSource And inTarget Then
+					shouldShow=True
+				End If
+			Else
+				If inSource Or inTarget Then
+					shouldShow=True
+				End If
+			End If
+
+		Else
+			If inTarget Then
 				shouldShow=True
 			End If
 		End If
@@ -192,8 +230,8 @@ Sub showResult
 		If shouldShow Then
 			tf.AddText("- Source: ")
 			If searchSourceCheckBox.Checked Then
-				If source.Contains(find) Then
-					addText(tf,source,find,textSegments,False)
+				If inSource Then
+					addText(tf,source,sourceFind,textSegments,False)
 				Else
 					tf.AddText(source)
 				End If
@@ -202,7 +240,7 @@ Sub showResult
 			End If
             
 			tf.AddText(CRLF&"- Target: ")
-			If target.Contains(find) Then
+			If inTarget Then
 				addText(tf,target,find,textSegments,True)
 				tf.AddText(CRLF&"- After: ")
 
@@ -339,11 +377,14 @@ Sub resultListView_Action
 	Main.MainForm.AlwaysOnTop=False
 End Sub
 
+Sub searchSourceCheckBox_CheckedChange(Checked As Boolean)
+	sourceTextField.Visible=Checked
+	MatchBothCheckBox.Visible=Checked
+End Sub
 
-
-
-
-
+Sub sourceTextField_TextChanged (Old As String, New As String)
+	
+End Sub
 
 Sub replaceTextField_TextChanged (Old As String, New As String)
 	resultListView.Items.Clear
