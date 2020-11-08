@@ -163,9 +163,10 @@ Sub categoryListView_SelectedIndexChanged(Index As Int)
 			End If
 			If unsavedPreferences.ContainsKey("addSourceWords") Then
 				sourceWordsListCheckBox.Checked=unsavedPreferences.Get("addSourceWords")
+				Sleep(100)
 			End If
-			TranslateWordsCheckBox.Checked=unsavedPreferences.GetDefault("autocomplete_translate_words",False)
 			autoSelectCheckBox.Checked=unsavedPreferences.GetDefault("auto_select_firstone",True)
+			TranslateWordsCheckBox.Checked=unsavedPreferences.GetDefault("autocomplete_translate_words",False)
 		Case 5
 			'Language Check
 			SettingPane.RemoveAllNodes
