@@ -14,12 +14,18 @@ Sub Class_Globals
 	Private searchSourceCheckBox As CheckBox
 	Private sourceTextField As TextField
 	Private MatchBothCheckBox As CheckBox
+	Private ComboBox1 As ComboBox
+	Private ExtendSearchCheckBox As CheckBox
 End Sub
 
 'Initializes the object. You can add parameters to this method if needed.
 Public Sub Initialize
 	frm.Initialize("frm",600,300)
 	frm.RootPane.LoadLayout("searchandreplace")
+	ComboBox1.Items.Add("id")
+	ComboBox1.Items.Add("note")
+	ComboBox1.Items.Add("filename")
+	ComboBox1.SelectedIndex=0
 End Sub
 
 Public Sub show
@@ -37,6 +43,36 @@ Sub findButton_Click
 	Else
 		showResult
     End If
+End Sub
+
+Sub CheckShouldShowBasedonExtendedItem(find As String,regexMode As Boolean,segment As List,default As Boolean) As Boolean
+	If ExtendSearchCheckBox.Checked Then
+		Dim extra As Map
+		extra=segment.Get(4)
+		Dim result As Boolean
+		Select ComboBox1.Items.Get(ComboBox1.SelectedIndex)
+			Case "filename"
+				Dim innerFilename As String=segment.Get(3)
+				result=HasMatch(regexMode,find,innerFilename)
+			Case "id"
+				Dim id As String=extra.GetDefault("id","")
+				result=HasMatch(regexMode,find,id)
+			Case "note"
+				Dim note As String=extra.GetDefault("note","")
+				result=HasMatch(regexMode,find,note)
+		End Select
+		Return result
+	Else
+		Return default
+	End If
+End Sub
+
+Sub HasMatch(regexMode As Boolean,find As String,text As String) As Boolean
+	If regexMode Then
+		Return Regex.Matcher(find,text).Find
+	Else
+		Return text.Contains(find)
+	End If
 End Sub
 
 Sub showRegexResult
@@ -95,9 +131,15 @@ Sub showRegexResult
 			Else
 				If inTarget Then
 					shouldShow=True
+				End If		
+				If pattern="" And target="" Then
+					shouldShow=True
 				End If
 			End If
-		
+
+			
+			shouldShow=CheckShouldShowBasedonExtendedItem(pattern,True,bitext,shouldShow)
+			
 			tf.AddText("- Source: ")
 			If shouldShow Then
 
@@ -109,7 +151,7 @@ Sub showRegexResult
 							textBefore=sourceLeft.SubString2(0,sourceLeft.IndexOf(sourceMatcher.Match))
 							If textBefore<>"" Then
 								tf.AddText(textBefore)
-								textSegments.Add(textBefore)
+								'textSegments.Add(textBefore)
 							End If
 							tf.AddText(sourceMatcher.Match).SetColor(fx.Colors.Blue).SetUnderline(True)
 							sourceLeft=sourceLeft.SubString2(sourceLeft.IndexOf(sourceMatcher.Match)+sourceMatcher.Match.Length,sourceLeft.Length)
@@ -177,7 +219,6 @@ Sub showRegexResult
 		fx.Msgbox(frm,"Invalid expression","")
 		Return
 	End Try
-	
 End Sub
 
 Sub showResult
@@ -219,13 +260,16 @@ Sub showResult
 					shouldShow=True
 				End If
 			End If
-
 		Else
 			If inTarget Then
 				shouldShow=True
 			End If
+			If find="" And target="" Then
+				shouldShow=True
+			End If
 		End If
 		
+		shouldShow=CheckShouldShowBasedonExtendedItem(find,False,bitext,shouldShow)
 		
 		If shouldShow Then
 			tf.AddText("- Source: ")
