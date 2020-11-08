@@ -309,6 +309,9 @@ End Sub
 
 Sub sourceWordsListCheckBox_CheckedChange(Checked As Boolean)
 	unsavedPreferences.Put("addSourceWords",Checked)
+	If Checked Then
+		autoSelectCheckBox.Checked=False
+	End If
 End Sub
 
 Sub saveAddressButton_MouseClicked (EventData As MouseEvent)

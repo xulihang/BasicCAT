@@ -235,6 +235,6 @@ ModuleClosedNodes77=
 ModuleClosedNodes78=
 ModuleClosedNodes8=
 ModuleClosedNodes9=
-NavigationStack=searchAndReplaceDialog,CheckShouldShowBasedonExtendedItem,50,6,Project,saveOneTranslationToTM,2158,0,Project,saveTranslation,2206,0,Main,fillWithTMOrMT,574,0,Project,setTranslation,2101,6,Visual Designer,autocomplete.bjl,-100,6,Preferences,UseRichTextAreaCheckBox_CheckedChange,491,0,Preferences,autoSelectCheckBox_CheckedChange,495,1,Preferences,categoryListView_SelectedIndexChanged,161,3,Project,loadITPSegments,1640,0,Project,ShowITPContextMenu,1094,6
+NavigationStack=Preferences,autoSelectCheckBox_CheckedChange,495,1,Project,ShowITPContextMenu,1094,6,Preferences,categoryListView_SelectedIndexChanged,161,3,Preferences,UseRichTextAreaCheckBox_CheckedChange,491,0,Preferences,pluginsLV_Action,426,0,Preferences,changePluginPathButton_MouseClicked,380,0,Preferences,sourceFontLbl_MouseClicked,341,0,Preferences,ExcludeTagsCheckBox_CheckedChange,329,0,Preferences,languagetoolEnabledCheckBox_CheckedChange,322,0,Project,loadITPSegments,1647,0,Preferences,sourceWordsListCheckBox_CheckedChange,307,6
 SelectedBuild=0
 VisibleModules=1,2,3,4,5,6,7,8,9,10,11
