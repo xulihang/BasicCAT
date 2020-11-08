@@ -25,6 +25,7 @@ Public Sub Initialize
 	ComboBox1.Items.Add("id")
 	ComboBox1.Items.Add("note")
 	ComboBox1.Items.Add("filename")
+	ComboBox1.Items.Add("creator")
 	ComboBox1.SelectedIndex=0
 End Sub
 
