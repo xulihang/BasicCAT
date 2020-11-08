@@ -51,17 +51,14 @@ Sub CheckShouldShowBasedonExtendedItem(find As String,regexMode As Boolean,segme
 		Dim extra As Map
 		extra=segment.Get(4)
 		Dim result As Boolean
-		Select ComboBox1.Items.Get(ComboBox1.SelectedIndex)
-			Case "filename"
-				Dim innerFilename As String=segment.Get(3)
-				result=HasMatch(regexMode,find,innerFilename)
-			Case "id"
-				Dim id As String=extra.GetDefault("id","")
-				result=HasMatch(regexMode,find,id)
-			Case "note"
-				Dim note As String=extra.GetDefault("note","")
-				result=HasMatch(regexMode,find,note)
-		End Select
+		Dim key As String=ComboBox1.Items.Get(ComboBox1.SelectedIndex)
+		If key="filename" Then
+			Dim innerFilename As String=segment.Get(3)
+			result=HasMatch(regexMode,find,innerFilename)
+		Else
+			Dim value As String=extra.GetDefault(key,"")
+			result=HasMatch(regexMode,find,value)
+		End If
 		Return result
 	Else
 		Return default
