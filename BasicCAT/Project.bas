@@ -2111,15 +2111,10 @@ Public Sub setTranslation(index As String,translation As String,isFromTM As Bool
 		time=DateTime.Now
 		Dim extra As Map
 		extra=bitext.Get(4)
-		Dim creator As String
-		If settings.GetDefault("sharingTM_enabled",False)=True Then
-			creator=Main.preferencesMap.GetDefault("vcs_username","anonymous")
-		Else
-			If settings.GetDefault("git_enabled",False)=False Then
-				creator=Main.preferencesMap.GetDefault("vcs_username","")
-			Else
-				creator=Main.preferencesMap.GetDefault("vcs_username","anonymous")
-			End If
+		Dim creator As String=GetSystemProperty("user.name","anonymous")
+		Dim vcs_username As String=Main.preferencesMap.GetDefault("vcs_username","")
+		If vcs_username<>"" Then
+			creator=vcs_username
 		End If
 		If isFromTM Then
 			Dim targetMap As Map
