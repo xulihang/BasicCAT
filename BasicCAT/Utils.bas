@@ -242,6 +242,7 @@ Sub exportToMarkdownWithNotes(segments As List,path As String,filename As String
 			note=extra.Get("note")
 			Dim noteID As String
 			noteID="[^note"&noteIndex&"]"
+			noteIndex=noteIndex+1
 			target=target&noteID
 			noteText.Append(noteID).Append(": ").Append(note).Append(CRLF)
         End If
