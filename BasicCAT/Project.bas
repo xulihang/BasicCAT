@@ -1096,7 +1096,9 @@ Sub ShowITPContextMenu(ta As RichTextArea,lastString As String)
 
 					Dim jo As JavaObject = cm
 					jo.RunMethod("show", Array(ta.BasePane, ta.CaretMaxX, ta.CaretMaxY))
-					jo.RunMethodJO("getSkin",Null).RunMethodJO("getNode",Null).RunMethodJO("lookup",Array(".menu-item")).RunMethod("requestFocus",Null)
+					If Main.preferencesMap.GetDefault("auto_select_firstone",True) Then
+						jo.RunMethodJO("getSkin",Null).RunMethodJO("getNode",Null).RunMethodJO("lookup",Array(".menu-item")).RunMethod("requestFocus",Null)
+					End If
 					'cm.getSkin().getNode().lookup(".menu-item").requestFocus();
 				Else
 					For Each mi As MenuItem In cm.MenuItems

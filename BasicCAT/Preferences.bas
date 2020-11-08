@@ -46,6 +46,7 @@ Sub Class_Globals
 	Private TranslateWordsCheckBox As CheckBox
 	Private WebViewFontSizeSpinner As Spinner
 	Private UseRichTextAreaCheckBox As CheckBox
+	Private autoSelectCheckBox As CheckBox
 End Sub
 
 'Initializes the object. You can add parameters to this method if needed.
@@ -164,6 +165,7 @@ Sub categoryListView_SelectedIndexChanged(Index As Int)
 				sourceWordsListCheckBox.Checked=unsavedPreferences.Get("addSourceWords")
 			End If
 			TranslateWordsCheckBox.Checked=unsavedPreferences.GetDefault("autocomplete_translate_words",False)
+			autoSelectCheckBox.Checked=unsavedPreferences.GetDefault("auto_select_firstone",True)
 		Case 5
 			'Language Check
 			SettingPane.RemoveAllNodes
@@ -495,4 +497,8 @@ End Sub
 
 Sub UseRichTextAreaCheckBox_CheckedChange(Checked As Boolean)
 	unsavedPreferences.Put("use_richtextarea",Checked)
+End Sub
+
+Sub autoSelectCheckBox_CheckedChange(Checked As Boolean)
+	unsavedPreferences.Put("auto_select_firstone",Checked)
 End Sub
