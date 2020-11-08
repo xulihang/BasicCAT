@@ -12,6 +12,7 @@ Sub Class_Globals
 	Public projectFile As Map
 	Public currentFilename As String
 	Public segments As List
+	Private allsegments As List
 	Public projectTM As TM
 	Public projectTerm As Term
 	Public projectHistory As HistoryRecord
@@ -34,6 +35,7 @@ Public Sub Initialize
 	files.Initialize
 	projectFile.Initialize
 	segments.Initialize
+	allsegments.Initialize
 	settings.Initialize
 	SegEnabledFiles.Initialize
 	currentWorkFileFrame.Initialize
@@ -242,10 +244,11 @@ Sub openFile(filename As String,onOpeningProject As Boolean)
 	Main.LoadHTMLWithBackground(Main.LogWebView,"")
 	Main.searchTableView.Items.Clear
 	segments.Clear
+	allsegments.Clear
 	currentFilename=filename
 
 	readWorkFile(currentFilename,segments,True,path)
-
+	allsegments.AddAll(segments)
 	Log("currentFilename:"&currentFilename)
 	If lastFilename=currentFilename And segments.Size<>0 Then
 		Log("ddd"&True)
@@ -2361,15 +2364,15 @@ Sub saveFile(filename As String)
 	visibleRange=Main.getVisibleRange(Main.editorLV)
 	saveAlltheTranslationToSegmentsInVisibleArea(visibleRange.firstIndex,visibleRange.lastIndex)
 	saveAlltheTranslationToTM
-	saveWorkFile(filename,segments,path)
+	saveWorkFile(filename,allsegments,path)
 	contentChanged=False
 	Main.MainForm.Title=Main.MainForm.Title.Replace("*","")
 End Sub
 
 
 Sub getAllSegments(filename As String) As List
-	Dim allSegments As List
-	allSegments.Initialize
+	Dim all As List
+	all.Initialize
 	Dim workfile As Map
 	Dim json As JSONParser
 	json.Initialize(File.ReadString(File.Combine(path,"work"),filename&".json"))
@@ -2381,9 +2384,9 @@ Sub getAllSegments(filename As String) As List
 		innerFilename=sourceFileMap.GetKeyAt(0)
 		Dim segmentsList As List
 		segmentsList=sourceFileMap.Get(innerFilename)
-		allSegments.AddAll(segmentsList)
+		all.AddAll(segmentsList)
 	Next
-	Return allSegments
+	Return all
 End Sub
 
 Public Sub generateBilingualTargetFiles
@@ -2557,4 +2560,26 @@ Sub getChangedMap(changedKeys As List) As Map
 		changes.Put(filename,changedSegmentsList)
 	Next
 	Return changes
+End Sub
+
+Public Sub filterSegments(indexList As List)
+	segments.Clear
+    For Each index As Int In indexList
+		segments.Add(allsegments.Get(index))
+	Next
+	ReloadEditor
+End Sub
+
+Public Sub showAllSegments
+	segments.Clear
+	segments.AddAll(allsegments)
+	ReloadEditor
+End Sub
+
+Sub ReloadEditor
+	Main.editorLV.Items.Clear
+	For i=0 To segments.Size-1
+		Main.editorLV.Items.Add("")
+	Next
+	refillVisiblePane
 End Sub

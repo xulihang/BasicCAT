@@ -235,6 +235,6 @@ ModuleClosedNodes77=
 ModuleClosedNodes78=
 ModuleClosedNodes8=
 ModuleClosedNodes9=
-NavigationStack=searchAndReplaceDialog,searchSourceCheckBox_CheckedChange,356,6,searchAndReplaceDialog,findButton_Click,40,0,searchAndReplaceDialog,HasMatch,66,6,Visual Designer,searchandreplace.bjl,-100,6,searchAndReplaceDialog,Class_Globals,9,0,searchAndReplaceDialog,sourceTextField_TextChanged,420,0,searchAndReplaceDialog,showRegexResult,136,6,searchAndReplaceDialog,showResult,267,6,searchAndReplaceDialog,CheckShouldShowBasedonExtendedItem,45,6,searchAndReplaceDialog,Initialize,21,6
+NavigationStack=Project,exportReviewMi_Action,740,0,Project,filterSegments,2563,0,Project,readWorkFile,2294,0,Project,refillVisiblePane,1935,0,Project,updateWithWorkfileMI_Action,894,0,Project,ReloadEditor,2578,1,Project,showAllSegments,2569,0,Visual Designer,searchandreplace.bjl,-100,2,searchAndReplaceDialog,RestoreButton_MouseClicked,434,0,searchAndReplaceDialog,FilterButton_MouseClicked,439,6
 SelectedBuild=0
 VisibleModules=1,2,3,4,5,6,7,8,9,10,11

@@ -437,3 +437,21 @@ End Sub
 Sub findTextField_TextChanged (Old As String, New As String)
 	resultListView.Items.Clear
 End Sub
+
+Sub RestoreButton_MouseClicked (EventData As MouseEvent)
+	Main.currentProject.showAllSegments
+End Sub
+
+Sub FilterButton_MouseClicked (EventData As MouseEvent)
+	If resultListView.Items.Size=0 Then
+		Return
+	End If
+	Dim indexList As List
+	indexList.Initialize
+	For Each p As Pane In resultListView.Items
+		Dim taglist As List
+		taglist=p.Tag
+		indexList.Add(taglist.get(0))
+	Next
+	Main.currentProject.filterSegments(indexList)
+End Sub
