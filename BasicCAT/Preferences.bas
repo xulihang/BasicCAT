@@ -161,11 +161,12 @@ Sub categoryListView_SelectedIndexChanged(Index As Int)
 			If unsavedPreferences.ContainsKey("maxSuggestionNum") Then
 				maxSuggestionNumSpinner.Value=unsavedPreferences.Get("maxSuggestionNum")
 			End If
+			Dim autoselectFirstone As Boolean=unsavedPreferences.GetDefault("auto_select_firstone",True)
 			If unsavedPreferences.ContainsKey("addSourceWords") Then
 				sourceWordsListCheckBox.Checked=unsavedPreferences.Get("addSourceWords")
 				Sleep(100)
 			End If
-			autoSelectCheckBox.Checked=unsavedPreferences.GetDefault("auto_select_firstone",True)
+			autoSelectCheckBox.Checked=autoselectFirstone
 			TranslateWordsCheckBox.Checked=unsavedPreferences.GetDefault("autocomplete_translate_words",False)
 		Case 5
 			'Language Check
