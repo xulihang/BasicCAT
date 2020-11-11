@@ -928,7 +928,30 @@ Sub reimportFile(filename As String) As ResumableSub
 	workFilePath=File.Combine(File.Combine(path,"work"),filename&".json")
 	workFileBackupPath=File.Combine(File.Combine(path,"work"),filename&".json.bak")
 	Dim sourceFilePath As String=File.Combine(File.Combine(path,"source"),filename)
-	If Max(File.LastModified(sourceFilePath,""),FileUtils.GetFileCreation(sourceFilePath,""))>FileUtils.GetFileCreation(workFilePath,"") Then
+	Dim fileUpdated As Boolean=File.LastModified(sourceFilePath,"")>FileUtils.GetFileCreation(workFilePath,"")
+	If projectFile.ContainsKey("okapiExtractedFiles") Then
+		Dim okapiExtractedFiles As List=projectFile.get("okapiExtractedFiles")
+		If okapiExtractedFiles.IndexOf(filename)<>-1 Then
+			Dim originalFilename As String
+			originalFilename=filename.SubString2(0,filename.LastIndexOf("."))
+			Dim originalFilePath As String=File.Combine(File.Combine(path,"source"),originalFilename)
+			fileUpdated=File.LastModified(originalFilePath,"")>FileUtils.GetFileCreation(workFilePath,"")
+			If fileUpdated Then
+				Dim sl,tl As String
+				sl=projectFile.Get("source")
+				tl=projectFile.Get("target")
+				Dim tempPath As String=File.Combine(File.DirTemp,originalFilename)
+				File.Copy(originalFilePath,"",tempPath,"")
+				wait for (tikal.extract(sl,tl,tempPath,File.Combine(path,"source"))) complete (success As Boolean)
+				File.Delete(tempPath,"")
+				If success=False Then
+					Return ""
+				End If
+			End If
+		End If
+	End If
+
+	If fileUpdated Then
 		File.Copy(workFilePath,"",workFileBackupPath,"")
 		wait for (createWorkFileAccordingToExtension(filename)) Complete (result As Object)
 		Dim fileSegments As List
