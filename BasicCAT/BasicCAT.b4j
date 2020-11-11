@@ -656,9 +656,13 @@ Sub MenuBar1_Action
 			fillWithTheNextTag
 		Case "Copy source text to target"
 			copySourceToTarget
-		Case "Search and Replace"
+		Case "Search and replace"
 			Dim sap As searchAndReplaceDialog
-			sap.Initialize
+			sap.Initialize(Array(currentProject.currentFilename))
+			sap.show
+		Case "_Global search and replace"
+			Dim sap As searchAndReplaceDialog
+			sap.Initialize(currentProject.files)
 			sap.show
 		Case "Show quickfill dropdown"
 			showQuickfillDropdown

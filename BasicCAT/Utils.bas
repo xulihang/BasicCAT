@@ -479,7 +479,9 @@ Sub enableMenuItems(mb As MenuBar,menuText As List)
 	End If
 	For Each text As String In menuText
 		Dim mi As MenuItem = menus.Get(text)
-		mi.Enabled = True
+		If mi.IsInitialized Then
+			mi.Enabled = True
+		End If
 	Next
 End Sub
 

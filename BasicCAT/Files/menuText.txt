@@ -3,7 +3,8 @@ Go to the next untranslated segment
 Fill with TM/MT
 Fill with the next tag
 Copy source text to target
-Search and Replace
+Search and replace
+_Global search and replace
 Show quickfill dropdown
 Show online dictionary dropdown
 Show segment history
