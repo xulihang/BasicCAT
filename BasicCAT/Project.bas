@@ -1651,6 +1651,7 @@ Sub loadITPSegments(targetTextArea As RichTextArea,words As List,grams As List,e
 	'result.Add(fullTranslation)
 	result.AddAll(segmentTranslations)
 	result.AddAll(ITP.getWords(fullTranslation,projectFile.Get("target")))
+	result.AddAll(ITP.getChunks(fullTranslation,projectFile.Get("target")))
 	If Main.preferencesMap.GetDefault("addSourceWords",False) Then
 		result.AddAll(words)
 	End If

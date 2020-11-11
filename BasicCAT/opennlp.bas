@@ -9,6 +9,7 @@ Sub Class_Globals
 	Private lemmatizer As JavaObject
 	Private tokenizer As JavaObject
 	Private POSTagger As JavaObject
+	Private chunkerME As JavaObject
 End Sub
 
 'Initializes the object. You can add parameters to this method if needed.
@@ -24,6 +25,12 @@ Public Sub Initialize(lang As String)
 	Dim posmodel As JavaObject
 	posmodel.InitializeNewInstance("opennlp.tools.postag.POSModel",Array(postaggerIS))
 	POSTagger.InitializeNewInstance("opennlp.tools.postag.POSTaggerME",Array(posmodel))
+	
+	Dim chunkerIS As InputStream
+	chunkerIS=File.OpenInput(File.Combine(File.DirApp,"model"),"en-chunker.bin")
+	Dim chunkerModel As JavaObject
+	chunkerModel.InitializeNewInstance("opennlp.tools.chunker.ChunkerModel",Array(chunkerIS))
+	chunkerME.InitializeNewInstance("opennlp.tools.chunker.ChunkerME",Array(chunkerModel))
 	
 	Dim dictIS As InputStream
 	dictIS=File.OpenInput(File.Combine(File.DirApp,"model"),"en-lemmatizer.dict")
@@ -59,3 +66,21 @@ Public Sub lemmatizedSentence(sentence As String) As String
 	Log(result)
 	Return result
 End Sub
+
+Public Sub chunks(tokens() As String,tags() As String) As List
+	Dim result As List
+	result.Initialize
+	Dim spans() As Object=chunkerME.RunMethod("chunkAsSpans",Array(tokens,tags))
+	Dim span As JavaObject
+	span.InitializeStatic("opennlp.tools.util.Span")
+	Dim chunkStrings() As String
+	chunkStrings=span.RunMethod("spansToStrings",Array(spans,tokens))
+	For i=0 To spans.Length-1
+		span=spans(i)
+		If span.RunMethod("getType",Null)="NP" Then
+			result.Add(chunkStrings(i))
+		End If
+	Next
+	Return result
+End Sub
+

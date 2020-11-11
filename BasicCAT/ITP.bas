@@ -71,6 +71,19 @@ Sub getGrams(text As String,sourceLang As String,wordList As List) As ResumableS
 	Return grams
 End Sub
 
+Sub getChunks(text As String,lang As String) As List
+	If lang.StartsWith("en") Then
+		Dim tokens(),tags() As String
+		tokens=Main.nlp.tokenize(text)
+		tags=Main.nlp.posTag(tokens)
+		Return Main.nlp.chunks(tokens,tags)
+	Else
+		Dim list1 As List
+		list1.Initialize
+		Return list1
+	End If
+End Sub
+
 Sub getTranslation(wordList As List,grams As List,engine As String) As ResumableSub
 	Dim sourceLang,targetLang As String
 	sourceLang=Main.currentProject.projectFile.Get("source")
