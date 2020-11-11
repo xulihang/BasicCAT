@@ -13,6 +13,7 @@ Sub Class_Globals
 	Public currentFilename As String
 	Public segments As List
 	Private allsegments As List
+	Private filtered As Boolean=False
 	Public projectTM As TM
 	Public projectTerm As Term
 	Public projectHistory As HistoryRecord
@@ -1408,6 +1409,10 @@ Sub sourceTextArea_KeyPressed (result As String)
 			fx.Msgbox(Main.MainForm,"This file does not support spliting and merging segments","")
 			Return
 		End If
+		If filtered Then
+			fx.Msgbox(Main.MainForm,"Not in this mode","")
+			Return
+		End If
 		contentIsChanged
 		Dim filenameLowercase As String
 		filenameLowercase=currentFilename.ToLowerCase
@@ -1427,9 +1432,15 @@ Sub sourceTextArea_KeyPressed (result As String)
 			params.Put("projectFile",projectFile)
 			runFilterPluginAccordingToExtension(currentFilename,"splitSegment",params)
 		End If
+		allsegments.Clear
+		allsegments.AddAll(segments)
 	Else if result="DELETE" Then
 		If SegEnabledFiles.IndexOf(currentFilename)<>-1 Then
 			fx.Msgbox(Main.MainForm,"This file does not support spliting and merging segments","")
+			Return
+		End If
+		If filtered Then
+			fx.Msgbox(Main.MainForm,"Not in this mode","")
 			Return
 		End If
 		contentIsChanged
@@ -1451,6 +1462,8 @@ Sub sourceTextArea_KeyPressed (result As String)
 			params.Put("projectFile",projectFile)
 			runFilterPluginAccordingToExtension(currentFilename,"mergeSegment",params)
 		End If
+		allsegments.Clear
+		allsegments.AddAll(segments)
 	else if result="F1" Then
 		If Main.preferencesMap.GetDefault("lookup_usingF1",False)=True Then
 			Dim selectedText As String=sourceTextArea.Text.SubString2(sourceTextArea.SelectionStart,sourceTextArea.SelectionEnd)
@@ -2419,7 +2432,11 @@ Sub saveFile(filename As String)
 	visibleRange=Main.getVisibleRange(Main.editorLV)
 	saveAlltheTranslationToSegmentsInVisibleArea(visibleRange.firstIndex,visibleRange.lastIndex)
 	saveAlltheTranslationToTM
-	saveWorkFile(filename,allsegments,path)
+	If filtered Then
+		saveWorkFile(filename,allsegments,path)
+	Else
+		saveWorkFile(filename,segments,path)
+	End If
 	contentChanged=False
 	Main.MainForm.Title=Main.MainForm.Title.Replace("*","")
 End Sub
@@ -2618,6 +2635,7 @@ Sub getChangedMap(changedKeys As List) As Map
 End Sub
 
 Public Sub filterSegments(indexList As List)
+	filtered=True
 	segments.Clear
     For Each index As Int In indexList
 		segments.Add(allsegments.Get(index))
@@ -2626,6 +2644,7 @@ Public Sub filterSegments(indexList As List)
 End Sub
 
 Public Sub showAllSegments
+	filtered=False
 	segments.Clear
 	segments.AddAll(allsegments)
 	ReloadEditor

@@ -1267,7 +1267,6 @@ Sub supportedFilesList As List
 			extensions.Add(extension.Replace("*.",""))
 		Next
 	Next
-	Log(extensions)
 	'exclude disabled
 	Try
 		If currentProject.filterIsEnabled("txt (BasicCAT)")=False Then
