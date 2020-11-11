@@ -1644,10 +1644,10 @@ Sub replacementMi_Action
 	End Try
 End Sub
 
-Sub loadITPSegments(targetTextArea As RichTextArea,words As List,grams As List,engine As String,fullTranslation As String)
+Sub loadITPSegments(targetTextArea As RichTextArea,words As List,chunks As List,longphrases As List,engine As String,fullTranslation As String)
 	Dim result As List
 	result.Initialize
-	wait for (ITP.getTranslation(words,grams,engine)) Complete (segmentTranslations As List)
+	wait for (ITP.getTranslation(words,chunks,longphrases,engine)) Complete (segmentTranslations As List)
 	'result.Add(fullTranslation)
 	result.AddAll(segmentTranslations)
 	result.AddAll(ITP.getWords(fullTranslation,projectFile.Get("target")))
@@ -1759,7 +1759,9 @@ Sub showMT(source As String,targetTextArea As RichTextArea)
 	If autocompleteEnabled Then
         Dim words As List
 		words=ITP.getWords(source,projectFile.Get("source"))
-		wait for (ITP.getGrams(source,projectFile.Get("source"),words)) Complete (grams As List)
+		Dim chunks As List
+		chunks=ITP.getChunks(source,projectFile.Get("source"))
+		wait for (ITP.getLongPhrasesFromText(source,projectFile.Get("source"),words)) Complete (longphrases As List)
 	End If
 	For Each engine As String In MT.getMTList
 		If Utils.get_isEnabled(engine&"_isEnabled",mtPreferences)=True Then
@@ -1771,7 +1773,7 @@ Sub showMT(source As String,targetTextArea As RichTextArea)
 				Main.changeWhenSegmentOrSelectionChanges
 			End If
 			If autocompleteEnabled Then
-				loadITPSegments(targetTextArea,words,grams,engine,Result)
+				loadITPSegments(targetTextArea,words,chunks,longphrases,engine,Result)
 			End If
 		End If
 	Next

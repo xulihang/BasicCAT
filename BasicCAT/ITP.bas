@@ -50,25 +50,25 @@ Sub getWords(text As String,sourceLang As String) As List
 	Return wordList
 End Sub
 
-Sub getGrams(text As String,sourceLang As String,wordList As List) As ResumableSub
-	Dim grams As List
+Sub getLongPhrasesFromText(text As String,sourceLang As String,wordList As List) As ResumableSub
+	Dim phrases As List
 	Dim address As String=""
 	If Main.preferencesMap.ContainsKey("corenlp_address") Then
 		address=Main.preferencesMap.Get("corenlp_address")
 	End If
 	If address<>"" Then
 		If languageIsSupported(sourceLang) Then
-			Dim grams As List
-			grams.Initialize
+			Dim phrases As List
+			phrases.Initialize
 			wait for (getStanfordParsedResult(text,address,sourceLang)) Complete (result As String)
-			grams.AddAll(getGramsFromStringViaRe(result))
-			duplicatedRemovedList2(grams,wordList)
-			Log("grams"&grams)
+			phrases.AddAll(getPhrasesFromStringViaRe(result))
+			duplicatedRemovedList2(phrases,wordList)
+			Log("phrases"&phrases)
 		End If
 	Else
-		grams.Initialize
+		phrases.Initialize
 	End If
-	Return grams
+	Return phrases
 End Sub
 
 Sub getChunks(text As String,lang As String) As List
@@ -84,7 +84,7 @@ Sub getChunks(text As String,lang As String) As List
 	End If
 End Sub
 
-Sub getTranslation(wordList As List,grams As List,engine As String) As ResumableSub
+Sub getTranslation(wordList As List,chunks As List,longphrases As List,engine As String) As ResumableSub
 	Dim sourceLang,targetLang As String
 	sourceLang=Main.currentProject.projectFile.Get("source")
 	targetLang=Main.currentProject.projectFile.Get("target")
@@ -96,8 +96,14 @@ Sub getTranslation(wordList As List,grams As List,engine As String) As Resumable
 			translationList.Add(result)
 		Next
 	End If
-	For Each gram As String In grams
-		wait for (MT.getMT(gram,sourceLang,targetLang,engine)) Complete (result As String)
+	If Main.preferencesMap.GetDefault("autocomplete_translate_chunks",False) Then
+		For Each chunk As String In chunks
+			wait for (MT.getMT(chunk,sourceLang,targetLang,engine)) Complete (result As String)
+			translationList.Add(result)
+		Next
+	End If
+	For Each lp As String In longphrases
+		wait for (MT.getMT(lp,sourceLang,targetLang,engine)) Complete (result As String)
 		translationList.Add(result)
 	Next
 	Return duplicatedRemovedList(translationList)
@@ -169,9 +175,9 @@ Sub getStanfordParsedResult(sentence As String,address As String,lang As String)
 	Return parse
 End Sub
 
-Sub getGramsFromStringViaRe2(text As String) As List
-	Dim gramsList As List
-	gramsList.Initialize
+Sub getPhrasesFromStringViaRe2(text As String) As List
+	Dim phrases As List
+	phrases.Initialize
 	For Each item As String In Array As String("N","V","P")
 		
 		text=Regex.Replace("\r\n",text,"")
@@ -182,19 +188,18 @@ Sub getGramsFromStringViaRe2(text As String) As List
 		'\)
 		matcher=Regex.Matcher("\("&item&"P .*?\){2,}",text)
 		Do While matcher.Find
-			gramsList.Add(Regex.Replace("\(.*? |\)",matcher.Match,""))
+			phrases.Add(Regex.Replace("\(.*? |\)",matcher.Match,""))
 			'ListView1.Items.Add(matcher.Match)
 			Log(matcher.Match)
 		Loop
 	Next
-		
-	Return gramsList
+	Return phrases
 End Sub
 
 
-Sub getGramsFromStringViaRe(text As String) As List
-	Dim gramsList As List
-	gramsList.Initialize
+Sub getPhrasesFromStringViaRe(text As String) As List
+	Dim phrases As List
+	phrases.Initialize
 	text=Regex.Replace("\r",text,"")
 	text=Regex.Replace("\n",text,"")
 	text=Regex.Replace(" {1,}",text," ")
@@ -206,18 +211,18 @@ Sub getGramsFromStringViaRe(text As String) As List
 		'\)
 		matcher=Regex.Matcher("\("&item&" .*?\){2,}",text)
 		Do While matcher.Find
-			gramsList.Add(Regex.Replace("\(.*? |\)",matcher.Match,""))
+			phrases.Add(Regex.Replace("\(.*? |\)",matcher.Match,""))
 			Log(matcher.Match)
 		Loop
 	Next
 
-	getLongGrams(text,gramsList,"VP")
-	getLongGrams(text,gramsList,"PP")
+	getLongPhrases(text,phrases,"VP")
+	getLongPhrases(text,phrases,"PP")
 
-	Return duplicatedGramsRemovedList(gramsList)
+	Return duplicatedPhrasesRemovedList(phrases)
 End Sub
 
-Sub getLongGrams(text As String,gramsList As List,item As String)
+Sub getLongPhrases(text As String,phrases As List,item As String)
 	Dim matcher As Matcher
 
 	matcher=Regex.Matcher("\("&item&" .*\){2,}",text)
@@ -229,24 +234,24 @@ Sub getLongGrams(text As String,gramsList As List,item As String)
 		removeBracketPattern="\(.*? |\)"
 		text=Regex.Replace(removeBracketPattern,matcher.Match,"")
 
-		gramsList.Add(text)
+		phrases.Add(text)
 		
 		Dim matcher2 As Matcher
 		matcher2=Regex.Matcher("\("&item&" .*?\)",matcher.Match)
 		If matcher2.Find Then
 			If matcher.Match.IndexOf(matcher2.Match)=0 Then 'replace the beginning part
-				gramsList.Add(Regex.Replace(removeBracketPattern,matcher2.Match,""))
-				getLongGrams(matcher.Match.Replace(matcher2.Match,""),gramsList,item)
+				phrases.Add(Regex.Replace(removeBracketPattern,matcher2.Match,""))
+				getLongPhrases(matcher.Match.Replace(matcher2.Match,""),phrases,item)
 			Else
 				Dim p As String
 				p="("&item
-				getLongGrams(matcher.Match.SubString2(p.Length,matcher.Match.Length),gramsList,item)
+				getLongPhrases(matcher.Match.SubString2(p.Length,matcher.Match.Length),phrases,item)
 			End If
 		End If
 	End If
 End Sub
 
-Sub duplicatedGramsRemovedList(list1 As List) As List
+Sub duplicatedPhrasesRemovedList(list1 As List) As List
 	Dim newList As List
 	newList.Initialize
 	For Each item As String In list1 

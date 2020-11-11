@@ -47,6 +47,7 @@ Sub Class_Globals
 	Private WebViewFontSizeSpinner As Spinner
 	Private UseRichTextAreaCheckBox As CheckBox
 	Private autoSelectCheckBox As CheckBox
+	Private TranslateChunksCheckBox As CheckBox
 End Sub
 
 'Initializes the object. You can add parameters to this method if needed.
@@ -161,13 +162,14 @@ Sub categoryListView_SelectedIndexChanged(Index As Int)
 			If unsavedPreferences.ContainsKey("maxSuggestionNum") Then
 				maxSuggestionNumSpinner.Value=unsavedPreferences.Get("maxSuggestionNum")
 			End If
+			TranslateWordsCheckBox.Checked=unsavedPreferences.GetDefault("autocomplete_translate_words",False)
+			TranslateChunksCheckBox.Checked=unsavedPreferences.GetDefault("autocomplete_translate_chunks",False)
 			Dim autoselectFirstone As Boolean=unsavedPreferences.GetDefault("auto_select_firstone",True)
 			If unsavedPreferences.ContainsKey("addSourceWords") Then
 				sourceWordsListCheckBox.Checked=unsavedPreferences.Get("addSourceWords")
 				Sleep(100)
 			End If
 			autoSelectCheckBox.Checked=autoselectFirstone
-			TranslateWordsCheckBox.Checked=unsavedPreferences.GetDefault("autocomplete_translate_words",False)
 		Case 5
 			'Language Check
 			SettingPane.RemoveAllNodes
@@ -452,6 +454,10 @@ End Sub
 
 Sub TranslateWordsCheckBox_CheckedChange(Checked As Boolean)
 	unsavedPreferences.Put("autocomplete_translate_words",Checked)
+End Sub
+
+Sub TranslateChunksCheckBox_CheckedChange(Checked As Boolean)
+	unsavedPreferences.Put("autocomplete_translate_chunks",Checked)
 End Sub
 
 Sub maxSuggestionNumSpinner_ValueChanged (Value As Object)
