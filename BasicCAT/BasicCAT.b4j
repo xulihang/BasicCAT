@@ -197,40 +197,40 @@ Library8=jrandomaccessfile
 Library9=jb4xencryption
 Module1=FileChooserUtils
 Module10=RichTextArea
-Module11=statistics
-Module12=Utils
-Module13=searchAndReplaceDialog
-Module14=SegmentationRulesManager
-Module15=LanguageUtils
-Module16=Theme
-Module17=LanguagePairSelector
-Module18=SRX
-Module19=Previewer
+Module11=opennlp
+Module12=ITP
+Module13=MT
+Module14=statistics
+Module15=Utils
+Module16=searchAndReplaceDialog
+Module17=SegmentationRulesManager
+Module18=LanguageUtils
+Module19=Theme
 Module2=Project
-Module20=MTCompare
-Module21=editDistance
-Module22=dictWebView
-Module23=filterGenericUtils
-Module24=ITP
-Module25=EnumClass
-Module26=jieba
-Module27=opennlp
-Module28=idmlUtils
-Module29=XMLBuilder2
+Module20=LanguagePairSelector
+Module21=SRX
+Module22=Previewer
+Module23=MTCompare
+Module24=editDistance
+Module25=dictWebView
+Module26=filterGenericUtils
+Module27=EnumClass
+Module28=jieba
+Module29=idmlUtils
 Module3=segmentation
-Module30=MTParamsFiller
-Module31=TMX
-Module32=XmlNode
-Module33=XMLUtils
-Module34=xliffFilter
-Module35=TMManager
-Module36=confirmReviewDialog
-Module37=TM
-Module38=LanguageTool
-Module39=TMDB
+Module30=XMLBuilder2
+Module31=MTParamsFiller
+Module32=TMX
+Module33=XmlNode
+Module34=XMLUtils
+Module35=xliffFilter
+Module36=TMManager
+Module37=confirmReviewDialog
+Module38=TM
+Module39=LanguageTool
 Module4=txtFilter
-Module40=idmlFilter
-Module41=MT
+Module40=TMDB
+Module41=idmlFilter
 Module42=SimpleTag
 Module43=XmlParser
 Module44=Xml2Map
@@ -541,8 +541,11 @@ Public Sub addProjectTreeTableItem
 			mi.Initialize("Add File","addFileMi")
 			Dim mi2 As MenuItem
 			mi2.Initialize("Add Folder","addFolderMi")
+			Dim mi3 As MenuItem
+			mi3.Initialize("Reimport Files","reimportFilesMi")
 			cm.MenuItems.Add(mi)
 			cm.MenuItems.Add(mi2)
+			cm.MenuItems.Add(mi3)
 			lbl.ContextMenu=cm
 		End If
 		
@@ -1264,6 +1267,22 @@ Sub supportedFilesList As List
 	Next
 	Log(extensions)
 	Return extensions
+End Sub
+
+Sub reimportFilesMi_Action
+	If currentProject.IsInitialized=False Then
+		fx.Msgbox(MainForm,"Please first open a project.","")
+		Return
+	End If
+	If currentProject.path="" Then
+		fx.Msgbox(MainForm,"Please first save the project.","")
+		Return
+	End If
+	Log("reimporting...")
+	For Each filename As String In currentProject.files
+		wait for (currentProject.reimportFile(filename)) Complete (done As Object)
+	Next
+	fx.Msgbox(MainForm,"Done","")
 End Sub
 
 Sub addFileMi_Action

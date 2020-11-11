@@ -135,6 +135,7 @@ Public Sub addFile(filepath As String,isExtractedByOkapi As Boolean) As Resumabl
 	addFilesToTreeTable(filename)
 	wait for (createWorkFileAccordingToExtension(filename)) Complete (result As Object)
 	save
+	Return ""
 End Sub
 
 Sub addToOkapiExtractedList(filename As String)
@@ -305,12 +306,15 @@ Sub addFilesToTreeTable(filename As String)
 	mi6.Initialize("Update with existing workfile","updateWithWorkfileMi")
 	Dim mi7 As MenuItem
 	mi7.Initialize("Generate target file","generateTargetFileMi")
-	
+	Dim mi8 As MenuItem
+	mi8.Initialize("Reimport","reimportMi")
+	mi8.Tag=filename
 	fileCM.MenuItems.Add(mi)
 	fileCM.MenuItems.Add(mi2)
 	fileCM.MenuItems.Add(exportMenu)
 	fileCM.MenuItems.Add(mi6)
 	fileCM.MenuItems.Add(mi7)
+	fileCM.MenuItems.Add(mi8)
 	
 	lbl.ContextMenu=fileCM
 	
@@ -845,24 +849,18 @@ Sub updateWithWorkfileMI_Action
 	If workFilePath="" Then
 		Return
 	End If
+	updateSegmentsWithWorkfile(workFilePath,segments)
 
+	refillVisiblePane
+	contentIsChanged
+	fx.Msgbox(Main.MainForm,"Done","")
+End Sub
+
+Sub updateSegmentsWithWorkfile(workFilePath As String,segmentsToUpdate As List)
 	Dim fileSegments As List
 	fileSegments.Initialize
+	fileSegments=readWorkfileToSegments(workFilePath)
 	
-	Dim workfile As Map
-	Dim json As JSONParser
-	json.Initialize(File.ReadString(workFilePath,""))
-	workfile=json.NextObject
-	Dim sourceFiles As List
-	sourceFiles=workfile.Get("files")
-	For Each sourceFileMap As Map In sourceFiles
-		Dim innerFilename As String
-		innerFilename=sourceFileMap.GetKeyAt(0)
-		Dim segmentsList As List
-		segmentsList=sourceFileMap.Get(innerFilename)
-		fileSegments.AddAll(segmentsList)
-	Next
-
 	Dim sourceMap As Map
 	sourceMap.Initialize
 	For Each segment As List In fileSegments
@@ -871,14 +869,14 @@ Sub updateWithWorkfileMI_Action
 		sourceMap.Put(source,segment)
 	Next
 	
-	progressDialog.Show("Updating","update")
-    Dim size As Int=segments.Size
+	'progressDialog.Show("Updating","update")
+	'Dim size As Int=segments.Size
 	Dim index As Int
-	progressDialog.update(index,size)
-	Sleep(0)
-	For Each segment As List In segments
+	'progressDialog.update(index,size)
+	'Sleep(0)
+	For Each segment As List In segmentsToUpdate
 		index=index+1
-		progressDialog.update(index,size)
+		'progressDialog.update(index,size)
 		Dim source As String
 		source=segment.Get(0)
 		If sourceMap.ContainsKey(source) Then
@@ -897,10 +895,52 @@ Sub updateWithWorkfileMI_Action
 			End If
 		End If
 	Next
-	progressDialog.close
-	refillVisiblePane
-	contentIsChanged
-	fx.Msgbox(Main.MainForm,"Done","")
+	'progressDialog.close
+End Sub
+
+Sub readWorkfileToSegments(workFilePath As String) As List
+	Dim fileSegments As List
+	fileSegments.Initialize
+	Dim workfile As Map
+	Dim json As JSONParser
+	json.Initialize(File.ReadString(workFilePath,""))
+	workfile=json.NextObject
+	Dim sourceFiles As List
+	sourceFiles=workfile.Get("files")
+	For Each sourceFileMap As Map In sourceFiles
+		Dim innerFilename As String
+		innerFilename=sourceFileMap.GetKeyAt(0)
+		Dim segmentsList As List
+		segmentsList=sourceFileMap.Get(innerFilename)
+		fileSegments.AddAll(segmentsList)
+	Next
+	Return fileSegments
+End Sub
+
+Sub reimportMI_Action
+	Dim mi As MenuItem=Sender
+	reimportFile(mi.Tag)
+End Sub
+
+Sub reimportFile(filename As String) As ResumableSub
+	Dim workFilePath,workFileBackupPath As String
+	workFilePath=File.Combine(File.Combine(path,"work"),filename&".json")
+	workFileBackupPath=File.Combine(File.Combine(path,"work"),filename&".json.bak")
+	Dim sourceFilePath As String=File.Combine(File.Combine(path,"source"),filename)
+	If Max(File.LastModified(sourceFilePath,""),FileUtils.GetFileCreation(sourceFilePath,""))>FileUtils.GetFileCreation(workFilePath,"") Then
+		File.Copy(workFilePath,"",workFileBackupPath,"")
+		wait for (createWorkFileAccordingToExtension(filename)) Complete (result As Object)
+		Dim fileSegments As List
+		fileSegments.Initialize
+		readWorkFile(filename,fileSegments,False,path)
+		updateSegmentsWithWorkfile(workFileBackupPath,fileSegments)
+		saveWorkFile(filename,fileSegments,path)
+		File.Delete(workFileBackupPath,"")
+		If filename=currentFilename Then
+			openFile(filename,False)
+		End If
+	End If
+	Return ""
 End Sub
 
 Sub generateTargetFileMi_Action

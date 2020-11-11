@@ -112,3 +112,23 @@ Private Sub ExtractSubFolders(RootFolder As String, SubFolders As List)
 		End If
 	Next
 End Sub
+
+Sub GetFileCreation(dir As String,filename As String) As Long
+	Dim jo As JavaObject=Me
+	Return jo.RunMethod("getCreation",Array(File.Combine(dir,filename)))
+End Sub
+
+#if java
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.attribute.BasicFileAttributes;
+public static long getCreation(String filePath) throws IOException {
+    File myfile = new File(filePath);
+    Path path = myfile.toPath();
+    BasicFileAttributes fatr = Files.readAttributes(path,
+            BasicFileAttributes.class);
+    return fatr.creationTime().toMillis();
+}
+#end if
