@@ -34,6 +34,7 @@ Sub Class_Globals
 	Private HistoryCheckBox As CheckBox
 	Private removeSpacesCheckBox As CheckBox
 	Private EnableSegmentationCheckBox As CheckBox
+	Private FiltersListView As ListView
 End Sub
 
 'Initializes the object. You can add parameters to this method if needed.
@@ -48,6 +49,7 @@ Public Sub Initialize
 	settingTabPane.LoadLayout("quickfillSetting","Quickfill")
 	settingTabPane.LoadLayout("autocorrectSetting","Autocorrect")
 	settingTabPane.LoadLayout("teamSetting","Team")
+	settingTabPane.LoadLayout("filterProjectSetting","Filters")
 
 
 	loadGeneral
@@ -55,6 +57,7 @@ Public Sub Initialize
 	loadQuickfill
 	loadAutocorrect
 	loadTeam
+	loadFilters
 	resultList.Initialize
 End Sub
 
@@ -167,6 +170,31 @@ Sub loadTeam
 	End If
 End Sub
 
+Sub loadFilters
+	Dim filters As List
+	filters.Initialize
+	filters.AddAll(Array("txt (BasicCAT)","idml (BasicCAT)","xliff (BasicCAT)"))
+	'For Each pluginName As String In Main.plugin.GetAvailablePlugins
+	'	If pluginName.EndsWith("Filter") Then
+	'		filters.Add(pluginName)
+	'	End If
+	'Next
+	Dim disabledFilters As List
+	disabledFilters.Initialize
+	disabledFilters=settings.GetDefault("disabled_filters",disabledFilters)
+	For Each filter As String In filters
+		Dim chk As CheckBox
+		chk.Initialize("")
+		chk.Checked=True
+		chk.Text=filter
+		If disabledFilters.IndexOf(filter)<>-1 Then
+			chk.Checked=False
+		End If
+		FiltersListView.Items.Add(chk)
+	Next
+End Sub
+
+
 Public Sub ShowAndWait As List
 	frm.ShowAndWait
 	Return resultList
@@ -210,6 +238,14 @@ Sub applyButton_MouseClicked (EventData As MouseEvent)
 		autocorrectList.Add(list1)
 	Next
 	
+	Dim disabledFilters As List
+	disabledFilters.Initialize
+	For Each chk As CheckBox In FiltersListView.Items
+		If chk.Checked=False Then
+			disabledFilters.Add(chk.Text)
+		End If
+	Next
+	
 	Dim updateTM As String=askTM
 	Dim updateTerm As String
 	If updateTM<>"cancel" Then
@@ -229,6 +265,7 @@ Sub applyButton_MouseClicked (EventData As MouseEvent)
 		settings.Put("autocorrect_enabled",autocorrecCheckBox.Checked)
 		settings.put("tmListChanged",updateTM)
 		settings.put("termListChanged",updateTerm)
+		settings.put("disabled_filters",disabledFilters)
 		settings.Put("server_address",serverAddressTextField.Text)
 		settings.Put("sharingTM_enabled",sharingTMCheckBox.Checked)
 		settings.Put("sharingTerm_enabled",sharingTermCheckBox.Checked)

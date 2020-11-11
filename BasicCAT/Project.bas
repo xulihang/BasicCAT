@@ -1411,11 +1411,11 @@ Sub sourceTextArea_KeyPressed (result As String)
 		contentIsChanged
 		Dim filenameLowercase As String
 		filenameLowercase=currentFilename.ToLowerCase
-		If filenameLowercase.EndsWith(".txt") Then
+		If filenameLowercase.EndsWith(".txt") And filterIsEnabled("txt (BasicCAT)") Then
 			txtFilter.splitSegment(sourceTextArea)
-		Else if filenameLowercase.EndsWith(".idml") Then
+		Else if filenameLowercase.EndsWith(".idml") And filterIsEnabled("idml (BasicCAT)") Then
 			idmlFilter.splitSegment(sourceTextArea)
-		Else if filenameLowercase.EndsWith(".xlf") Or filenameLowercase.EndsWith(".xliff") Then
+		Else if (filenameLowercase.EndsWith(".xlf") Or filenameLowercase.EndsWith(".xliff"))  And filterIsEnabled("xliff (BasicCAT)") Then
 			xliffFilter.splitSegment(sourceTextArea)
 		Else
 			Dim params As Map
@@ -1435,11 +1435,11 @@ Sub sourceTextArea_KeyPressed (result As String)
 		contentIsChanged
 		Dim filenameLowercase As String
 		filenameLowercase=currentFilename.ToLowerCase
-		If filenameLowercase.EndsWith(".txt") Then
+		If filenameLowercase.EndsWith(".txt") And filterIsEnabled("txt (BasicCAT)") Then
 			txtFilter.mergeSegment(sourceTextArea)
-		Else if filenameLowercase.EndsWith(".idml") Then
+		Else if filenameLowercase.EndsWith(".idml") And filterIsEnabled("idml (BasicCAT)") Then
 			idmlFilter.mergeSegment(sourceTextArea)
-		Else if filenameLowercase.EndsWith(".xlf") Or filenameLowercase.EndsWith(".xliff") Then
+		Else if (filenameLowercase.EndsWith(".xlf") Or filenameLowercase.EndsWith(".xliff")) And filterIsEnabled("xliff (BasicCAT)") Then
 			xliffFilter.mergeSegment(sourceTextArea)
 		Else
 			Dim params As Map
@@ -1458,6 +1458,21 @@ Sub sourceTextArea_KeyPressed (result As String)
 		End If
 	Else if result="TAB" Then
 		swithTextArea(sourceTextArea,1)
+	End If
+End Sub
+
+Sub filterIsEnabled(filterName As String) As Boolean
+	Dim disabledFilters As List
+	If settings.ContainsKey("disabled_filters") Then
+		disabledFilters=settings.get("disabled_filters")
+	Else
+		disabledFilters.Initialize
+	End If
+	If disabledFilters.IndexOf(filterName)=-1 Then
+		Return True
+	Else
+		Log(filterName&" is disabled")
+		Return False
 	End If
 End Sub
 
@@ -2281,11 +2296,11 @@ Sub createWorkFileAccordingToExtension(filename As String) As ResumableSub
 	Try
 		Dim filenameLowercase As String
 		filenameLowercase=filename.ToLowerCase
-		If filenameLowercase.EndsWith(".txt") Then
+		If filenameLowercase.EndsWith(".txt") And filterIsEnabled("txt (BasicCAT)") Then
 			wait for (txtFilter.createWorkFile(filename,path,projectFile.Get("source"),sentenceLevel)) Complete (result As Boolean)
-		Else if filenameLowercase.EndsWith(".idml") Then
+		Else if filenameLowercase.EndsWith(".idml") And filterIsEnabled("idml (BasicCAT)") Then
 			wait for (idmlFilter.createWorkFile(filename,path,projectFile.Get("source"),sentenceLevel)) Complete (result As Boolean)
-		Else if filenameLowercase.EndsWith(".xlf") Or filenameLowercase.EndsWith(".xliff") Then
+		Else if (filenameLowercase.EndsWith(".xlf") Or filenameLowercase.EndsWith(".xliff")) And filterIsEnabled("xliff (BasicCAT)") Then
 			wait for (xliffFilter.createWorkFile(filename,path,projectFile.Get("source"),sentenceLevel)) Complete (result As Boolean)
 		Else
 			Dim params As Map
@@ -2477,7 +2492,7 @@ Sub generateTargetFileForOne(filename As String)
 	If okapiExtractedFiles.IndexOf(filename)<>-1 Then
 		Dim outputDir As String
 		outputDir=File.GetFileParent(File.Combine(File.Combine(path,"target"),filename))
-		If filenameLowercase.EndsWith(".xlf") Or filenameLowercase.EndsWith(".xliff") Then
+		If (filenameLowercase.EndsWith(".xlf") Or filenameLowercase.EndsWith(".xliff")) And filterIsEnabled("xliff (BasicCAT)") Then
 			xliffFilter.generateFile(filename,path,projectFile)
 			Dim targetPath As String
 			targetPath=File.Combine(File.Combine(path,"target"),filename)
@@ -2486,11 +2501,11 @@ Sub generateTargetFileForOne(filename As String)
 			tikal.merge(targetPath,sourceDir,outputDir)
 		End If
 	Else
-		If filenameLowercase.EndsWith(".txt") Then
+		If filenameLowercase.EndsWith(".txt") And filterIsEnabled("txt (BasicCAT)") Then
 			txtFilter.generateFile(filename,path,projectFile)
-		Else if filenameLowercase.EndsWith(".idml") Then
+		Else if filenameLowercase.EndsWith(".idml") And filterIsEnabled("idml (BasicCAT)") Then
 			idmlFilter.generateFile(filename,path,projectFile)
-		Else if filenameLowercase.EndsWith(".xlf") Or filenameLowercase.EndsWith(".xliff") Then
+		Else if (filenameLowercase.EndsWith(".xlf") Or filenameLowercase.EndsWith(".xliff")) And filterIsEnabled("xliff (BasicCAT)") Then
 			xliffFilter.generateFile(filename,path,projectFile)
 		Else
 			Dim params As Map
