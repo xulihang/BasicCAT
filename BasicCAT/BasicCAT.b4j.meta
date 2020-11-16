@@ -235,6 +235,6 @@ ModuleClosedNodes77=
 ModuleClosedNodes78=
 ModuleClosedNodes8=
 ModuleClosedNodes9=
-NavigationStack=SimpleTag,CurrentChar,242,0,SimpleTag,TextUntil,231,0,idmlUtils,isEndOfSentence,317,0,editDistance,TextInParts,279,0,Project,Initialize,33,0,Project,open,78,0,Project,initializeTM,57,0,Project,sourceTextArea_KeyPressed,1467,0,Project,filterIsEnabled,1500,6,ProjectSettings,Class_Globals,30,0,ProjectSettings,loadFilters,178,2
+NavigationStack=RichTextArea,SetDefaultBorder,380,1,RichTextArea,DesignerCreateView,60,3,Main,AppStart,84,0,Project,filterIsEnabled,1500,0,Project,sourceTextArea_KeyPressed,1492,0,Project,fillPane,2053,0,Project,ReloadEditor,2677,0,Project,addTextAreaToSegmentPane,1212,4,Main,setupStyleSheets,187,0,Main,init,138,6
 SelectedBuild=0
 VisibleModules=1,2,3,4,5,6,7,8,9,10,11,32,15,18,45,35,30

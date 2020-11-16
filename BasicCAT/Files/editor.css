@@ -1,0 +1,11 @@
+#editorLV .list-cell:filled:selected:focused, .list-cell:filled:selected {
+	-fx-background-color: transparent;
+}
+
+#editorLV .list-cell:odd {
+	-fx-background-color: transparent;
+}
+
+#editorLV .list-cell:even {
+	-fx-background-color: transparent;
+}

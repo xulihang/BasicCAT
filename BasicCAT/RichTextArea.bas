@@ -62,7 +62,7 @@ Public Sub DesignerCreateView(Base As Pane, Lbl As Label, Props As Map)
 	'Assign vars to globals
 	mBase = Base
 	mBase.Tag=Me
-	
+	mBase.PickOnBounds=True
 	'So that we can Call Runmethod on the Base Panel to run non exposed methods
 	mBaseJO = Base
 

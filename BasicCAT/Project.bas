@@ -1216,7 +1216,7 @@ Public Sub addTextAreaToSegmentPane(segmentpane As Pane,source As String,target 
 	Else
 		segmentpane.LoadLayout("segment")
 	End If
-	
+
 	segmentpane.SetSize(Main.editorLV.Width,50dip)
 	Dim sourceTextArea As RichTextArea
 	sourceTextArea=segmentpane.GetNode(0).Tag
