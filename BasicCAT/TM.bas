@@ -332,78 +332,89 @@ Sub importedXlsx(filename As String) As List
 	Return result
 End Sub
 
-Sub getMatchList(source As String,matchrate As Double,getOne As Boolean) As ResumableSub
+Sub getMatchListMerged(source As String,matchrate As Double,getOne As Boolean,limit As Int) As ResumableSub
+	Dim result As List
+	result.Initialize
+	wait for (getMatchList(False,source,matchrate,getOne,limit)) Complete (matchList As List)
+	result.AddAll(matchList)
+	If getOne And matchList.Size>0 Then
+		Return result
+	End If
+	wait for (getMatchList(True,source,matchrate,getOne,limit)) Complete (matchList As List)
+	result.AddAll(matchList)
+	Return result
+End Sub
+
+Sub getMatchList(external As Boolean, source As String,matchrate As Double,getOne As Boolean,limit As Int) As ResumableSub
 	Dim matchList As List
 	matchList.Initialize
-	For i=0 To 1
-		If i=0 Then
-			Dim kvs As TMDB
-			kvs=translationMemory
-		Else
-			Dim kvs As TMDB
-			kvs=externalTranslationMemory
+	Dim kvs As TMDB
+	If external=False Then
+		kvs=translationMemory
+	Else
+		kvs=externalTranslationMemory
+	End If
+	Dim matchedMap As Map
+	matchedMap.Initialize
+	If kvs.ContainsKey(source) And getOne Then
+		matchedMap.Put(source,kvs.Get(source))
+	Else if matchrate<1 Then 'fuzzy match
+		wait for (kvs.GetMatchedMapAsync(source,True,False,limit)) Complete (resultMap As Map)
+		matchedMap=resultMap
+	Else
+		Return matchList
+	End If
+	'Log(source)
+	'Log(matchedMap)
+	source=source.ToLowerCase.Trim
+	For Each key As String In matchedMap.Keys
+		'Sleep(0)
+		Dim lowerCased As String=key.ToLowerCase.Trim
+		If basicCompare(source,lowerCased)=False Then
+			Continue
 		End If
-		Dim matchedMap As Map
-		matchedMap.Initialize
-		If kvs.ContainsKey(source) And getOne Then
-			matchedMap.Put(source,kvs.Get(source))
+
+		Dim similarity As Double
+		If lowerCased=source Then 'exact match
+			similarity=1.0
 		Else
-			wait for (kvs.GetMatchedMapAsync(source,True,False)) Complete (resultMap As Map)
-			matchedMap=resultMap
+			Dim joined As String=source&"	"&lowerCased
+			If similarityStore.ContainsKey(joined) Then
+				similarity=similarityStore.Get(joined)
+			Else
+				wait for (getSimilarityFuzzyWuzzy(source,lowerCased)) Complete (Result As Double)
+				similarity=Result
+				similarityStore.Put(joined,similarity)
+			End If
 		End If
 		'Log(source)
-		'Log(matchedMap)
-		source=source.ToLowerCase.Trim
-		For Each key As String In matchedMap.Keys
-			'Sleep(0)
-			Dim lowerCased As String=key.ToLowerCase.Trim
-			If basicCompare(source,lowerCased)=False Then
-				Continue
-			End If
+		'Log(lowerCased)
+		'Log(similarity)
+		'Log(matchrate)
+		If similarity>=matchrate Then
 
-			Dim similarity As Double
-			If lowerCased=source Then 'exact match
-				similarity=1.0
+			Dim tmPairList As List
+			tmPairList.Initialize
+			tmPairList.Add(similarity)
+			tmPairList.Add(key)
+			
+			Dim target As String
+			Dim targetMap As Map
+			targetMap=kvs.Get(key)
+			target=targetMap.Get("text")
+			tmPairList.Add(target)
+			If external=False Then
+				tmPairList.Add(targetMap.GetDefault("creator","anonymous"))
 			Else
-				Dim joined As String=source&"	"&lowerCased
-				If similarityStore.ContainsKey(joined) Then
-					similarity=similarityStore.Get(joined)
-				Else
-					wait for (getSimilarityFuzzyWuzzy(source,lowerCased)) Complete (Result As Double)
-					similarity=Result
-					similarityStore.Put(joined,similarity)
-				End If
+				tmPairList.Add(targetMap.Get("filename")) ' external tm name
 			End If
-			'Log(source)
-			'Log(lowerCased)
-			'Log(similarity)
-			'Log(matchrate)
-			If similarity>=matchrate Then
-
-				Dim tmPairList As List
-				tmPairList.Initialize
-				tmPairList.Add(similarity)
-				tmPairList.Add(key)
-				
-				Dim target As String
-				Dim targetMap As Map
-				targetMap=kvs.Get(key)
-				target=targetMap.Get("text")
-				tmPairList.Add(target)
-				If i=0 Then
-					tmPairList.Add(targetMap.GetDefault("creator","anonymous"))
-				Else
-					tmPairList.Add(targetMap.Get("filename")) ' external tm name
-				End If
-				'Log(tmPairList)
-				matchList.Add(tmPairList)
-				If getOne Then
-					Return matchList
-				End If
+			'Log(tmPairList)
+			matchList.Add(tmPairList)
+			If getOne Then
+				Return matchList
 			End If
-		Next
+		End If
 	Next
-	
 	Return subtractedAndSortMatchList(matchList)
 End Sub
 
@@ -470,11 +481,11 @@ Sub getMatchListOld(source As String) As ResumableSub
 End Sub
 
 
-Sub getOneUseMemory(source As String,rate As Double) As ResumableSub
+Sub getOneUseMemory(source As String,rate As Double,limit As Int) As ResumableSub
 	Dim onePairList As List
-	onePairList.Initialize
-	wait for (getMatchList(source,rate,True)) Complete (matchList As List) 
+	wait for (getMatchListMerged(source,rate,True,limit)) Complete (matchList As List)
 	If matchList.Size=0 Then
+		onePairList.Initialize
 		Return onePairList
 	End If
 	onePairList=matchList.Get(0)

@@ -1803,36 +1803,30 @@ Sub showTM(targetTextArea As RichTextArea)
 		matchrate=0.5
 	End If
 	
-	Dim senderFilter As Object = projectTM.getMatchList(sourceTA.Text,matchrate,False)
-	Wait For (senderFilter) Complete (Result As List)
-
-
-    Dim index As Int=0
-	For Each matchList As List In Result
-        Dim note As String
-		note=matchList.Get(3)
-		Dim isExternal As Boolean=True
-		If note.ToLowerCase.EndsWith(".txt")=False And note.ToLowerCase.EndsWith(".tmx")=False Then
-			isExternal=False
-		End If
-		If matchList.Get(1)=sourceTA.Text And isExternal=False And targetTA.Text=matchList.Get(2) Then
-			Continue 'itself
-		End If
-		Dim row() As Object = Array As Object(Utils.LabelWithText(matchList.Get(0)), _ 
+	Dim limit As Int
+	limit=settings.GetDefault("TM_limit",500)
+	
+	For Each isExternal As Boolean In Array(False,True)
+		Dim senderFilter As Object = projectTM.getMatchList(isExternal,sourceTA.Text,matchrate,False,limit)
+		Wait For (senderFilter) Complete (Result As List)
+		Dim index As Int=0
+		For Each matchList As List In Result
+			If matchList.Get(1)=sourceTA.Text And isExternal=False And targetTA.Text=matchList.Get(2) Then
+				Continue 'itself
+			End If
+			Dim row() As Object = Array As Object(Utils.LabelWithText(matchList.Get(0)), _
 												Utils.LabelWithText(matchList.Get(1)), _ 
 												Utils.LabelWithText(matchList.Get(2)), _ 
 												Utils.LabelWithText(matchList.Get(3)))
-        If index=0 Then
-			Main.tmTableView.Items.InsertAt(0,row)
-		    index=index+1
-		Else
-			Main.tmTableView.Items.Add(row)
-        End If
+			If index=0 Then
+				Main.tmTableView.Items.InsertAt(0,row)
+				index=index+1
+			Else
+				Main.tmTableView.Items.Add(row)
+			End If
+		Next
 	Next
 	Log(DateTime.Now-time)
-	
-
-	
 	Main.changeWhenSegmentOrSelectionChanges
 	If Main.tmTableView.Items.Size<>0 Then
 		Main.tmTableView.SelectedRow=0
@@ -2098,7 +2092,9 @@ Sub preTranslate(options As Map)
 				Dim resultList As List
 				Dim similarity,matchrate As Double
 				matchrate=options.Get("rate")
-				Wait For (projectTM.getOneUseMemory(bitext.Get(0),matchrate)) Complete (Result As List)
+				Dim limit As Int
+				limit=settings.GetDefault("TM_limit",500)
+				Wait For (projectTM.getOneUseMemory(bitext.Get(0),matchrate,limit)) Complete (Result As List)
 				resultList=Result
 				If resultList.Size=0 Then
 					completed=completed+1

@@ -35,6 +35,7 @@ Sub Class_Globals
 	Private removeSpacesCheckBox As CheckBox
 	Private EnableSegmentationCheckBox As CheckBox
 	Private FiltersListView As ListView
+	Private TMFTSLimitSpinner As Spinner
 End Sub
 
 'Initializes the object. You can add parameters to this method if needed.
@@ -89,6 +90,7 @@ Sub loadGeneral
 	HistoryCheckBox.checked=settings.GetDefault("record_history",True)
 	removeSpacesCheckBox.checked=settings.GetDefault("remove_space",False)
 	EnableSegmentationCheckBox.checked=settings.GetDefault("sentence_level_segmentation",True)
+	TMFTSLimitSpinner.Value=settings.GetDefault("TM_limit",500)
 End Sub
 
 Sub loadQuickfill
@@ -256,6 +258,7 @@ Sub applyButton_MouseClicked (EventData As MouseEvent)
 		Return
 	Else
 		resultList.Add("changed")
+		settings.Put("TM_limit",TMFTSLimitSpinner.Value)
 		settings.Put("matchrate",num)
 		settings.Put("save_and_commit",SaveAndCommitCheckBox.Checked)
 		settings.Put("tmList",TMListView.Items)

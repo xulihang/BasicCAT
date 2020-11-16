@@ -158,7 +158,7 @@ Sub checkIsFTSEnabled As Boolean
 	End Try
 End Sub
 
-Public Sub GetMatchedMapAsync(text As String,isSource As Boolean,matchAll As Boolean) As ResumableSub
+Public Sub GetMatchedMapAsync(text As String,isSource As Boolean,matchAll As Boolean, limit As Int) As ResumableSub
 	'Dim maxLength As Int=text.Length*2
 	Dim sqlStr As String
 	Dim matchTarget As String
@@ -187,7 +187,7 @@ Public Sub GetMatchedMapAsync(text As String,isSource As Boolean,matchAll As Boo
 	End If
 	text=getQuery(words,operator)
 	
-	sqlStr="SELECT key, rowid, quote(matchinfo(idx)) as rank FROM idx WHERE "&matchTarget&" MATCH "&text&" ORDER BY rank DESC LIMIT 1000 OFFSET 0"
+	sqlStr=$"SELECT key, rowid, quote(matchinfo(idx)) as rank FROM idx WHERE ${matchTarget} MATCH ${text} ORDER BY rank DESC LIMIT ${limit} OFFSET 0"$
 	'Log(sqlStr)
 	Dim SenderFilter As Object = sql1.ExecQueryAsync("SQL", sqlStr,Null)
 	Wait For (SenderFilter) SQL_QueryComplete (Success As Boolean, rs As ResultSet)

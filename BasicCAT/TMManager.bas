@@ -53,7 +53,7 @@ Sub MatchedItems As ResumableSub
 		If PhraseQueryCheckBox.Checked Then
 			text=$""${text}""$
 		End If
-		wait for (kvs.GetMatchedMapAsync(text,True,True)) Complete (matchedMap As Map)
+		wait for (kvs.GetMatchedMapAsync(text,True,True,1000)) Complete (matchedMap As Map)
 		For Each key As String In matchedMap.Keys
 			'Log(key)
 			Dim targetMap As Map
