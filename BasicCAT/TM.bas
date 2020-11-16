@@ -236,7 +236,8 @@ Public Sub importExternalTranslationMemory(tmList As List,projectFile As Map) As
 		Next
 	End If
 	'Log(externalTranslationMemory.ListKeys.Size)
-	externalTranslationMemory.PutWithTransaction(tmToBeImported)
+	progressDialog.update2("Inserting to database...")
+	wait for (externalTranslationMemory.PutMapAsync(tmToBeImported)) Complete (done As Object)
 	progressDialog.close
 	Return True
 End Sub

@@ -190,7 +190,7 @@ Public Sub importExternalTerminology(termList As List)
 			termToBeImported.put(source,termsMap.Get(source))
 		Next
 	End If
-	externalTerminology.PutWithTransaction(termToBeImported)
+	wait for (externalTerminology.PutMapAsync(termToBeImported)) Complete (done As Object)
 	progressDialog.close
 End Sub
 

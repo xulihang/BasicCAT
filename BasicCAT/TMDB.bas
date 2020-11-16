@@ -60,6 +60,27 @@ Public Sub PutWithTransaction(map1 As Map)
 	sql1.TransactionSuccessful
 End Sub
 
+'Asynchronously inserts the keys and values from the map.
+'Note that each pair is inserted as a separate item.
+'Call it with Wait For if you want to wait for the insert to complete.
+Public Sub PutMapAsync (Map As Map) As ResumableSub
+	For Each key As String In Map.Keys
+		Dim myser As B4XSerializator
+		myser.ConvertObjectToBytesAsync(Map.Get(key), "myser")
+		Wait For (myser) myser_ObjectToBytes (Success As Boolean, Bytes() As Byte)
+		If Success Then
+			sql1.AddNonQueryToBatch("INSERT OR REPLACE INTO main VALUES(?, ?)", Array(key, Bytes))
+			Dim targetMap As Map=Map.Get(key)
+			sql1.AddNonQueryToBatch("INSERT OR REPLACE INTO idx VALUES(?, ?, ?)", Array (key,getStringForIndex(key,sourceLang),getStringForIndex(targetMap.Get("text"),targetLang)))
+		Else
+			Log("Failed to serialize object: " & Map.Get(key))
+		End If
+	Next
+	Dim SenderFilter As Object = sql1.ExecNonQueryBatch("SQL")
+	Wait For (SenderFilter) SQL_NonQueryComplete (Success As Boolean)
+	Return Success
+End Sub
+
 Public Sub Get(Key As String) As Object
 	'Log(Key)
 	Dim rs As ResultSet = sql1.ExecQuery2("SELECT value FROM main WHERE key = ?", Array As String(Key))
