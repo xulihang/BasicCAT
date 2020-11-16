@@ -181,6 +181,7 @@ Sub loadFilters
 	'Next
 	Dim disabledFilters As List
 	disabledFilters.Initialize
+	disabledFilters.Add("idml (BasicCAT)")
 	disabledFilters=settings.GetDefault("disabled_filters",disabledFilters)
 	For Each filter As String In filters
 		Dim chk As CheckBox

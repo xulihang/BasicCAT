@@ -173,20 +173,27 @@ Sub mergeSegment(sourceTextArea As RichTextArea)
 	sourceLang=Main.currentProject.projectFile.Get("source")
 	targetLang=Main.currentProject.projectFile.Get("target")
 	If Utils.LanguageHasSpace(sourceLang)=True Then
-		If Regex.IsMatch("\s",fullsource.CharAt(fullsource.Length-1)) Or Regex.IsMatch("\s",nextFullSource.CharAt(0)) Then
-			sourceWhitespace=" "
-		Else
-			sourceWhitespace=""
-		End If
+		Try
+			If Regex.IsMatch("\s",fullsource.CharAt(fullsource.Length-1)) Or Regex.IsMatch("\s",nextFullSource.CharAt(0)) Then
+				sourceWhitespace=" "
+			End If
+		Catch
+			Log(LastException)
+		End Try
+
 	End If
 	If Utils.LanguageHasSpace(targetLang)=True Then
 		targetWhitespace=" "
 	End If
 	
 	If Utils.LanguageHasSpace(sourceLang)=True Then
-		If Regex.IsMatch("\s",fullsource.CharAt(fullsource.Length-1)) Or Regex.IsMatch("\s",nextFullSource.CharAt(0)) Then
-			fullsourceWhitespace=" "
-		End If
+		Try
+			If Regex.IsMatch("\s",fullsource.CharAt(fullsource.Length-1)) Or Regex.IsMatch("\s",nextFullSource.CharAt(0)) Then
+				fullsourceWhitespace=" "
+			End If
+		Catch
+			Log(LastException)
+		End Try
 	End If
 		
 	sourceTextArea.Text=source.Trim&sourceWhitespace&nextSourceTa.Text.Trim

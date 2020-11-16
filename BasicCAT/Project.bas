@@ -1503,6 +1503,7 @@ Sub filterIsEnabled(filterName As String) As Boolean
 		disabledFilters=settings.get("disabled_filters")
 	Else
 		disabledFilters.Initialize
+		disabledFilters.Add("idml (BasicCAT)") 'idml is disabled by default
 	End If
 	If disabledFilters.IndexOf(filterName)=-1 Then
 		Return True
