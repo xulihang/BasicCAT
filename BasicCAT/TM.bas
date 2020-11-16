@@ -354,9 +354,10 @@ Sub getMatchList(external As Boolean, source As String,matchrate As Double,getOn
 	Else
 		kvs=externalTranslationMemory
 	End If
+	
 	Dim matchedMap As Map
-	matchedMap.Initialize
 	If kvs.ContainsKey(source) And getOne Then
+		matchedMap.Initialize
 		matchedMap.Put(source,kvs.Get(source))
 	Else if matchrate<1 Then 'fuzzy match
 		wait for (kvs.GetMatchedMapAsync(source,True,False,limit)) Complete (resultMap As Map)
@@ -364,6 +365,7 @@ Sub getMatchList(external As Boolean, source As String,matchrate As Double,getOn
 	Else
 		Return matchList
 	End If
+	
 	'Log(source)
 	'Log(matchedMap)
 	source=source.ToLowerCase.Trim
@@ -485,8 +487,7 @@ Sub getOneUseMemory(source As String,rate As Double,limit As Int) As ResumableSu
 	Dim onePairList As List
 	wait for (getMatchListMerged(source,rate,True,limit)) Complete (matchList As List)
 	If matchList.Size=0 Then
-		onePairList.Initialize
-		Return onePairList
+		Return Null
 	End If
 	onePairList=matchList.Get(0)
 	Return onePairList

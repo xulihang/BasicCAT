@@ -2095,14 +2095,14 @@ Sub preTranslate(options As Map)
 				Dim limit As Int
 				limit=settings.GetDefault("TM_limit",500)
 				Wait For (projectTM.getOneUseMemory(bitext.Get(0),matchrate,limit)) Complete (Result As List)
-				resultList=Result
-				If resultList.Size=0 Then
+				If Result=Null Then
 					completed=completed+1
 					progressDialog.update(completed,segments.Size)
 					Continue
 				End If
+				resultList=Result
+				
 				similarity=resultList.Get(0)
-
 				If similarity>=matchrate Then
 					setTranslation(index,resultList.Get(2),True,resultList.Get(1))
 					'setSegment(bitext,index)
