@@ -36,6 +36,7 @@ Sub Class_Globals
 	Private EnableSegmentationCheckBox As CheckBox
 	Private FiltersListView As ListView
 	Private TMFTSLimitSpinner As Spinner
+	Private OkapiFirstCheckBox As CheckBox
 End Sub
 
 'Initializes the object. You can add parameters to this method if needed.
@@ -173,6 +174,7 @@ Sub loadTeam
 End Sub
 
 Sub loadFilters
+	OkapiFirstCheckBox.Checked=settings.GetDefault("use_okapi_first",False)
 	Dim filters As List
 	filters.Initialize
 	filters.AddAll(Array("txt (BasicCAT)","idml (BasicCAT)","xliff (BasicCAT)"))
@@ -269,6 +271,7 @@ Sub applyButton_MouseClicked (EventData As MouseEvent)
 		settings.Put("autocorrect_enabled",autocorrecCheckBox.Checked)
 		settings.put("tmListChanged",updateTM)
 		settings.put("termListChanged",updateTerm)
+		settings.put("use_okapi_first",OkapiFirstCheckBox.Checked)
 		settings.put("disabled_filters",disabledFilters)
 		settings.Put("server_address",serverAddressTextField.Text)
 		settings.Put("sharingTM_enabled",sharingTMCheckBox.Checked)

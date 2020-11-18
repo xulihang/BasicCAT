@@ -202,63 +202,63 @@ Library9=jb4xencryption
 Module1=FileChooserUtils
 Module10=RichTextArea
 Module11=xliffFilter
-Module12=FileUtils
-Module13=searchAndReplaceDialog
-Module14=TextFlow
-Module15=Utils
-Module16=Previewer
-Module17=XMLUtils
-Module18=idmlFilter
-Module19=tikal
+Module12=filterGenericUtils
+Module13=Utils
+Module14=idmlFilter
+Module15=SimpleTag
+Module16=idmlUtils
+Module17=editDistance
+Module18=TM
+Module19=TMDB
 Module2=Project
-Module20=opennlp
-Module21=ITP
-Module22=MT
-Module23=statistics
-Module24=SegmentationRulesManager
-Module25=LanguageUtils
-Module26=Theme
-Module27=LanguagePairSelector
-Module28=SRX
-Module29=MTCompare
+Module20=TMManager
+Module21=progressDialog
+Module22=FileUtils
+Module23=searchAndReplaceDialog
+Module24=TextFlow
+Module25=Previewer
+Module26=XMLUtils
+Module27=tikal
+Module28=opennlp
+Module29=ITP
 Module3=segmentation
-Module30=editDistance
-Module31=dictWebView
-Module32=filterGenericUtils
-Module33=EnumClass
-Module34=jieba
-Module35=idmlUtils
-Module36=XMLBuilder2
-Module37=MTParamsFiller
-Module38=TMX
-Module39=XmlNode
+Module30=MT
+Module31=statistics
+Module32=SegmentationRulesManager
+Module33=LanguageUtils
+Module34=Theme
+Module35=LanguagePairSelector
+Module36=SRX
+Module37=MTCompare
+Module38=dictWebView
+Module39=EnumClass
 Module4=txtFilter
-Module40=TMManager
-Module41=confirmReviewDialog
-Module42=TM
-Module43=LanguageTool
-Module44=TMDB
-Module45=SimpleTag
-Module46=XmlParser
-Module47=Xml2Map
-Module48=importDialog
-Module49=pdfbox
+Module40=jieba
+Module41=XMLBuilder2
+Module42=MTParamsFiller
+Module43=TMX
+Module44=XmlNode
+Module45=confirmReviewDialog
+Module46=LanguageTool
+Module47=XmlParser
+Module48=Xml2Map
+Module49=importDialog
 Module5=Term
-Module50=SourceTextEditor
-Module51=git
-Module52=TagKind
-Module53=PathSaver
-Module54=SearchView
-Module55=InputTextAreaBox
-Module56=TermManager
-Module57=PDF2TXT
-Module58=TMEditor
-Module59=HistoryViewer
+Module50=pdfbox
+Module51=SourceTextEditor
+Module52=git
+Module53=TagKind
+Module54=PathSaver
+Module55=SearchView
+Module56=InputTextAreaBox
+Module57=TermManager
+Module58=PDF2TXT
+Module59=TMEditor
 Module6=KeyValueStore
-Module60=serverLauncher
-Module61=AutoSaver
-Module62=ClientKVS
-Module63=progressDialog
+Module60=HistoryViewer
+Module61=serverLauncher
+Module62=AutoSaver
+Module63=ClientKVS
 Module64=languageChooser
 Module65=HistoryRecord
 Module66=Map2Xml
@@ -1208,7 +1208,7 @@ End Sub
 Sub addFiles(path As String,files As List,prefix As String,okapiExtractedFiles As List) As ResumableSub
 	For Each filename As String In File.ListFiles(path)
 		If File.IsDirectory(path,filename)=False Then
-			If isFiletypeSupported(filename) Then
+			If isFiletypeSupported(filename) And currentProject.settings.GetDefault("use_okapi_first",False)=False Then
 				files.Add(prefix&filename)
 			Else
 				If currentProject.files.IndexOf(prefix&filename&".xlf")=-1 Then
@@ -1274,9 +1274,11 @@ Sub supportedFilesList As List
 	Try
 		If currentProject.filterIsEnabled("txt (BasicCAT)")=False Then
 			extensions.RemoveAt(extensions.IndexOf("txt"))
-		Else if currentProject.filterIsEnabled("idml (BasicCAT)")=False Then
+		End If
+		If currentProject.filterIsEnabled("idml (BasicCAT)")=False Then
 			extensions.RemoveAt(extensions.IndexOf("idml"))
-		Else if currentProject.filterIsEnabled("xliff (BasicCAT)")=False Then
+		End If
+		If currentProject.filterIsEnabled("xliff (BasicCAT)")=False Then
 			extensions.RemoveAt(extensions.IndexOf("xlf"))
 			extensions.RemoveAt(extensions.IndexOf("xliff"))
 		End If
@@ -1289,7 +1291,7 @@ Sub supportedFilesList As List
 			extensions.Add(pluginName.Replace("Filter",""))
 		End If
 	Next
-
+	Log("supported extensions:")
 	Log(extensions)
 	Return extensions
 End Sub
@@ -1359,7 +1361,7 @@ Sub addFile(path As String)
 		Return
 	End If
 
-	If isFiletypeSupported(File.GetName(path))=False Then
+	If isFiletypeSupported(File.GetName(path))=False  or currentProject.settings.GetDefault("use_okapi_first",False)=True Then
 		If currentProject.files.IndexOf(File.GetName(path)&".xlf")<>-1 Then
 			fx.Msgbox(MainForm,"A file with the same name already exists.","")
 			Return
