@@ -645,32 +645,12 @@ Public Sub setupIM
 	Dim o As JavaObject
 	o.InitializeNewInstance("com.xulihang.InputMethodRequestsObject",Null)
 	o.RunMethod("setArea",Array(GetObject))
-	Dim event As Object = JO.CreateEventFromUI("javafx.event.EventHandler","InputMethodTextChanged",Null)
 	JO.RunMethod("setInputMethodRequests",Array(o))
-	JO.RunMethod("setOnInputMethodTextChanged",Array(event))
+	Dim imsetup As JavaObject
+	imsetup.InitializeNewInstance("com.xulihang.Setup",Null)
+	imsetup.RunMethod("setOnInputMethodTextChanged",Array(JO))
 End Sub
 
-Sub InputMethodTextChanged_Event(MethodName As String,Args() As Object) As Object							'ignore
-	Dim e As JavaObject=Args(0)
-	JO.RunMethod("replaceSelection",Array(""))
-	Dim startIndex,endIndex As Int
-	startIndex=JO.RunMethod("getCaretPosition",Null)-previousComposedText.Length
-	endIndex=JO.RunMethod("getCaretPosition",Null)
-	JO.RunMethod("deleteText",Array(startIndex, endIndex))
-	If e.RunMethod("getCommitted",Null)<>"" Then
-		JO.RunMethod("insertText",Array(JO.RunMethod("getCaretPosition",Null), e.RunMethod("getCommitted",Null)))
-		previousComposedText=""
-	Else
-		Dim sb As StringBuilder
-		sb.Initialize
-		Dim composed As List=e.RunMethod("getComposed",Null)
-		For Each run As JavaObject In composed
-			sb.Append(run.RunMethod("getText",Null))
-		Next
-		previousComposedText=sb.ToString
-		JO.RunMethod("insertText",Array(JO.RunMethod("getCaretPosition",Null), sb.ToString))
-	End If
-End Sub
 
 Sub Scroll_Filter (EventData As Event)
 	If mBase.Height>totalHeightEstimate-2*offset Then
