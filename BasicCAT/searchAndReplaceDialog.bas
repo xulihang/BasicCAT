@@ -17,16 +17,19 @@ Sub Class_Globals
 	Private ComboBox1 As ComboBox
 	Private ExtendSearchCheckBox As CheckBox
 	Private mFiles As List
+	Private ExtendedSearchTextField As TextField
+	Private GetTimestampButton As Button
 End Sub
 
 'Initializes the object. You can add parameters to this method if needed.
 Public Sub Initialize(files As List)
-	frm.Initialize("frm",600,300)
+	frm.Initialize("frm",800,300)
 	frm.RootPane.LoadLayout("searchandreplace")
 	ComboBox1.Items.Add("id")
 	ComboBox1.Items.Add("note")
 	ComboBox1.Items.Add("filename")
 	ComboBox1.Items.Add("creator")
+	ComboBox1.Items.Add("createdTime")
 	ComboBox1.SelectedIndex=0
 	mFiles=files
 End Sub
@@ -57,6 +60,18 @@ Sub CheckShouldShowBasedonExtendedItem(find As String,regexMode As Boolean,segme
 		If key="filename" Then
 			Dim innerFilename As String=segment.Get(3)
 			result=HasMatch(regexMode,find,innerFilename)
+		Else if key="createdTime" Then
+			Dim extra As Map=segment.Get(4)
+			If extra.ContainsKey("createdTime") Then
+				Try
+					Dim upper,lower As Long
+					lower=Regex.Split(",",find)(0)
+					upper=Regex.Split(",",find)(1)
+					result=InTimeRange(extra.Get("createdTime"),lower,upper)
+				Catch
+					Log(LastException)
+				End Try
+			End If
 		Else
 			Dim value As String=extra.GetDefault(key,"")
 			result=HasMatch(regexMode,find,value)
@@ -72,6 +87,14 @@ Sub HasMatch(regexMode As Boolean,find As String,text As String) As Boolean
 		Return Regex.Matcher(find,text).Find
 	Else
 		Return text.Contains(find)
+	End If
+End Sub
+
+Sub InTimeRange(createdTime As Long,time_lower As Long,time_upper As Long) As Boolean
+	If createdTime>=time_lower And createdTime<=time_upper Then
+		Return True
+	Else
+		Return False
 	End If
 End Sub
 
@@ -141,7 +164,7 @@ Sub showRegexResult
 					End If
 				End If
 
-				shouldShow=CheckShouldShowBasedonExtendedItem(pattern,True,bitext,shouldShow)
+				shouldShow=CheckShouldShowBasedonExtendedItem(ExtendedSearchTextField.Text,True,bitext,shouldShow)
 			
 				tf.AddText("- Source: ")
 				If shouldShow Then
@@ -281,7 +304,7 @@ Sub showResult
 				End If
 			End If
 		
-			shouldShow=CheckShouldShowBasedonExtendedItem(find,False,bitext,shouldShow)
+			shouldShow=CheckShouldShowBasedonExtendedItem(ExtendedSearchTextField.Text,False,bitext,shouldShow)
 		
 			If shouldShow Then
 				tf.AddText("- Source: ")
@@ -499,4 +522,26 @@ Sub FilterButton_MouseClicked (EventData As MouseEvent)
 		indexList.Add(tagMap.get("index"))
 	Next
 	Main.currentProject.filterSegments(indexList)
+End Sub
+
+Sub ExtendedSearchTextField_TextChanged (Old As String, New As String)
+	
+End Sub
+
+
+Sub GetTimestampButton_MouseClicked (EventData As MouseEvent)
+	Dim ts As TimestampCalculator
+	ts.Initialize
+	ts.Show
+End Sub
+
+Sub ComboBox1_ValueChanged (Value As Object)
+	If Value="createdTime" Then
+		GetTimestampButton.Visible=True
+		ExtendedSearchTextField.text="start timestamp,end timestamp"
+		ExtendedSearchTextField.PromptText="start timestamp,end timestamp"
+	Else
+		GetTimestampButton.Visible=False
+		ExtendedSearchTextField.PromptText=""
+	End If
 End Sub
