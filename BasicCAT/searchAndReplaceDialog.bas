@@ -503,17 +503,38 @@ Sub replaceAllButton_MouseClicked (EventData As MouseEvent)
 End Sub
 
 Sub resultListView_Action
-	Dim p As Pane
-	p=resultListView.Items.Get(resultListView.SelectedIndex)
-	Dim tagMap As Map
-	tagMap=p.Tag
-	Dim filename As String=tagMap.Get("filename")
-	If filename<>Main.currentProject.currentFilename Then
-		Main.currentProject.openFile(filename,False)
-	End If
-	Main.editorLV.ScrollTo(tagMap.get("index"))
-	Main.MainForm.AlwaysOnTop=True
-	Main.MainForm.AlwaysOnTop=False
+	Dim mi As MenuItem=Sender
+	Select mi.Text
+		Case "Preserve only first occurences"
+			Dim new As List
+			new.Initialize
+			Dim map1 As Map
+			map1.Initialize
+			For Each p As Pane In resultListView.Items
+				Dim tagMap As Map
+				tagMap=p.Tag
+				Dim source As String
+				source=Regex.Split(CRLF&"- ",tagMap.Get("text"))(0)
+				If map1.ContainsKey(source)=False Then
+					map1.Put(source,"")
+					new.Add(p)
+				End If
+			Next
+			resultListView.Items.Clear
+			resultListView.Items.AddAll(new)
+		Case "Go to the segment"
+			Dim p As Pane
+			p=resultListView.Items.Get(resultListView.SelectedIndex)
+			Dim tagMap As Map
+			tagMap=p.Tag
+			Dim filename As String=tagMap.Get("filename")
+			If filename<>Main.currentProject.currentFilename Then
+				Main.currentProject.openFile(filename,False)
+			End If
+			Main.editorLV.ScrollTo(tagMap.get("index"))
+			Main.MainForm.AlwaysOnTop=True
+			Main.MainForm.AlwaysOnTop=False
+	End Select
 End Sub
 
 Sub searchSourceCheckBox_CheckedChange(Checked As Boolean)

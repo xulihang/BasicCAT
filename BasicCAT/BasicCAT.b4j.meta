@@ -238,6 +238,6 @@ ModuleClosedNodes78=
 ModuleClosedNodes79=
 ModuleClosedNodes8=
 ModuleClosedNodes9=
-NavigationStack=searchAndReplaceDialog,InTimeRange,100,0,searchAndReplaceDialog,ResultsMap,534,6,searchAndReplaceDialog,resultListView_SelectedIndexChanged,38,0,searchAndReplaceDialog,findButton_Click,44,6,searchAndReplaceDialog,findTextField_TextChanged,506,0,searchAndReplaceDialog,replaceTextField_TextChanged,504,0,searchAndReplaceDialog,CheckShouldShowBasedonExtendedItem,56,0,searchAndReplaceDialog,FilterButton_MouseClicked,529,0,searchAndReplaceDialog,showRegexResult,124,6,searchAndReplaceDialog,showResult,267,6
+NavigationStack=searchAndReplaceDialog,showRegexResult,102,6,searchAndReplaceDialog,Class_Globals,4,0,searchAndReplaceDialog,showResult,355,6,searchAndReplaceDialog,replaceTextField_TextChanged,521,0,searchAndReplaceDialog,findTextField_TextChanged,527,0,searchAndReplaceDialog,GetTimestampButton_MouseClicked,577,0,Visual Designer,searchandreplace.bjl,-100,6,searchAndReplaceDialog,FilterButton_MouseClicked,544,0,searchAndReplaceDialog,replaceSelectedButton_MouseClicked,424,0,searchAndReplaceDialog,resultListView_Action,498,6
 SelectedBuild=0
 VisibleModules=1,2,3,4,5,6,7,8,9,10,11
