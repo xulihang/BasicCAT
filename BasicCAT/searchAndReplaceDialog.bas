@@ -19,6 +19,7 @@ Sub Class_Globals
 	Private mFiles As List
 	Private ExtendedSearchTextField As TextField
 	Private GetTimestampButton As Button
+	Private InResultsCheckBox As CheckBox
 End Sub
 
 'Initializes the object. You can add parameters to this method if needed.
@@ -43,11 +44,15 @@ Sub resultListView_SelectedIndexChanged(Index As Int)
 End Sub
 
 Sub findButton_Click
+	Dim results As Map
+	If InResultsCheckBox.Checked Then
+		results=ResultsMap
+	End If
 	resultListView.Items.Clear
     If regexCheckBox.Checked Then
-		showRegexResult
+		showRegexResult(results)
 	Else
-		showResult
+		showResult(results)
     End If
 End Sub
 
@@ -98,7 +103,7 @@ Sub InTimeRange(createdTime As Long,time_lower As Long,time_upper As Long) As Bo
 	End If
 End Sub
 
-Sub showRegexResult
+Sub showRegexResult(results As Map)
 	Try
 		Regex.Matcher(findTextField.Text,"").Find
 		Regex.Replace(findTextField.Text,"",replaceTextField.Text)
@@ -112,9 +117,22 @@ Sub showRegexResult
 			Dim segments As List
 			segments.Initialize
 			Main.currentProject.readWorkFile(filename,segments,False,Main.currentProject.path)
+			If InResultsCheckBox.Checked Then
+				Dim indexList As List
+				If results.ContainsKey(filename) Then
+					indexList=results.Get(filename)
+				Else
+					indexList.Initialize
+				End If
+			End If
 			Dim index As Int=-1
 			For Each bitext As List In segments
 				index=index+1
+				If InResultsCheckBox.Checked Then
+					If indexList.IndexOf(index)=-1 Then
+						Continue
+					End If
+				End If
 				Dim tf As TextFlow
 				tf.Initialize
 				Dim source,target,sourcePattern,pattern,sourceLeft,targetLeft As String
@@ -252,14 +270,27 @@ Sub showRegexResult
 	End Try
 End Sub
 
-Sub showResult
+Sub showResult(results As Map)
 	For Each filename As String In mFiles
-		Dim index As Int=-1
 		Dim segments As List
 		segments.Initialize
 		Main.currentProject.readWorkFile(filename,segments,False,Main.currentProject.path)
+		If InResultsCheckBox.Checked Then
+			Dim indexList As List
+			If results.ContainsKey(filename) Then
+				indexList=results.Get(filename)
+			Else
+				indexList.Initialize
+			End If
+		End If
+		Dim index As Int=-1
 		For Each bitext As List In segments
 			index=index+1
+			If InResultsCheckBox.Checked Then
+				If indexList.IndexOf(index)=-1 Then
+					Continue
+				End If
+			End If
 			Dim source,target,find,sourceFind,sourceLeft,targetLeft As String
 			source=bitext.Get(0)
 			target=bitext.Get(1)
@@ -495,11 +526,11 @@ Sub sourceTextField_TextChanged (Old As String, New As String)
 End Sub
 
 Sub replaceTextField_TextChanged (Old As String, New As String)
-	resultListView.Items.Clear
+	'resultListView.Items.Clear
 End Sub
 
 Sub findTextField_TextChanged (Old As String, New As String)
-	resultListView.Items.Clear
+	'resultListView.Items.Clear
 End Sub
 
 Sub RestoreButton_MouseClicked (EventData As MouseEvent)
@@ -524,8 +555,26 @@ Sub FilterButton_MouseClicked (EventData As MouseEvent)
 	Main.currentProject.filterSegments(indexList)
 End Sub
 
-Sub ExtendedSearchTextField_TextChanged (Old As String, New As String)
-	
+Sub ResultsMap As Map
+	Dim results As Map
+	results.Initialize
+	For Each p As Pane In resultListView.Items
+		Dim tagMap As Map
+		tagMap=p.Tag
+		Dim index As Int
+		Dim filename As String
+		index=tagMap.get("index")
+		filename=tagMap.get("filename")
+		Dim indexList As List
+		If results.ContainsKey("index") Then
+			indexList=results.Get("index")
+		Else
+			indexList.Initialize
+			results.Put(filename,indexList)
+		End If
+		indexList.Add(index)
+	Next
+	Return results
 End Sub
 
 

@@ -1442,12 +1442,12 @@ Sub ListViewParent_Resize
 	Dim ExtraSize As Int
 	ExtraSize=3
 	For i = Max(0, FirstVisibleIndex - ExtraSize) To Min(LastVisibleIndex + ExtraSize,editorLV.Items.Size - 1)
-        Try
+		If lv.Items.Get(i) Is Pane Then
 			Dim p As Pane
 			p=lv.Items.Get(i)
-        Catch
+		Else
 			Continue
-		End Try
+		End If
 		Dim lineHeightTimes As Double
 		lineHeightTimes=preferencesMap.GetDefault("lineheight",0)
 		Dim sourceTa As RichTextArea = p.GetNode(0).Tag
@@ -1463,11 +1463,7 @@ Sub ListViewParent_Resize
 		targetHeight=targetTa.totalHeight
 		Dim h As Double=Max(25,Max(sourceHeight,targetHeight))
 		p.Left=0
-		If sourceTa.UseTextArea Then
-			p.SetSize(itemWidth-ScrollBarWidth*2,h)
-		Else
-			p.SetSize(itemWidth-ScrollBarWidth*2,h)
-		End If
+		p.SetSize(itemWidth-ScrollBarWidth*2,h)
 		sourceTa.SetSize(itemWidth/2-ScrollBarWidth,h)
 		targetTa.SetSize(itemWidth/2-ScrollBarWidth,h)
 	Next
