@@ -1268,11 +1268,21 @@ End Sub
 Sub targetTextArea_SelectedTextChanged(old As Object, new As Object)
 	Dim ta As RichTextArea
 	ta=Sender
-    onSelectionChanged(new,ta,False)
+	Dim fromIM As Boolean=False
+	If ta.UseTextArea=False Then
+		If ta.imlength=0 Then
+			fromIM=False
+		Else
+			fromIM=True
+		End If
+	End If
+	If fromIM=False Then
+		onSelectionChanged(new,ta,False)
+	End If
 End Sub
 
 Sub onSelectionChanged(selectedText As String,ta As RichTextArea,isSource As Boolean)
-	If selectedText<>"" Then
+	If selectedText.Trim<>"" Then
 		If isSource Then
 		    Main.sourceTermTextField.Text=selectedText
 		Else

@@ -15,6 +15,10 @@ public class Setup {
         });
 	}
 	
+	public int getimlength(){
+		return imlength;
+	}
+	
 	public void handleInputMethodEvent(InputMethodEvent event,CodeArea area) {
 	        if (area.isEditable()  && !area.isDisabled()) {
 

@@ -36,6 +36,7 @@ Private Sub Class_Globals
 	Private mLineHeightTimes As Double=0
 	Public ta As TextArea
 	Private mUseTextArea As Boolean=False
+	Private imsetup As JavaObject
 End Sub
 
 'Initializes the object.
@@ -53,6 +54,7 @@ Public Sub Initialize (vCallBack As Object, vEventName As String)
 	If File.Exists(File.DirData("BasicCAT"),"offset") Then
 		offset=File.ReadString(File.DirData("BasicCAT"),"offset")
 	End If
+	imsetup.InitializeNewInstance("com.xulihang.Setup",Null)
 End Sub
 
 Public Sub DesignerCreateView(Base As Pane, Lbl As Label, Props As Map)
@@ -646,9 +648,11 @@ Public Sub setupIM
 	o.InitializeNewInstance("com.xulihang.InputMethodRequestsObject",Null)
 	o.RunMethod("setArea",Array(GetObject))
 	JO.RunMethod("setInputMethodRequests",Array(o))
-	Dim imsetup As JavaObject
-	imsetup.InitializeNewInstance("com.xulihang.Setup",Null)
 	imsetup.RunMethod("setOnInputMethodTextChanged",Array(JO))
+End Sub
+
+Public Sub getimlength As Int
+	Return imsetup.RunMethod("getimlength",Null)
 End Sub
 
 
