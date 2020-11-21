@@ -587,14 +587,15 @@ Sub ResultsMap As Map
 		index=tagMap.get("index")
 		filename=tagMap.get("filename")
 		Dim indexList As List
-		If results.ContainsKey("index") Then
-			indexList=results.Get("index")
+		If results.ContainsKey(filename) Then
+			indexList=results.Get(filename)
 		Else
 			indexList.Initialize
 			results.Put(filename,indexList)
 		End If
 		indexList.Add(index)
 	Next
+	Log(results)
 	Return results
 End Sub
 
