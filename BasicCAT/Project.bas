@@ -45,28 +45,28 @@ End Sub
 
 Sub initializeTM(projectPath As String,isExistingProject As Boolean)
 	projectTM.Initialize(projectPath,projectFile.Get("source"),projectFile.Get("target"))
-	Dim externalTMList As List
-	externalTMList=settings.Get("tmList")
-	Log(externalTMList.Size)
-	For i=0 To externalTMList.Size-1
-		Dim filename As String
-		filename=externalTMList.Get(i)
-		If File.Exists(File.Combine(Main.currentProject.path,"TM"),filename)=False Then
-			fx.Msgbox(Main.MainForm,filename&" does not exist. Will be deleted.","")
-            externalTMList.RemoveAt(i)
-			settings.Put("tmList",externalTMList)
-			save
-		End If
-	Next
+
 	If isExistingProject Then
 		If Main.preferencesMap.ContainsKey("checkExternalTMOnOpening") Then
 			If Main.preferencesMap.Get("checkExternalTMOnOpening")=False Then
 			    Return
+			Else
+				Dim externalTMList As List
+				externalTMList=settings.Get("tmList")
+				Log(externalTMList.Size)
+				For i=0 To externalTMList.Size-1
+					Dim filename As String
+					filename=externalTMList.Get(i)
+					If File.Exists(File.Combine(Main.currentProject.path,"TM"),filename)=False Then
+						fx.Msgbox(Main.MainForm,filename&" does not exist. Will be deleted.","")
+						externalTMList.RemoveAt(i)
+						settings.Put("tmList",externalTMList)
+						save
+					End If
+				Next
 			End If
 		End If
 	End If
-
-	projectTM.importExternalTranslationMemory(externalTMList,projectFile)
 	'runTMBackend
 End Sub
 
