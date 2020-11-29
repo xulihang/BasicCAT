@@ -272,10 +272,10 @@ Sub generateFile(filename As String,path As String,projectFile As Map,BCATMain A
 	For Each sourceFileMap As Map In sourceFiles
 		Dim innerfilename As String
 		innerfilename=sourceFileMap.GetKeyAt(0)
-		Dim segmentsList As List
-		segmentsList=sourceFileMap.Get(innerfilename)
+		Dim segments As List
+		segments=sourceFileMap.Get(innerfilename)
 		Dim index As Int=-1
-		For Each bitext As List In segmentsList
+		For Each bitext As List In segments
 			index=index+1
 			Dim source,target,fullsource,translation As String
 			source=bitext.Get(0)
@@ -288,14 +288,14 @@ Sub generateFile(filename As String,path As String,projectFile As Map,BCATMain A
 			If target="" Or target=source Then
 				translation=fullsource
 			Else
-				If shouldAddSpace(projectFile.Get("source"),projectFile.Get("target"),index,segmentsList) Then
+				If shouldAddSpace(projectFile.Get("source"),projectFile.Get("target"),index,segments) Then
 					target=target&" "
 				End If
-				'translation=fullsource.Replace(source,target)
-				translation=filterGenericUtils.relaceAtTheRightPosition(source,target,fullsource)
 				If Utils.LanguageHasSpace(projectFile.Get("target"))=False Then
-					translation=segmentation.removeSpacesAtBothSides(path,projectFile.Get("target"),translation,Utils.getMap("settings",projectFile).GetDefault("remove_space",False))
-				End If
+					source=segmentation.removeSpacesAtBothSides(path,projectFile.Get("source"),source,Utils.previousText(segments,i,"source"),Utils.getMap("settings",projectFile).GetDefault("remove_space",False))
+					fullsource=segmentation.removeSpacesAtBothSides(path,projectFile.Get("source"),fullsource,Utils.previousText(segments,i,"fullsource"),Utils.getMap("settings",projectFile).GetDefault("remove_space",False))
+				End If				
+				translation=filterGenericUtils.relaceAtTheRightPosition(source,target,fullsource)
 			End If
 			'Log("translation"&translation)
 			Dim extra As Map
@@ -489,10 +489,13 @@ Sub previewText(editorLV As ListView,segments As List,lastEntry As Int,projectFi
 			If shouldAddSpace(sourceLang,targetLang,i,segments) Then
 				target=target&" "
 			End If
-			translation=fullsource.Replace(source,target)
+			
 			If Utils.LanguageHasSpace(targetLang)=False Then
-				translation=segmentation.removeSpacesAtBothSides(path,targetLang,translation,settings.GetDefault("remove_space",False))
+				source=segmentation.removeSpacesAtBothSides(path,sourceLang,source,Utils.previousText(segments,i,"source"),settings.GetDefault("remove_space",False))
+				fullsource=segmentation.removeSpacesAtBothSides(path,sourceLang,fullsource,Utils.previousText(segments,i,"fullsource"),settings.GetDefault("remove_space",False))
 			End If
+			
+			translation=filterGenericUtils.relaceAtTheRightPosition(source,target,fullsource)
 		End If
 		If i=lastEntry Then
 			translation=$"<span id="current" name="current" >${translation}</span>"$
