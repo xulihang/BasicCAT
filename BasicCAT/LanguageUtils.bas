@@ -20,6 +20,7 @@ Sub LanguageIsRight2Left(langcode As String) As Boolean
 End Sub
 
 Sub TokenizedList(text As String,sourceLang As String) As List
+	text=Regex.Replace2("<.*?>",32,text," ") 'replace tags to space
 	text=text.ToLowerCase
 	Dim words As List
 	words.Initialize

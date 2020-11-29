@@ -21,6 +21,11 @@ Public Sub TagsRemoved(s As String,keepWrap As Boolean) As String
 	Return s
 End Sub
 
+Public Sub AllTagsRemoved(s As String) As String
+	s=Regex.Replace2("<.*?>",32,s,"")
+	Return s
+End Sub
+
 Public Sub HandleXMLEntities(xml As String,escape As Boolean) As String
 	Dim st As SimpleTag
 	st.Initialize
