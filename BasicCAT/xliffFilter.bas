@@ -600,7 +600,7 @@ Sub previewText As String
 			If shouldAddSpace(Main.currentProject.projectFile.Get("source"),Main.currentProject.projectFile.Get("target"),i,Main.currentProject.segments) Then
 				target=target&" "
 			End If
-			
+			target=addNecessaryTags(target,source)
 			If Utils.LanguageHasSpace(Main.currentProject.projectFile.Get("target"))=False Then
 				source=segmentation.removeSpacesAtBothSides(Main.currentProject.path,Main.currentProject.projectFile.Get("source"),source,Utils.previousText(segments,i,"source"),Utils.getMap("settings",Main.currentProject.projectFile).GetDefault("remove_space",False))
 				fullsource=segmentation.removeSpacesAtBothSides(Main.currentProject.path,Main.currentProject.projectFile.Get("source"),fullsource,Utils.previousText(segments,i,"fullsource"),Utils.getMap("settings",Main.currentProject.projectFile).GetDefault("remove_space",False))

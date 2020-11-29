@@ -291,6 +291,7 @@ Sub generateFile(filename As String,path As String,projectFile As Map,BCATMain A
 				If shouldAddSpace(projectFile.Get("source"),projectFile.Get("target"),index,segments) Then
 					target=target&" "
 				End If
+				target=addNecessaryTags(target,source)
 				If Utils.LanguageHasSpace(projectFile.Get("target"))=False Then
 					source=segmentation.removeSpacesAtBothSides(path,projectFile.Get("source"),source,Utils.previousText(segments,i,"source"),Utils.getMap("settings",projectFile).GetDefault("remove_space",False))
 					fullsource=segmentation.removeSpacesAtBothSides(path,projectFile.Get("source"),fullsource,Utils.previousText(segments,i,"fullsource"),Utils.getMap("settings",projectFile).GetDefault("remove_space",False))
@@ -489,7 +490,7 @@ Sub previewText(editorLV As ListView,segments As List,lastEntry As Int,projectFi
 			If shouldAddSpace(sourceLang,targetLang,i,segments) Then
 				target=target&" "
 			End If
-			
+			target=addNecessaryTags(target,source)
 			If Utils.LanguageHasSpace(targetLang)=False Then
 				source=segmentation.removeSpacesAtBothSides(path,sourceLang,source,Utils.previousText(segments,i,"source"),settings.GetDefault("remove_space",False))
 				fullsource=segmentation.removeSpacesAtBothSides(path,sourceLang,fullsource,Utils.previousText(segments,i,"fullsource"),settings.GetDefault("remove_space",False))
@@ -510,4 +511,28 @@ Sub previewText(editorLV As ListView,segments As List,lastEntry As Int,projectFi
 		text.Append(translation)
 	Next
 	Return text.ToString
+End Sub
+
+Sub addNecessaryTags(target As String,source As String) As String
+	Dim sb As StringBuilder
+	sb.Initialize
+	sb.Append(target)
+	Dim tagMatcher As Matcher
+	tagMatcher=Regex.Matcher2("<.*?>",32,source)
+	Dim tagsList As List
+	tagsList.Initialize
+	Do While tagMatcher.Find
+		tagsList.Add(tagMatcher.Match)
+	Loop
+	Dim tagMatcher As Matcher
+	tagMatcher=Regex.Matcher2("<.*?>",32,target)
+	Do While tagMatcher.Find
+		If tagsList.IndexOf(tagMatcher.Match)<>-1 Then
+			tagsList.RemoveAt(tagsList.IndexOf(tagMatcher.Match))
+		End If
+	Loop
+	For Each tag As String In tagsList
+		sb.Append(tag)
+	Next
+	Return sb.ToString
 End Sub
