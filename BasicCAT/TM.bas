@@ -552,6 +552,8 @@ Sub NextIsMoreSimilar(list2 As List,list1 As List) As Boolean
 End Sub
 
 Sub getSimilarityFuzzyWuzzy(str1 As String,str2 As String) As ResumableSub
+	str1=Regex.Replace2("<.*?>",32,str1," ") 'replace tags to space
+	str2=Regex.Replace2("<.*?>",32,str2," ") 'replace tags to space
 	Dim result As Double
 	Dim jo As JavaObject
 	result=jo.InitializeStatic("me.xdrop.fuzzywuzzy.FuzzySearch").RunMethod("ratio",Array As String(str1,str2))
