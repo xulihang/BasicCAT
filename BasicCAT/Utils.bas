@@ -240,11 +240,13 @@ Sub exportToMarkdownWithNotes(segments As List,path As String,filename As String
         If extra.ContainsKey("note") Then
 			Dim note As String
 			note=extra.Get("note")
-			Dim noteID As String
-			noteID="[^note"&noteIndex&"]"
-			noteIndex=noteIndex+1
-			target=target&noteID
-			noteText.Append(noteID).Append(": ").Append(note).Append(CRLF)
+			If note.Trim<>"" Then
+				Dim noteID As String
+				noteID="[^note"&noteIndex&"]"
+				noteIndex=noteIndex+1
+				target=target&noteID
+				noteText.Append(noteID).Append(": ").Append(note).Append(CRLF)
+			End If 
         End If
 		If extra.ContainsKey("id") Then
 			Dim id As String
@@ -300,8 +302,12 @@ Sub exportToBiParagraph(segments As List,path As String,filename As String,sourc
 		source=segment.Get(0)
 		target=segment.Get(1)
 		innerFilename=segment.Get(3)
-		If shouldAddSpace(sourceLang,targetLang,index,segments) Then
-			target=target&" "
+		If target="" Then
+			target=source
+		Else
+		    If shouldAddSpace(sourceLang,targetLang,index,segments) Then
+			    target=target&" "
+		    End If
 		End If
 		fullsource=segment.Get(2)
 		Dim extra As Map
