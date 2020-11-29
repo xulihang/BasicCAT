@@ -244,10 +244,10 @@ Sub generateFile(filename As String,path As String,projectFile As Map)
 	For Each sourceFileMap As Map In sourceFiles
 		Dim innerfilename As String
 		innerfilename=sourceFileMap.GetKeyAt(0)
-		Dim segmentsList As List
-		segmentsList=sourceFileMap.Get(innerfilename)
+		Dim segments As List
+		segments=sourceFileMap.Get(innerfilename)
 		Dim index As Int=-1
-		For Each bitext As List In segmentsList
+		For Each bitext As List In segments
 			index=index+1
 			Dim source,target,fullsource,translation As String
 			source=bitext.Get(0)
@@ -259,15 +259,17 @@ Sub generateFile(filename As String,path As String,projectFile As Map)
 			If target="" Or target=source Then
 				translation=fullsource
 			Else
-				If shouldAddSpace(projectFile.Get("source"),projectFile.Get("target"),index,segmentsList) Then
+				If shouldAddSpace(projectFile.Get("source"),projectFile.Get("target"),index,segments) Then
 					target=target&" "
 				End If
 				target=addNecessaryTags(target,source)
 				'translation=fullsource.Replace(source,target)
-				translation=filterGenericUtils.relaceAtTheRightPosition(source,target,fullsource)
-				If Utils.LanguageHasSpace(projectFile.Get("target"))=False Then
-					translation=segmentation.removeSpacesAtBothSides(Main.currentProject.path,Main.currentProject.projectFile.Get("target"),translation,Utils.getMap("settings",projectFile).GetDefault("remove_space",False))
+				
+				If Utils.LanguageHasSpace(Main.currentProject.projectFile.Get("target"))=False Then
+					source=segmentation.removeSpacesAtBothSides(Main.currentProject.path,Main.currentProject.projectFile.Get("source"),source,Utils.previousText(segments,index,"source"),Utils.getMap("settings",Main.currentProject.projectFile).GetDefault("remove_space",False))
+					fullsource=segmentation.removeSpacesAtBothSides(Main.currentProject.path,Main.currentProject.projectFile.Get("source"),fullsource,Utils.previousText(segments,index,"fullsource"),Utils.getMap("settings",Main.currentProject.projectFile).GetDefault("remove_space",False))
 				End If
+				translation=filterGenericUtils.relaceAtTheRightPosition(source,target,fullsource)
 			End If
 			Dim extra As Map
 			extra=bitext.Get(4)
@@ -567,8 +569,9 @@ Sub previewText As String
 	If Main.editorLV.Items.Size<>Main.currentProject.segments.Size Then
 		Return ""
 	End If
+	Dim segments As List=Main.currentProject.segments
 	Dim previousID As String=""
-	For i=Max(0,Main.currentProject.lastEntry-3) To Min(Main.currentProject.lastEntry+7,Main.currentProject.segments.Size-1)
+	For i=Max(0,Main.currentProject.lastEntry-3) To Min(Main.currentProject.lastEntry+7,segments.Size-1)
 
         Try
 			Dim p As Pane
@@ -583,7 +586,7 @@ Sub previewText As String
 		sourceTextArea=p.GetNode(0).Tag
 		targetTextArea=p.GetNode(1).Tag
 		Dim bitext As List
-		bitext=Main.currentProject.segments.Get(i)
+		bitext=segments.Get(i)
 		Dim source,target,fullsource,translation As String
 		source=sourceTextArea.Text
 		target=targetTextArea.Text
@@ -597,10 +600,13 @@ Sub previewText As String
 			If shouldAddSpace(Main.currentProject.projectFile.Get("source"),Main.currentProject.projectFile.Get("target"),i,Main.currentProject.segments) Then
 				target=target&" "
 			End If
-			translation=fullsource.Replace(source,target)
+			
 			If Utils.LanguageHasSpace(Main.currentProject.projectFile.Get("target"))=False Then
-				translation=segmentation.removeSpacesAtBothSides(Main.currentProject.path,Main.currentProject.projectFile.Get("target"),translation,Utils.getMap("settings",Main.currentProject.projectFile).GetDefault("remove_space",False))
+				source=segmentation.removeSpacesAtBothSides(Main.currentProject.path,Main.currentProject.projectFile.Get("source"),source,Utils.previousText(segments,i,"source"),Utils.getMap("settings",Main.currentProject.projectFile).GetDefault("remove_space",False))
+				fullsource=segmentation.removeSpacesAtBothSides(Main.currentProject.path,Main.currentProject.projectFile.Get("source"),fullsource,Utils.previousText(segments,i,"fullsource"),Utils.getMap("settings",Main.currentProject.projectFile).GetDefault("remove_space",False))
 			End If
+			
+			translation=filterGenericUtils.relaceAtTheRightPosition(source,target,fullsource)
 		End If
 
 		Dim id As String

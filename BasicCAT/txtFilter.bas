@@ -70,10 +70,10 @@ Sub generateFile(filename As String,path As String,projectFile As Map)
 	Dim sourceFiles As List
 	sourceFiles=workfile.Get("files")
 	For Each sourceFileMap As Map In sourceFiles
-		Dim segmentsList As List
-		segmentsList=sourceFileMap.Get(innerfilename)
+		Dim segments As List
+		segments=sourceFileMap.Get(innerfilename)
 		Dim index As Int=-1
-		For Each bitext As List In segmentsList
+		For Each bitext As List In segments
 			index=index+1
 			Dim source,target,fullsource,translation As String
 			source=bitext.Get(0)
@@ -94,14 +94,16 @@ Sub generateFile(filename As String,path As String,projectFile As Map)
 			Else
 				If shouldAddSpace(projectFile.Get("source"), _ 
 				                  projectFile.Get("target"), _ 
-				                  index,segmentsList) Then
+				                  index,segments) Then
 					target=target&" "
 				End If
-				translation=fullsource.Replace(source,target)
 				
-				If Utils.LanguageHasSpace(projectFile.Get("target"))=False Then
-					translation=segmentation.removeSpacesAtBothSides(Main.currentProject.path,Main.currentProject.projectFile.Get("target"),translation,Utils.getMap("settings",projectFile).GetDefault("remove_space",False))
+				If Utils.LanguageHasSpace(Main.currentProject.projectFile.Get("target"))=False Then
+					source=segmentation.removeSpacesAtBothSides(Main.currentProject.path,Main.currentProject.projectFile.Get("source"),source,Utils.previousText(segments,index,"source"),Utils.getMap("settings",Main.currentProject.projectFile).GetDefault("remove_space",False))
+					fullsource=segmentation.removeSpacesAtBothSides(Main.currentProject.path,Main.currentProject.projectFile.Get("source"),fullsource,Utils.previousText(segments,index,"fullsource"),Utils.getMap("settings",Main.currentProject.projectFile).GetDefault("remove_space",False))
 				End If
+				
+				translation=fullsource.Replace(source,target)
 			End If
 
 			'result=result&translation
@@ -225,6 +227,7 @@ Sub previewText As String
 	If Main.editorLV.Items.Size<>Main.currentProject.segments.Size Then
 		Return ""
 	End If
+	Dim segments As List=Main.currentProject.segments
 	For i=Max(0,Main.currentProject.lastEntry-3) To Min(Main.currentProject.lastEntry+7,Main.currentProject.segments.Size-1)
 
         Try
@@ -241,7 +244,7 @@ Sub previewText As String
 		sourceTextArea=p.GetNode(0).Tag
 		targetTextArea=p.GetNode(1).Tag
 		Dim bitext As List
-		bitext=Main.currentProject.segments.Get(i)
+		bitext=segments.Get(i)
 		Dim source,target,fullsource,translation As String
 		source=sourceTextArea.Text
 		target=targetTextArea.Text
@@ -252,10 +255,11 @@ Sub previewText As String
 			If shouldAddSpace(Main.currentProject.projectFile.Get("source"),Main.currentProject.projectFile.Get("target"),i,Main.currentProject.segments) Then
 				target=target&" "
 			End If
-			translation=fullsource.Replace(source,target)
 			If Utils.LanguageHasSpace(Main.currentProject.projectFile.Get("target"))=False Then
-				translation=segmentation.removeSpacesAtBothSides(Main.currentProject.path,Main.currentProject.projectFile.Get("target"),translation,Utils.getMap("settings",Main.currentProject.projectFile).GetDefault("remove_space",False))
+				source=segmentation.removeSpacesAtBothSides(Main.currentProject.path,Main.currentProject.projectFile.Get("source"),source,Utils.previousText(segments,i,"source"),Utils.getMap("settings",Main.currentProject.projectFile).GetDefault("remove_space",False))
+				fullsource=segmentation.removeSpacesAtBothSides(Main.currentProject.path,Main.currentProject.projectFile.Get("source"),fullsource,Utils.previousText(segments,i,"fullsource"),Utils.getMap("settings",Main.currentProject.projectFile).GetDefault("remove_space",False))
 			End If
+			translation=fullsource.Replace(source,target)
 		End If
 
 		If i=Main.currentProject.lastEntry Then

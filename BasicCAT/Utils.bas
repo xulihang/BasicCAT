@@ -265,12 +265,15 @@ Sub exportToMarkdownWithNotes(segments As List,path As String,filename As String
 		source=Regex.Replace2("<.*?>",32,source,"")
 		target=Regex.Replace2("<.*?>",32,target,"")
 		fullsource=Regex.Replace2("<.*?>",32,fullsource,"")
-		translation=fullsource.Replace(source,target)
+		
 		If LanguageHasSpace(targetLang)=False Then
 			If source<>target Then
-				translation=segmentation.removeSpacesAtBothSides(projectPath,targetLang,translation,settings.GetDefault("remove_space",False))
+				source=segmentation.removeSpacesAtBothSides(projectPath,sourceLang,source,previousText(segments,index,"source"),settings.GetDefault("remove_space",False))
+				fullsource=segmentation.removeSpacesAtBothSides(projectPath,sourceLang,fullsource,previousText(segments,index,"source"),settings.GetDefault("remove_space",False))
 			End If
 		End If
+		
+		translation=fullsource.Replace(source,target)
 		text.Append(translation)
 	Next
     Dim result As String
@@ -322,12 +325,16 @@ Sub exportToBiParagraph(segments As List,path As String,filename As String,sourc
 		source=Regex.Replace2("<.*?>",32,source,"")
 		target=Regex.Replace2("<.*?>",32,target,"")
 		fullsource=Regex.Replace2("<.*?>",32,fullsource,"")
-		translation=fullsource.Replace(source,target)
+		
 		If LanguageHasSpace(targetLang)=False Then
 			If source<>target Then
-				translation=segmentation.removeSpacesAtBothSides(projectPath,targetLang,translation,settings.GetDefault("remove_space",False))
+				source=segmentation.removeSpacesAtBothSides(projectPath,sourceLang,source,previousText(segments,index,"source"),settings.GetDefault("remove_space",False))
+				fullsource=segmentation.removeSpacesAtBothSides(projectPath,sourceLang,fullsource,previousText(segments,index,"source"),settings.GetDefault("remove_space",False))
 			End If
 		End If
+		
+		translation=fullsource.Replace(source,target)
+
 		sourceText.Append(fullsource)
 		targetText.Append(translation)
 	Next
@@ -341,6 +348,26 @@ Sub exportToBiParagraph(segments As List,path As String,filename As String,sourc
 		text.Append(targetList.Get(i)).Append(CRLF).Append(CRLF)
 	Next
     File.WriteString(path,"",text.ToString)
+End Sub
+
+Sub previousText(segments As List,index As Int,key As String) As String
+	Dim text As String
+	Try
+		Dim previousSegment As List
+		If index=0 Then
+			Return ""
+		End If
+		previousSegment=segments.Get(Max(0,index-1))
+		Select key
+			Case "source"
+				text=previousSegment.Get(0)
+			Case "fullsource"
+				text=previousSegment.Get(2)
+		End Select
+	Catch
+		Log(LastException)
+	End Try
+	Return text
 End Sub
 
 Sub appendSourceToTarget(segments As List,segEnabled As Boolean,extension As String,targetLang As String)

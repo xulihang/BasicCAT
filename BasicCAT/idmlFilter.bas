@@ -609,6 +609,7 @@ Sub generateFile(filename As String,path As String,projectFile As Map)
 	workfile=json.NextObject
 	Dim sourceFiles As List
 	sourceFiles=workfile.Get("files")
+	Dim previousTranslation as String
 	For Each sourceFileMap As Map In sourceFiles
 		Sleep(0)
 		Dim innerfilename As String
@@ -673,9 +674,9 @@ Sub generateFile(filename As String,path As String,projectFile As Map)
 					'ExitApplication
 				'End If
 				If Utils.LanguageHasSpace(projectFile.Get("target"))=False Then
-					translation=segmentation.removeSpacesAtBothSides(Main.currentProject.path,Main.currentProject.projectFile.Get("target"),translation,Utils.getMap("settings",projectFile).GetDefault("remove_space",False))
+					translation=segmentation.removeSpacesAtBothSides(Main.currentProject.path,Main.currentProject.projectFile.Get("target"),translation,previousTranslation,Utils.getMap("settings",projectFile).GetDefault("remove_space",False))
 				End If
-
+				previousTranslation=translation
 
 			End If
 			
@@ -1295,15 +1296,15 @@ Sub previewText As String
 		Return ""
 	End If
 	Dim previousStory As String
+	Dim previousTranslation As String
 	For i=Max(0,Main.currentProject.lastEntry-3) To Min(Main.currentProject.lastEntry+7,Main.currentProject.segments.Size-1)
-		Try
+		Dim item As Object=Main.editorLV.Items.Get(i)
+		If item Is Pane Then
 			Dim p As Pane
-			p=Main.editorLV.Items.Get(i)
-		Catch
-			Log(LastException)
+			p=item
+		Else
 			Continue
-		End Try
-
+		End If
 		Dim sourceTextArea As RichTextArea
 		Dim targetTextArea As RichTextArea
 		sourceTextArea=p.GetNode(0).Tag
@@ -1342,8 +1343,9 @@ Sub previewText As String
 
 
 			If Utils.LanguageHasSpace(Main.currentProject.projectFile.Get("target"))=False Then
-				translation=segmentation.removeSpacesAtBothSides(Main.currentProject.path,Main.currentProject.projectFile.Get("target"),translation,Utils.getMap("settings",Main.currentProject.projectFile).GetDefault("remove_space",False))
+				translation=segmentation.removeSpacesAtBothSides(Main.currentProject.path,Main.currentProject.projectFile.Get("target"),translation,previousTranslation,Utils.getMap("settings",Main.currentProject.projectFile).GetDefault("remove_space",False))
 			End If
+			previousTranslation=translation
 		End If
 		Dim story As String=bitext.Get(3)
 		If previousStory<>story Then
