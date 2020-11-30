@@ -203,32 +203,32 @@ Library8=jrandomaccessfile
 Library9=jb4xencryption
 Module1=FileChooserUtils
 Module10=RichTextArea
-Module11=TM
-Module12=Utils
-Module13=xliffFilter
-Module14=idmlFilter
-Module15=idmlUtils
-Module16=filterGenericUtils
-Module17=searchAndReplaceDialog
-Module18=TimestampCalculator
-Module19=FileUtils
+Module11=TMDB
+Module12=LanguageUtils
+Module13=filterGenericUtils
+Module14=XMLUtils
+Module15=TM
+Module16=Utils
+Module17=xliffFilter
+Module18=idmlFilter
+Module19=idmlUtils
 Module2=Project
-Module20=tikal
-Module21=SimpleTag
-Module22=editDistance
-Module23=TMDB
-Module24=TMManager
-Module25=progressDialog
-Module26=TextFlow
-Module27=Previewer
-Module28=XMLUtils
-Module29=opennlp
+Module20=searchAndReplaceDialog
+Module21=TimestampCalculator
+Module22=FileUtils
+Module23=tikal
+Module24=SimpleTag
+Module25=editDistance
+Module26=TMManager
+Module27=progressDialog
+Module28=TextFlow
+Module29=Previewer
 Module3=segmentation
-Module30=ITP
-Module31=MT
-Module32=statistics
-Module33=SegmentationRulesManager
-Module34=LanguageUtils
+Module30=opennlp
+Module31=ITP
+Module32=MT
+Module33=statistics
+Module34=SegmentationRulesManager
 Module35=Theme
 Module36=LanguagePairSelector
 Module37=SRX
@@ -1225,7 +1225,7 @@ Sub addFiles(path As String,files As List,prefix As String,okapiExtractedFiles A
 					sl=currentProject.projectFile.Get("source")
 					tl=currentProject.projectFile.Get("target")
 					OperationDialog.Add(Array As String(prefix&filename,"converting to xliff using okapi"))
-					wait for (tikal.extract(sl,tl,File.Combine(path,filename),outputDir)) complete (success As Boolean)
+					wait for (tikal.extract(sl,tl,File.Combine(path,filename),outputDir,currentProject.settings.GetDefault("tikal_codeattrs",False))) complete (success As Boolean)
 					If success=True Then
 						files.Add(prefix&filename)
 						okapiExtractedFiles.Add(prefix&filename)
@@ -1364,7 +1364,7 @@ Sub addFile(path As String)
 		Return
 	End If
 
-	If isFiletypeSupported(File.GetName(path))=False  or currentProject.settings.GetDefault("use_okapi_first",False)=True Then
+	If isFiletypeSupported(File.GetName(path))=False  Or currentProject.settings.GetDefault("use_okapi_first",False)=True Then
 		If currentProject.files.IndexOf(File.GetName(path)&".xlf")<>-1 Then
 			fx.Msgbox(MainForm,"A file with the same name already exists.","")
 			Return
@@ -1375,7 +1375,7 @@ Sub addFile(path As String)
 		sl=currentProject.projectFile.Get("source")
 		tl=currentProject.projectFile.Get("target")
 
-		wait for (tikal.extract(sl,tl,path,File.Combine(currentProject.path,"source"))) complete (success As Boolean)
+		wait for (tikal.extract(sl,tl,path,File.Combine(currentProject.path,"source"),currentProject.settings.GetDefault("tikal_codeattrs",False))) complete (success As Boolean)
 		If success=True Then
 			wait for (currentProject.addFile(path,True)) Complete (result As Object)
 		Else

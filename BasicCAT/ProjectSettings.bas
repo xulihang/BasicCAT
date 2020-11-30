@@ -37,6 +37,7 @@ Sub Class_Globals
 	Private FiltersListView As ListView
 	Private TMFTSLimitSpinner As Spinner
 	Private OkapiFirstCheckBox As CheckBox
+	Private OkapiCodeAttrsCheckBox As CheckBox
 End Sub
 
 'Initializes the object. You can add parameters to this method if needed.
@@ -175,6 +176,7 @@ End Sub
 
 Sub loadFilters
 	OkapiFirstCheckBox.Checked=settings.GetDefault("use_okapi_first",False)
+	OkapiCodeAttrsCheckBox.Checked=settings.GetDefault("tikal_codeattrs",False)
 	Dim filters As List
 	filters.Initialize
 	filters.AddAll(Array("txt (BasicCAT)","idml (BasicCAT)","xliff (BasicCAT)"))
@@ -272,6 +274,7 @@ Sub applyButton_MouseClicked (EventData As MouseEvent)
 		settings.put("tmListChanged",updateTM)
 		settings.put("termListChanged",updateTerm)
 		settings.put("use_okapi_first",OkapiFirstCheckBox.Checked)
+		settings.put("tikal_codeattrs",OkapiCodeAttrsCheckBox.Checked)
 		settings.put("disabled_filters",disabledFilters)
 		settings.Put("server_address",serverAddressTextField.Text)
 		settings.Put("sharingTM_enabled",sharingTMCheckBox.Checked)

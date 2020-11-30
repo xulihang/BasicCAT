@@ -942,7 +942,7 @@ Sub reimportFile(filename As String) As ResumableSub
 				tl=projectFile.Get("target")
 				Dim tempPath As String=File.Combine(File.DirTemp,originalFilename)
 				File.Copy(originalFilePath,"",tempPath,"")
-				wait for (tikal.extract(sl,tl,tempPath,File.Combine(path,"source"))) complete (success As Boolean)
+				wait for (tikal.extract(sl,tl,tempPath,File.Combine(path,"source"),settings.GetDefault("tikal_codeattrs",False))) complete (success As Boolean)
 				File.Delete(tempPath,"")
 				If success=False Then
 					Return ""

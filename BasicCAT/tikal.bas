@@ -9,7 +9,7 @@ Sub Process_Globals
 	Private fx As JFX
 End Sub
 
-Sub extract(sl As String,tl As String,filepath As String,outputDir As String) As ResumableSub
+Sub extract(sl As String,tl As String,filepath As String,outputDir As String, showCodeAttrs As Boolean) As ResumableSub
 	Dim sh As Shell
 	Dim args As List
 	args.Initialize
@@ -33,6 +33,11 @@ Sub extract(sl As String,tl As String,filepath As String,outputDir As String) As
 	Else
 		args.AddAll(Array As String("-cp",Quoted(tikalLibPath),"net.sf.okapi.applications.tikal.Main","-x","-sl",sl,"-tl",tl,Quoted(filepath),"-od",Quoted(outputDir)))
 	End If
+	
+	If showCodeAttrs Then
+		args.Add("-codeattrs")
+	End If
+	
 	sh.Initialize("sh","java",args)
 	sh.Run(-1)
 	wait for sh_ProcessCompleted (Success As Boolean, ExitCode As Int, StdOut As String, StdErr As String)
