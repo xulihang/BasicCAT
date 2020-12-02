@@ -9,11 +9,11 @@ Sub Class_Globals
 	Private frm As Form
 	Private result As Map
 	Private sourceComboBox As ComboBox
-	Private sourceTextField As TextField
 	Private targetComboBox As ComboBox
-	Private targetTextField As TextField
 	Private langcodes As Map
 	Private LanguageNames As Map
+	Private sourceSearchView As LangCodeSearchView
+	Private targetSearchView As LangCodeSearchView
 End Sub
 
 'Initializes the object. You can add parameters to this method if needed.
@@ -23,48 +23,71 @@ Public Sub Initialize
 	result.Initialize
 	LanguageNames.Initialize
 	langcodes=Utils.readLanguageCode(File.Combine(File.DirData("BasicCAT"),"langcodes.txt"))
-	fillComboBox
+	fillLanguages
 End Sub
 
-Sub fillComboBox
+Sub fillLanguages
+	Dim languages As List
+	languages.Initialize
 	For Each key As String In langcodes.Keys
 		Dim codesMap As Map
 		codesMap=langcodes.Get(key)
 		LanguageNames.Put(codesMap.Get("language name"),key)
+		languages.Add(codesMap.Get("language name"))
 		sourceComboBox.Items.Add(codesMap.Get("language name"))
 		targetComboBox.Items.Add(codesMap.Get("language name"))
 	Next
+	sourceSearchView.SetItems(languages)
+	targetSearchView.SetItems(languages)
+	sourceSearchView.LangCodesMap=LanguageNames
+	targetSearchView.LangCodesMap=LanguageNames
 End Sub
 
-
-Public Sub ShowAndWait As Map
+Public Sub ShowAndWait(sourceLang As String,targetLang As String) As Map
+	CallSubDelayed3(Me,"fillLang",sourceLang,targetLang)
 	frm.ShowAndWait
 	Return result
+End Sub
+
+Public Sub fillLang(sourceLang As String,targetLang As String)
+	Log(sourceLang)
+	Log(targetLang)
+	sourceSearchView.Text=sourceLang
+	targetSearchView.Text=targetLang
 End Sub
 
 Sub close
 	frm.Close
 End Sub
 
-Public Sub fillLang(sourceLang As String,targetLang As String)
-	sourceTextField.Text=sourceLang
-	targetTextField.Text=targetLang
-End Sub
-
 Sub targetComboBox_SelectedIndexChanged(Index As Int, Value As Object)
-	targetTextField.Text=LanguageNames.Get(Value)
+	If Index<>-1 Then
+		targetSearchView.Text=""
+		targetSearchView.Text=LanguageNames.Get(Value)
+	End If
 End Sub
 
 Sub sourceComboBox_SelectedIndexChanged(Index As Int, Value As Object)
-	sourceTextField.Text=LanguageNames.Get(Value)
+	If Index<>-1 Then
+		sourceSearchView.Text=""
+		sourceSearchView.Text=LanguageNames.Get(Value)
+	End If
 End Sub
 
 Sub OkButton_MouseClicked (EventData As MouseEvent)
-	If sourceTextField.Text="" Or targetTextField.Text="" Then
+	If sourceSearchView.Text="" Or targetSearchView.Text="" Then
 		fx.Msgbox(frm,"Please choose language pair.","")
 		Return
 	End If
-	result.put("source",sourceTextField.Text)
-	result.put("target",targetTextField.Text)
+	result.put("source",sourceSearchView.Text)
+	result.put("target",targetSearchView.Text)
 	close
+End Sub
+
+Sub targetSearchView_ItemClick (Value As String,Name As String)
+	targetComboBox.SelectedIndex=targetComboBox.Items.IndexOf(Name)
+End Sub
+
+Sub sourceSearchView_ItemClick (Value As String,Name As String)
+	sourceComboBox.SelectedIndex=sourceComboBox.Items.IndexOf(Name)
 End Sub

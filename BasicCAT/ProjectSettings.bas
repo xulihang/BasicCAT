@@ -462,9 +462,8 @@ End Sub
 Sub SetLangButton_MouseClicked (EventData As MouseEvent)
 	Dim languageSelector As LanguagePairSelector
 	languageSelector.Initialize
-	languageSelector.fillLang(Main.currentProject.projectFile.get("source"),Main.currentProject.projectFile.get("target"))
 	Dim result As Map
-	result=languageSelector.ShowAndWait
+	result=languageSelector.ShowAndWait(Main.currentProject.projectFile.get("source"),Main.currentProject.projectFile.get("target"))
 	If result.ContainsKey("source") Then
 		Main.currentProject.projectFile.Put("source",result.Get("source"))
 		Main.currentProject.projectFile.Put("target",result.Get("target"))

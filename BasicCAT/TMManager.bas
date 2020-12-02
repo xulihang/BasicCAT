@@ -46,7 +46,7 @@ Sub SearchView1_TextChanged(text As String)
 End Sub
 
 Sub MatchedItems As ResumableSub
-	Dim text As String=SearchView1.EtText.Trim
+	Dim text As String=SearchView1.Text.Trim
 	Dim items As List
 	items.Initialize
 	If text<>"" Then

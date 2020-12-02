@@ -203,20 +203,20 @@ Library8=jrandomaccessfile
 Library9=jb4xencryption
 Module1=FileChooserUtils
 Module10=RichTextArea
-Module11=TMDB
-Module12=LanguageUtils
-Module13=filterGenericUtils
-Module14=XMLUtils
-Module15=TM
-Module16=Utils
-Module17=xliffFilter
-Module18=idmlFilter
-Module19=idmlUtils
+Module11=tikal
+Module12=TMDB
+Module13=LanguageUtils
+Module14=filterGenericUtils
+Module15=XMLUtils
+Module16=TM
+Module17=Utils
+Module18=xliffFilter
+Module19=idmlFilter
 Module2=Project
-Module20=searchAndReplaceDialog
-Module21=TimestampCalculator
-Module22=FileUtils
-Module23=tikal
+Module20=idmlUtils
+Module21=searchAndReplaceDialog
+Module22=TimestampCalculator
+Module23=FileUtils
 Module24=SimpleTag
 Module25=editDistance
 Module26=TMManager
@@ -279,10 +279,11 @@ Module77=CallSubUtils
 Module78=viewSegment
 Module79=coordinate
 Module8=preTranslateDialog
+Module80=LangCodeSearchView
 Module9=Preferences
 NumberOfFiles=87
 NumberOfLibraries=26
-NumberOfModules=79
+NumberOfModules=80
 Version=7.8
 @EndOfDesignText@
 #Region Project Attributes 
@@ -593,7 +594,7 @@ Sub MenuBar1_Action
 			Dim languageSelector As LanguagePairSelector
 			languageSelector.Initialize
 			Dim result As Map
-			result=languageSelector.ShowAndWait
+			result=languageSelector.ShowAndWait("","")
 			If result.ContainsKey("source") Then
 				newProject(result.Get("source"),result.Get("target"))
 			End If

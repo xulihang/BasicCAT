@@ -69,11 +69,17 @@ Public Sub replaceItem(text As String,index As Int)
 	End If
 End Sub
 
-Public Sub getEtText As String
+Public Sub getText As String
 	If et.IsInitialized Then
 		Return et.Text
 	Else
 		Return ""
+	End If
+End Sub
+
+Public Sub setText(text As String)
+	If et.IsInitialized Then
+		et.Text=text
 	End If
 End Sub
 
@@ -102,21 +108,20 @@ Public Sub GetSelectedIndex As Int
 		Return -1
 	End If
 End Sub
+
 Public Sub DesignerCreateView (Base As Pane, Lbl As Label, Props As Map)
 	mBase = Base
 	highlightColor = Props.Get("HighlightColor")
 	textColor = Props.Get("TextColor")
 	Sleep(0) 'it is not possible to load a layout while another one is loaded. By using Sleep we wait for the first layout to be loaded.
 	mBase.LoadLayout("SearchView")
-	'lv.Visible = False
+	lv.Visible = True
 	Dim r As Reflector
 	r.Target = et
 	r.AddEventFilter("et", "javafx.scene.input.KeyEvent.KEY_PRESSED")
 	r.Target = lv
 	r.AddEventFilter("lv", "javafx.scene.input.KeyEvent.KEY_PRESSED")
 End Sub
-
-
 
 Sub et_Filter (EventData As Event)
 	Dim jo As JavaObject = EventData
