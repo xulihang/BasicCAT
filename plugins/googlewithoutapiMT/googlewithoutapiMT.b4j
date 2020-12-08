@@ -4,6 +4,7 @@ Group=Default Group
 Library1=jcore
 Library10=byteconverter
 Library11=encryption
+Library12=jrandomaccessfile
 Library2=jfx
 Library3=json
 Library4=jxmlsax
@@ -14,7 +15,7 @@ Library8=jokhttputils2
 Library9=jstringutils
 Module1=googlewithoutapiMTPlugin
 NumberOfFiles=0
-NumberOfLibraries=11
+NumberOfLibraries=12
 NumberOfModules=1
 Version=7.8
 @EndOfDesignText@
@@ -38,7 +39,7 @@ Sub AppStart (Form1 As Form, Args() As String)
 	MainForm.Show
     Dim n As googlewithoutapiMTPlugin
 	n.Initialize
-	wait for (n.translate("I love her deeply!","en","zh",Null)) complete (result As String)
+	wait for (n.translate("我爱你！","zh-CN","en",Null)) complete (result As String)
 	Log(result)
 End Sub
 

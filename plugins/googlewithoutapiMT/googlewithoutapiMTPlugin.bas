@@ -57,14 +57,17 @@ Sub translate(source As String, sourceLang As String, targetLang As String,prefe
 	Else
 		url="https://translate.google.com/translate_a/t?client=dict-chrome-ex"
 	End If
-	
 	Dim params As String
 	Dim su As StringUtils
-	source=su.EncodeUrl(source,"UTF-8")
+	source=su.EncodeUrl(source,"UTF8")
 	params="dt=t&dj=1&sl="&sourceLang&"&tl="&targetLang&"&q="&source
 	Dim job As HttpJob
 	job.Initialize("job",Me)
 	job.Download(url&"&"&params)
+	job.GetRequest.SetContentEncoding("UTF8")
+	job.GetRequest.SetHeader("User-Agent", "Mozilla/5.0 (IE 11.0; Windows NT 6.3; WOW64; Trident/7.0; Touch; rv:11.0) like Gecko")
+	job.GetRequest.SetHeader("Accept", "text/html,application/xhtml+xml;q=0.9,image/webp,*/*;q=0.8")
+	job.GetRequest.SetHeader("Accept-Encoding", "gzip, deflate, br")
 	job.GetRequest.SetHeader("Connection", "keep-alive")
 	job.GetRequest.SetHeader("Cookie", "BL_D_PROV= BL_T_PROV=Google")
 	job.GetRequest.SetHeader("Host", "translate.googleapis.com")
@@ -73,10 +76,19 @@ Sub translate(source As String, sourceLang As String, targetLang As String,prefe
 	job.GetRequest.SetHeader("Upgrade-Insecure-Requests", "1")
 	wait For (job) JobDone(job As HttpJob)
 	If job.Success Then
-		'Log(job.GetString)
-		target=job.GetString
+		Dim OS As OutputStream 'Get the bytes from Job.InputStream
+		OS.InitializeToBytesArray(1000)
+		File.Copy2(job.GetInputStream, OS)
+		Dim Buffer() As Byte
+		Buffer = OS.ToBytesArray
+		Dim compress As CompressedStreams
+		Dim decompressed() As Byte
+		decompressed = compress.DecompressBytes(Buffer, "gzip")
+		Dim DecompressedString As String 'convert Bytes to String again
+		DecompressedString=BytesToString(decompressed, 0, decompressed.Length, "UTF8")
+		'Log(DecompressedString)
 		Dim json As JSONParser
-		json.Initialize(job.GetString)
+		json.Initialize(DecompressedString)
 		Dim sb As StringBuilder
 		sb.Initialize
 		Dim sentences As List=json.NextObject.Get("sentences")
