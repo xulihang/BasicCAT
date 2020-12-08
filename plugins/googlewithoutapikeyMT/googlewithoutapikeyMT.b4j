@@ -13,7 +13,7 @@ Library6=jxui
 Library7=javaobject
 Library8=jokhttputils2
 Library9=jstringutils
-Module1=googlewithoutapiMTPlugin
+Module1=googlewithoutapikeyMTPlugin
 NumberOfFiles=0
 NumberOfLibraries=12
 NumberOfModules=1
@@ -23,9 +23,6 @@ Version=7.8
 	#MainFormWidth: 600
 	#MainFormHeight: 600 
 #End Region
-
-#AdditionalJar: commons-io-2.6.jar
-#AdditionalJar: commons-lang3-3.4.jar
 
 Sub Process_Globals
 	Private fx As JFX
@@ -37,9 +34,9 @@ Sub AppStart (Form1 As Form, Args() As String)
 	MainForm = Form1
 	'MainForm.RootPane.LoadLayout("Layout1") 'Load the layout file.
 	MainForm.Show
-    Dim n As googlewithoutapiMTPlugin
+    Dim n As googlewithoutapikeyMTPlugin
 	n.Initialize
-	wait for (n.translate("我爱你！","zh-CN","en",Null)) complete (result As String)
+	wait for (n.translate("I love you! I love you, too!","en","zh",Null)) complete (result As String)
 	Log(result)
 End Sub
 

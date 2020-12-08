@@ -17,7 +17,7 @@ End Sub
 
 ' must be available
 public Sub GetNiceName() As String
-	Return "googlewithoutapiMT"
+	Return "googlewithoutapikeyMT"
 End Sub
 
 ' must be available
@@ -27,13 +27,13 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 		Case "getParams"
 			Dim paramsList As List
 			paramsList.Initialize
-			paramsList.Add("use cn(yes or no)")
+			paramsList.Add("use cn (yes or no)")
 			Return paramsList
 		Case "translate"
 			wait for (translate(Params.Get("source"),Params.Get("sourceLang"),Params.Get("targetLang"),Params.Get("preferencesMap"))) complete (result As String)
 			Return result
 		Case "getDefaultParamValues"
-			Return CreateMap("use cn(yes or no)":"yes")
+			Return CreateMap("use cn (yes or no)":"yes")
 	End Select
 	Return ""
 End Sub
@@ -43,7 +43,7 @@ Sub translate(source As String, sourceLang As String, targetLang As String,prefe
 	Dim target As String
 	Dim useCN As Boolean=True
 	Try
-		If getMap("googlewithoutapi",getMap("mt",preferencesMap)).GetDefault("use cn(yes or no)","yes")="yes" Then
+		If getMap("googlewithoutapikey",getMap("mt",preferencesMap)).GetDefault("use cn (yes or no)","yes")="yes" Then
 			useCN=True
 		Else
 			useCN=False
@@ -93,7 +93,7 @@ Sub translate(source As String, sourceLang As String, targetLang As String,prefe
 		sb.Initialize
 		Dim sentences As List=json.NextObject.Get("sentences")
 		For Each sentence As Map In sentences
-			sb.Append(sentence.GetDefault("trans","")).Append(CRLF)
+			sb.Append(sentence.GetDefault("trans",""))
 		Next
 		target=sb.ToString.Trim
 	Else
