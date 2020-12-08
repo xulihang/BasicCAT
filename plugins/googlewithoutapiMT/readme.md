@@ -1,0 +1,1 @@
+Ported from <https://sourceforge.net/projects/omegat-gt-without-api-key/>
