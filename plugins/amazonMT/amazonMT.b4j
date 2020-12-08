@@ -15,7 +15,7 @@ Module1=amazonMTPlugin
 NumberOfFiles=0
 NumberOfLibraries=10
 NumberOfModules=1
-Version=7
+Version=7.8
 @EndOfDesignText@
 #Region Project Attributes 
 	#MainFormWidth: 600

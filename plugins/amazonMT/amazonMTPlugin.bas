@@ -50,15 +50,11 @@ Sub translate(source As String, sourceLang As String, targetLang As String,prefe
 	Dim key,secretKey As String
 	key=getMap("amazon",getMap("mt",preferencesMap)).Get("key")
 	secretKey=getMap("amazon",getMap("mt",preferencesMap)).Get("secretKey")
-
 	Dim pluginsDir As String
 	pluginsDir=preferencesMap.GetDefault("pluginDir",File.Combine(File.DirApp,"plugins"))
-
 	Dim su As StringUtils
 	source=su.EncodeUrl(source,"UTF-8")
 	Log(source)
-	Dim encoding As String
-	encoding=GetSystemProperty("sun.jnu.encoding","UTF8")
 	pluginsDir=File.Combine(File.DirApp,"plugins")
 	Dim jarPath As String
 	jarPath=File.Combine(File.Combine(pluginsDir,"standalone"),"amazonMTCLI.jar")
@@ -66,43 +62,19 @@ Sub translate(source As String, sourceLang As String, targetLang As String,prefe
 	Dim sh As Shell
 	sh.Initialize("sh","java",Array As String("-jar",jarPath,source,sourceLang,targetLang,key,secretKey,region))
 	sh.WorkingDirectory=File.Combine(pluginsDir,"standalone")
-	sh.Encoding=encoding
-
-	sh.RunWithOutputEvents(-1)
-	Dim waitedTime As Int=0
-	Do While translation=""
-		Sleep(100)
-		waitedTime=waitedTime+100
-		If waitedTime>10000 Then
-			Exit
-		End If
-	Loop
-	If translation="" Then
-		Log("timed out")
-		return ""
+	sh.Encoding=GetSystemProperty("file.encoding","UTF8")
+	sh.Run(10000)
+	wait for sh_ProcessCompleted (Success As Boolean, ExitCode As Int, StdOut As String, StdErr As String)
+	If Success And ExitCode = 0 Then
+		Log(StdOut)
+		Return StdOut
+	Else
+		Log(StdOut)
+		Log(StdErr)
 	End If
-	Dim text As String
-	Try
-		text=File.ReadString(File.DirTemp,"amazon")
-	Catch
-		Log(LastException)
-		text=translation
-	End Try
-	
-	translation=""
-	Log(text)
-	Return text
+	Return ""
 End Sub
 
 Sub getMap(key As String,parentmap As Map) As Map
 	Return parentmap.Get(key)
-End Sub
-
-Sub sh_StdOut (Buffer() As Byte, Length As Int)
-	Dim encoding As String
-	encoding=GetSystemProperty("sun.jnu.encoding","UTF8")
-	Dim ByteConverter As ByteConverter
-	Dim result As String
-	result=ByteConverter.StringFromBytes(Buffer,encoding)
-	translation=result.Trim
 End Sub
