@@ -650,9 +650,11 @@ Sub MenuBar1_Action
 		Case "Copy source text to target"
 			copySourceToTarget
 		Case "Search and replace"
-			Dim sap As searchAndReplaceDialog
-			sap.Initialize(Array(currentProject.currentFilename))
-			sap.show
+			If currentProject.currentFilename<>"" Then
+				Dim sap As searchAndReplaceDialog
+				sap.Initialize(Array(currentProject.currentFilename))
+				sap.show
+			End If
 		Case "_Global search and replace"
 			Dim sap As searchAndReplaceDialog
 			sap.Initialize(currentProject.files)
