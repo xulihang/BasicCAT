@@ -1817,25 +1817,29 @@ Sub showTM(targetTextArea As RichTextArea)
 	Dim limit As Int
 	limit=settings.GetDefault("TM_limit",500)
 	
+	Dim tmMatches As List
+	tmMatches.Initialize
 	For Each isExternal As Boolean In Array(False,True)
 		Dim senderFilter As Object = projectTM.getMatchList(isExternal,sourceTA.Text,matchrate,False,limit)
 		Wait For (senderFilter) Complete (Result As List)
-		Dim index As Int=0
-		For Each matchList As List In Result
-			If matchList.Get(1)=sourceTA.Text And isExternal=False And targetTA.Text=matchList.Get(2) Then
-				Continue 'itself
-			End If
-			Dim row() As Object = Array As Object(Utils.LabelWithText(matchList.Get(0)), _
+		tmMatches.AddAll(Result)
+	Next
+	tmMatches=projectTM.subtractedAndSortMatchList(tmMatches,4)
+	Dim index As Int=0
+	For Each matchList As List In tmMatches
+		If matchList.Get(1)=sourceTA.Text And isExternal=False And targetTA.Text=matchList.Get(2) Then
+			Continue 'itself
+		End If
+		Dim row() As Object = Array As Object(Utils.LabelWithText(matchList.Get(0)), _
 												Utils.LabelWithText(matchList.Get(1)), _ 
 												Utils.LabelWithText(matchList.Get(2)), _ 
 												Utils.LabelWithText(matchList.Get(3)))
-			If index=0 Then
-				Main.tmTableView.Items.InsertAt(0,row)
-				index=index+1
-			Else
-				Main.tmTableView.Items.Add(row)
-			End If
-		Next
+		If index=0 Then
+			Main.tmTableView.Items.InsertAt(0,row)
+			index=index+1
+		Else
+			Main.tmTableView.Items.Add(row)
+		End If
 	Next
 	Log(DateTime.Now-time)
 	Main.changeWhenSegmentOrSelectionChanges

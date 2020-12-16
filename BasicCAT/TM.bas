@@ -64,7 +64,7 @@ Public Sub changedRefreshStatus(status As Boolean)
 End Sub
 
 
-Sub fillSharedTM
+private Sub fillSharedTM
 	'progressDialog.Show("Filling SharedTM","sharedTM")
 	Dim tmmap As Map
 	tmmap=sharedTM.GetAll(projectName&"TM")
@@ -95,7 +95,7 @@ Sub fillSharedTM
 	'progressDialog.close
 End Sub
 
-Sub fillALL(toAddMap As Map)
+private Sub fillALL(toAddMap As Map)
 	For Each key As String In toAddMap.Keys
 		Sleep(0)
 		sharedTM.Put(projectName&"TM",key,toAddMap.Get(key))
@@ -103,7 +103,7 @@ Sub fillALL(toAddMap As Map)
 End Sub
 
 
-Sub sharedTM_NewData(changedItems As List)
+private Sub sharedTM_NewData(changedItems As List)
 	Log("changed"&changedItems)
 	Dim changedKeys As List
 	changedKeys.Initialize
@@ -148,7 +148,7 @@ public Sub close
 	End If
 End Sub
 
-Sub addPair(source As String,targetMap As Map)
+public Sub addPair(source As String,targetMap As Map)
     Dim target As String
 	target=targetMap.Get("text")
 	Dim note As String
@@ -242,7 +242,7 @@ Public Sub importExternalTranslationMemory(tmList As List,projectFile As Map) As
 	Return True
 End Sub
 
-Sub importedTxt(filename As String) As List
+private Sub importedTxt(filename As String) As List
 	Dim content As String
 	content=File.ReadString(File.Combine(Main.currentProject.path,"TM"),filename)
 	Dim segments As List
@@ -284,7 +284,7 @@ Sub importedTxt(filename As String) As List
 	Return result
 End Sub
 
-Sub importedXlsx(filename As String) As List
+private Sub importedXlsx(filename As String) As List
 	Dim result As List
 	result.Initialize
 	
@@ -418,7 +418,7 @@ Sub getMatchList(external As Boolean, source As String,matchrate As Double,getOn
 			End If
 		End If
 	Next
-	Return subtractedAndSortMatchList(matchList)
+	Return subtractedAndSortMatchList(matchList,4)
 End Sub
 
 Sub getMatchListOld(source As String) As ResumableSub
@@ -480,7 +480,7 @@ Sub getMatchListOld(source As String) As ResumableSub
 		Next
     Next
 	
-	Return subtractedAndSortMatchList(matchList)
+	Return subtractedAndSortMatchList(matchList,4)
 End Sub
 
 
@@ -509,7 +509,7 @@ Sub basicCompare(str1 As String,str2 As String) As Boolean
 	
 End Sub
 
-Sub subtractedAndSortMatchList(matchList As List) As List
+Sub subtractedAndSortMatchList(matchList As List,maxNum As Int) As List
 	If matchList.Size<=1 Then
 		Return matchList
 	End If
@@ -517,7 +517,7 @@ Sub subtractedAndSortMatchList(matchList As List) As List
 	newlist.Initialize
 	Dim sortedList As List
 	sortedList=BubbleSort(matchList)
-	For i=0 To Min(4,sortedList.Size-1)
+	For i=0 To Min(maxNum,sortedList.Size-1)
 		newlist.Add(sortedList.Get(i))
 	Next
 	Return newlist
