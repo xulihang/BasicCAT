@@ -1135,7 +1135,8 @@ Sub ShowITPContextMenu(ta As RichTextArea,lastString As String)
 						If text.StartsWith(lastString) Then
 							suggestions.Add(text)
 						Else
-							suggestions.Add(text.ToLowerCase)
+							'suggestion: translation, lastString: Tr
+                            suggestions.Add(Utils.replaceOnce(text.ToLowerCase,lastString.ToLowerCase,lastString))
 						End If
 					End If
 				Else

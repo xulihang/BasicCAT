@@ -10,6 +10,40 @@ Sub Process_Globals
 	Private menus As Map
 End Sub
 
+Sub TitleCase(str As String) As Boolean
+	Dim sb As StringBuilder
+	sb.Initialize
+	For Each word As String In Regex.Split(" ",str)
+		Try
+			If word.Length>1 Then
+				Dim rightChars As String=word.SubString2(1,word.Length)
+				Dim firstChar As String=word.CharAt(0)
+				sb.Append(firstChar.ToUpperCase)
+				sb.Append(rightChars.ToLowerCase)
+			Else
+				sb.Append(word.ToUpperCase)
+			End If
+		Catch
+			Log(LastException)
+			sb.Append(word)
+		End Try		
+		sb.Append(" ")
+	Next
+	Return sb.ToString.Trim
+End Sub
+
+Sub LetterIsCapital(str As String,index As Int) As Boolean
+	Try
+		Dim letter As String=str.CharAt(index)
+		If letter.ToUpperCase=letter Then
+			Return True
+		End If
+	Catch
+		Log(LastException)
+	End Try
+	Return False
+End Sub
+
 'windows, mac or linux
 Sub DetectOS As String
 	Dim os As String = GetSystemProperty("os.name", "").ToLowerCase
