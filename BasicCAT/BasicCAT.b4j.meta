@@ -241,6 +241,6 @@ ModuleClosedNodes79=
 ModuleClosedNodes8=
 ModuleClosedNodes80=
 ModuleClosedNodes9=
-NavigationStack=Main,AppStart,90,0,Main,Drag_ReceivedFilePath,227,0,Main,RecentProjectMI_Action,565,0,Visual Designer,main.bjl,-100,2,Main,openProject,526,6,Main,AddProjectToRecent,556,3,Main,AddRecentProjectsToMenu,575,6,Main,ClearRecentProjects,556,0,Main,MenuBar1_Action,302,6
+NavigationStack=Main,RecentLangPairMI_Action,606,6,Main,MainForm_Resize,106,0,Main,init,152,3,Main,adjustDividerPositions,253,0,Main,addProjectTreeTableItem,258,0,Main,MainForm_CloseRequest,115,0,Main,newProject,503,3,Main,MenuBar1_Action,319,6,Main,openProject,537,0,Main,saveProject,523,0
 SelectedBuild=0
 VisibleModules=1,2,3,4,5,6,7,8,9,10,23,22

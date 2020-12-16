@@ -450,7 +450,8 @@ Sub init
 	
 	tmTableView.SetColumnWidth(1,200)
 	tmTableView.SetColumnWidth(2,200)
-	AddRecentProjectsToMenu
+	AddRecentsToMenu("recent_projects")
+	AddRecentsToMenu("recent_langpairs")
 	Utils.disableMenuItems(MenuBar1,Array As String("_Save","_Close"))
 	Utils.disableMenuItems(MenuBar1,File.ReadList(File.DirAssets,"menuText.txt"))
 	Drag.Initialize(projectTreeTableView, "Drag")
@@ -588,7 +589,9 @@ Sub MenuBar1_Action
 			PathSaver.savePath("project",path)
 			openProject(path)
 		Case "clear recent projects"
-			ClearRecentProjects
+			ClearRecents("recent_projects")
+		Case "clear recent lang pairs"
+			ClearRecents("recent_langpairs")
 		Case "en to zh Project"
 			newProject("en","zh")
 		Case "zh to en Project"
@@ -602,32 +605,7 @@ Sub MenuBar1_Action
 				newProject(result.Get("source"),result.Get("target"))
 			End If
 		Case "_Save"
-			If currentProject.IsInitialized=False Then
-				Return
-			End If
-            setAutosave(True)
-			If currentProject.path="" Then
-				Dim fc As FileChooser
-				fc.Initialize
-				fc.InitialDirectory=PathSaver.previousPath("project")
-				fc.Title="Please enter the folder name to store the project."
-				Dim path As String
-				path=fc.ShowSave(MainForm)
-				If path="" Then
-					Return
-				End If
-				PathSaver.savePath("project",path)
-				If File.Exists(path,"") Then
-					fx.Msgbox(MainForm,"There has already been a file.","")
-					Return
-				End If
-				currentProject.path=path
-				currentProject.save
-				MainForm.Title=path
-				Utils.enableMenuItems(MenuBar1,File.ReadList(File.DirAssets,"menuText.txt"))
-			Else
-				currentProject.save
-			End If
+			saveProject
 		Case "_Generate target files"
 			If currentProject.IsInitialized=False Then
 				Return
@@ -802,6 +780,8 @@ Sub newProject(sourceLang As String,targetLang As String)
 		fx.Msgbox(MainForm,"Please close the current project first.","")
 		Return
 	End If
+	AddToRecents(sourceLang&","&targetLang,"recent_langpairs")
+	AddRecentsToMenu("recent_langpairs")
 	currentProject.Initialize
 	currentProject.newProjectSetting(sourceLang,targetLang)
 	MainForm.Title="Untitled-1"
@@ -809,14 +789,44 @@ Sub newProject(sourceLang As String,targetLang As String)
 	Utils.enableMenuItems(MenuBar1,Array As String("_Save","_Close"))
 End Sub
 
+Sub saveProject
+	If currentProject.IsInitialized=False Then
+		Return
+	End If
+	setAutosave(True)
+	If currentProject.path="" Then
+		Dim fc As FileChooser
+		fc.Initialize
+		fc.InitialDirectory=PathSaver.previousPath("project")
+		fc.Title="Please enter the folder name to store the project."
+		Dim path As String
+		path=fc.ShowSave(MainForm)
+		If path="" Then
+			Return
+		End If
+		PathSaver.savePath("project",path)
+		If File.Exists(path,"") Then
+			fx.Msgbox(MainForm,"There has already been a file.","")
+			Return
+		End If
+		AddToRecents(path,"recent_projects")
+		AddRecentsToMenu("recent_projects")
+		currentProject.path=path
+		currentProject.save
+		MainForm.Title=path
+		Utils.enableMenuItems(MenuBar1,File.ReadList(File.DirAssets,"menuText.txt"))
+	Else
+		currentProject.save
+	End If
+End Sub
 
 Sub openProject(path As String)
 	If currentProject.IsInitialized Then
 		fx.Msgbox(MainForm,"Please close the current project first.","")
 		Return
 	End If
-	AddProjectToRecent(path)
-	AddRecentProjectsToMenu
+	AddToRecents(path,"recent_projects")
+	AddRecentsToMenu("recent_projects")
 	currentProject.Initialize
 	currentProject.open(path)
 	setAutosave(True)
@@ -825,45 +835,57 @@ Sub openProject(path As String)
 	Utils.enableMenuItems(MenuBar1,File.ReadList(File.DirAssets,"menuText.txt"))
 End Sub
 
-Sub AddProjectToRecent(path As String)
-	Dim recentProjects As List
-	If File.Exists(File.DirData("BasicCAT"),"recent_projects") Then
-		recentProjects=File.ReadList(File.DirData("BasicCAT"),"recent_projects")
-		If recentProjects.IndexOf(path)<>-1 Then
-			recentProjects.RemoveAt(recentProjects.IndexOf(path))
+#region handle recents
+Sub AddToRecents(path As String,recentType As String)
+	Dim recents As List
+	If File.Exists(File.DirData("BasicCAT"),recentType) Then
+		recents=File.ReadList(File.DirData("BasicCAT"),recentType)
+		If recents.IndexOf(path)<>-1 Then
+			recents.RemoveAt(recents.IndexOf(path))
 		End If
 	Else
-		recentProjects.Initialize
+		recents.Initialize
 	End If
-	recentProjects.InsertAt(0,path)
-	If recentProjects.Size>10 Then
-		recentProjects.RemoveAt(10)
+	recents.InsertAt(0,path)
+	If recents.Size>10 Then
+		recents.RemoveAt(10)
 	End If
-	File.WriteList(File.DirData("BasicCAT"),"recent_projects",recentProjects)
+	File.WriteList(File.DirData("BasicCAT"),recentType,recents)
 End Sub
 
-Sub ClearRecentProjects
-	If File.Exists(File.DirData("BasicCAT"),"recent_projects") Then
-		File.Delete(File.DirData("BasicCAT"),"recent_projects")
+Sub ClearRecents(recentType As String)
+	If File.Exists(File.DirData("BasicCAT"),recentType) Then
+		File.Delete(File.DirData("BasicCAT"),recentType)
 	End If
+	ClearRecentsMenu(recentType)
+End Sub
+
+Sub ClearRecentsMenu(recentType As String) As Menu
 	Dim fileMenu As Menu=MenuBar1.Menus.Get(0)
-	Dim recentMenu As Menu=fileMenu.MenuItems.Get(1)
+	Dim recentMenu As Menu
+	If recentType="recent_projects" Then
+		recentMenu=fileMenu.MenuItems.Get(1)
+	Else
+		Dim newProjectMenu As Menu=fileMenu.MenuItems.Get(2)
+		recentMenu= newProjectMenu.MenuItems.Get(3)
+	End If
 	Do While recentMenu.MenuItems.Size>2
 		recentMenu.MenuItems.RemoveAt(2)
 	Loop
+	Return recentMenu
 End Sub
 
-Sub AddRecentProjectsToMenu
-	If File.Exists(File.DirData("BasicCAT"),"recent_projects") Then
-		Dim fileMenu As Menu=MenuBar1.Menus.Get(0)
-		Dim recentMenu As Menu=fileMenu.MenuItems.Get(1)
-		Do While recentMenu.MenuItems.Size>2
-		    recentMenu.MenuItems.RemoveAt(2)
-		Loop		
-		For Each path As String In File.ReadList(File.DirData("BasicCAT"),"recent_projects")
+Sub AddRecentsToMenu(recentType As String)
+	If File.Exists(File.DirData("BasicCAT"),recentType) Then
+		Dim recentMenu As Menu=ClearRecentsMenu(recentType)
+		For Each data As String In File.ReadList(File.DirData("BasicCAT"),recentType)
 			Dim mi As MenuItem
-			mi.Initialize(path.Replace("project.bcp",""),"RecentProjectMI")
-			mi.Tag=path
+			If recentType="recent_projects" Then
+				mi.Initialize(data.Replace("project.bcp",""),"RecentProjectMI")
+				mi.Tag=data
+			Else
+				mi.Initialize(data,"RecentLangPairMI")
+			End If
 			recentMenu.MenuItems.Add(mi)
 		Next
 	End If
@@ -873,6 +895,12 @@ Sub RecentProjectMI_Action
 	Dim mi As MenuItem=Sender
 	openProject(mi.Tag)
 End Sub
+
+Sub RecentLangPairMI_Action
+	Dim mi As MenuItem=Sender
+	newProject(Regex.Split(",",mi.Text)(0),Regex.Split(",",mi.Text)(1))
+End Sub
+#end region
 
 Public Sub closeProject
 	setAutosave(False)
