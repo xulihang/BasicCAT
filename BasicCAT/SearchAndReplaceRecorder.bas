@@ -40,6 +40,7 @@ End Sub
 
 Sub ReplaceButton_MouseClicked (EventData As MouseEvent)
 	ReplaceUsingOneRecord
+	fx.Msgbox(frm,"Done","")
 End Sub
 
 Sub BatchReplaceButton_MouseClicked (EventData As MouseEvent)
@@ -49,6 +50,7 @@ Sub BatchReplaceButton_MouseClicked (EventData As MouseEvent)
 		ConditionsListView.Items.Addall(conditionsList)
 		ReplaceUsingOneRecord
 	Next
+	fx.Msgbox(frm,"Done","")
 End Sub
 
 Sub ReplaceUsingOneRecord 
