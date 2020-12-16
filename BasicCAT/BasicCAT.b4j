@@ -450,6 +450,7 @@ Sub init
 	
 	tmTableView.SetColumnWidth(1,200)
 	tmTableView.SetColumnWidth(2,200)
+	AddRecentProjectsToMenu
 	Utils.disableMenuItems(MenuBar1,Array As String("_Save","_Close"))
 	Utils.disableMenuItems(MenuBar1,File.ReadList(File.DirAssets,"menuText.txt"))
 	Drag.Initialize(projectTreeTableView, "Drag")
@@ -586,6 +587,8 @@ Sub MenuBar1_Action
 			End If
 			PathSaver.savePath("project",path)
 			openProject(path)
+		Case "clear recent projects"
+			ClearRecentProjects
 		Case "en to zh Project"
 			newProject("en","zh")
 		Case "zh to en Project"
@@ -812,12 +815,63 @@ Sub openProject(path As String)
 		fx.Msgbox(MainForm,"Please close the current project first.","")
 		Return
 	End If
+	AddProjectToRecent(path)
+	AddRecentProjectsToMenu
 	currentProject.Initialize
 	currentProject.open(path)
 	setAutosave(True)
 	MainForm.Title=getProjectname(path)
 	Utils.enableMenuItems(MenuBar1,Array As String("_Save","_Close"))
 	Utils.enableMenuItems(MenuBar1,File.ReadList(File.DirAssets,"menuText.txt"))
+End Sub
+
+Sub AddProjectToRecent(path As String)
+	Dim recentProjects As List
+	If File.Exists(File.DirData("BasicCAT"),"recent_projects") Then
+		recentProjects=File.ReadList(File.DirData("BasicCAT"),"recent_projects")
+		If recentProjects.IndexOf(path)<>-1 Then
+			recentProjects.RemoveAt(recentProjects.IndexOf(path))
+		End If
+	Else
+		recentProjects.Initialize
+	End If
+	recentProjects.InsertAt(0,path)
+	If recentProjects.Size>10 Then
+		recentProjects.RemoveAt(10)
+	End If
+	File.WriteList(File.DirData("BasicCAT"),"recent_projects",recentProjects)
+End Sub
+
+Sub ClearRecentProjects
+	If File.Exists(File.DirData("BasicCAT"),"recent_projects") Then
+		File.Delete(File.DirData("BasicCAT"),"recent_projects")
+	End If
+	Dim fileMenu As Menu=MenuBar1.Menus.Get(0)
+	Dim recentMenu As Menu=fileMenu.MenuItems.Get(1)
+	Do While recentMenu.MenuItems.Size>2
+		recentMenu.MenuItems.RemoveAt(2)
+	Loop
+End Sub
+
+Sub AddRecentProjectsToMenu
+	If File.Exists(File.DirData("BasicCAT"),"recent_projects") Then
+		Dim fileMenu As Menu=MenuBar1.Menus.Get(0)
+		Dim recentMenu As Menu=fileMenu.MenuItems.Get(1)
+		Do While recentMenu.MenuItems.Size>2
+		    recentMenu.MenuItems.RemoveAt(2)
+		Loop		
+		For Each path As String In File.ReadList(File.DirData("BasicCAT"),"recent_projects")
+			Dim mi As MenuItem
+			mi.Initialize(path.Replace("project.bcp",""),"RecentProjectMI")
+			mi.Tag=path
+			recentMenu.MenuItems.Add(mi)
+		Next
+	End If
+End Sub
+
+Sub RecentProjectMI_Action
+	Dim mi As MenuItem=Sender
+	openProject(mi.Tag)
 End Sub
 
 Public Sub closeProject
