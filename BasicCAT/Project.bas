@@ -1827,7 +1827,7 @@ Sub showTM(targetTextArea As RichTextArea)
 	tmMatches=projectTM.subtractedAndSortMatchList(tmMatches,4)
 	Dim index As Int=0
 	For Each matchList As List In tmMatches
-		If matchList.Get(1)=sourceTA.Text And isExternal=False And targetTA.Text=matchList.Get(2) Then
+		If matchList.Get(1)=sourceTA.Text And targetTA.Text=matchList.Get(2) Then
 			Continue 'itself
 		End If
 		Dim row() As Object = Array As Object(Utils.LabelWithText(matchList.Get(0)), _
