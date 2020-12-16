@@ -241,6 +241,6 @@ ModuleClosedNodes79=
 ModuleClosedNodes8=
 ModuleClosedNodes80=
 ModuleClosedNodes9=
-NavigationStack=TM,fillALL,97,0,TM,close,144,0,TM,addPair,144,0,TM,importExternalTranslationMemory,238,0,TM,importedTxt,280,0,TM,importedXlsx,280,0,TM,getMatchListMerged,329,0,TM,getExternalMemorySize,557,0,TM,subtractedAndSortMatchList,505,0,Project,showTM,1820,0
+NavigationStack=TM,getMatchListMerged,329,0,TM,getExternalMemorySize,557,0,TM,subtractedAndSortMatchList,507,0,Project,showTM,1801,0,Main,TMViewToggleButton_SelectedChange,1399,0,Main,toggleTableOrTextArea,1451,0,Main,Process_Globals,57,0,Main,changeWhenSegmentOrSelectionChanges,1406,0,Main,segmentSearchToggleButton_SelectedChange,1396,0,Project,showMT,1860,6
 SelectedBuild=0
 VisibleModules=1,2,3,4,5,6,7,8,9,10,23,22

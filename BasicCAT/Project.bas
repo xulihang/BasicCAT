@@ -1864,13 +1864,14 @@ Sub showMT(source As String,targetTextArea As RichTextArea)
 		chunks=ITP.getChunks(source,projectFile.Get("source"))
 		wait for (ITP.getLongPhrasesFromText(source,projectFile.Get("source"),words)) Complete (longphrases As List)
 	End If
+
 	For Each engine As String In MT.getMTList
 		If Utils.get_isEnabled(engine&"_isEnabled",mtPreferences)=True Then
 			wait for (MT.getMT(source,projectFile.Get("source"),projectFile.Get("target"),engine)) Complete (Result As String)
 			If Result<>"" Then
 				'Log("mt:"&Result)
 				Dim row() As Object = Array As Object(Utils.LabelWithText(""),Utils.LabelWithText(""),Utils.LabelWithText(Result),Utils.LabelWithText(engine))
-				Main.tmTableView.Items.Add(row)
+				Main.tmTableView.Items.add(row)
 				Main.changeWhenSegmentOrSelectionChanges
 			End If
 			If autocompleteEnabled Then
