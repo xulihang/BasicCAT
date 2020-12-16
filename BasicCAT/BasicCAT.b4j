@@ -49,43 +49,44 @@ File50=richtext.css
 File51=right.bjl
 File52=right-aligned-richtext.css
 File53=searchandreplace.bjl
-File54=searchTableView.bjl
-File55=SearchView.bjl
-File56=segment.bjl
-File57=segmentation_en.conf
-File58=segmentation_en_exception.conf
-File59=segmentation_en_idml.conf
+File54=SearchAndReplaceRecorder.bjl
+File55=searchTableView.bjl
+File56=SearchView.bjl
+File57=segment.bjl
+File58=segmentation_en.conf
+File59=segmentation_en_exception.conf
 File6=basiccat.jpg
-File60=segmentation_zh.conf
-File61=segmentation_zh_exception.conf
-File62=segmentationRules.srx
-File63=SegmentationRulesManager.bjl
-File64=segmentUsingTextArea.bjl
-File65=serverLanucher.bjl
-File66=settingLanguagecheck.bjl
-File67=settingVersionControl.bjl
-File68=SourceEditor.bjl
-File69=statistics.bjl
+File60=segmentation_en_idml.conf
+File61=segmentation_zh.conf
+File62=segmentation_zh_exception.conf
+File63=segmentationRules.srx
+File64=SegmentationRulesManager.bjl
+File65=segmentUsingTextArea.bjl
+File66=serverLanucher.bjl
+File67=settingLanguagecheck.bjl
+File68=settingVersionControl.bjl
+File69=SourceEditor.bjl
 File7=checkList.bjl
-File70=stopwords.txt
-File71=supportedFiles.txt
-File72=tableview.bjl
-File73=tabpane.bjl
-File74=teamSetting.bjl
-File75=term.bjl
-File76=TermEditor.bjl
-File77=TermManager.bjl
-File78=termSetting.bjl
-File79=timestamp.bjl
+File70=statistics.bjl
+File71=stopwords.txt
+File72=supportedFiles.txt
+File73=tableview.bjl
+File74=tabpane.bjl
+File75=teamSetting.bjl
+File76=term.bjl
+File77=TermEditor.bjl
+File78=TermManager.bjl
+File79=termSetting.bjl
 File8=confirmReview.bjl
-File80=TMEditor.bjl
-File81=TMManager.bjl
-File82=tmSetting.bjl
-File83=upperRight.bjl
-File84=version.txt
-File85=viewSegment.bjl
-File86=webview.css
-File87=wordLookupSetting.bjl
+File80=timestamp.bjl
+File81=TMEditor.bjl
+File82=TMManager.bjl
+File83=tmSetting.bjl
+File84=upperRight.bjl
+File85=version.txt
+File86=viewSegment.bjl
+File87=webview.css
+File88=wordLookupSetting.bjl
 File9=custom.css
 FileGroup1=Default Group
 FileGroup10=Default Group
@@ -173,6 +174,7 @@ FileGroup84=Default Group
 FileGroup85=Default Group
 FileGroup86=Default Group
 FileGroup87=Default Group
+FileGroup88=Default Group
 FileGroup9=Default Group
 Group=Default Group
 Library1=jcore
@@ -280,10 +282,11 @@ Module78=CallSubUtils
 Module79=viewSegment
 Module8=preTranslateDialog
 Module80=coordinate
+Module81=SearchAndReplaceRecorder
 Module9=Preferences
-NumberOfFiles=87
+NumberOfFiles=88
 NumberOfLibraries=26
-NumberOfModules=80
+NumberOfModules=81
 Version=7.8
 @EndOfDesignText@
 #Region Project Attributes 
@@ -809,7 +812,7 @@ Sub saveProject
 			fx.Msgbox(MainForm,"There has already been a file.","")
 			Return
 		End If
-		AddToRecents(path,"recent_projects")
+		AddToRecents(File.Combine(path,"project.bcp"),"recent_projects")
 		AddRecentsToMenu("recent_projects")
 		currentProject.path=path
 		currentProject.save
@@ -823,6 +826,10 @@ End Sub
 Sub openProject(path As String)
 	If currentProject.IsInitialized Then
 		fx.Msgbox(MainForm,"Please close the current project first.","")
+		Return
+	End If
+	If path.EndsWith(".bcp")=False Then
+		fx.Msgbox(MainForm,"The project does not exist.","")
 		Return
 	End If
 	AddToRecents(path,"recent_projects")
@@ -893,6 +900,7 @@ End Sub
 
 Sub RecentProjectMI_Action
 	Dim mi As MenuItem=Sender
+	Log(mi.Tag)
 	openProject(mi.Tag)
 End Sub
 
