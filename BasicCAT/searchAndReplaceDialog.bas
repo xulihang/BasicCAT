@@ -20,6 +20,7 @@ Sub Class_Globals
 	Private ExtendedSearchTextField As TextField
 	Private GetTimestampButton As Button
 	Private InResultsCheckBox As CheckBox
+	Private recorder As SearchAndReplaceRecorder
 End Sub
 
 'Initializes the object. You can add parameters to this method if needed.
@@ -33,6 +34,7 @@ Public Sub Initialize(files As List)
 	ComboBox1.Items.Add("createdTime")
 	ComboBox1.SelectedIndex=0
 	mFiles=files
+	recorder.Initialize(Me)
 End Sub
 
 Public Sub show
@@ -44,16 +46,52 @@ Sub resultListView_SelectedIndexChanged(Index As Int)
 End Sub
 
 Sub findButton_Click
+	search(True)
+End Sub
+
+Sub search(addToRecorder As Boolean)
 	Dim results As Map
 	If InResultsCheckBox.Checked Then
 		results=ResultsMap
 	End If
 	resultListView.Items.Clear
-    If regexCheckBox.Checked Then
+	If recorder.Showing And addToRecorder Then
+		recorder.AddConditions(GetCurrentConditions)
+	End If
+	If regexCheckBox.Checked Then
 		showRegexResult(results)
 	Else
 		showResult(results)
-    End If
+	End If
+End Sub
+
+Sub GetCurrentConditions As Map
+	Dim conditions As Map
+	conditions.Initialize
+	conditions.Put("find",findTextField.Text)
+	conditions.Put("replace",replaceTextField.Text)
+	conditions.Put("regex",regexCheckBox.Checked)
+	conditions.Put("in_result",InResultsCheckBox.Checked)
+	conditions.Put("extendedSearch_checked",ExtendSearchCheckBox.Checked)
+	conditions.Put("extendedSearch_text",ExtendedSearchTextField.Text)
+	conditions.Put("extendedSearch_field",ComboBox1.Items.Get(ComboBox1.SelectedIndex))
+	conditions.Put("searchSource",searchSourceCheckBox.Checked)
+	conditions.Put("source",sourceTextField.Text)
+	conditions.Put("matchboth",MatchBothCheckBox.Checked)
+	Return conditions
+End Sub
+
+Public Sub LoadConditions(conditions As Map)
+	searchSourceCheckBox.Checked=conditions.get("searchSource")
+	InResultsCheckBox.Checked=conditions.get("in_result")
+	ExtendSearchCheckBox.Checked=conditions.get("extendedSearch_checked")
+	ComboBox1.SelectedIndex=ComboBox1.Items.IndexOf(conditions.get("extendedSearch_field"))
+	findTextField.Text=conditions.Get("find")
+	replaceTextField.Text=conditions.Get("replace")
+	regexCheckBox.Checked=conditions.get("regex")
+	ExtendedSearchTextField.Text=conditions.get("extendedSearch_text")
+	sourceTextField.Text=conditions.get("source")
+	MatchBothCheckBox.Checked=conditions.get("matchboth")
 End Sub
 
 Sub CheckShouldShowBasedonExtendedItem(find As String,regexMode As Boolean,segment As List,default As Boolean) As Boolean
@@ -459,7 +497,10 @@ Sub replaceSelectedButton_MouseClicked (EventData As MouseEvent)
 End Sub
 
 Sub replaceAllButton_MouseClicked (EventData As MouseEvent)
-	
+	replaceAll(True)
+End Sub
+
+Sub replaceAll(showUI As Boolean)
 	If resultListView.Items.Size>0 Then
 		Dim count As Int=0
 		Dim tempList As List
@@ -497,7 +538,9 @@ Sub replaceAllButton_MouseClicked (EventData As MouseEvent)
 			resultListView.Items.RemoveAt(resultListView.Items.IndexOf(p))
 			count=count+1
 		Next
-        fx.Msgbox(frm,count&" matches are replaced.","")
+		If showUI Then
+			fx.Msgbox(frm,count&" matches are replaced.","")
+		End If
 		Main.currentProject.contentIsChanged
 	End If
 End Sub
@@ -615,4 +658,16 @@ Sub ComboBox1_ValueChanged (Value As Object)
 		GetTimestampButton.Visible=False
 		ExtendedSearchTextField.PromptText=""
 	End If
+End Sub
+
+Sub RecordToggleButton_SelectedChange(Selected As Boolean)
+	If Selected Then
+		recorder.Show
+	Else
+		recorder.Close
+	End If
+End Sub
+
+Sub frm_CloseRequest (EventData As Event)
+	recorder.Close
 End Sub
