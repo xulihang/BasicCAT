@@ -33,8 +33,9 @@ Sub AppStart (Form1 As Form, Args() As String)
 	MainForm.Show
     Dim n As colorfulcloudsMTPlugin
 	n.Initialize
-	wait for (n.translate("Hello","en","zh",Null)) complete (result As String)
-	Log(result)
+	'wait for (n.translate("Hello","en","zh",Null)) complete (result As String)
+	wait for (n.batchTranslate(Array("お前には一流の 大学を目指す 学力がある","相川仁","実に 夢がない","お前のような かわいくない 生徒には","いいぞぉ 相川…","十年後 ——夏","色々とモノを 頼みやすい","楽で安全な 道があるなら そちらを選ぶ べきでしょう","なのになぜ 三流大の推薦 なんかを狙う？","俺 間違ってます？","夢…？ くだらない","？"),"ja","zh",Null)) complete (targetList As List)
+	Log(targetList)
 End Sub
 
 'Return true to allow the default exceptions handler to handle the uncaught exception.

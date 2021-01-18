@@ -32,24 +32,27 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 		Case "translate"
 			wait for (translate(Params.Get("source"),Params.Get("sourceLang"),Params.Get("targetLang"),Params.Get("preferencesMap"))) complete (result As String)
 			Return result
+		Case "batchtranslate"
+			wait for (batchTranslate(Params.Get("source"),Params.Get("sourceLang"),Params.Get("targetLang"),Params.Get("preferencesMap"))) complete (targetList As List)
+			Return targetList
+		Case "supportBatchTranslation"
+			Return True
 		Case "getDefaultParamValues"
 			Return CreateMap("token":"3975l6lr5pcbvidl6jl2")
 	End Select
 	Return ""
 End Sub
 
-Sub translate(source As String, sourceLang As String, targetLang As String,preferencesMap As Map) As ResumableSub
-	Dim target As String
+
+Sub batchTranslate(sourceList As List, sourceLang As String, targetLang As String,preferencesMap As Map) As ResumableSub
+	Dim targetList As List
+	targetList.Initialize
 	Dim job As HttpJob
 	job.Initialize("job",Me)
 	Dim direction As String=sourceLang&"2"&targetLang
-
-	Dim textList As List
-	textList.Initialize
-	textList.Add(source)
 	Dim map1 As Map
 	map1.Initialize
-	map1.Put("source",textList)
+	map1.Put("source",sourceList)
 	map1.Put("trans_type",direction)
 	map1.Put("detect",True)
 	map1.Put("request_id","demo")
@@ -75,18 +78,24 @@ Sub translate(source As String, sourceLang As String, targetLang As String,prefe
 		Try
 			Dim json As JSONParser
 			json.Initialize(job.GetString)
-			Dim targetList As List=json.NextObject.Get("target")
-			target=targetList.Get(0)
+			targetList=json.NextObject.Get("target")
+			Return targetList
 		Catch
 			Log(LastException)
 		End Try
-	Else
-		target=""
 	End If
 	job.Release
-	Return target
+	Return targetList
 End Sub
 
+Sub translate(source As String, sourceLang As String, targetLang As String,preferencesMap As Map) As ResumableSub
+	wait for (batchTranslate(Array As String(source),sourceLang,targetLang,preferencesMap)) Complete (targetList As List)
+	If targetList.Size>0 Then
+		Return targetList.Get(0)
+	Else
+		Return ""
+	End If
+End Sub
 
 Sub getMap(key As String,parentmap As Map) As Map
 	Return parentmap.Get(key)
