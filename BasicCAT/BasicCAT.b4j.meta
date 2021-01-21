@@ -244,6 +244,6 @@ ModuleClosedNodes8=
 ModuleClosedNodes80=
 ModuleClosedNodes81=
 ModuleClosedNodes9=
-NavigationStack=RichTextArea,BaseResized_Event,217,0,Main,dividerPosition_changed,1711,0,Main,lbl_MouseClicked,1737,0,RichTextArea,setAutoHeight,525,0,RichTextArea,totalHeight,533,0,RichTextArea,AreaHeight,526,6,RichTextArea,mi_Action,725,0,RichTextArea,DesignerCreateView,123,0,RichTextArea,Base_MouseClicked,220,0,Main,ListViewParent_Resize,1272,6
+NavigationStack=RichTextArea,BaseResized_Event,217,0,Main,dividerPosition_changed,1711,0,Main,lbl_MouseClicked,1737,0,RichTextArea,setAutoHeight,525,0,RichTextArea,totalHeight,533,0,RichTextArea,AreaHeight,526,6,RichTextArea,mi_Action,725,0,RichTextArea,DesignerCreateView,123,0,RichTextArea,Base_MouseClicked,220,0,Main,ListViewParent_Resize,1272,6,Project,targetTextArea_TextChanged,1029,1
 SelectedBuild=0
 VisibleModules=1,2,3,4,5,6,7,8,9,10,13

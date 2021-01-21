@@ -1033,6 +1033,8 @@ Sub targetTextArea_TextChanged (Old As String, New As String)
 	End If
 	
 	If Old="" And New.Length>1 Then
+		Sleep(20)
+		CallSubDelayed(Main, "ListViewParent_Resize")
 		Return
 	End If
 	If New.Contains(CRLF) Or Old.Contains(CRLF) Then
@@ -1110,6 +1112,7 @@ Sub targetTextArea_TextChanged (Old As String, New As String)
 	'Log(ta.SelectionStart)
 	ShowITPContextMenu(ta,lastString)
 	#end region
+	Sleep(20)
 	CallSubDelayed(Main, "ListViewParent_Resize")
 End Sub
 
