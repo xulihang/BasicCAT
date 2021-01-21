@@ -205,84 +205,84 @@ Library8=jrandomaccessfile
 Library9=jb4xencryption
 Module1=FileChooserUtils
 Module10=RichTextArea
-Module11=MT
-Module12=LangCodeSearchView
-Module13=SearchView
-Module14=LanguagePairSelector
-Module15=TMManager
-Module16=TermManager
-Module17=tikal
-Module18=TMDB
-Module19=LanguageUtils
+Module11=TM
+Module12=SearchAndReplaceRecorder
+Module13=Utils
+Module14=searchAndReplaceDialog
+Module15=PathSaver
+Module16=MT
+Module17=LangCodeSearchView
+Module18=SearchView
+Module19=LanguagePairSelector
 Module2=Project
-Module20=filterGenericUtils
-Module21=XMLUtils
-Module22=TM
-Module23=Utils
-Module24=xliffFilter
-Module25=idmlFilter
-Module26=idmlUtils
-Module27=searchAndReplaceDialog
-Module28=TimestampCalculator
-Module29=FileUtils
+Module20=TMManager
+Module21=TermManager
+Module22=tikal
+Module23=TMDB
+Module24=LanguageUtils
+Module25=filterGenericUtils
+Module26=XMLUtils
+Module27=xliffFilter
+Module28=idmlFilter
+Module29=idmlUtils
 Module3=segmentation
-Module30=SimpleTag
-Module31=editDistance
-Module32=progressDialog
-Module33=TextFlow
-Module34=Previewer
-Module35=opennlp
-Module36=ITP
-Module37=statistics
-Module38=SegmentationRulesManager
-Module39=Theme
+Module30=TimestampCalculator
+Module31=FileUtils
+Module32=SimpleTag
+Module33=editDistance
+Module34=progressDialog
+Module35=TextFlow
+Module36=Previewer
+Module37=opennlp
+Module38=ITP
+Module39=statistics
 Module4=txtFilter
-Module40=SRX
-Module41=MTCompare
-Module42=dictWebView
-Module43=EnumClass
-Module44=jieba
-Module45=XMLBuilder2
-Module46=MTParamsFiller
-Module47=TMX
-Module48=XmlNode
-Module49=confirmReviewDialog
+Module40=SegmentationRulesManager
+Module41=Theme
+Module42=SRX
+Module43=MTCompare
+Module44=dictWebView
+Module45=EnumClass
+Module46=jieba
+Module47=XMLBuilder2
+Module48=MTParamsFiller
+Module49=TMX
 Module5=Term
-Module50=LanguageTool
-Module51=XmlParser
-Module52=Xml2Map
-Module53=importDialog
-Module54=pdfbox
-Module55=SourceTextEditor
-Module56=git
-Module57=TagKind
-Module58=PathSaver
-Module59=InputTextAreaBox
+Module50=XmlNode
+Module51=confirmReviewDialog
+Module52=LanguageTool
+Module53=XmlParser
+Module54=Xml2Map
+Module55=importDialog
+Module56=pdfbox
+Module57=SourceTextEditor
+Module58=git
+Module59=TagKind
 Module6=KeyValueStore
-Module60=PDF2TXT
-Module61=TMEditor
-Module62=HistoryViewer
-Module63=serverLauncher
-Module64=AutoSaver
-Module65=ClientKVS
-Module66=languageChooser
-Module67=HistoryRecord
-Module68=Map2Xml
-Module69=ErrorReporter
+Module60=InputTextAreaBox
+Module61=PDF2TXT
+Module62=TMEditor
+Module63=HistoryViewer
+Module64=serverLauncher
+Module65=AutoSaver
+Module66=ClientKVS
+Module67=languageChooser
+Module68=HistoryRecord
+Module69=Map2Xml
 Module7=ProjectSettings
-Module70=OperationDialog
-Module71=zip4j
-Module72=icu4j
-Module73=POIWord
-Module74=FontPicker
-Module75=TermEditor
-Module76=InputBox
-Module77=TBX
-Module78=CallSubUtils
-Module79=viewSegment
+Module70=ErrorReporter
+Module71=OperationDialog
+Module72=zip4j
+Module73=icu4j
+Module74=POIWord
+Module75=FontPicker
+Module76=TermEditor
+Module77=InputBox
+Module78=TBX
+Module79=CallSubUtils
 Module8=preTranslateDialog
-Module80=coordinate
-Module81=SearchAndReplaceRecorder
+Module80=viewSegment
+Module81=coordinate
 Module9=Preferences
 NumberOfFiles=88
 NumberOfLibraries=26
@@ -301,8 +301,7 @@ Version=7.8
 #AdditionalJar: zip4j-1.3.2
 #AdditionalJar: opennlp-tools-1.9.0
 #AdditionalJar: icu4j
-#AdditionalJar: richtextfx-fat-0.10.5
-#AdditionalJar: RichTextInputMethod
+#AdditionalJar: richtextfx-fat-latest
 #AdditionalJar: jieba-analysis-1.0.2
 
 '-------- for jgit
@@ -1543,22 +1542,26 @@ Sub ListViewParent_Resize
 		End If
 		Dim lineHeightTimes As Double
 		lineHeightTimes=preferencesMap.GetDefault("lineheight",0)
+		
 		Dim sourceTa As RichTextArea = p.GetNode(0).Tag
 		Dim targetTa As RichTextArea = p.GetNode(1).Tag
+
 		sourceTa.LineHeightTimes=lineHeightTimes
 		targetTa.LineHeightTimes=lineHeightTimes
+		Dim taWidth As Double=itemWidth/2-ScrollBarWidth
 		sourceTa.Left=0
-		sourceTa.SetSize(itemWidth/2-ScrollBarWidth,50)
-		targetTa.Left=itemWidth/2-ScrollBarWidth
-		targetTa.SetSize(itemWidth/2-ScrollBarWidth,50)
+		sourceTa.SetSize(taWidth,50)
+		targetTa.Left=taWidth
+		targetTa.SetSize(taWidth,50)
 		Dim sourceHeight,targetHeight As Double
 		sourceHeight=sourceTa.totalHeight
 		targetHeight=targetTa.totalHeight
+		
 		Dim h As Double=Max(25,Max(sourceHeight,targetHeight))
 		p.Left=0
-		p.SetSize(itemWidth-ScrollBarWidth*2,h)
-		sourceTa.SetSize(itemWidth/2-ScrollBarWidth,h)
-		targetTa.SetSize(itemWidth/2-ScrollBarWidth,h)
+		p.SetSize(taWidth*2,h)
+		sourceTa.SetSize(taWidth,h)
+		targetTa.SetSize(taWidth,h)
 	Next
 End Sub
 

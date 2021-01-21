@@ -381,8 +381,7 @@ End Sub
 
 'project action end
 '--------------------
-'git relevant
-
+#region git
 Sub gitcommit(local As Boolean,isSaving As Boolean) As Boolean
 	Dim configured As Boolean=False
 	If Main.preferencesMap.ContainsKey("vcsEnabled") Then
@@ -713,11 +712,9 @@ Sub checkWorkfile
 	End If
 End Sub
 
-'git end
-'-------------------
-'ui relevant
+#End Region
 
-
+#region ui
 Sub lbl_MouseClicked (EventData As MouseEvent)
 	If EventData.PrimaryButtonPressed Then
 		Dim lbl As Label
@@ -1269,17 +1266,7 @@ End Sub
 Sub targetTextArea_SelectedTextChanged(old As Object, new As Object)
 	Dim ta As RichTextArea
 	ta=Sender
-	Dim fromIM As Boolean=False
-	If ta.UseTextArea=False Then
-		If ta.imlength=0 Then
-			fromIM=False
-		Else
-			fromIM=True
-		End If
-	End If
-	If fromIM=False Then
-		onSelectionChanged(new,ta,False)
-	End If
+	onSelectionChanged(new,ta,False)
 End Sub
 
 Sub onSelectionChanged(selectedText As String,ta As RichTextArea,isSource As Boolean)
@@ -2204,6 +2191,8 @@ Public Sub fillVisibleTargetTextArea
 		targetTextArea.Text=bitext.Get(1)
 	Next
 End Sub
+
+#End Region
 
 'impl
 '--------------------------

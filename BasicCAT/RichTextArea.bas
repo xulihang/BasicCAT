@@ -12,7 +12,7 @@ Version=4.19
 Private Sub Class_Globals
 
 	Private mCallBack As Object
-    Private mEventName As String
+	Private mEventName As String
 	Private mForm As Form 'ignore
 	Private mBase As Pane
 	Private DesignerCVCalled As Boolean
@@ -30,13 +30,13 @@ Private Sub Class_Globals
 	Private offset As Int=8
 	Public Font As Font
 	Public Tag As Object
-	Private previousComposedText As String
+
 	Private mDefaultBorderColor As Paint
 	Private mHighLightColor As Paint
 	Private mLineHeightTimes As Double=0
 	Public ta As TextArea
 	Private mUseTextArea As Boolean=False
-	Private imsetup As JavaObject
+	Private mAutoHeight As Boolean=False
 End Sub
 
 'Initializes the object.
@@ -54,7 +54,6 @@ Public Sub Initialize (vCallBack As Object, vEventName As String)
 	If File.Exists(File.DirData("BasicCAT"),"offset") Then
 		offset=File.ReadString(File.DirData("BasicCAT"),"offset")
 	End If
-	imsetup.InitializeNewInstance("com.xulihang.Setup",Null)
 End Sub
 
 Public Sub DesignerCreateView(Base As Pane, Lbl As Label, Props As Map)
@@ -90,8 +89,8 @@ Public Sub DesignerCreateView(Base As Pane, Lbl As Label, Props As Map)
 		SetDefaultBorder
 		'Initialize our wrapper object
 		JO.InitializeNewInstance("org.fxmisc.richtext.CodeArea",Null)
-		setupIM
 		addContextMenu
+		setAutoHeight(True)
 		'Cast the wrapped view to a node so we can use B4x Node methods on it.
 		CustomViewNode = GetObject
 		'Add the stylesheet to colour matching words to the code area node
@@ -127,7 +126,8 @@ Public Sub DesignerCreateView(Base As Pane, Lbl As Label, Props As Map)
 		'Add an eventlistener to the ReadOnlyObjectProperty "layoutBoundsProperty" on the Base Pane so that we can change the internal layout to fit
 		Dim Event As Object = JO.CreateEvent("javafx.beans.value.ChangeListener","BaseResized","")
 		mBaseJO.RunMethodJO("layoutBoundsProperty",Null).RunMethod("addListener",Array(Event))
-	
+		'Dim Event As Object = JO.CreateEvent("javafx.beans.value.ChangeListener","BaseClicked","")
+		'mBaseJO.RunMethodJO("onMouseClickedProperty",Null).RunMethod("addListener",Array(Event))
 		Dim O As Object = JO.CreateEventFromUI("javafx.event.EventHandler","KeyPressed",Null)
 		JO.RunMethod("setOnKeyPressed",Array(O))
 		JO.RunMethod("setFocusTraversable",Array(True))
@@ -173,7 +173,7 @@ Sub Setup(Form As Form,Pnl As Pane,Left As Int,Top As Int,Width As Int,Height As
 	M.Initialize
 	M.Put("Form",Form)
 	M.Put("Editable",True)
-	'As we are passing a map, we can use it to pass an additional flag for our own use 
+	'As we are passing a map, we can use it to pass an additional flag for our own use
 	'with an ID unlikely To be used by B4a In the future
 	M.Put("CVfromsetup",True)
 	
@@ -213,11 +213,18 @@ Private Sub BaseResized_Event(MethodName As String,Args() As Object) As Object		
 	'Make our node added to the Base Pane the same size as the Base Pane
 	If mUseTextArea=False Then
 		CustomViewNode.PrefWidth = mBase.Width-2*offset
-		CustomViewNode.PrefHeight = mBase.Height-2*offset
+		If mAutoHeight=False Then
+			CustomViewNode.PrefHeight = mBase.Height-2*offset
+		End If
 	End If
 
 	'Make any changes needed to other integral nodes
 	UpdateLayout
+End Sub
+
+Sub Base_MouseClicked (EventData As MouseEvent)
+	Log("clicked")
+	RequestFocus
 End Sub
 
 'Update the layout as needed when the Base Pane has changed size.
@@ -518,16 +525,17 @@ Public Sub LineHeight(widthOffset As Int) As Double
 	Return Utils.MeasureMultilineTextHeight(Font,mBase.Width-2*offset-widthOffset,"a")
 End Sub
 
-Public Sub totalHeightEstimate As Double
-	Dim height As Double=20
-	Try
-		height=Max(height,JO.RunMethod("getTotalHeightEstimate",Null))
-	Catch
-		'Log(LastException)
-		Return mBase.Height
-	End Try
-	height=height+2*offset
-	Return height
+Public Sub setAutoHeight(value As Boolean)
+	JO.RunMethod("setAutoHeight",Array(value))
+	mAutoHeight=value
+End Sub
+
+Public Sub AreaHeight As Double
+	If mUseTextArea Then
+		Return ta.Height
+	Else
+		Return JO.RunMethod("getHeight",Null)
+	End If
 End Sub
 
 Public Sub totalHeight As Double
@@ -536,22 +544,9 @@ Public Sub totalHeight As Double
 		height=Max(height,Utils.MeasureMultilineTextHeight(Font,mBase.Width-2*offset-20,getText))
 		height=height+Max(mLineHeightTimes,1.5)*LineHeight(20)
 	Else
-		Try
-			height=Max(height,JO.RunMethod("getTotalHeightEstimate",Null))
-			If mLineHeightTimes>0 Then
-				height=height+mLineHeightTimes*LineHeight(0)
-			End If
-		Catch
-			'Log(LastException)
-			Return mBase.Height
-		End Try
-		height=height+2*offset
+		Return JO.RunMethod("getHeight",Null)+2*offset
 	End If
 	Return height
-End Sub
-
-Sub AdjustHeight
-	mBase.SetSize(mBase.Width,totalHeightEstimate)
 End Sub
 
 Sub setFontFamily(name As String)
@@ -569,8 +564,11 @@ Sub setFontSzie(pixel As Int)
 End Sub
 
 'Callback from TextProperty Listener when the codearea text changes
-Sub TextChanged_Event(MethodName As String,Args() As Object) As Object							'ignore
+Sub TextChanged_Event(MethodName As String,Args() As Object) As ResumableSub							'ignore
 	updateStyleSpans
+	'Sleep(50)
+	'Dim AreaHeight As Double=JO.RunMethod("getHeight",Null)
+	'mBase.SetSize(mBase.Width,AreaHeight+2*offset)
 	If SubExists(mCallBack,mEventName & "_TextChanged") Then
 		CallSubDelayed3(mCallBack,mEventName & "_TextChanged",Args(1),Args(2))
 	End If
@@ -602,15 +600,15 @@ End Sub
 
 'Setup for pattern matching
 Sub InitializePatterns
-    BRACKET_PATTERN="<.*?>"
-    SPACE_PATTERN = " *"
+	BRACKET_PATTERN="<.*?>"
+	SPACE_PATTERN = " *"
 End Sub
 
 'Create the style types for matching words
 Sub ComputeHighlightingB4x(str As String) As JavaObject
 
 	'Dim PMatcher As PatternMatcher = Pattern1.Matcher(Text)
-    Dim Matcher As Matcher = Regex.Matcher($"(?<BRACKET>${BRACKET_PATTERN})|(?<SPACE>${SPACE_PATTERN})"$,str)
+	Dim Matcher As Matcher = Regex.Matcher($"(?<BRACKET>${BRACKET_PATTERN})|(?<SPACE>${SPACE_PATTERN})"$,str)
 	Dim MJO As JavaObject = Matcher
 	
 	Dim SpansBuilder As JavaObject
@@ -628,7 +626,7 @@ Sub ComputeHighlightingB4x(str As String) As JavaObject
 			Index = 2
 			StyleClass = "space"
 		Else
-			If Matcher.Group(1) <> Null Then 
+			If Matcher.Group(1) <> Null Then
 				Index = 1
 				StyleClass = "bracket"
 			End If
@@ -643,21 +641,8 @@ Sub ComputeHighlightingB4x(str As String) As JavaObject
 	Return SpansBuilder.RunMethod("create",Null)
 End Sub
 
-Public Sub setupIM
-	Dim o As JavaObject
-	o.InitializeNewInstance("com.xulihang.InputMethodRequestsObject",Null)
-	o.RunMethod("setArea",Array(GetObject))
-	JO.RunMethod("setInputMethodRequests",Array(o))
-	imsetup.RunMethod("setOnInputMethodTextChanged",Array(JO))
-End Sub
-
-Public Sub getimlength As Int
-	Return imsetup.RunMethod("getimlength",Null)
-End Sub
-
-
 Sub Scroll_Filter (EventData As Event)
-	If mBase.Height>totalHeightEstimate-2*offset Then
+	If mBase.Height>JO.RunMethod("getHeight",Null)-2*offset Then
 		Dim e As JavaObject = EventData
 		Dim Parent As Node
 		Parent=mBase.Parent
@@ -754,3 +739,4 @@ Sub mi_Action
 			JO.RunMethod("redo",Null)
 	End Select
 End Sub
+
