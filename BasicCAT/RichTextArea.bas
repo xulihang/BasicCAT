@@ -126,8 +126,7 @@ Public Sub DesignerCreateView(Base As Pane, Lbl As Label, Props As Map)
 		'Add an eventlistener to the ReadOnlyObjectProperty "layoutBoundsProperty" on the Base Pane so that we can change the internal layout to fit
 		Dim Event As Object = JO.CreateEvent("javafx.beans.value.ChangeListener","BaseResized","")
 		mBaseJO.RunMethodJO("layoutBoundsProperty",Null).RunMethod("addListener",Array(Event))
-		'Dim Event As Object = JO.CreateEvent("javafx.beans.value.ChangeListener","BaseClicked","")
-		'mBaseJO.RunMethodJO("onMouseClickedProperty",Null).RunMethod("addListener",Array(Event))
+
 		Dim O As Object = JO.CreateEventFromUI("javafx.event.EventHandler","KeyPressed",Null)
 		JO.RunMethod("setOnKeyPressed",Array(O))
 		JO.RunMethod("setFocusTraversable",Array(True))
@@ -217,13 +216,11 @@ Private Sub BaseResized_Event(MethodName As String,Args() As Object) As Object		
 			CustomViewNode.PrefHeight = mBase.Height-2*offset
 		End If
 	End If
-
 	'Make any changes needed to other integral nodes
 	UpdateLayout
 End Sub
 
 Sub Base_MouseClicked (EventData As MouseEvent)
-	Log("clicked")
 	RequestFocus
 End Sub
 
@@ -544,7 +541,7 @@ Public Sub totalHeight As Double
 		height=Max(height,Utils.MeasureMultilineTextHeight(Font,mBase.Width-2*offset-20,getText))
 		height=height+Max(mLineHeightTimes,1.5)*LineHeight(20)
 	Else
-		Return JO.RunMethod("getHeight",Null)+2*offset
+		Return AreaHeight+2*offset
 	End If
 	Return height
 End Sub
@@ -567,7 +564,6 @@ End Sub
 Sub TextChanged_Event(MethodName As String,Args() As Object) As ResumableSub							'ignore
 	updateStyleSpans
 	'Sleep(50)
-	'Dim AreaHeight As Double=JO.RunMethod("getHeight",Null)
 	'mBase.SetSize(mBase.Width,AreaHeight+2*offset)
 	If SubExists(mCallBack,mEventName & "_TextChanged") Then
 		CallSubDelayed3(mCallBack,mEventName & "_TextChanged",Args(1),Args(2))
@@ -642,7 +638,7 @@ Sub ComputeHighlightingB4x(str As String) As JavaObject
 End Sub
 
 Sub Scroll_Filter (EventData As Event)
-	If mBase.Height>JO.RunMethod("getHeight",Null)-2*offset Then
+	If mBase.Height>AreaHeight-2*offset Then
 		Dim e As JavaObject = EventData
 		Dim Parent As Node
 		Parent=mBase.Parent
