@@ -127,8 +127,14 @@ Sub getfcConfMap As Map
 	Dim result As Map
 	result.Initialize
 	Try
+		Dim confPath As String
+		If File.Exists(File.Combine(Main.currentProject.path,"config"),"fc.conf") Then
+			confPath=File.Combine(File.Combine(Main.currentProject.path,"config"),"fc.conf")
+		Else
+			confPath=File.Combine(File.Combine(File.DirApp,"okapi"),"fc.conf")
+		End If
 		Dim conf As List
-		conf=File.ReadList(File.Combine(File.DirApp,"okapi"),"fc.conf")
+		conf=File.ReadList(confPath,"")
 		For Each line In conf
 			Dim settings As Map
 			settings.Initialize
@@ -136,7 +142,6 @@ Sub getfcConfMap As Map
 			extension=Regex.Split("	",line)(0)
 			configId=Regex.Split("	",line)(1)
 			settings.Put("configId",configId)
-			
             Try
 				Dim outputEncoding As String
 				outputEncoding=Regex.Split("	",line)(2)
