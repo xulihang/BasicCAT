@@ -164,7 +164,7 @@ Sub categoryListView_SelectedIndexChanged(Index As Int)
 			End If
 			TranslateWordsCheckBox.Checked=unsavedPreferences.GetDefault("autocomplete_translate_words",False)
 			TranslateChunksCheckBox.Checked=unsavedPreferences.GetDefault("autocomplete_translate_chunks",False)
-			Dim autoselectFirstone As Boolean=unsavedPreferences.GetDefault("auto_select_firstone",True)
+			Dim autoselectFirstone As Boolean=unsavedPreferences.GetDefault("auto_select_firstone",False)
 			If unsavedPreferences.ContainsKey("addSourceWords") Then
 				sourceWordsListCheckBox.Checked=unsavedPreferences.Get("addSourceWords")
 				Sleep(100)
