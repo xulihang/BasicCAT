@@ -360,6 +360,7 @@ Sub createProjectFiles
 	configsList.Add("segmentationRules.srx")
 	configsList.Add("dictList.txt")
 	configsList.Add("stopwords.txt")
+	configsList.Add("fc.conf")
 	For Each filename As String In configsList
 		If File.Exists(configPath,filename)=False Then
 			File.Copy(File.DirAssets,filename,configPath,filename)
