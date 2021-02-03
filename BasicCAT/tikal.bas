@@ -141,6 +141,11 @@ Sub getfcConfMap As Map
 			Dim extension,configId As String
 			extension=Regex.Split("	",line)(0)
 			configId=Regex.Split("	",line)(1)
+			If configId.Contains("@") Then 'user specified config
+				If File.Exists(configId,"")=False Then
+					configId=File.Combine(File.Combine(Main.currentProject.path,"config"),configId)
+				End If
+			End If
 			settings.Put("configId",configId)
             Try
 				Dim outputEncoding As String
