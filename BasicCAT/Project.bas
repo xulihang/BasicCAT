@@ -266,6 +266,8 @@ Sub openFile(filename As String,onOpeningProject As Boolean)
 	visibleRange=Main.getVisibleRange(Main.editorLV)
 	fillPane(visibleRange.firstIndex,visibleRange.lastIndex)
 	Main.addScrollChangedEvent(Main.editorLV)
+	Sleep(200)
+	CallSubDelayed(Main,"ListViewParent_Resize")
 End Sub
 
 Sub closeFile
