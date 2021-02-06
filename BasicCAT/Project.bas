@@ -2545,7 +2545,7 @@ Sub generateTargetFileForOne(filename As String)
 			Dim targetPath As String
 			targetPath=File.Combine(File.Combine(path,"target"),filename)
 			Dim sourceDir As String
-			sourceDir=File.Combine(path,"source")
+			sourceDir=File.GetFileParent(File.Combine(File.Combine(path,"source"),filename))
 			tikal.merge(targetPath,sourceDir,outputDir)
 		End If
 	Else
