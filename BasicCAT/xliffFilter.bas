@@ -279,9 +279,13 @@ Sub generateFile(filename As String,path As String,projectFile As Map)
 				End If
 			End If
             
+			Dim sb As StringBuilder
+			sb.Initialize
+			sb.Append(extra.Get("id"))
+			sb.Append(File.GetName(bitext.Get(3)))
 			Dim segmentKey As String
-			segmentKey=extra.Get("id")&bitext.Get(3)
-
+			segmentKey=sb.ToString
+            
 			If translationMap.ContainsKey(segmentKey) Then
 
 				Dim dataMap As Map
@@ -313,6 +317,7 @@ Sub generateFile(filename As String,path As String,projectFile As Map)
 			End If
 		Next
 	Next
+
 	revertTags(translationMap,path,filename)
 	Dim xmlString As String
 	xmlString=XMLUtils.asString(insertTranslation(translationMap,filename,path,isSegEnabled))
@@ -337,7 +342,7 @@ Sub revertTags(translationMap As Map,path As String, filename As String)
 			text=tu.Get("source")
 			Dim id As String
 			id=tu.Get("id")
-			Dim segmentKey As String=id&innerfileName
+			Dim segmentKey As String=id&File.GetName(innerfileName)
 			If translationMap.ContainsKey(segmentKey) Then
 				Dim dataMap As Map
 				dataMap=translationMap.Get(segmentKey)
@@ -396,14 +401,14 @@ Sub updateTransUnit(transUnit As XmlNode,originalFilename As String,translationM
 	Dim id As String
 	id=attributes.Get("id")
 	Dim segmentKey As String
-	segmentKey=id&originalFilename
+	segmentKey=id&File.GetName(originalFilename)
 	Dim targetNode As XmlNode=transUnit.Get("target").Get(0)
 	If translationMap.ContainsKey(segmentKey) Then
 		Dim dataMap As Map
 		dataMap=translationMap.Get(segmentKey)
 		Dim segList As List
 		segList=dataMap.Get("seg")
-		If originalFilename=dataMap.Get("filename") Then
+		If File.GetName(originalFilename)=File.GetName(dataMap.Get("filename")) Then
 			Dim bitext As List
 			If isSegEnabled Then
 				Dim mrkList As List
