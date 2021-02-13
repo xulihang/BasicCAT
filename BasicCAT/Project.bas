@@ -929,7 +929,7 @@ Sub reimportFile(filename As String) As ResumableSub
 	workFileBackupPath=File.Combine(File.Combine(path,"work"),filename&".json.bak")
 	Dim sourceFilePath As String=File.Combine(File.Combine(path,"source"),filename)
 	Dim sourceFileLastModifiedTime As Long=File.LastModified(sourceFilePath,"")
-	Dim workFileLastCreationTime As Long=FileUtils.GetFileCreation(workFilePath,"")
+	Dim workFileLastCreationTime As Long=getWorkFileCreationTime(filename)
 	Dim fileUpdated As Boolean=sourceFileLastModifiedTime>workFileLastCreationTime
 		
 	If projectFile.ContainsKey("okapiExtractedFiles") Then
@@ -959,7 +959,7 @@ Sub reimportFile(filename As String) As ResumableSub
 	If fileUpdated Then
 		File.Copy(workFilePath,"",workFileBackupPath,"")		
 		wait for (createWorkFileAccordingToExtension(filename)) Complete (result As Object)
-		FileUtils.SetFileCreation(workFilePath,DateTime.Now)
+		setWorkFileCreationTime(filename,DateTime.Now)
 		Dim fileSegments As List
 		fileSegments.Initialize
 		readWorkFile(filename,fileSegments,False,path)
@@ -971,6 +971,34 @@ Sub reimportFile(filename As String) As ResumableSub
 		End If
 	End If
 	Return ""
+End Sub
+
+Sub getWorkFileCreationTime(filename As String) As Long
+	Dim workFilePath As String=File.Combine(File.Combine(path,"work"),filename&".json")
+	Dim WorkFile As Map
+	WorkFile=WorkFileMap(filename)
+	Return WorkFile.GetDefault("creationTime",FileUtils.GetFileCreation(workFilePath,""))
+End Sub
+
+Sub setWorkFileCreationTime(filename As String,time As Long)
+	Dim workFilePath As String=File.Combine(File.Combine(path,"work"),filename&".json")
+	Dim workfile As Map=WorkFileMap(filename)
+	workfile.Put("creationTime",time)
+	Dim jsonG As JSONGenerator
+	jsonG.Initialize(workfile)
+	If filename=currentFilename Then
+		currentWorkFileFrame.Put("creationTime",time)
+	End If
+	File.WriteString(workFilePath,"",jsonG.ToPrettyString(4))
+End Sub
+
+Sub WorkFileMap(filename As String) As Map
+	Dim workFilePath As String=File.Combine(File.Combine(path,"work"),filename&".json")
+	Dim json As JSONParser
+	json.Initialize(File.ReadString(workFilePath,""))
+	Dim workFile As Map
+	workFile=json.NextObject
+	Return workFile
 End Sub
 
 Sub generateTargetFileMi_Action
@@ -2384,12 +2412,7 @@ Sub readWorkFile(filename As String,filesegments As List,fillUI As Boolean,root 
 		End If
 	End If
 	If filename=currentFilename Then
-		currentWorkFileFrame.Initialize
-		For Each key As String In workfile.Keys
-			If key<>"files" Then
-				currentWorkFileFrame.Put(key,workfile.Get(key))
-			End If
-		Next
+		currentWorkFileFrame=readWorkFileFrame(workfile)
 	End If
 	
 	Dim sourceFiles As List
@@ -2409,9 +2432,25 @@ Sub readWorkFile(filename As String,filesegments As List,fillUI As Boolean,root 
 	Next
 End Sub
 
+Sub readWorkFileFrame(workfile As Map) As Map
+	Dim frame As Map
+	frame.Initialize
+	For Each key As String In workfile.Keys
+		If key<>"files" Then
+			frame.Put(key,workfile.Get(key))
+		End If
+	Next
+	Return frame
+End Sub
+
 Sub saveWorkFile(filename As String,fileSegments As List,root As String)
 	Dim workfile As Map
-	workfile=currentWorkFileFrame
+	If filename=currentFilename Then
+		workfile=currentWorkFileFrame
+	Else
+		workfile=readWorkFileFrame(WorkFileMap(filename))
+	End If
+	
 	If SegEnabledFiles.IndexOf(filename)<>-1 Then
 		workfile.Put("seg_enabled",True)
 	Else
