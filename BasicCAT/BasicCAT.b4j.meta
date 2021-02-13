@@ -244,6 +244,6 @@ ModuleClosedNodes8=
 ModuleClosedNodes80=
 ModuleClosedNodes81=
 ModuleClosedNodes9=
-NavigationStack=Project,saveNewDataToWorkfile,2649,0,Project,reimportFile,958,6,Project,updateSegmentsWithWorkfile,856,0,Project,readWorkfileToSegments,895,0,Project,readWorkFileFrame,2424,6,Project,readWorkFile,2389,2,Project,WorkFileMap,989,6,Project,getWorkFileCreationTime,970,2,Project,setWorkFileCreationTime,976,6,Project,saveWorkFile,2444,6
+NavigationStack=Project,readWorkfileToSegments,899,0,Project,readWorkFile,2405,0,Project,WorkFileMap2,1001,0,Project,samelocalHeadAndRemoteHead,583,0,Project,updateLocalFileBasedonFetch,646,6,Project,setWorkFileCreationTime,1007,0,Project,reimportFile,956,0,Project,updateWorkFile,662,6,Project,checkWorkfile,700,6,Project,commitAndPush,552,6
 SelectedBuild=0
 VisibleModules=1,2,3,4,5,6,7,8,9,10,27,31

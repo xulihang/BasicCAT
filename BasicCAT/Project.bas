@@ -511,7 +511,7 @@ Public Sub commitAndPush(commitMessage As String)
 	Main.enableAutosaveTimer(False)
 	Main.updateOperation("commiting and pushing")
 	Sleep(0)
-
+    Dim remotelyChanged As Boolean=False
 	If projectGit.isConflicting Then
 		Log("conflicting")
 		Dim filename As String=projectGit.conflictsUnSolvedFilename(path)
@@ -528,7 +528,7 @@ Public Sub commitAndPush(commitMessage As String)
 			End If
 		End If
 	Else
-		wait for (updateLocalFileBasedonFetch(username,password,email)) Complete (success As Object)
+		wait for (updateLocalFileBasedonFetch(username,password,email)) Complete (remotelyChanged As Boolean)
 		Dim diffList As List
 		diffList=projectGit.diffList
 		Log(diffList)
@@ -650,8 +650,13 @@ Sub updateLocalFileBasedonFetch(username As String,password As String,email As S
 	End If
 
 	Log("worddir,after: "&projectGit.getWorkdirPath)
-	Return True
+	If isSame Then
+		Return False
+	Else
+		Return True
+	End If
 End Sub
+
 
 Sub updateWorkFile(filename As String) As Boolean
 	Dim needsPush As Boolean=False
@@ -701,17 +706,23 @@ End Sub
 
 Sub checkWorkfile
 	If segments.Size<>0 Then
+		Dim segmentsChanged As Boolean
 		Dim filesegments As List
 		filesegments.Initialize
 		readWorkFile(currentFilename,filesegments,False,path)
 		If filesegments.Size<>segments.Size Then
-		    Dim result As Int
-			result=fx.Msgbox2(Main.MainForm,"Someone has merged or splitted segments of current file. Reopen it?","","Reopen","","No",fx.MSGBOX_CONFIRMATION)
+			segmentsChanged=True
+		End If
+
+		If segmentsChanged Then
+			Dim result As Int
+			Dim info As String="Someone has modified segments of the current file. Reopen it?"
+			result=fx.Msgbox2(Main.MainForm,info,"","Reopen","","No",fx.MSGBOX_CONFIRMATION)
 			Select result
 				Case fx.DialogResponse.POSITIVE
-			        openFile(currentFilename,True)
+					openFile(currentFilename,True)
 			End Select
-		End If
+		End If		
 	End If
 End Sub
 
@@ -994,6 +1005,14 @@ End Sub
 
 Sub WorkFileMap(filename As String) As Map
 	Dim workFilePath As String=File.Combine(File.Combine(path,"work"),filename&".json")
+	Dim json As JSONParser
+	json.Initialize(File.ReadString(workFilePath,""))
+	Dim workFile As Map
+	workFile=json.NextObject
+	Return workFile
+End Sub
+
+Sub WorkFileMap2(workFilePath As String) As Map
 	Dim json As JSONParser
 	json.Initialize(File.ReadString(workFilePath,""))
 	Dim workFile As Map
