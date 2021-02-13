@@ -702,7 +702,7 @@ Sub updateWorkFile(filename As String) As Boolean
 			If remoteCreatedTime>localCreatedTime Then
 				localSegment.Set(1,remoteSegment.Get(1))
 				localSegment.Set(4,remoteExtra)
-				If filename=currentFilename Then
+				If filename=currentFilename And filtered=False Then
 					Dim segment As List 'also need to set the clv and segment
 					segment=segments.Get(i)
 					segment.Set(1,remoteSegment.Get(1))
@@ -2692,7 +2692,7 @@ Public Sub saveNewDataToWorkfile(changedKeys As List)
 					bitext.Set(1,target)
 					extra.Put("creator",creator)
 					extra.Put("createdTime",createdTime)
-					If filename=currentFilename Then
+					If filename=currentFilename And filtered=False Then
 						Dim segment As List 'also need to set the clv and segment
 						segment=segments.Get(index)
 						segment.Set(1,target)
