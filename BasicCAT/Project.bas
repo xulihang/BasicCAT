@@ -928,14 +928,18 @@ Sub reimportFile(filename As String) As ResumableSub
 	workFilePath=File.Combine(File.Combine(path,"work"),filename&".json")
 	workFileBackupPath=File.Combine(File.Combine(path,"work"),filename&".json.bak")
 	Dim sourceFilePath As String=File.Combine(File.Combine(path,"source"),filename)
-	Dim fileUpdated As Boolean=File.LastModified(sourceFilePath,"")>FileUtils.GetFileCreation(workFilePath,"")
+	Dim sourceFileLastModifiedTime As Long=File.LastModified(sourceFilePath,"")
+	Dim workFileLastCreationTime As Long=FileUtils.GetFileCreation(workFilePath,"")
+	Dim fileUpdated As Boolean=sourceFileLastModifiedTime>workFileLastCreationTime
+		
 	If projectFile.ContainsKey("okapiExtractedFiles") Then
 		Dim okapiExtractedFiles As List=projectFile.get("okapiExtractedFiles")
 		If okapiExtractedFiles.IndexOf(filename)<>-1 Then
 			Dim originalFilename As String
 			originalFilename=filename.SubString2(0,filename.LastIndexOf("."))
 			Dim originalFilePath As String=File.Combine(File.Combine(path,"source"),originalFilename)
-			fileUpdated=File.LastModified(originalFilePath,"")>FileUtils.GetFileCreation(workFilePath,"")
+			sourceFileLastModifiedTime=File.LastModified(originalFilePath,"")
+			fileUpdated=sourceFileLastModifiedTime>workFileLastCreationTime
 			If fileUpdated Then
 				Dim sl,tl As String
 				sl=projectFile.Get("source")
@@ -945,15 +949,17 @@ Sub reimportFile(filename As String) As ResumableSub
 				wait for (tikal.extract(sl,tl,tempPath,File.Combine(path,"source"),settings.GetDefault("tikal_codeattrs",False))) complete (success As Boolean)
 				File.Delete(tempPath,"")
 				If success=False Then
-					Return ""
+					Return ""					
 				End If
+				FileUtils.SetModifiedTime(originalFilePath,"",sourceFileLastModifiedTime)
 			End If
 		End If
 	End If
 
 	If fileUpdated Then
-		File.Copy(workFilePath,"",workFileBackupPath,"")
+		File.Copy(workFilePath,"",workFileBackupPath,"")		
 		wait for (createWorkFileAccordingToExtension(filename)) Complete (result As Object)
+		FileUtils.SetFileCreation(workFilePath,DateTime.Now)
 		Dim fileSegments As List
 		fileSegments.Initialize
 		readWorkFile(filename,fileSegments,False,path)

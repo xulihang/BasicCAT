@@ -113,9 +113,20 @@ Private Sub ExtractSubFolders(RootFolder As String, SubFolders As List)
 	Next
 End Sub
 
+Sub SetModifiedTime(dir As String,filename As String,time As Long)
+	Dim fileJO As JavaObject
+	fileJO.InitializeNewInstance("java.io.File",Array(File.Combine(dir,filename)))
+	fileJO.RunMethod("setLastModified",Array(time))
+End Sub
+
 Sub GetFileCreation(dir As String,filename As String) As Long
 	Dim jo As JavaObject=Me
 	Return jo.RunMethod("getCreation",Array(File.Combine(dir,filename)))
+End Sub
+
+Sub SetFileCreation(dir As String,filename As String,newTime As Long)
+	Dim jo As JavaObject=Me
+	jo.RunMethod("setCreation",Array(File.Combine(dir,filename),newTime))
 End Sub
 
 #if java
@@ -124,6 +135,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.attribute.FileTime;
+
 public static long getCreation(String filePath) throws IOException {
     File myfile = new File(filePath);
     Path path = myfile.toPath();
@@ -131,4 +144,11 @@ public static long getCreation(String filePath) throws IOException {
             BasicFileAttributes.class);
     return fatr.creationTime().toMillis();
 }
+
+public static void setCreation(String filePath, long newTime) throws IOException {
+    File myfile = new File(filePath);
+    Path path = myfile.toPath();
+	Files.setAttribute(path, "creationTime", FileTime.fromMillis(newTime));
+}
+
 #end if
