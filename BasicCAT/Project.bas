@@ -887,12 +887,12 @@ Sub updateSegmentsWithWorkfile(workFilePath As String,segmentsToUpdate As List)
 			extra=segment.Get(4)
 			Dim extraFromWorkfile As Map
 			extraFromWorkfile=segmentFromWorkfile.Get(4)
-			If extraFromWorkfile.GetDefault("createdTime",0)>=extra.GetDefault("createdTime",0) Then
-				If extra.ContainsKey("id") Then
-					extraFromWorkfile.Put("id",extra.Get("id"))
-				End If
-				segment.Clear
-				segment.AddAll(segmentFromWorkfile)
+			If extraFromWorkfile.GetDefault("createdTime",1)>=extra.GetDefault("createdTime",0) Then
+				'only update translation and extra
+				For Each key As String In extraFromWorkfile.Keys
+					extra.Put(key,extraFromWorkfile.Get(key))
+				Next
+				segment.Set(1,segmentFromWorkfile.Get(1))
 			End If
 		End If
 	Next
