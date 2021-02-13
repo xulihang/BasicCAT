@@ -666,7 +666,24 @@ Sub updateWorkFile(filename As String) As Boolean
 	readWorkFile(filename,localFileSegments,False,path)
 	readWorkFile(filename,remoteFileSegments,False,File.Combine(path,"tmp"))
 	If localFileSegments.Size<>remoteFileSegments.Size Then
-		Return needsPush
+		Log("size different")
+		Dim localWorkFilePath,remoteWorkFilePath As String
+		localWorkFilePath=File.Combine(File.Combine(path,"work"),filename&".json")
+		remoteWorkFilePath=File.Combine(File.Combine(File.Combine(path,"tmp"),"work"),filename&".json")
+		Select fx.Msgbox2(Main.MainForm,"Segments merged or splitted. Use local version or remote version?","","Local","","Remote",fx.MSGBOX_CONFIRMATION)
+			Case fx.DialogResponse.NEGATIVE
+				updateSegmentsWithWorkfile(localWorkFilePath,remoteFileSegments)
+				saveWorkFile(filename,remoteFileSegments,File.Combine(path,"tmp"))
+				File.Copy(remoteWorkFilePath,"",localWorkFilePath,"")
+			Case fx.DialogResponse.POSITIVE
+				updateSegmentsWithWorkfile(remoteWorkFilePath,localFileSegments)
+				saveWorkFile(filename,localFileSegments,path)
+				File.Copy(localWorkFilePath,"",remoteWorkFilePath,"")
+		End Select
+		If filename=currentFilename Then
+			openFile(filename,False)
+		End If
+		Return True
 	End If
 	Dim size As Int=localFileSegments.Size
 	For i=0 To size-1
