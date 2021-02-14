@@ -241,6 +241,9 @@ End Sub
 
 Public Sub SetSize(width As Double,height As Double)
 	mBase.SetSize(width,height)	
+	If mUseTextArea Then
+		ta.SetSize(width,height-1)
+	End If
 End Sub
 
 Public Sub setUseTextArea(use As Boolean)
