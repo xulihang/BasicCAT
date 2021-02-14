@@ -1533,6 +1533,7 @@ Sub ListViewParent_Resize
 	End If
 	
 	Dim itemWidth As Double = lv.Width
+
 	Dim ExtraSize As Int
 	ExtraSize=3
 	For i = Max(0, FirstVisibleIndex - ExtraSize) To Min(LastVisibleIndex + ExtraSize,editorLV.Items.Size - 1)
@@ -1555,6 +1556,7 @@ Sub ListViewParent_Resize
 		sourceTa.SetSize(taWidth,50)
 		targetTa.Left=taWidth
 		targetTa.SetSize(taWidth,50)
+
 		Dim sourceHeight,targetHeight As Double
 		sourceHeight=sourceTa.totalHeight
 		targetHeight=targetTa.totalHeight

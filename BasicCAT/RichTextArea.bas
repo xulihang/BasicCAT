@@ -90,7 +90,7 @@ Public Sub DesignerCreateView(Base As Pane, Lbl As Label, Props As Map)
 		'Initialize our wrapper object
 		JO.InitializeNewInstance("org.fxmisc.richtext.CodeArea",Null)
 		addContextMenu
-		setAutoHeight(True)
+		setAutoHeight(False)
 		'Cast the wrapped view to a node so we can use B4x Node methods on it.
 		CustomViewNode = GetObject
 		'Add the stylesheet to colour matching words to the code area node
@@ -210,11 +210,13 @@ End Sub
 Private Sub BaseResized_Event(MethodName As String,Args() As Object) As Object			'ignore
 	
 	'Make our node added to the Base Pane the same size as the Base Pane
-	If mUseTextArea=False Then
-		CustomViewNode.PrefWidth = mBase.Width-2*offset
-		If mAutoHeight=False Then
-			CustomViewNode.PrefHeight = mBase.Height-2*offset
-		End If
+	Dim width,height As Double
+	width=mBase.Width
+	height=mBase.Height
+	If mUseTextArea Then
+		ta.SetSize(width,height-1)
+	Else
+		CustomViewNode.SetSize(width-2*offset,height-2*offset)
 	End If
 	'Make any changes needed to other integral nodes
 	UpdateLayout
@@ -238,10 +240,7 @@ Public Sub SetNodeOrientation(value As String)
 End Sub
 
 Public Sub SetSize(width As Double,height As Double)
-	mBase.SetSize(width,height)
-	If mUseTextArea Then
-		ta.SetSize(width,height-1)
-	End If
+	mBase.SetSize(width,height)	
 End Sub
 
 Public Sub setUseTextArea(use As Boolean)
@@ -523,17 +522,26 @@ Public Sub LineHeight(widthOffset As Int) As Double
 End Sub
 
 Public Sub setAutoHeight(value As Boolean)
-	JO.RunMethod("setAutoHeight",Array(value))
-	mAutoHeight=value
+	If mUseTextArea=False Then
+		JO.RunMethod("setAutoHeight",Array(value))
+		mAutoHeight=value
+	End If
 End Sub
 
 Public Sub AreaHeight As Double
 	If mUseTextArea Then
 		Return ta.Height
 	Else
-		Return JO.RunMethod("getHeight",Null)
+		Dim height As Double
+		Try
+			height=JO.RunMethod("getTotalHeightEstimate",Null)
+		Catch
+			height=JO.RunMethod("getHeight",Null)
+		End Try
+		Return height
 	End If
 End Sub
+
 
 Public Sub totalHeight As Double
 	Dim height As Double=20
