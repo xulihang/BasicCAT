@@ -621,14 +621,22 @@ Sub updateLocalFileBasedonFetch(username As String,password As String,email As S
 		
 		For Each filename As String In diffList
 			Log(filename&" changed")
-			If File.Exists(path,filename) Then
-				If filename.StartsWith("work") And filename.EndsWith(".json") Then
-					Dim pureFilename As String
-					pureFilename=Utils.replaceOnce(filename,"work/","")
-					pureFilename=Utils.replaceOnceFromTheEnd(pureFilename,".json","")
+			
+			If filename.StartsWith("work") And filename.EndsWith(".json") Then
+				Dim pureFilename As String
+				pureFilename=Utils.replaceOnce(filename,"work/","")
+				pureFilename=Utils.replaceOnceFromTheEnd(pureFilename,".json","")
+				
+				If File.Exists(path,filename) Then					
 					If updateWorkFile(pureFilename) Then
 						needsPushList.Add(filename)
 					End If
+				Else
+					If File.Exists(File.Combine(path,"tmp"),filename) Then
+						File.Copy(File.Combine(path,"tmp"),filename,path,filename)
+						files.Add(pureFilename)
+						addFilesToTreeTable(pureFilename)
+					End If					
 				End If
 			End If
 		Next
@@ -670,16 +678,22 @@ Sub updateWorkFile(filename As String) As Boolean
 		Dim localWorkFilePath,remoteWorkFilePath As String
 		localWorkFilePath=File.Combine(File.Combine(path,"work"),filename&".json")
 		remoteWorkFilePath=File.Combine(File.Combine(File.Combine(path,"tmp"),"work"),filename&".json")
-		Select fx.Msgbox2(Main.MainForm,"Segments merged or splitted. Use local version or remote version?","","Local","","Remote",fx.MSGBOX_CONFIRMATION)
+		Dim useRemote As Boolean=True
+		Select fx.Msgbox2(Main.MainForm, "Segments merged or splitted. Use local version or remote version?",filename,"Local","","Remote",fx.MSGBOX_CONFIRMATION)
 			Case fx.DialogResponse.NEGATIVE
-				updateSegmentsWithWorkfile(localWorkFilePath,remoteFileSegments)
-				saveWorkFile(filename,remoteFileSegments,File.Combine(path,"tmp"))
-				File.Copy(remoteWorkFilePath,"",localWorkFilePath,"")
+				useRemote=True
 			Case fx.DialogResponse.POSITIVE
-				updateSegmentsWithWorkfile(remoteWorkFilePath,localFileSegments)
-				saveWorkFile(filename,localFileSegments,path)
-				File.Copy(localWorkFilePath,"",remoteWorkFilePath,"")
+				useRemote=False
 		End Select
+        If useRemote Then
+			updateSegmentsWithWorkfile(localWorkFilePath,remoteFileSegments)
+			saveWorkFile(filename,remoteFileSegments,File.Combine(path,"tmp"))
+			File.Copy(remoteWorkFilePath,"",localWorkFilePath,"")
+		Else
+			updateSegmentsWithWorkfile(remoteWorkFilePath,localFileSegments)
+			saveWorkFile(filename,localFileSegments,path)
+			File.Copy(localWorkFilePath,"",remoteWorkFilePath,"")
+        End If
 		If filename=currentFilename Then
 			openFile(filename,False)
 		End If
