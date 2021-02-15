@@ -1660,11 +1660,11 @@ Sub changeSegment(offset As Int,targetTextArea As RichTextArea)
 		Main.updateSegmentLabel(lastEntry,segments.Size)
 		Dim visibleRange As Range
 		visibleRange=Main.getVisibleRange(Main.editorLV)
-		If index+offset<visibleRange.firstIndex+1 Or index+offset>visibleRange.lastIndex-1 Then
+		If index+offset<visibleRange.firstIndex+2 Or index+offset>visibleRange.lastIndex-2 Then
 			If offset<0 Then
 				Main.editorLV.ScrollTo(index+offset)
 			Else
-				Main.editorLV.ScrollTo(index+offset-visibleRange.lastIndex+visibleRange.firstIndex+1)
+				Main.editorLV.ScrollTo(index+offset-visibleRange.lastIndex+visibleRange.firstIndex+2)
 			End If
 		End If
 	Catch
