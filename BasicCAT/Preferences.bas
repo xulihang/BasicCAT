@@ -48,6 +48,7 @@ Sub Class_Globals
 	Private UseRichTextAreaCheckBox As CheckBox
 	Private autoSelectCheckBox As CheckBox
 	Private TranslateChunksCheckBox As CheckBox
+	Private VerticalViewCheckBox As CheckBox
 End Sub
 
 'Initializes the object. You can add parameters to this method if needed.
@@ -125,6 +126,9 @@ Sub categoryListView_SelectedIndexChanged(Index As Int)
 			End If
 			If unsavedPreferences.ContainsKey("darktheme") Then
 				DarkThemeCheckBox.Checked=unsavedPreferences.get("darktheme")
+			End If
+			If unsavedPreferences.ContainsKey("vertical_view") Then
+				DarkThemeCheckBox.Checked=unsavedPreferences.get("vertical_view")
 			End If
 		Case 2
 			'mt
@@ -512,4 +516,8 @@ End Sub
 
 Sub autoSelectCheckBox_CheckedChange(Checked As Boolean)
 	unsavedPreferences.Put("auto_select_firstone",Checked)
+End Sub
+
+Sub VerticalViewCheckBox_CheckedChange(Checked As Boolean)
+	unsavedPreferences.Put("vertical_view",Checked)
 End Sub

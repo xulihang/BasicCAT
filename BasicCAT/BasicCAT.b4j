@@ -1551,21 +1551,43 @@ Sub ListViewParent_Resize
 
 		sourceTa.LineHeightTimes=lineHeightTimes
 		targetTa.LineHeightTimes=lineHeightTimes
-		Dim taWidth As Double=itemWidth/2-ScrollBarWidth
-		sourceTa.Left=0
-		sourceTa.SetSize(taWidth,50)
-		targetTa.Left=taWidth
-		targetTa.SetSize(taWidth,50)
-
-		Dim sourceHeight,targetHeight As Double
-		sourceHeight=sourceTa.totalHeight
-		targetHeight=targetTa.totalHeight
 		
-		Dim h As Double=Max(25,Max(sourceHeight,targetHeight))
-		p.Left=0
-		p.SetSize(taWidth*2,h)
-		sourceTa.SetSize(taWidth,h)
-		targetTa.SetSize(taWidth,h)
+		Dim taWidth As Double
+		Dim sourceHeight,targetHeight As Double
+		Dim vertical As Boolean=preferencesMap.GetDefault("vertical_view",False)
+		If vertical=False Then
+			taWidth=itemWidth/2-ScrollBarWidth
+			sourceTa.Left=0
+			sourceTa.SetSize(taWidth,50)
+			targetTa.Left=taWidth
+			targetTa.SetSize(taWidth,50)
+			
+			sourceHeight=sourceTa.totalHeight
+			targetHeight=targetTa.totalHeight
+		
+			Dim h As Double=Max(25,Max(sourceHeight,targetHeight))
+			p.Left=0
+			p.SetSize(taWidth*2,h)
+			sourceTa.SetSize(taWidth,h)
+			targetTa.SetSize(taWidth,h)
+			
+		Else
+			Dim space As Int=10
+			taWidth=itemWidth-ScrollBarWidth*2
+			sourceTa.Left=0
+			targetTa.Left=0
+			sourceTa.SetSize(taWidth,50)
+			targetTa.SetSize(taWidth,50)
+			sourceHeight=sourceTa.totalHeight
+			targetHeight=targetTa.totalHeight
+			
+			targetTa.Top=sourceHeight+space
+			p.Left=0
+			p.SetSize(taWidth,sourceHeight+targetHeight+space)
+			sourceTa.SetSize(taWidth,sourceHeight)
+			targetTa.SetSize(taWidth,targetHeight)
+		End If
+		
 	Next
 End Sub
 

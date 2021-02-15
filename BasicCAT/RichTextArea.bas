@@ -286,8 +286,20 @@ Private Sub getCaretBounds As JavaObject
 	Return JO.RunMethod("getCaretBounds",Null)
 End Sub
 
-Public Sub setLeft(left As Int)
+Public Sub getLeft As Double
+	Return mBase.Left
+End Sub
+
+Public Sub setLeft(left As Double)
 	mBase.Left=left
+End Sub
+
+Public Sub getTop As Double
+	Return mBase.Top
+End Sub
+
+Public Sub setTop(Top As Double)
+	mBase.Top=Top
 End Sub
 
 Sub setEnabled(enabled As Boolean)
