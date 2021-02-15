@@ -244,6 +244,6 @@ ModuleClosedNodes8=
 ModuleClosedNodes80=
 ModuleClosedNodes81=
 ModuleClosedNodes9=
-NavigationStack=Main,Process_Globals,40,0,Visual Designer,preferences.bjl,-100,1,Visual Designer,generalSetting.bjl,-100,1,Preferences,Class_Globals,0,0,Visual Designer,appearance.bjl,-100,6,Preferences,WebViewFontSizeSpinner_ValueChanged,502,0,Preferences,VerticalViewCheckBox_CheckedChange,512,1,Preferences,autoSelectCheckBox_CheckedChange,508,0,Preferences,categoryListView_SelectedIndexChanged,123,1,Main,ListViewParent_Resize,1280,6
+NavigationStack=Preferences,WebViewFontSizeSpinner_ValueChanged,502,0,Preferences,VerticalViewCheckBox_CheckedChange,512,1,Preferences,autoSelectCheckBox_CheckedChange,508,0,Preferences,categoryListView_SelectedIndexChanged,123,1,Main,ListViewParent_Resize,1280,6,Visual Designer,main.bjl,-100,3,Project,Class_Globals,8,0,Main,MenuBar1_Action,382,4,Main,editSource,462,0,Main,clearSegments,500,6
 SelectedBuild=0
 VisibleModules=1,2,3,4,5,6,7,8,9,10

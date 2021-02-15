@@ -676,6 +676,8 @@ Sub MenuBar1_Action
 			editSource
 		Case "Mark the current segment as neglected/not neglected"
 			changeNeglectedStatus
+		Case "Clear segments"
+			clearSegments
 		Case "Project _settings"
 			If currentProject.IsInitialized=False Then
 				fx.Msgbox(MainForm,"Please open a project first.","")
@@ -776,6 +778,26 @@ Sub editSource
 				Dim sourceTextArea As RichTextArea=p.GetNode(0).Tag
 				sourceTextArea.Text=source
 			End If
+			currentProject.contentIsChanged
+		End If
+	End If
+End Sub
+
+Sub clearSegments
+	If currentProject.segments.Size<>0 Then
+		If fx.Msgbox2(MainForm,"Clear all segments' translation?","","Yes","","No",fx.MSGBOX_CONFIRMATION) = fx.DialogResponse.POSITIVE Then
+			Dim index As Int=0
+			For Each segment As List In currentProject.segments
+				segment.Set(1,"")
+				If editorLV.Items.Size<>0 Then
+					If editorLV.Items.Get(index) Is Pane Then
+						Dim p As Pane=editorLV.Items.Get(index)
+						Dim ta As RichTextArea=p.GetNode(1).Tag
+						ta.Text=""
+					End If
+				End If
+				index=index+1
+			Next
 			currentProject.contentIsChanged
 		End If
 	End If

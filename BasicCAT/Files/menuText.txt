@@ -11,6 +11,7 @@ Show segment history
 Show/Edit notes of the current segmnet
 Edit the source text of the current segment
 Mark the current segment as neglected/not neglected
+Clear segments
 Project _settings
 Pre-_translate
 Git _commit
