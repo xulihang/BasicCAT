@@ -1645,20 +1645,8 @@ Sub changeSegment(offset As Int,targetTextArea As RichTextArea)
 			Dim nextPane As Pane=nextItem
 			Dim nextTA As RichTextArea
 			nextTA=nextPane.GetNode(1).Tag
-			nextTA.RequestFocus
-			Select offset
-				Case -1
-					nextTA.setSelection(nextTA.Length,nextTA.Length)
-				Case 1
-					nextTA.setSelection(0,0)
-			End Select
-			previousTaSelectionEnd=nextTA.SelectionEnd
-			lastEntry=Main.editorLV.Items.IndexOf(nextPane)
-			lastFilename=currentFilename
-			showTM(nextTA)
-			showTerm(nextTA)
-			languagecheck(targetTextArea,index)
-			Main.updateSegmentLabel(lastEntry,segments.Size)
+			
+			
 			Dim visibleRange As Range
 			visibleRange=Main.getVisibleRange(Main.editorLV)
 			If index+offset<visibleRange.firstIndex+2 Or index+offset>visibleRange.lastIndex-2 Then
@@ -1668,6 +1656,22 @@ Sub changeSegment(offset As Int,targetTextArea As RichTextArea)
 					Main.editorLV.ScrollTo(index+offset-visibleRange.lastIndex+visibleRange.firstIndex+2)
 				End If
 			End If
+						
+			Select offset
+				Case -1
+					nextTA.setSelection(nextTA.Length,nextTA.Length)
+				Case 1
+					nextTA.setSelection(0,0)
+			End Select
+			previousTaSelectionEnd=nextTA.SelectionEnd
+			lastEntry=Main.editorLV.Items.IndexOf(nextPane)
+			lastFilename=currentFilename
+			'showTM(nextTA)
+			'showTerm(nextTA)
+			'languagecheck(targetTextArea,index)
+			'Main.updateSegmentLabel(lastEntry,segments.Size)
+			Sleep(0)
+			nextTA.RequestFocus
 		End If
 	Catch
 		Log(LastException)

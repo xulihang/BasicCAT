@@ -42,6 +42,14 @@ Public Sub RichTextBorderColor(dir As String) As Paint
 	Return fx.Colors.DarkGray
 End Sub
 
+Public Sub RichTextBorderWidth(dir As String) As Double
+	If File.Exists(dir,"richtext_borderwidth") Then
+		Return File.ReadString(dir,"richtext_borderwidth").Trim		
+	End If
+	Return 0.5
+End Sub
+
+
 
 Public Sub RichTextHighLightColor(dir As String) As Paint
 	If File.Exists(dir,"richtext_highlightcolor") Then

@@ -244,6 +244,6 @@ ModuleClosedNodes8=
 ModuleClosedNodes80=
 ModuleClosedNodes81=
 ModuleClosedNodes9=
-NavigationStack=Main,setTextAreaStyle,1845,2,RichTextArea,Class_Globals,27,0,RichTextArea,Initialize,49,0,RichTextArea,setEnabled,307,0,RichTextArea,AdjustBorder,411,0,RichTextArea,SetBorderInHighlight,404,0,Project,addTextAreaToSegmentPane,1299,0,Main,ListViewParent_Resize,1280,6,InputTextAreaBox,Button1_MouseClicked,35,0,RichTextArea,SetDefaultBorder,394,2
+NavigationStack=RichTextArea,getDefaultBorderWidth,387,0,RichTextArea,SetDefaultBorder,404,0,RichTextArea,Class_Globals,28,0,RichTextArea,setHighLightColor,422,0,RichTextArea,getHighLightColor,425,0,Main,setTextAreaStyle,1854,6,Main,searchTableView_Action,1539,0,Visual Designer,main.bjl,-100,6,Main,MenuBar1_Action,344,6,Main,ScrollTo,466,6
 SelectedBuild=0
 VisibleModules=1,2,3,4,5,6,7,8,9,10,60,41

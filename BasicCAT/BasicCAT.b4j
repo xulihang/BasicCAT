@@ -621,19 +621,19 @@ Sub MenuBar1_Action
 		Case "_Close"
 			Log("closing")
 			closeProject
-		Case "Go to the next untranslated segment"
+		Case "The next untranslated segment"
 			For i=currentProject.lastEntry To currentProject.segments.Size-1
 				Dim bitext As List
 				bitext=currentProject.segments.Get(i)
 				If bitext.Get(1)="" Then
-					editorLV.ScrollTo(Max(0,i-1))
-					If Abs(currentProject.lastEntry-i)>20 Then
-						Sleep(500)
-						editorLV.ScrollTo(Max(0,i-1))
-					End If
-					Return
+					ScrollTo(i)
+					Exit
 				End If
 			Next
+		Case "The segment of specified index"
+			Dim inpbox As InputBox
+			inpbox.Initialize
+			ScrollTo(inpbox.showAndWait(currentProject.lastEntry))
 		Case "Fill with the 1st one"
 			fillWithTMOrMT(0,True)
 		Case "Fill with the 2nd one"
@@ -748,6 +748,14 @@ Sub MenuBar1_Action
 			version=File.ReadString(File.DirAssets,"version.txt")
 			fx.Msgbox(MainForm,"BasicCAT "&version&CRLF&"@xulihang 2021","BasicCAT")
 	End Select
+End Sub
+
+Sub ScrollTo(index As Int)
+	editorLV.ScrollTo(Max(0,index-1))
+	If Abs(currentProject.lastEntry-index)>20 Then
+		Sleep(500)
+		editorLV.ScrollTo(Max(0,index-1))
+	End If
 End Sub
 
 Sub editSource
@@ -2134,15 +2142,18 @@ Public Sub setTextAreaStyle(ta As RichTextArea,FontNameKey As String)
 	End If
 	
 	If preferencesMap.GetDefault("customCSS_enabled",False)=True Then
-		Dim rgb As String=Theme.RichTextBGColorRGB(preferencesMap.GetDefault("customCSSDir",File.DirApp))
-		Dim bgcolor As Paint=Theme.RichTextBGColor(preferencesMap.GetDefault("customCSSDir",File.DirApp))
+		Dim cssDir As String=preferencesMap.GetDefault("customCSSDir",File.DirApp)
+		Dim rgb As String=Theme.RichTextBGColorRGB(cssDir)
+		Dim bgcolor As Paint=Theme.RichTextBGColor(cssDir)
 		If ta.UseTextArea Then
 			CSSUtils.SetStyleProperty(ta.ta,"-fx-control-inner-background","rgb("&rgb&")")
 			'CSSUtils.SetBackgroundColor(ta.ta,bgcolor)
 		Else
 			CSSUtils.SetBackgroundColor(ta.GetObject,bgcolor)
-			ta.HighLightColor=Theme.RichTextHighLightColor(preferencesMap.GetDefault("customCSSDir",File.DirApp))
-			ta.DefaultBorderColor=Theme.RichTextBorderColor(preferencesMap.GetDefault("customCSSDir",File.DirApp))
+			ta.HighLightColor=Theme.RichTextHighLightColor(cssDir)
+			ta.DefaultBorderColor=Theme.RichTextBorderColor(cssDir)
+			ta.DefaultBorderWidth=Theme.RichTextBorderWidth(cssDir)
+			ta.AdjustBorder(False)
 		End If
 	Else
 		If preferencesMap.GetDefault("darktheme",False) Then
@@ -2192,6 +2203,7 @@ End Sub
 
 Sub MainForm_FocusChanged (HasFocus As Boolean)
 	If HasFocus Then
+		Log("mainform has focus")
 		If currentProject.IsInitialized Then
 			If editorLV.Items.Size<>0 Then
 				Try

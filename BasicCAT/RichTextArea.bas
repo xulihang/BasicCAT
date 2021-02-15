@@ -32,6 +32,7 @@ Private Sub Class_Globals
 	Public Tag As Object
 
 	Private mDefaultBorderColor As Paint
+	Private mDefaultBorderWidth As Double
 	Private mHighLightColor As Paint
 	Private mLineHeightTimes As Double=0
 	Public ta As TextArea
@@ -50,6 +51,7 @@ Public Sub Initialize (vCallBack As Object, vEventName As String)
 	mEventName = vEventName
 	Font=fx.DefaultFont(15)
 	mDefaultBorderColor=fx.Colors.DarkGray
+	mDefaultBorderWidth=0.5
 	mHighLightColor=fx.Colors.RGB(135,206,235)
 	If File.Exists(File.DirData("BasicCAT"),"offset") Then
 		offset=File.ReadString(File.DirData("BasicCAT"),"offset")
@@ -384,6 +386,14 @@ Sub setWrapText(wrap As Boolean)
 End Sub
 
 #region border
+Public Sub setDefaultBorderWidth(width As Double)
+	mDefaultBorderWidth=width
+End Sub
+
+Public Sub getDefaultBorderWidth As Double
+	Return mDefaultBorderWidth
+End Sub
+
 Public Sub resetBorderColor
 	mDefaultBorderColor=fx.Colors.DarkGray
 End Sub
@@ -398,8 +408,7 @@ Public Sub getDefaultBorderColor As Paint
 End Sub
 
 Public Sub SetDefaultBorder
-	Dim width As Double=0.5
-	CSSUtils.SetBorder(mBase,width,mDefaultBorderColor,3)
+	CSSUtils.SetBorder(mBase,mDefaultBorderWidth,mDefaultBorderColor,3)
 	'CSSUtils.SetStyleProperty(mBase,"-fx-effect","null")
 End Sub
 
