@@ -1582,8 +1582,8 @@ Sub ListViewParent_Resize
 			sourceTa.Left=0
 			sourceTa.SetSize(taWidth,50)
 			targetTa.Left=taWidth
-			targetTa.SetSize(taWidth,50)
-			
+			targetTa.Top=sourceTa.Top
+			targetTa.SetSize(taWidth,50)			
 			sourceHeight=sourceTa.totalHeight
 			targetHeight=targetTa.totalHeight
 		
