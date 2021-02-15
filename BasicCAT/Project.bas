@@ -1640,31 +1640,33 @@ Sub changeSegment(offset As Int,targetTextArea As RichTextArea)
 		If index+offset>=Main.editorLV.Items.Size Or index+offset<0 Then
 			Return
 		End If
-		Dim nextPane As Pane
-		nextPane=Main.editorLV.Items.Get(index+offset)
-		Dim nextTA As RichTextArea
-		nextTA=nextPane.GetNode(1).Tag
-		nextTA.RequestFocus
-		Select offset
-			Case -1
-			    nextTA.setSelection(nextTA.Length,nextTA.Length)
-			Case 1
-			    nextTA.setSelection(0,0)
-		End Select
-		previousTaSelectionEnd=nextTA.SelectionEnd
-		lastEntry=Main.editorLV.Items.IndexOf(nextPane)
-		lastFilename=currentFilename
-		showTM(nextTA)
-		showTerm(nextTA)
-		languagecheck(targetTextArea,index)
-		Main.updateSegmentLabel(lastEntry,segments.Size)
-		Dim visibleRange As Range
-		visibleRange=Main.getVisibleRange(Main.editorLV)
-		If index+offset<visibleRange.firstIndex+2 Or index+offset>visibleRange.lastIndex-2 Then
-			If offset<0 Then
-				Main.editorLV.ScrollTo(index+offset)
-			Else
-				Main.editorLV.ScrollTo(index+offset-visibleRange.lastIndex+visibleRange.firstIndex+2)
+		Dim nextItem As Object=Main.editorLV.Items.Get(index+offset)
+		If nextItem Is Pane Then
+			Dim nextPane As Pane=nextItem
+			Dim nextTA As RichTextArea
+			nextTA=nextPane.GetNode(1).Tag
+			nextTA.RequestFocus
+			Select offset
+				Case -1
+					nextTA.setSelection(nextTA.Length,nextTA.Length)
+				Case 1
+					nextTA.setSelection(0,0)
+			End Select
+			previousTaSelectionEnd=nextTA.SelectionEnd
+			lastEntry=Main.editorLV.Items.IndexOf(nextPane)
+			lastFilename=currentFilename
+			showTM(nextTA)
+			showTerm(nextTA)
+			languagecheck(targetTextArea,index)
+			Main.updateSegmentLabel(lastEntry,segments.Size)
+			Dim visibleRange As Range
+			visibleRange=Main.getVisibleRange(Main.editorLV)
+			If index+offset<visibleRange.firstIndex+2 Or index+offset>visibleRange.lastIndex-2 Then
+				If offset<0 Then
+					Main.editorLV.ScrollTo(index+offset)
+				Else
+					Main.editorLV.ScrollTo(index+offset-visibleRange.lastIndex+visibleRange.firstIndex+2)
+				End If
 			End If
 		End If
 	Catch
