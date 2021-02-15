@@ -1,94 +1,93 @@
 ﻿AppType=JavaFX
 Build1=Default,org.xulihang.basiccat
 File1=.gitignore
-File10=dark.css
-File11=dictList.txt
-File12=dictWebview.bjl
-File13=editor.bjl
-File14=editor.css
-File15=ErrorReporter.bjl
-File16=fc.conf
-File17=filterProjectSetting.bjl
-File18=FontPicker.bjl
-File19=Fonts.xml
+File10=dictList.txt
+File11=dictWebview.bjl
+File12=editor.bjl
+File13=editor.css
+File14=ErrorReporter.bjl
+File15=fc.conf
+File16=filterProjectSetting.bjl
+File17=FontPicker.bjl
+File18=Fonts.xml
+File19=generalProjectSetting.bjl
 File2=appearance.bjl
-File20=generalProjectSetting.bjl
-File21=generalSetting.bjl
-File22=HistoryItem.bjl
-File23=HistoryViewer.bjl
-File24=importDialog.bjl
-File25=inputbox.bjl
-File26=inputTextArea.bjl
-File27=lang.conf
-File28=LangaugePairSelector.bjl
-File29=langcodes.txt
+File20=generalSetting.bjl
+File21=HistoryItem.bjl
+File22=HistoryViewer.bjl
+File23=importDialog.bjl
+File24=inputbox.bjl
+File25=inputTextArea.bjl
+File26=lang.conf
+File27=LangaugePairSelector.bjl
+File28=langcodes.txt
+File29=languageChooser.bjl
 File3=autocomplete.bjl
-File30=languageChooser.bjl
-File31=languagesWithoutSpace.txt
-File32=leftProject.bjl
-File33=Log.bjl
-File34=lowerRight.bjl
-File35=main.bjl
-File36=menuText.txt
-File37=MTCompare.bjl
-File38=mtparamfiller.bjl
-File39=mtSetting.bjl
+File30=languagesWithoutSpace.txt
+File31=leftProject.bjl
+File32=Log.bjl
+File33=lowerRight.bjl
+File34=main.bjl
+File35=menuText.txt
+File36=MTCompare.bjl
+File37=mtparamfiller.bjl
+File38=mtSetting.bjl
+File39=oneterm.bjl
 File4=autocorrectItem.bjl
-File40=oneterm.bjl
-File41=operation.bjl
-File42=pdf2txt.bjl
-File43=pluginsSetting.bjl
-File44=preferences.bjl
-File45=preferences.conf
-File46=pretranslate.bjl
-File47=preview.bjl
-File48=progress.bjl
-File49=projectSetting.bjl
+File40=operation.bjl
+File41=pdf2txt.bjl
+File42=pluginsSetting.bjl
+File43=preferences.bjl
+File44=preferences.conf
+File45=pretranslate.bjl
+File46=preview.bjl
+File47=progress.bjl
+File48=projectSetting.bjl
+File49=quickfillSetting.bjl
 File5=autocorrectSetting.bjl
-File50=quickfillSetting.bjl
-File51=richtext.css
-File52=right.bjl
-File53=right-aligned-richtext.css
-File54=searchandreplace.bjl
-File55=SearchAndReplaceRecorder.bjl
-File56=searchTableView.bjl
-File57=SearchView.bjl
-File58=segment.bjl
-File59=segmentation_en.conf
+File50=richtext.css
+File51=right.bjl
+File52=right-aligned-richtext.css
+File53=searchandreplace.bjl
+File54=SearchAndReplaceRecorder.bjl
+File55=searchTableView.bjl
+File56=SearchView.bjl
+File57=segment.bjl
+File58=segmentation_en.conf
+File59=segmentation_en_exception.conf
 File6=basiccat.jpg
-File60=segmentation_en_exception.conf
-File61=segmentation_en_idml.conf
-File62=segmentation_zh.conf
-File63=segmentation_zh_exception.conf
-File64=segmentationRules.srx
-File65=SegmentationRulesManager.bjl
-File66=segmentUsingTextArea.bjl
-File67=serverLanucher.bjl
-File68=settingLanguagecheck.bjl
-File69=settingVersionControl.bjl
+File60=segmentation_en_idml.conf
+File61=segmentation_zh.conf
+File62=segmentation_zh_exception.conf
+File63=segmentationRules.srx
+File64=SegmentationRulesManager.bjl
+File65=segmentUsingTextArea.bjl
+File66=serverLanucher.bjl
+File67=settingLanguagecheck.bjl
+File68=settingVersionControl.bjl
+File69=SourceEditor.bjl
 File7=checkList.bjl
-File70=SourceEditor.bjl
-File71=statistics.bjl
-File72=stopwords.txt
-File73=supportedFiles.txt
-File74=tableview.bjl
-File75=tabpane.bjl
-File76=teamSetting.bjl
-File77=term.bjl
-File78=TermEditor.bjl
-File79=TermManager.bjl
+File70=statistics.bjl
+File71=stopwords.txt
+File72=supportedFiles.txt
+File73=tableview.bjl
+File74=tabpane.bjl
+File75=teamSetting.bjl
+File76=term.bjl
+File77=TermEditor.bjl
+File78=TermManager.bjl
+File79=termSetting.bjl
 File8=confirmReview.bjl
-File80=termSetting.bjl
-File81=timestamp.bjl
-File82=TMEditor.bjl
-File83=TMManager.bjl
-File84=tmSetting.bjl
-File85=upperRight.bjl
-File86=version.txt
-File87=viewSegment.bjl
-File88=webview.css
-File89=wordLookupSetting.bjl
-File9=custom.css
+File80=timestamp.bjl
+File81=TMEditor.bjl
+File82=TMManager.bjl
+File83=tmSetting.bjl
+File84=upperRight.bjl
+File85=version.txt
+File86=viewSegment.bjl
+File87=webview.css
+File88=wordLookupSetting.bjl
+File9=dark.css
 FileGroup1=Default Group
 FileGroup10=Default Group
 FileGroup11=Default Group
@@ -176,7 +175,6 @@ FileGroup85=Default Group
 FileGroup86=Default Group
 FileGroup87=Default Group
 FileGroup88=Default Group
-FileGroup89=Default Group
 FileGroup9=Default Group
 Group=Default Group
 Library1=jcore
@@ -286,7 +284,7 @@ Module8=preTranslateDialog
 Module80=viewSegment
 Module81=coordinate
 Module9=Preferences
-NumberOfFiles=89
+NumberOfFiles=88
 NumberOfLibraries=26
 NumberOfModules=81
 Version=7.8
@@ -1554,7 +1552,7 @@ Sub ListViewParent_Resize
 		ScrollBarWidth=Theme.ScrollBarWidth(preferencesMap.GetDefault("customCSSDir",File.DirApp))
 	End If
 	
-	Dim itemWidth As Double = lv.Width
+	
 
 	Dim ExtraSize As Int
 	ExtraSize=3
@@ -1576,12 +1574,28 @@ Sub ListViewParent_Resize
 		
 		Dim taWidth As Double
 		Dim sourceHeight,targetHeight As Double
+		Dim showIndex As Boolean=preferencesMap.GetDefault("showindex",False)
 		Dim vertical As Boolean=preferencesMap.GetDefault("vertical_view",False)
+		Dim HeadPane As Pane=p.GetNode(2)
+		Dim indexLabel As Label=HeadPane.GetNode(0)
+		Dim left As Double
+		Dim itemWidth As Double
+		If showIndex Then
+			HeadPane.Visible=True			
+			indexLabel.Text=i+1
+			left=indexLabel.PrefWidth
+			itemWidth=lv.PrefWidth-indexLabel.PrefWidth
+		Else
+			HeadPane.Visible=False
+			left=0
+			itemWidth=lv.PrefWidth
+		End If
+		
 		If vertical=False Then
 			taWidth=itemWidth/2-ScrollBarWidth
-			sourceTa.Left=0
+			sourceTa.Left=left
 			sourceTa.SetSize(taWidth,50)
-			targetTa.Left=taWidth
+			targetTa.Left=left+taWidth
 			targetTa.Top=sourceTa.Top
 			targetTa.SetSize(taWidth,50)			
 			sourceHeight=sourceTa.totalHeight
@@ -1592,12 +1606,11 @@ Sub ListViewParent_Resize
 			p.SetSize(taWidth*2,h)
 			sourceTa.SetSize(taWidth,h)
 			targetTa.SetSize(taWidth,h)
-			
 		Else
 			Dim space As Int=10
 			taWidth=itemWidth-ScrollBarWidth*2
-			sourceTa.Left=0
-			targetTa.Left=0
+			sourceTa.Left=left
+			targetTa.Left=left
 			sourceTa.SetSize(taWidth,50)
 			targetTa.SetSize(taWidth,50)
 			sourceHeight=sourceTa.totalHeight
@@ -1610,6 +1623,11 @@ Sub ListViewParent_Resize
 			targetTa.SetSize(taWidth,targetHeight)
 		End If
 		
+		If showIndex Then
+			HeadPane.PrefHeight=p.PrefHeight
+			indexLabel.PrefHeight=p.PrefHeight
+		End If
+
 	Next
 End Sub
 

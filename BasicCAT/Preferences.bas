@@ -49,6 +49,7 @@ Sub Class_Globals
 	Private autoSelectCheckBox As CheckBox
 	Private TranslateChunksCheckBox As CheckBox
 	Private VerticalViewCheckBox As CheckBox
+	Private ShowIndexCheckBox As CheckBox
 End Sub
 
 'Initializes the object. You can add parameters to this method if needed.
@@ -130,6 +131,7 @@ Sub categoryListView_SelectedIndexChanged(Index As Int)
 			If unsavedPreferences.ContainsKey("vertical_view") Then
 				VerticalViewCheckBox.Checked=unsavedPreferences.get("vertical_view")
 			End If
+			ShowIndexCheckBox.Checked=unsavedPreferences.GetDefault("showindex",False)
 		Case 2
 			'mt
 			SettingPane.RemoveAllNodes
@@ -520,4 +522,8 @@ End Sub
 
 Sub VerticalViewCheckBox_CheckedChange(Checked As Boolean)
 	unsavedPreferences.Put("vertical_view",Checked)
+End Sub
+
+Sub ShowIndexCheckBox_CheckedChange(Checked As Boolean)
+	unsavedPreferences.Put("showindex",Checked)
 End Sub
