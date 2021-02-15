@@ -398,12 +398,7 @@ Public Sub getDefaultBorderColor As Paint
 End Sub
 
 Public Sub SetDefaultBorder
-	Dim width As Double
-	If mDefaultBorderColor<>fx.Colors.DarkGray Then
-		width=3
-	Else
-		width=0.5
-	End If
+	Dim width As Double=0.5
 	CSSUtils.SetBorder(mBase,width,mDefaultBorderColor,3)
 	'CSSUtils.SetStyleProperty(mBase,"-fx-effect","null")
 End Sub

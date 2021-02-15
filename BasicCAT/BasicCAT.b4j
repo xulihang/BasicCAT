@@ -1551,8 +1551,6 @@ Sub ListViewParent_Resize
 	If preferencesMap.GetDefault("customCSS_enabled",False)=True Then
 		ScrollBarWidth=Theme.ScrollBarWidth(preferencesMap.GetDefault("customCSSDir",File.DirApp))
 	End If
-	
-	
 
 	Dim ExtraSize As Int
 	ExtraSize=3
@@ -2144,6 +2142,7 @@ Public Sub setTextAreaStyle(ta As RichTextArea,FontNameKey As String)
 		Else
 			CSSUtils.SetBackgroundColor(ta.GetObject,bgcolor)
 			ta.HighLightColor=Theme.RichTextHighLightColor(preferencesMap.GetDefault("customCSSDir",File.DirApp))
+			ta.DefaultBorderColor=Theme.RichTextBorderColor(preferencesMap.GetDefault("customCSSDir",File.DirApp))
 		End If
 	Else
 		If preferencesMap.GetDefault("darktheme",False) Then
