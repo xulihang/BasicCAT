@@ -128,7 +128,7 @@ Sub categoryListView_SelectedIndexChanged(Index As Int)
 				DarkThemeCheckBox.Checked=unsavedPreferences.get("darktheme")
 			End If
 			If unsavedPreferences.ContainsKey("vertical_view") Then
-				DarkThemeCheckBox.Checked=unsavedPreferences.get("vertical_view")
+				VerticalViewCheckBox.Checked=unsavedPreferences.get("vertical_view")
 			End If
 		Case 2
 			'mt
