@@ -574,7 +574,7 @@ Sub resultListView_Action
 			If filename<>Main.currentProject.currentFilename Then
 				Main.currentProject.openFile(filename,False)
 			End If
-			Main.editorLV.ScrollTo(tagMap.get("index"))
+			Main.ScrollTo(tagMap.get("index"))
 			Main.MainForm.AlwaysOnTop=True
 			Main.MainForm.AlwaysOnTop=False
 	End Select

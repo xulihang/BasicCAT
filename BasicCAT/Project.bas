@@ -252,15 +252,16 @@ Sub openFile(filename As String,onOpeningProject As Boolean)
 	readWorkFile(currentFilename,segments,True,path)
 	allsegments.AddAll(segments)
 	Log("currentFilename:"&currentFilename)
-	If lastFilename=currentFilename And segments.Size<>0 Then
-		Log("ddd"&True)
-		Log(lastEntry)
+	If lastFilename=currentFilename Then
 		Try
 			Main.ScrollTo(lastEntry)
 		Catch
 			lastEntry=0
 			Log(LastException)
 		End Try
+	Else
+		lastEntry=0
+		Main.ScrollTo(lastEntry)		
 	End If
 	Dim visibleRange As Range
 	visibleRange=Main.getVisibleRange(Main.editorLV)

@@ -751,10 +751,13 @@ Sub MenuBar1_Action
 End Sub
 
 Sub ScrollTo(index As Int)
-	editorLV.ScrollTo(Max(0,index-1))
-	If Abs(currentProject.lastEntry-index)>20 Then
-		Sleep(500)
+	If editorLV.Items.Size<>0 Then
 		editorLV.ScrollTo(Max(0,index-1))
+		If Abs(currentProject.lastEntry-index)>20 Then
+			Log("long range")
+			Sleep(500)
+			editorLV.ScrollTo(Max(0,index-1))
+		End If
 	End If
 End Sub
 
@@ -1841,7 +1844,7 @@ Sub searchTableView_Action
 				Dim lbl As Label=searchTableView.SelectedRowValues(0)
 				Dim index As Int
 				index=lbl.Text
-				editorLV.ScrollTo(index)
+				ScrollTo(index)
 			End If
 	End Select
 End Sub
