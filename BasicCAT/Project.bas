@@ -256,7 +256,7 @@ Sub openFile(filename As String,onOpeningProject As Boolean)
 		Log("ddd"&True)
 		Log(lastEntry)
 		Try
-			Main.editorLV.ScrollTo(lastEntry)
+			Main.ScrollTo(lastEntry)
 		Catch
 			lastEntry=0
 			Log(LastException)
@@ -1605,17 +1605,30 @@ Sub targetTextArea_KeyPressed (result As String)
 	'Log(result)
 	Dim targetTextArea As RichTextArea
 	targetTextArea=Sender
+	Dim selectionStart As Int=targetTextArea.SelectionStart
 	Dim selectionEnd As Int=targetTextArea.SelectionEnd
+	'Log("selctionend:"&selectionEnd)
+	'Log("previous:"&previousTaSelectionEnd)
+	Dim HasSelection As Boolean=False
+	If selectionEnd<>selectionStart Then
+		HasSelection=True
+	End If
 	If result="ENTER" Then
 		changeSegment(1,targetTextArea)
-	Else if result="DOWN" And selectionEnd=previousTaSelectionEnd Then
+	Else if result="DOWN" Then
+		If selectionEnd=previousTaSelectionEnd And HasSelection=False Then
 			changeSegment(1,targetTextArea)
-	Else if result="UP" And selectionEnd=previousTaSelectionEnd Then
+		Else
+			previousTaSelectionEnd=selectionEnd
+		End If			
+	Else if result="UP" Then
+		If selectionEnd=previousTaSelectionEnd And HasSelection=False Then
 			changeSegment(-1,targetTextArea)
+		Else
+			previousTaSelectionEnd=selectionEnd
+		End If			
 	Else if result="TAB" Then
-		swithTextArea(targetTextArea,0)
-	Else
-		previousTaSelectionEnd=selectionEnd
+		swithTextArea(targetTextArea,0)	
 	End If
 End Sub
 
@@ -1641,7 +1654,7 @@ Sub changeSegment(offset As Int,targetTextArea As RichTextArea)
 			Return
 		End If
 		Dim nextItem As Object=Main.editorLV.Items.Get(index+offset)
-		If nextItem Is Pane Then
+		If nextItem Is Pane Then			
 			Dim nextPane As Pane=nextItem
 			Dim nextTA As RichTextArea
 			nextTA=nextPane.GetNode(1).Tag
@@ -1662,16 +1675,16 @@ Sub changeSegment(offset As Int,targetTextArea As RichTextArea)
 					nextTA.setSelection(nextTA.Length,nextTA.Length)
 				Case 1
 					nextTA.setSelection(0,0)
-			End Select
-			previousTaSelectionEnd=nextTA.SelectionEnd
-			lastEntry=Main.editorLV.Items.IndexOf(nextPane)
-			lastFilename=currentFilename
+			End Select			
 			'showTM(nextTA)
 			'showTerm(nextTA)
 			'languagecheck(targetTextArea,index)
 			'Main.updateSegmentLabel(lastEntry,segments.Size)
 			Sleep(0)
 			nextTA.RequestFocus
+			previousTaSelectionEnd=nextTA.SelectionEnd
+		Else
+			Log("not a pane")
 		End If
 	Catch
 		Log(LastException)
@@ -1704,26 +1717,20 @@ Sub targetTextArea_FocusChanged (HasFocus As Boolean)
 		Log("Null,Textarea Parent")
 		Return
 	End If
-	lastEntry=Main.editorLV.Items.IndexOf(TextArea1.Parent)
+	Dim entry As String=Main.editorLV.Items.IndexOf(TextArea1.Parent)	
 	lastFilename=currentFilename
 	If HasFocus Then
-		
+		lastEntry=entry
         Log("hasFocus")
-		'Log(TextArea1.Text)
-		'Log(previousEntry)
-		'Log(lastEntry)
 		showTM(TextArea1)
 		showTerm(TextArea1)
 		Main.updateSegmentLabel(Main.editorLV.Items.IndexOf(TextArea1.Parent),segments.Size)
 	Else
 		Log("loseFocus")
-		'Log("previous"&previousEntry)
-		'Log("lastentry"&lastEntry)
-		'Log(TextArea1.Text)
-		If previousEntry<>lastEntry Then
+		If previousEntry<>entry Then
 			languagecheck(TextArea1,lastEntry)
 		End If
-		previousEntry=lastEntry
+		previousEntry=entry
 	End If
 End Sub
 
