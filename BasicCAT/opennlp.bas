@@ -10,31 +10,40 @@ Sub Class_Globals
 	Private tokenizer As JavaObject
 	Private POSTagger As JavaObject
 	Private chunkerME As JavaObject
+	Public Initialized As Boolean
+	Public currentLang As String
 End Sub
 
 'Initializes the object. You can add parameters to this method if needed.
 Public Sub Initialize(lang As String)
-	Dim tokenizerIS As InputStream
-	tokenizerIS=File.OpenInput(File.Combine(File.DirApp,"model"),"en-token.bin")
-	Dim tokenizerModel As JavaObject
-	tokenizerModel.InitializeNewInstance("opennlp.tools.tokenize.TokenizerModel",Array(tokenizerIS))
-	tokenizer.InitializeNewInstance("opennlp.tools.tokenize.TokenizerME",Array(tokenizerModel))
-	
-	Dim postaggerIS As InputStream
-	postaggerIS=File.OpenInput(File.Combine(File.DirApp,"model"),"en-pos-maxent.bin")
-	Dim posmodel As JavaObject
-	posmodel.InitializeNewInstance("opennlp.tools.postag.POSModel",Array(postaggerIS))
-	POSTagger.InitializeNewInstance("opennlp.tools.postag.POSTaggerME",Array(posmodel))
-	
-	Dim chunkerIS As InputStream
-	chunkerIS=File.OpenInput(File.Combine(File.DirApp,"model"),"en-chunker.bin")
-	Dim chunkerModel As JavaObject
-	chunkerModel.InitializeNewInstance("opennlp.tools.chunker.ChunkerModel",Array(chunkerIS))
-	chunkerME.InitializeNewInstance("opennlp.tools.chunker.ChunkerME",Array(chunkerModel))
-	
-	Dim dictIS As InputStream
-	dictIS=File.OpenInput(File.Combine(File.DirApp,"model"),"en-lemmatizer.dict")
-	lemmatizer.InitializeNewInstance("opennlp.tools.lemmatizer.DictionaryLemmatizer",Array(dictIS))
+	currentLang=lang
+	Dim tokenModelPath As String=File.Combine(File.Combine(File.DirApp,"model"),lang&"-token.bin")
+	Dim posModelPath As String=File.Combine(File.Combine(File.DirApp,"model"),lang&"-pos-maxent.bin")
+	Dim chunkerModelPath As String=File.Combine(File.Combine(File.DirApp,"model"),lang&"-chunker.bin")
+	Dim dictPath As String=File.Combine(File.Combine(File.DirApp,"model"),lang&"-lemmatizer.dict")
+	If File.Exists(tokenModelPath,"") And File.Exists(posModelPath,"") And File.Exists(chunkerModelPath,"") And File.Exists(dictPath,"") Then
+		Dim tokenizerIS As InputStream
+		tokenizerIS=File.OpenInput(tokenModelPath,"")
+		Dim tokenizerModel As JavaObject
+		tokenizerModel.InitializeNewInstance("opennlp.tools.tokenize.TokenizerModel",Array(tokenizerIS))
+		tokenizer.InitializeNewInstance("opennlp.tools.tokenize.TokenizerME",Array(tokenizerModel))
+		Dim postaggerIS As InputStream
+		postaggerIS=File.OpenInput(posModelPath,"")
+		Dim posModel As JavaObject
+		posModel.InitializeNewInstance("opennlp.tools.postag.POSModel",Array(postaggerIS))
+		POSTagger.InitializeNewInstance("opennlp.tools.postag.POSTaggerME",Array(posModel))
+		Dim chunkerIS As InputStream
+		chunkerIS=File.OpenInput(chunkerModelPath,"")
+		Dim chunkerModel As JavaObject
+		chunkerModel.InitializeNewInstance("opennlp.tools.chunker.ChunkerModel",Array(chunkerIS))
+		chunkerME.InitializeNewInstance("opennlp.tools.chunker.ChunkerME",Array(chunkerModel))
+		Dim dictIS As InputStream
+		dictIS=File.OpenInput(dictPath,"")
+		lemmatizer.InitializeNewInstance("opennlp.tools.lemmatizer.DictionaryLemmatizer",Array(dictIS))
+		Initialized=True
+	Else
+		Initialized=False
+	End If		
 End Sub
 
 Public Sub tokenize(sentence As String) As String()

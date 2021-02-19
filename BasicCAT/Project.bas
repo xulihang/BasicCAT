@@ -99,7 +99,9 @@ Public Sub open(jsonPath As String)
 	initializeTM(path,True)
 	initializeTerm(path)
 	initializeHistory(path)
-	Main.initializeNLP(projectFile.Get("source"))
+	'If Main.nlp.currentLang<>projectFile.Get("source") Then
+	'	Main.initializeNLP(projectFile.Get("source"))
+	'End If
 
 	If Main.preferencesMap.GetDefault("vcsEnabled",False)=True Then
 		If settings.GetDefault("git_enabled",False) Then
@@ -111,7 +113,9 @@ End Sub
 Public Sub newProjectSetting(source As String,target As String)
 	projectFile.Put("source",source)
 	projectFile.Put("target",target)
-	Main.initializeNLP(source)
+	'If Main.nlp.currentLang<>projectFile.Get("source") Then
+	'	Main.initializeNLP(projectFile.Get("source"))
+	'End If
 	Dim tmList As List
 	tmList.Initialize
 	Dim termList As List
@@ -1707,6 +1711,9 @@ Sub sourceTextArea_FocusChanged (HasFocus As Boolean)
 End Sub
 
 Sub targetTextArea_FocusChanged (HasFocus As Boolean)
+	If Main.editorLV.Items.Size=0 Then
+		Return
+	End If
 	Dim TextArea1 As RichTextArea
 	TextArea1=Sender
 	'Sleep(0)
@@ -2140,7 +2147,7 @@ Sub refillVisiblePane
 End Sub
 
 Public Sub fillPane(FirstIndex As Int, LastIndex As Int)
-	Log("fillPane")
+	'Log("fillPane")
 	If segments.Size=0 Then
 		Return
 	End If
