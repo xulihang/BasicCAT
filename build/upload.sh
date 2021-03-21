@@ -1,5 +1,5 @@
 #!/bin/bash
-export GITHUB_TOKEN=9bf32471b55b41ae1570f5a8b5b907a3f9fb9d96
+export GITHUB_TOKEN=<my token>
 ./linux-amd64-github-release upload \
     --user xulihang \
     --repo BasicCAT \
