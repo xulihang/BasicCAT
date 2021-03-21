@@ -17,7 +17,7 @@ Module1=googlewithoutapikeyMTPlugin
 NumberOfFiles=0
 NumberOfLibraries=12
 NumberOfModules=1
-Version=7.8
+Version=8.9
 @EndOfDesignText@
 #Region Project Attributes 
 	#MainFormWidth: 600

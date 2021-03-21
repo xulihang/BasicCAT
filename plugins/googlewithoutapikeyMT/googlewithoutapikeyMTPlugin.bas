@@ -91,7 +91,9 @@ Sub translate(source As String, sourceLang As String, targetLang As String,prefe
 		json.Initialize(DecompressedString)
 		Dim sb As StringBuilder
 		sb.Initialize
-		Dim sentences As List=json.NextObject.Get("sentences")
+		Dim results As List=json.NextObject.Get("results")
+		Dim result As Map= results.Get(0)
+		Dim sentences As List=result.Get("sentences")
 		For Each sentence As Map In sentences
 			sb.Append(sentence.GetDefault("trans",""))
 		Next
