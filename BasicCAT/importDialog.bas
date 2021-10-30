@@ -95,11 +95,13 @@ Sub importTMXlsx(path As String)
 End Sub
 
 Sub importTMX(path As String,sourceLang As String,targetLang As String)
+	Dim importer As TMXImporter
+	importer.Initialize
 	Try
 		Dim tmxString As String
 		tmxString=File.ReadString(path,"")
 		tmxString=XMLUtils.pickSmallerXML(tmxString,"tu","body")
-		Dim segments As List=TMX.importedList2(tmxString,File.GetName(path),sourceLang,targetLang)
+		Dim segments As List=importer.importedAccurateList2(tmxString,File.GetName(path),sourceLang,targetLang)
 		Dim i As Int
 		For Each segment As List In segments
 			i=i+1

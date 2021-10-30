@@ -183,11 +183,20 @@ End Sub
 
 Public Sub saveSettings(newsettings As Map)
 	projectFile.Put("settings",newsettings)
+	settings = newsettings
 	Log(newsettings)
 	save
 	If newsettings.Get("tmListChanged")="yes" Then
 		projectTM.deleteExternalTranslationMemory
-		wait for (projectTM.importExternalTranslationMemory(settings.Get("tmList"),projectFile)) complete (result As Boolean)
+		Dim tmList As List = settings.Get("tmList")
+		If tmList.Size>0 Then
+			Dim response As Int = fx.Msgbox2(Main.MainForm,"Please select a TMX import method:","","Quick (for pure text)","","Accurate (for tagged text)",fx.MSGBOX_CONFIRMATION)
+			Dim quickMode As Boolean = True
+			If response = fx.DialogResponse.NEGATIVE Then
+				quickMode = False
+			End If
+			wait for (projectTM.importExternalTranslationMemory(settings.Get("tmList"),projectFile,quickMode)) complete (result As Boolean)
+		End If
 	End If
 	If newsettings.Get("termListChanged")="yes" Then
 		projectTerm.deleteExternalTerminology

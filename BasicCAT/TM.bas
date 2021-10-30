@@ -188,7 +188,7 @@ Public Sub deleteExternalTranslationMemory
 	externalTranslationMemory.DeleteAll
 End Sub
 
-Public Sub importExternalTranslationMemory(tmList As List,projectFile As Map) As ResumableSub
+Public Sub importExternalTranslationMemory(tmList As List,projectFile As Map,quickMode As Boolean) As ResumableSub
 	progressDialog.Show("Loading external memory","loadtm")
 	Dim segments As List
 	segments.Initialize
@@ -198,7 +198,9 @@ Public Sub importExternalTranslationMemory(tmList As List,projectFile As Map) As
 		If tmfileLowercase.EndsWith(".txt") Then
 			segments.AddAll(importedTxt(tmfile))
 		Else if tmfileLowercase.EndsWith(".tmx") Then
-			segments.AddAll(TMX.importedList(File.Combine(Main.currentProject.path,"TM"),tmfile,projectFile.Get("source"),projectFile.Get("target")))
+			Dim importer As TMXImporter
+			importer.Initialize
+			segments.AddAll(importer.importedList(File.Combine(Main.currentProject.path,"TM"),tmfile,projectFile.Get("source"),projectFile.Get("target"),quickMode))
 		else if tmfileLowercase.EndsWith(".xlsx") Then
 			segments.AddAll(importedXlsx(tmfile))
 		End If
