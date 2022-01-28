@@ -1,0 +1,48 @@
+﻿AppType=JavaFX
+Build1=Default,org.xulihang.basiccat
+Group=Default Group
+Library1=jcore
+Library10=byteconverter
+Library11=encryption
+Library2=jfx
+Library3=json
+Library4=jxmlsax
+Library5=xmlbuilder
+Library6=jxui
+Library7=javaobject
+Library8=jokhttputils2
+Library9=jstringutils
+Module1=deeplMTPlugin
+NumberOfFiles=0
+NumberOfLibraries=11
+NumberOfModules=1
+Version=8.9
+@EndOfDesignText@
+#Region Project Attributes 
+	#MainFormWidth: 600
+	#MainFormHeight: 600 
+#End Region
+
+Sub Process_Globals
+	Private fx As JFX
+	Public MainForm As Form
+
+End Sub
+
+Sub AppStart (Form1 As Form, Args() As String)
+	MainForm = Form1
+	'MainForm.RootPane.LoadLayout("Layout1") 'Load the layout file.
+	MainForm.Show
+    Dim n As deeplMTPlugin
+	n.Initialize
+	Dim map1 As Map
+	map1.Initialize
+	'wait for (n.translate("BasicCAT Documentation."&CRLF&"Sentence2.","en","zh",CreateMap("api":CreateMap("deepl":map1)))) complete (result As String)
+	wait for (n.batchTranslate(Array("BasicCAT Documentation."&CRLF&"Sentence2.","Paragraph2"),"en","zh",CreateMap("api":CreateMap("deepl":map1)))) complete (result As Object)
+	Log(result)
+End Sub
+
+'Return true to allow the default exceptions handler to handle the uncaught exception.
+Sub Application_Error (Error As Exception, StackTrace As String) As Boolean
+	Return True
+End Sub
