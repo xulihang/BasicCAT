@@ -397,6 +397,8 @@ Sub changePluginPathButton_MouseClicked (EventData As MouseEvent)
 	Dim path As String
 	Dim dc As DirectoryChooser
 	dc.Initialize
+	dc.InitialDirectory=pluginDirLabel.Text
+	dc.Title="Select the directory where the plugins is located"
 	path=dc.Show(frm)
 	If path<>"" Then
 		pluginDirLabel.Text=path
@@ -410,6 +412,7 @@ Sub AddPluginButton_MouseClicked (EventData As MouseEvent)
 	Dim path As String
 	Dim fc As FileChooser
 	fc.Initialize
+	fc.Title="Adding a plugin to the Plugins folder"
 	fc.SetExtensionFilter("plugins",Array As String("*.jar"))
 	path=fc.ShowOpen(frm)
 	If path<>"" Then
