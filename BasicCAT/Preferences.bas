@@ -394,12 +394,16 @@ Sub loadFont
 End Sub
 
 Sub changePluginPathButton_MouseClicked (EventData As MouseEvent)
+	Dim path As String
 	Dim dc As DirectoryChooser
 	dc.Initialize
-	pluginDirLabel.Text=dc.Show(frm)
-	unsavedPreferences.Put("pluginDir",pluginDirLabel.Text)
-	loadPluginsList
-	Main.loadPlugins
+	path=dc.Show(frm)
+	If path<>"" Then
+		pluginDirLabel.Text=path
+		unsavedPreferences.Put("pluginDir",path)
+		loadPluginsList
+		Main.loadPlugins
+	End If
 End Sub
 
 Sub AddPluginButton_MouseClicked (EventData As MouseEvent)
