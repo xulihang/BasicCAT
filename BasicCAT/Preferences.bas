@@ -398,7 +398,7 @@ Sub changePluginPathButton_MouseClicked (EventData As MouseEvent)
 	Dim dc As DirectoryChooser
 	dc.Initialize
 	dc.InitialDirectory=pluginDirLabel.Text
-	dc.Title="Select the directory where the plugins is located"
+	dc.Title="Select the directory where the plugins are located"
 	path=dc.Show(frm)
 	If path<>"" Then
 		pluginDirLabel.Text=path
