@@ -4,6 +4,6 @@ ModuleBreakpoints0=
 ModuleBreakpoints1=
 ModuleClosedNodes0=
 ModuleClosedNodes1=
-NavigationStack=colorfulcloudsMTPlugin,GetNiceName,13,0,colorfulcloudsMTPlugin,Initialize,7,0,colorfulcloudsMTPlugin,Class_Globals,0,0,colorfulcloudsMTPlugin,translate,87,6,colorfulcloudsMTPlugin,batchTranslate,75,6,Main,AppStart,18,6,colorfulcloudsMTPlugin,Run,34,6
+NavigationStack=colorfulcloudsMTPlugin,GetNiceName,13,0,colorfulcloudsMTPlugin,Initialize,7,0,colorfulcloudsMTPlugin,Class_Globals,0,0,colorfulcloudsMTPlugin,translate,87,6,Main,AppStart,18,6,colorfulcloudsMTPlugin,Run,40,6,colorfulcloudsMTPlugin,convertLang,40,6,colorfulcloudsMTPlugin,batchTranslate,52,6
 SelectedBuild=0
 VisibleModules=1

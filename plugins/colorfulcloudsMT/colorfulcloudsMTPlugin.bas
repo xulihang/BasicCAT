@@ -44,11 +44,20 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 End Sub
 
 
+Private Sub convertLang(lang As String) As String
+	If lang.StartsWith("zh") Then
+		Return "zh"
+	End If
+	Return lang
+End Sub
+
 Sub batchTranslate(sourceList As List, sourceLang As String, targetLang As String,preferencesMap As Map) As ResumableSub
 	Dim targetList As List
 	targetList.Initialize
 	Dim job As HttpJob
 	job.Initialize("job",Me)
+	sourceLang = convertLang(sourceLang)
+	targetLang = convertLang(targetLang)
 	Dim direction As String=sourceLang&"2"&targetLang
 	Dim map1 As Map
 	map1.Initialize
