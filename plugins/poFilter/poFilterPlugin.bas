@@ -159,7 +159,7 @@ Sub readPO(path As String,filename As String) As List
 	Dim isMsgid As Boolean=False
 	Do While line<>Null
 		Dim contentMatcher As Matcher
-		contentMatcher=Regex.Matcher($""(.*?[^\\])""$,line)
+		contentMatcher=Regex.Matcher($""(.*?)""$,line)
 		If line.StartsWith("msgid") Then
 			isMsgid=True
 			If contentMatcher.Find Then
@@ -181,7 +181,7 @@ Sub readPO(path As String,filename As String) As List
 		line=textReader.ReadLine
 	Loop
 	textReader.Close
-	'Log(msgidList)
+
 	Return msgidList
 End Sub
 

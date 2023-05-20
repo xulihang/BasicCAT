@@ -44,7 +44,7 @@ Sub AppStart (Form1 As Form, Args() As String)
 	MainForm.Show
 	Dim pf As poFilterPlugin
 	pf.Initialize
-	wait for (pf.createWorkFile("gettingstarted.po",File.DirApp,"en",True)) Complete (done as Object)
+	'wait for (pf.createWorkFile("gettingstarted.po",File.DirApp,"en",True)) Complete (done As Object)
 	Dim projectFile As Map
 	projectFile.Initialize
 	projectFile.Put("source","zh")

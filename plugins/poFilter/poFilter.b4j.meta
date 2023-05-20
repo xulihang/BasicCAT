@@ -28,6 +28,6 @@ ModuleClosedNodes6=
 ModuleClosedNodes7=
 ModuleClosedNodes8=
 ModuleClosedNodes9=
-NavigationStack=poFilterPlugin,shouldAddSpace,434,0,poFilterPlugin,addNecessaryTags,508,0,poFilterPlugin,previewText,485,2,segmentation,readRulesOfProject,8,0,SRX,readRules,84,0,SRX,Process_Globals,3,0,poFilterPlugin,unescapeSpecialCharacters,127,0,Main,AppStart,17,6,poFilterPlugin,generateFile,330,3,poFilterPlugin,createWorkFile,118,6
+NavigationStack=poFilterPlugin,previewText,485,2,segmentation,readRulesOfProject,8,0,SRX,readRules,84,0,SRX,Process_Globals,3,0,poFilterPlugin,unescapeSpecialCharacters,127,0,poFilterPlugin,generateFile,330,3,poFilterPlugin,createWorkFile,51,6,RichTextArea,UpdateLayout,167,0,poFilterPlugin,readPO,177,6,Main,AppStart,17,6
 SelectedBuild=0
 VisibleModules=3,8,2,9,6,5,1,7,4
