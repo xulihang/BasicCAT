@@ -748,7 +748,7 @@ Sub MenuBar1_Action
 		Case "_About"
 			Dim version As String
 			version=File.ReadString(File.DirAssets,"version.txt")
-			fx.Msgbox(MainForm,"BasicCAT "&version&CRLF&"@xulihang 2021","BasicCAT")
+			fx.Msgbox(MainForm,"BasicCAT "&version&CRLF&"@xulihang 2023","BasicCAT")
 	End Select
 End Sub
 
