@@ -318,7 +318,7 @@ Sub generateFile(filename As String,path As String,projectFile As Map,BCATMain A
 			End If
 
 
-			If currentID<>id Then
+			If currentID<>id Then 'new msgid
 				msgstrList.Add(msgstr)
 				If id-currentID>1 Then
 					Log(id)
@@ -345,7 +345,7 @@ Sub generateFile(filename As String,path As String,projectFile As Map,BCATMain A
 
 	For Each id As Int In idList
 		If IDsWithText.IndexOf(id)=-1 Then
-			msgstrList.InsertAt(id-1,"")
+			msgstrList.InsertAt(id-1,"") 'fill in empty msgid
 			IDsWithText.InsertAt(id-1,id)
 		End If
 	Next
