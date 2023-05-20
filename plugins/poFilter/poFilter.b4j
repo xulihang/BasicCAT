@@ -13,19 +13,19 @@ Library5=xmlbuilder
 Library6=jxui
 Library7=javaobject
 Library8=cssutils
-Module1=poFilterPlugin
-Module2=Xml2Map
-Module3=Map2Xml
-Module4=XMLUtils
-Module5=SRX
-Module6=segmentation
-Module7=filterGenericUtils
-Module8=Utils
-Module9=RichTextArea
+Module1=filterGenericUtils
+Module2=Map2Xml
+Module3=poFilterPlugin
+Module4=RichTextArea
+Module5=segmentation
+Module6=SRX
+Module7=Utils
+Module8=Xml2Map
+Module9=XMLUtils
 NumberOfFiles=2
 NumberOfLibraries=8
 NumberOfModules=9
-Version=7.8
+Version=8.9
 @EndOfDesignText@
 #Region Project Attributes 
 	#MainFormWidth: 600
@@ -44,13 +44,13 @@ Sub AppStart (Form1 As Form, Args() As String)
 	MainForm.Show
 	Dim pf As poFilterPlugin
 	pf.Initialize
-	'pf.createWorkFile("zh_CN.po","C:\Users\xulihang\Documents\B4J\plugin\filterPlugins\poFilter\Objects\zhtest","en",True)
+	wait for (pf.createWorkFile("gettingstarted.po",File.DirApp,"en",True)) Complete (done as Object)
 	Dim projectFile As Map
 	projectFile.Initialize
-	projectFile.Put("source","en")
-	projectFile.Put("target","zh")
+	projectFile.Put("source","zh")
+	projectFile.Put("target","en")
 	projectFile.Put("settings",CreateMap("key":"value"))
-	pf.generateFile("zh_CN.po","C:\Users\xulihang\Documents\B4J\plugin\filterPlugins\poFilter\Objects\zhtest",projectFile,Me)
+	pf.generateFile("gettingstarted.po",File.DirApp,projectFile,Me)
 End Sub
 
 'Return true to allow the default exceptions handler to handle the uncaught exception.

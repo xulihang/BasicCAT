@@ -10,7 +10,7 @@ Sub Process_Globals
 End Sub
 
 
-Sub readRules(filepath As String,lang As String) As Map
+Sub readRules(filepath As String,lang As String) As List
 	Dim srxString As String
 	
 	
@@ -21,16 +21,23 @@ Sub readRules(filepath As String,lang As String) As Map
 	End If
 	
 	Log(filepath)
-	Dim rules As Map
-	rules.Initialize
-	Dim breakRules As List
-	breakRules.Initialize
-	Dim nonbreakRules As List
-	nonbreakRules.Initialize
+	'Dim rules As Map
+	'rules.Initialize
+	Dim allRules As List
+	allRules.Initialize
 
 	Dim srxMap As Map
 	srxMap.Initialize
 	srxMap=XMLUtils.getXmlMap(srxString).Get("srx")
+	Dim header As Map=srxMap.Get("header")
+	Dim headerAttributes As Map
+	headerAttributes=header.Get("Attributes")
+	If headerAttributes.GetDefault("cascade","no")="no" Then
+		segmentation.cascade=False
+	Else
+		segmentation.cascade=True
+	End If
+	
 	Dim srxBody As Map
 	srxBody.Initialize
 	srxBody=srxMap.Get("body")
@@ -67,7 +74,7 @@ Sub readRules(filepath As String,lang As String) As Map
 		Dim languageRuleName As String
 		languageRuleName=attributes.Get("languagerulename")
 		If languageRuleNames.IndexOf(languageRuleName)<>-1 Then
-			
+			'Log(languageRuleName)
 			Dim oneLangRules As List
 			oneLangRules=XMLUtils.GetElements(languageRule,"rule")
 
@@ -78,19 +85,10 @@ Sub readRules(filepath As String,lang As String) As Map
 				tidyRule.Put("beforebreak",rule.Get("beforebreak"))
 				tidyRule.Put("afterbreak",rule.Get("afterbreak"))
 
-				If tidyRule.Get("break")="yes" Then
-					breakRules.Add(tidyRule)
-				Else
-					nonbreakRules.Add(tidyRule)
-				End If
-				
+				allRules.Add(tidyRule)
 			Next
 		End If
 	Next
 	
-	
-	rules.Put("breakRules",breakRules)
-	rules.Put("nonbreakRules",nonbreakRules)
-	Log(rules)
-	Return rules
+	Return allRules
 End Sub

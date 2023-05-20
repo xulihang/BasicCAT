@@ -122,7 +122,7 @@ Public Sub createWorkFile(filename As String,path As String,sourceLang As String
 	End If
 
 	workfile.Put("files",sourceFiles)
-	
+
 	Dim json As JSONGenerator
 	json.Initialize(workfile)
 	File.WriteString(File.Combine(path,"work"),filename&".json",json.ToPrettyString(4))
