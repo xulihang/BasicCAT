@@ -288,7 +288,7 @@ Module9=ErrorReporter
 NumberOfFiles=88
 NumberOfLibraries=26
 NumberOfModules=82
-Version=9.8
+Version=8.9
 @EndOfDesignText@
 #Region Project Attributes 
 	#MainFormWidth: 600
@@ -1041,10 +1041,11 @@ Sub fillWithTheNextTag
 		End Try
 	Next
 	If tagsInSource.Size<>0 Then
+		Dim selectionStart As Int=targetTextArea.SelectionStart
 		Dim selectionEnd As Int=targetTextArea.selectionEnd
 		Dim tag As String=tagsInSource.Get(0)
-		targetTextArea.Text=targetTextArea.Text.SubString2(0,targetTextArea.SelectionEnd)&tag&targetTextArea.Text.SubString2(targetTextArea.SelectionEnd,targetTextArea.Text.Length)
-		targetTextArea.SetSelection(selectionEnd+tag.Length,selectionEnd+tag.Length)
+		targetTextArea.Text = targetTextArea.Text.SubString2(0,selectionStart)&tag&targetTextArea.Text.SubString2(selectionEnd,targetTextArea.Text.Length)
+		targetTextArea.SetSelection(selectionStart+tag.Length,selectionStart+tag.Length)
 	End If
 End Sub
 
