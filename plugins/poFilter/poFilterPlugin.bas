@@ -249,8 +249,8 @@ End Sub
 
 Sub generateFile(filename As String,path As String,projectFile As Map,BCATMain As Object)
 	
-	Dim addID As List
-	addID.Initialize
+	Dim IDsWithText As List 'msgid with text
+	IDsWithText.Initialize
 	Dim idList As List
 	idList.Initialize
 	For i=1 To countMsgStr(path,filename)
@@ -327,12 +327,12 @@ Sub generateFile(filename As String,path As String,projectFile As Map,BCATMain A
 					Log(translation)
 					For i=2 To id-currentID
 						msgstrList.Add("")
-						addID.add(currentID)
+						IDsWithText.add(currentID)
 						currentID=currentID+1
 					Next
 				End If
 				msgstr=translation
-				addID.add(currentID)
+				IDsWithText.add(currentID)
 				currentID=currentID+1
 			Else
 				msgstr=msgstr&translation
@@ -341,11 +341,12 @@ Sub generateFile(filename As String,path As String,projectFile As Map,BCATMain A
 	Next
 	
 	msgstrList.Add(msgstr)
-	addID.Add(idList.Get(idList.Size-1))
+	IDsWithText.Add(idList.Get(idList.Size-1))
+
 	For Each id As Int In idList
-		If addID.IndexOf(id)=-1 Then
+		If IDsWithText.IndexOf(id)=-1 Then
 			msgstrList.InsertAt(id-1,"")
-			addID.InsertAt(id-1,id)
+			IDsWithText.InsertAt(id-1,id)
 		End If
 	Next
 	Log(msgstrList)
