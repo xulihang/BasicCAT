@@ -288,7 +288,7 @@ Module9=ErrorReporter
 NumberOfFiles=88
 NumberOfLibraries=26
 NumberOfModules=82
-Version=8.9
+Version=9.8
 @EndOfDesignText@
 #Region Project Attributes 
 	#MainFormWidth: 600

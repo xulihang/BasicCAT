@@ -14,7 +14,7 @@ End Sub
 Sub getMTList As List
 	Dim mtList As List
 	mtList.Initialize
-	mtList.AddAll(Array As String("baidu","yandex","youdao","google","microsoft","mymemory","ali","ali-ecommerce"))
+	mtList.AddAll(Array As String("baidu","youdao","google","microsoft","mymemory","ali","ali-ecommerce"))
     mtList.AddAll(getMTPluginList)
 	Return mtList
 End Sub
@@ -50,8 +50,6 @@ Sub getMT(source As String,sourceLang As String,targetLang As String,MTEngine As
 	Select MTEngine
 		Case "baidu"
 			wait for (BaiduMT(source,sourceLang,targetLang)) Complete (result As String)
-		Case "yandex"
-			wait for (yandexMT(source,sourceLang,targetLang)) Complete (result As String)
 		Case "youdao"
 			wait for (youdaoMT(source,sourceLang,targetLang,False)) Complete (result As String)
 		Case "google"
@@ -149,35 +147,6 @@ Sub BaiduMT(source As String,sourceLang As String,targetLang As String) As Resum
 			Dim resultMap As Map
 			resultMap=result.Get(0)
 			target=resultMap.Get("dst")
-		Catch
-			Log(LastException)
-		End Try
-	End If
-	job.Release
-	Return target
-End Sub
-
-Sub yandexMT(source As String,sourceLang As String,targetLang As String) As ResumableSub
-	Dim target As String=""
-	Dim su As StringUtils
-	Dim job As HttpJob
-	job.Initialize("job",Me)
-	Dim params As String
-	params="?key="&Utils.getMap("yandex",Utils.getMap("mt",Main.preferencesMap)).Get("key")&"&text="&su.EncodeUrl(source,"UTF-8")&"&lang="&sourceLang&"-"&targetLang
-	job.Download("https://translate.yandex.net/api/v1.5/tr.json/translate"&params)
-	wait For (job) JobDone(job As HttpJob)
-	If job.Success Then
-		Log(job.GetString)
-		Try
-			Dim json As JSONParser
-			json.Initialize(job.GetString)
-			Dim map1 As Map
-			map1=json.NextObject
-			If map1.Get("code")=200 Then
-				Dim result As List
-				result=map1.Get("text")
-				target=result.Get(0)
-			End If
 		Catch
 			Log(LastException)
 		End Try

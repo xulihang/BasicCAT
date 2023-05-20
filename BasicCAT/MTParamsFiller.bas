@@ -45,8 +45,6 @@ Sub init(engineName As String)
 	Select engineName
 		Case "baidu"
 			setTableView(Array As String("appid","key"),emptyMap)
-		Case "yandex"
-			setTableView(Array As String("key"),emptyMap)
 		Case "youdao"
 			setTableView(Array As String("appid","key"),emptyMap)
 		Case "google"
