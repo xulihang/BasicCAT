@@ -29,7 +29,13 @@ Sub extract(sl As String,tl As String,filepath As String,outputDir As String, sh
 		settings=fcConfMap.Get(extension)
 		Dim configId As String
 		configId=settings.Get("configId")
-		args.AddAll(Array As String("-cp",Quoted(tikalLibPath),"net.sf.okapi.applications.tikal.Main","-x","-sl",sl,"-tl",tl,Quoted(filepath),"-fc",configId,"-od",Quoted(outputDir)))
+		If settings.ContainsKey("encoding") Then
+			Dim encoding As String=settings.Get("encoding")
+			args.AddAll(Array As String("-cp",Quoted(tikalLibPath),"net.sf.okapi.applications.tikal.Main","-x","-sl",sl,"-tl",tl,Quoted(filepath),"-fc",configId,"-od",Quoted(outputDir),"-ie",encoding))
+		Else
+			args.AddAll(Array As String("-cp",Quoted(tikalLibPath),"net.sf.okapi.applications.tikal.Main","-x","-sl",sl,"-tl",tl,Quoted(filepath),"-fc",configId,"-od",Quoted(outputDir)))
+		End If
+		
 	Else
 		args.AddAll(Array As String("-cp",Quoted(tikalLibPath),"net.sf.okapi.applications.tikal.Main","-x","-sl",sl,"-tl",tl,Quoted(filepath),"-od",Quoted(outputDir)))
 	End If
@@ -72,9 +78,9 @@ Sub merge(filepath As String,sourceDir As String,outputDir As String) As Resumab
 		settings=fcConfMap.Get(extension)
 		Dim configId As String
 		configId=settings.Get("configId")
-		If settings.ContainsKey("oe") Then
-			Dim outPutEncoding As String=settings.Get("oe")
-			args.AddAll(Array As String("-cp",tikalLibPath,"net.sf.okapi.applications.tikal.Main","-m",Quoted(filepath),"-fc",configId,"-sd",Quoted(sourceDir),"-od",Quoted(outputDir),"-oe",outPutEncoding))
+		If settings.ContainsKey("encoding") Then
+			Dim encoding As String=settings.Get("encoding")
+			args.AddAll(Array As String("-cp",tikalLibPath,"net.sf.okapi.applications.tikal.Main","-m",Quoted(filepath),"-fc",configId,"-sd",Quoted(sourceDir),"-od",Quoted(outputDir),"-oe",encoding))
 		Else	
 			args.AddAll(Array As String("-cp",tikalLibPath,"net.sf.okapi.applications.tikal.Main","-m",Quoted(filepath),"-fc",configId,"-sd",Quoted(sourceDir),"-od",Quoted(outputDir)))
 		End If
@@ -148,9 +154,9 @@ Sub getfcConfMap As Map
 			End If
 			settings.Put("configId",configId)
             Try
-				Dim outputEncoding As String
-				outputEncoding=Regex.Split("	",line)(2)
-				settings.Put("oe",outputEncoding)
+				Dim encoding As String
+				encoding=Regex.Split("	",line)(2)
+				settings.Put("encoding",encoding)
 			Catch
 				Log(LastException)
 			End Try
