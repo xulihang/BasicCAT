@@ -2204,7 +2204,9 @@ Public Sub changeAutoSaveInterval(seconds As Int)
 End Sub
 
 Public Sub enableAutosaveTimer(enabled As Boolean)
-	projectAutoSaver.Enabled=enabled
+	If projectAutoSaver.IsInitialized Then
+		projectAutoSaver.Enabled=enabled
+	End If
 End Sub
 
 Sub MainForm_FocusChanged (HasFocus As Boolean)
