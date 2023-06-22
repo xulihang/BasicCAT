@@ -211,6 +211,9 @@ Sub addPosition(pos As Int,breakPositions As Map,ruleIndex As Int)
 End Sub
 
 Sub removeSpacesAtBothSides(projectPath As String,targetLang As String,text As String,previousText As String,removeRedundantSpaces As Boolean) As String
+	If previousText.EndsWith(CRLF) Then
+		Return text 'do not remove spaces starting a new paragraph
+	End If
 	readRulesOfProject(targetLang,projectPath)
 	Dim breakPositionsMap As Map=getPositions("yes",previousText&text)
 	Dim breakPositions As List
