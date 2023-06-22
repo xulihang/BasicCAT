@@ -80,11 +80,5 @@ End Sub
 
 Private Sub Parser_Characters (Text As String)
 	'Log("character")
-	If TextWithoutCRLF(Text)<>"" Then
-		GetLastElement.Children.Add(CreateTextNode(Text))
-	End If
-End Sub
-
-Sub TextWithoutCRLF(s As String) As String
-	Return s.Replace(CRLF,"")
+	GetLastElement.Children.Add(CreateTextNode(Text))
 End Sub
