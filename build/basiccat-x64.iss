@@ -7,7 +7,7 @@
 ; (To generate a new GUID, click Tools | Generate GUID inside the IDE.)
 AppId={{6974B743-549E-4773-9B7A-0EFE71A61295}
 AppName=BasicCAT
-AppVersion=1.9.8 Update
+AppVersion=1.10.6
 ;AppVerName=BasicCAT 1.0
 AppPublisher=Xu Lihang
 AppPublisherURL=http://www.basiccat.org
@@ -16,7 +16,7 @@ AppUpdatesURL=http://www.basiccat.org
 DefaultDirName={pf}\BasicCAT
 DisableProgramGroupPage=yes
 OutputBaseFilename=BasicCAT-windows-x64
-SetupIconFile=.\basiccat_1.ico
+SetupIconFile=.\basiccat.ico
 Compression=lzma
 SolidCompression=yes
 ArchitecturesInstallIn64BitMode=x64
