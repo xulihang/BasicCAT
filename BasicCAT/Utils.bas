@@ -128,6 +128,7 @@ Sub splitByFind(text As String,find As String,textSegments As List)
 			End If
 			textSegments.Add(find)
 			textLeft=textLeft.SubString2(textLeft.IndexOf(find)+find.Length,textLeft.Length)
+			i = i + find.Length
 		End If
 	Next
 	textSegments.Add(textLeft)

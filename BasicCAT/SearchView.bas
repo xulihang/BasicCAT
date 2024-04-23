@@ -158,7 +158,6 @@ Sub lv_MouseClicked (EventData As MouseEvent)
 			CallSub2(mCallback, mEventName & "_ItemClick", p.Tag)
 		End If
 	End If
-
 End Sub
 
 Sub SelectItem
