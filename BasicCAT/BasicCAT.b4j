@@ -676,6 +676,8 @@ Sub MenuBar1_Action
 			editSource
 		Case "Mark the current segment as neglected/not neglected"
 			changeNeglectedStatus
+		Case "Perform language check for the current segment"
+			languageCheckCurrentSegment
 		Case "Clear segments"
 			clearSegments
 		Case "Project _settings"
@@ -1258,6 +1260,18 @@ Sub changeNeglectedStatus
 		End Select
 		currentProject.contentIsChanged
 	End If
+End Sub
+
+Private Sub languageCheckCurrentSegment
+	Try
+		checkLVClear
+		Dim p As Pane
+		p=editorLV.Items.Get(currentProject.lastEntry)
+		Dim targetTa As RichTextArea=p.GetNode(1).Tag
+		currentProject.languagecheck(targetTa,currentProject.lastEntry)
+	Catch
+		Log(LastException)
+	End Try
 End Sub
 
 Sub addFolderMi_Action

@@ -1747,21 +1747,25 @@ Sub targetTextArea_FocusChanged (HasFocus As Boolean)
 	Else
 		Log("loseFocus")
 		If previousEntry<>entry Then
-			languagecheck(TextArea1,lastEntry)
+			languagecheckIfEnabled(TextArea1,lastEntry)
 		End If
 		previousEntry=entry
 	End If
 End Sub
 
-Sub languagecheck(ta As RichTextArea,entry As Int)
+Sub languagecheckIfEnabled(ta As RichTextArea,entry As Int)
 	If Main.getCheckLVSize<=1 Then
 		If Main.preferencesMap.ContainsKey("languagetoolEnabled") Then
 			If Main.preferencesMap.Get("languagetoolEnabled")=True Then
-				wait for (LanguageTool.check(ta.Text,projectFile.Get("target"))) complete (matches As List)
-				showReplacements(matches,entry)
+				languagecheck(ta,entry)
 			End If
 		End If
 	End If
+End Sub
+
+public Sub languagecheck(ta As RichTextArea,entry As Int)
+	wait for (LanguageTool.check(ta.Text,projectFile.Get("target"))) complete (matches As List)
+	showReplacements(matches,entry)
 End Sub
 
 Sub showReplacements(matches As List,entry As Int)
