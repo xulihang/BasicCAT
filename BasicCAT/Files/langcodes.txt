@@ -14,6 +14,7 @@ nl	Dutch
 en	English													
 pl	Polish													
 es	Spanish										spa			
+th	Thai
 ja	Japanese										jp			
 ko	Korean						kr				kor			
 zh_wyw	Ancient Chinese										wyw			
