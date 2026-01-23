@@ -55,12 +55,17 @@ Sub translate(source As String, sourceLang As String, targetLang As String,prefe
 	params="text="&su.EncodeUrl(source,"UTF-8")&"&source="&sourceLang&"&target="&targetLang
 	
 	Dim clientid,clientsecret As String
-	clientid=getMap("papago_nvcloud",getMap("mt",preferencesMap)).Get("Client ID")
-	clientsecret=getMap("papago_nvcloud",getMap("mt",preferencesMap)).Get("Client Secret")
-	Dim URL As String="https://naveropenapi.apigw.ntruss.com/nmt/v1/translation"
+	Try
+		clientid=getMap("papago_nvcloud",getMap("mt",preferencesMap)).Get("Client ID")
+		clientsecret=getMap("papago_nvcloud",getMap("mt",preferencesMap)).Get("Client Secret")
+	Catch
+		Log(LastException)
+	End Try
+	
+	Dim URL As String="https://papago.apigw.ntruss.com/nmt/v1/translation"
 	job.PostString(URL,params)
-	job.GetRequest.SetHeader("X-NCP-APIGW-API-KEY-ID",clientid)
-	job.GetRequest.SetHeader("X-NCP-APIGW-API-KEY",clientsecret)
+	job.GetRequest.SetHeader("x-ncp-apigw-api-key-id",clientid)
+	job.GetRequest.SetHeader("x-ncp-apigw-api-key",clientsecret)
 	wait For (job) JobDone(job As HttpJob)
 	If job.Success Then
 		Log(job.GetString)

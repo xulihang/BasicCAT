@@ -14,7 +14,7 @@ Module1=papagonvcloudMTPlugin
 NumberOfFiles=0
 NumberOfLibraries=9
 NumberOfModules=1
-Version=8.9
+Version=8.8
 @EndOfDesignText@
 #Region Project Attributes 
 	#MainFormWidth: 600
@@ -31,9 +31,11 @@ Sub AppStart (Form1 As Form, Args() As String)
 	MainForm = Form1
 	'MainForm.RootPane.LoadLayout("Layout1") 'Load the layout file.
 	MainForm.Show
+	Dim m As Map
+	m.Initialize
     Dim n As papagonvcloudMTPlugin
 	n.Initialize
-	wait for (n.translate("I love you!","en","zh",Null)) complete (result As String)
+	wait for (n.translate("I love you!","en","zh",m)) complete (result As String)
 	Log(result)
 End Sub
 
