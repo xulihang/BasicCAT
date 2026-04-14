@@ -51,6 +51,7 @@ Sub Class_Globals
 	Private VerticalViewCheckBox As CheckBox
 	Private ShowIndexCheckBox As CheckBox
 	Private BatchTranslationCheckBox As CheckBox
+	Private BatchTranslationMaxTextLengthSpinner As Spinner
 End Sub
 
 'Initializes the object. You can add parameters to this method if needed.
@@ -141,6 +142,7 @@ Sub categoryListView_SelectedIndexChanged(Index As Int)
 				ExcludeTagsCheckBox.Checked=unsavedPreferences.Get("mt_excludetags")
 			End If
 			BatchTranslationCheckBox.Checked = unsavedPreferences.GetDefault("mt_batch",True)
+			BatchTranslationMaxTextLengthSpinner.Value = unsavedPreferences.GetDefault("mt_batch_text_length",2500)
 			loadMT
 		Case 3
 			'word lookup
@@ -539,4 +541,8 @@ End Sub
 
 Private Sub BatchTranslationCheckBox_CheckedChange(Checked As Boolean)
 	unsavedPreferences.Put("mt_batch",BatchTranslationCheckBox.Checked)
+End Sub
+
+Private Sub BatchTranslationMaxTextLengthSpinner_ValueChanged (Value As Object)
+	unsavedPreferences.Put("mt_batch_text_length",BatchTranslationMaxTextLengthSpinner.Value)
 End Sub
