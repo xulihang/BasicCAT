@@ -50,6 +50,7 @@ Sub Class_Globals
 	Private TranslateChunksCheckBox As CheckBox
 	Private VerticalViewCheckBox As CheckBox
 	Private ShowIndexCheckBox As CheckBox
+	Private BatchTranslationCheckBox As CheckBox
 End Sub
 
 'Initializes the object. You can add parameters to this method if needed.
@@ -139,6 +140,7 @@ Sub categoryListView_SelectedIndexChanged(Index As Int)
 			If unsavedPreferences.ContainsKey("mt_excludetags") Then
 				ExcludeTagsCheckBox.Checked=unsavedPreferences.Get("mt_excludetags")
 			End If
+			BatchTranslationCheckBox.Checked = unsavedPreferences.GetDefault("mt_batch",True)
 			loadMT
 		Case 3
 			'word lookup
@@ -533,4 +535,8 @@ End Sub
 
 Sub ShowIndexCheckBox_CheckedChange(Checked As Boolean)
 	unsavedPreferences.Put("showindex",Checked)
+End Sub
+
+Private Sub BatchTranslationCheckBox_CheckedChange(Checked As Boolean)
+	unsavedPreferences.Put("mt_batch",BatchTranslationCheckBox.Checked)
 End Sub
