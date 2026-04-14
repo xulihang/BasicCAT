@@ -177,7 +177,7 @@ FileGroup87=Default Group
 FileGroup88=Default Group
 FileGroup9=Default Group
 Group=Default Group
-Library1=abplugin
+Library1=abpluginjdk8
 Library10=jb4xencryption
 Library11=jbitmapcreator
 Library12=jcore
@@ -191,11 +191,11 @@ Library19=json
 Library2=apachestringutilsb4j
 Library20=jsql
 Library21=jstringutils
-Library22=jxui
-Library23=okhttp
-Library24=threading
-Library25=xmlbuilder
-Library26=jxmlsaxenhanced
+Library22=jxmlsaxenhanced
+Library23=jxui
+Library24=okhttp
+Library25=threading
+Library26=xmlbuilder
 Library3=b4jdragtome
 Library4=b4xcollections
 Library5=byteconverter
@@ -356,7 +356,7 @@ Sub Process_Globals
 	Private operationLabel As Label
 	Private checkLV As ListView
 	Public nlp As opennlp
-	Public plugin As ABPlugin
+	Public plugin As ABPluginJDK8
 	Private dw As dictWebView
 	Type Item (UserField As String, KeyField As String, ValueField() As Byte, IdField As Long, TimeField As Long)
 	Type Task (TaskName As String, TaskItem As Item, TaskKey As String)
