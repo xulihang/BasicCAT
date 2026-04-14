@@ -288,15 +288,16 @@ Module9=ErrorReporter
 NumberOfFiles=88
 NumberOfLibraries=26
 NumberOfModules=82
-Version=8.9
+Version=8.8
 @EndOfDesignText@
 #Region Project Attributes 
 	#MainFormWidth: 600
 	#MainFormHeight: 600
+	#JavaCompilerPath: 8, D:\jdk8u282-full\bin\javac.exe
 #End Region
 
 
-#AdditionalJar: sqlite-jdbc-3.23.1
+#AdditionalJar: sqlite-jdbc-3.43.0.0
 #AdditionalJar: bcprov-jdk15on-154
 #AdditionalJar: fuzzywuzzy-1.1.10
 #AdditionalJar: zip4j-1.3.2
@@ -321,8 +322,8 @@ Version=8.9
 #AdditionalJar: gson-2.8.5
 
 '-------- for pdfbox
-#AdditionalJar: pdfbox-2.0.12
-#AdditionalJar: fontbox-2.0.12
+#AdditionalJar: pdfbox-2.0.31
+#AdditionalJar: fontbox-2.0.31
 #AdditionalJar: commons-logging-1.2
 
 Sub Process_Globals
