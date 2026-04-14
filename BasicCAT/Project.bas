@@ -2242,6 +2242,9 @@ Sub preTranslate(options As Map)
 			For Each batchToTranslate As List In batchesToTranslate
 				Sleep(interval)
 				progressDialog.update(batchIndex,batchesToTranslate.Size)
+				If progressDialog.isShowing = False Then
+					Return
+				End If
 				wait for (MT.batchTranslate(batchToTranslate,projectFile.Get("source"),projectFile.Get("target"),options.Get("engine"))) Complete (targetList As List)
 				Dim index As Int
 				For Each target As String In targetList
@@ -2262,6 +2265,9 @@ Sub preTranslate(options As Map)
 		Else
 			For Each bitext As List In segments
 				'Sleep(0)
+				If progressDialog.isShowing = False Then
+					Return
+				End If
 				index=index+1
 				Dim target As String
 				target=bitext.Get(1)

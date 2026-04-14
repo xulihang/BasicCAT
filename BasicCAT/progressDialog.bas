@@ -62,3 +62,10 @@ Sub frm_CloseRequest (EventData As Event)
 
 	Return
 End Sub
+
+Sub isShowing As Boolean
+	If frm.IsInitialized = False Then
+		Return False
+	End If
+	Return frm.Showing
+End Sub
