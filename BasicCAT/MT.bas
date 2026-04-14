@@ -9,6 +9,25 @@ Sub Process_Globals
 	Private fx As JFX
 	Private Bconv As ByteConverter
 	Private mtResultStore As Map
+	Private internalMTWithBatchSupportList As List=Array As String("baidu")
+End Sub
+
+
+Public Sub supportBatchTranslation(MTEngine As String) As ResumableSub
+	If Main.preferencesMap.GetDefault("mt_batch",True)=False Then
+		Return False
+	End If
+	If internalMTWithBatchSupportList.IndexOf(MTEngine)<>-1 Then
+		Return True
+	else if getMTPluginList.IndexOf(MTEngine)<>-1 Then
+		wait for (Main.plugin.RunPlugin(MTEngine&"MT","supportBatchTranslation",Null)) complete (result As Object)
+		If result Is Boolean Then
+			Return result
+		Else
+			Return False
+		End If
+	End If
+	Return False
 End Sub
 
 Sub getMTList As List
@@ -49,7 +68,14 @@ Sub getMT(source As String,sourceLang As String,targetLang As String,MTEngine As
 	
 	Select MTEngine
 		Case "baidu"
-			wait for (BaiduMT(source,sourceLang,targetLang)) Complete (result As String)
+			wait for (BaiduMT(Array(source),sourceLang,targetLang)) Complete (targetList As List)
+			Dim result As String
+			Dim sb As StringBuilder
+			sb.Initialize
+			For Each text As String In targetList
+				sb.Append(text)
+			Next
+			result=sb.ToString
 		Case "youdao"
 			wait for (youdaoMT(source,sourceLang,targetLang,False)) Complete (result As String)
 		Case "google"
@@ -115,9 +141,46 @@ Sub convertLangCode(lang As String,engine As String) As String
 	Return lang
 End Sub
 
-Sub BaiduMT(source As String,sourceLang As String,targetLang As String) As ResumableSub
+public Sub batchTranslate(sourceList As List,sourceLang As String,targetLang As String,MTEngine As String) As ResumableSub
+	sourceLang=convertLangCode(sourceLang,MTEngine)
+	targetLang=convertLangCode(targetLang,MTEngine)
+	
+	Dim targetList As List
+	If internalMTWithBatchSupportList.IndexOf(MTEngine)<>-1 Then
+		If MTEngine="baidu" Then
+			wait for (BaiduMT(sourceList,sourceLang,targetLang)) Complete (targetList As List)
+		End If
+	else if getMTPluginList.IndexOf(MTEngine)<>-1 Then
+		
+		Dim params As Map
+		params.Initialize
+		params.Put("source",sourceList)
+		params.Put("sourceLang",sourceLang)
+		params.Put("targetLang",targetLang)
+		params.Put("preferencesMap",Main.preferencesMap)
+		
+		wait for (Main.plugin.RunPlugin(MTEngine&"MT","batchtranslate",params)) complete (targetList As List)
+	End If
+	If targetList.IsInitialized=False Then
+		targetList.Initialize
+	End If
+	Return targetList
+End Sub
+
+Sub BaiduMT(sourceList As List,sourceLang As String,targetLang As String) As ResumableSub
 	sourceLang=sourceLang.ToLowerCase
 	targetLang=targetLang.ToLowerCase
+	Dim sb As StringBuilder
+	sb.Initialize
+	For Each text As String In sourceList
+		text = text.Replace(CRLF,"<br/>")
+		sb.Append(text).Append(CRLF)
+	Next
+	Dim source As String=sb.ToString
+	
+	Dim targetList As List
+	targetList.Initialize
+	
 	Dim salt As Int
 	salt=Rnd(1,1000)
 	Dim appid,sign,key As String
@@ -136,7 +199,6 @@ Sub BaiduMT(source As String,sourceLang As String,targetLang As String) As Resum
 	job.Initialize("job",Me)
 	job.Download("https://api.fanyi.baidu.com/api/trans/vip/translate"&param)
 	wait for (job) JobDone(job As HttpJob)
-	Dim target As String=""
 	If job.Success Then
 		'Log(job.GetString)
 	    Try
@@ -144,15 +206,17 @@ Sub BaiduMT(source As String,sourceLang As String,targetLang As String) As Resum
 			json.Initialize(job.GetString)
 			Dim result As List
 			result=json.NextObject.Get("trans_result")
-			Dim resultMap As Map
-			resultMap=result.Get(0)
-			target=resultMap.Get("dst")
+			For Each resultMap As Map In result
+				Dim dst As String = resultMap.Get("dst")
+				dst = dst.Replace("<br/>",CRLF)
+				targetList.Add(dst)
+			Next
 		Catch
 			Log(LastException)
 		End Try
 	End If
 	job.Release
-	Return target
+	Return targetList
 End Sub
 
 Sub microsoftMT(source As String,sourceLang As String,targetLang As String) As ResumableSub

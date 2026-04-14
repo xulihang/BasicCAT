@@ -2199,67 +2199,128 @@ Sub preTranslate(options As Map)
 		completed=0
 		Dim index As Int=-1
 		progressDialog.Show("Pretranslating...","pretranslate")
-		For Each bitext As List In segments
-			'Sleep(0)
-			index=index+1
-			Dim target As String
-			target=bitext.Get(1)
-			If target<>"" Then
-				completed=completed+1
-				progressDialog.update(completed,segments.Size)
-				Continue
-			End If
-			
-			Dim bitext As List
-			bitext=segments.Get(index)
-			
-			If options.Get("type")="TM" Then
-				If projectTM.ProjectMemorySize=0 Then
-					progressDialog.close
-					Return
+		Dim useBatchTranslation As Boolean
+		useBatchTranslation = options.Get("type")<>"TM" And Main.preferencesMap.GetDefault("mt_batch",True)
+		If useBatchTranslation Then
+			wait for (MT.supportBatchTranslation(options.Get("engine"))) complete (useBatchTranslation As Boolean)
+		End If
+		If useBatchTranslation Then
+			Dim interval As Int=options.GetDefault("interval",0)
+			Dim maxTextLength As Int = Main.preferencesMap.GetDefault("mt_batch_text_length",2500)
+			Dim batchesToTranslate As List
+			batchesToTranslate.Initialize
+			Dim batchToTranslate As List
+			batchToTranslate.Initialize
+			batchesToTranslate.Add(batchToTranslate)
+			Dim indexMap As Map
+			indexMap.Initialize
+			Dim textLength As Int
+			Dim segmentIndex As Int = 0
+			Dim textIndex As Int
+			For Each bitext As List In segments
+				Dim text As String = bitext.Get(0)
+				Dim target As String = bitext.Get(1)
+				If text <> "" And target = "" Then
+					If textLength + text.Length < maxTextLength Then
+						batchToTranslate.Add(text)
+						textIndex = textIndex + 1
+						indexMap.Put(text&"-"&textIndex,segmentIndex)
+						textLength = textLength + text.Length
+					Else
+						batchToTranslate.Initialize
+						batchToTranslate.Add(text)
+						textIndex = textIndex + 1
+						indexMap.Put(text&"-"&textIndex,segmentIndex)
+						batchesToTranslate.Add(batchToTranslate)
+						textLength = text.Length
+					End If
 				End If
-				Dim resultList As List
-				Dim similarity,matchrate As Double
-				matchrate=options.Get("rate")
-				Dim limit As Int
-				limit=settings.GetDefault("TM_limit",500)
-				Wait For (projectTM.getOneUseMemory(bitext.Get(0),matchrate,limit)) Complete (Result As List)
-				If Result=Null Then
+				segmentIndex = segmentIndex + 1
+			Next
+			Dim batchIndex As Int
+			Dim textIndex As Int
+			For Each batchToTranslate As List In batchesToTranslate
+				Sleep(interval)
+				progressDialog.update(batchIndex,batchesToTranslate.Size)
+				wait for (MT.batchTranslate(batchToTranslate,projectFile.Get("source"),projectFile.Get("target"),options.Get("engine"))) Complete (targetList As List)
+				Dim index As Int
+				For Each target As String In targetList
+					textIndex = textIndex + 1
+					Dim source As String
+					If index >= 0 And index < batchToTranslate.Size Then
+						source = batchToTranslate.Get(index)
+						If indexMap.ContainsKey(source&"-"&textIndex) Then
+							Dim segmentIndex As Int = indexMap.Get(source&"-"&textIndex)
+							setTranslation(segmentIndex,target,False,"")
+							fillOne(segmentIndex,target)
+						End If
+					End If
+					index = index + 1
+				Next
+				batchIndex = batchIndex + 1
+			Next
+		Else
+			For Each bitext As List In segments
+				'Sleep(0)
+				index=index+1
+				Dim target As String
+				target=bitext.Get(1)
+				If target<>"" Then
 					completed=completed+1
 					progressDialog.update(completed,segments.Size)
 					Continue
 				End If
-				resultList=Result
+			
+				Dim bitext As List
+				bitext=segments.Get(index)
+			
+				If options.Get("type")="TM" Then
+					If projectTM.ProjectMemorySize=0 Then
+						progressDialog.close
+						Return
+					End If
+					Dim resultList As List
+					Dim similarity,matchrate As Double
+					matchrate=options.Get("rate")
+					Dim limit As Int
+					limit=settings.GetDefault("TM_limit",500)
+					Wait For (projectTM.getOneUseMemory(bitext.Get(0),matchrate,limit)) Complete (Result As List)
+					If Result=Null Then
+						completed=completed+1
+						progressDialog.update(completed,segments.Size)
+						Continue
+					End If
+					resultList=Result
 				
-				similarity=resultList.Get(0)
-				If similarity>=matchrate Then
-					setTranslation(index,resultList.Get(2),True,resultList.Get(1))
-					'setSegment(bitext,index)
-					fillOne(index,resultList.Get(2))
+					similarity=resultList.Get(0)
+					If similarity>=matchrate Then
+						setTranslation(index,resultList.Get(2),True,resultList.Get(1))
+						'setSegment(bitext,index)
+						fillOne(index,resultList.Get(2))
+					End If
+				Else if options.Get("type")="MT" Then
+					Dim interval As Int=options.GetDefault("interval",0)
+					If interval>0 Then
+						Sleep(interval)
+					End If
+					wait for (MT.getMT(bitext.Get(0),projectFile.Get("source"),projectFile.Get("target"),options.Get("engine"))) Complete (translation As String)
+					If translation<>"" Then
+						setTranslation(index,translation,False,"")
+						'setSegment(bitext,index)
+						fillOne(index,translation)
+					End If
 				End If
-			Else if options.Get("type")="MT" Then
-				Dim interval As Int=options.GetDefault("interval",0)
-				If interval>0 Then
-					Sleep(interval)
-				End If
-				wait for (MT.getMT(bitext.Get(0),projectFile.Get("source"),projectFile.Get("target"),options.Get("engine"))) Complete (translation As String)
-				If translation<>"" Then
-					setTranslation(index,translation,False,"")
-					'setSegment(bitext,index)
-					fillOne(index,translation)
-				End If
-			End If
 				
-			completed=completed+1
+				completed=completed+1
 
-			progressDialog.update(completed,segments.Size)
-			If completed>=segments.Size Then
-				progressDialog.close
-				fillVisibleTargetTextArea
-				Return
-			End If
-		Next
-
+				progressDialog.update(completed,segments.Size)
+				If completed>=segments.Size Then
+					progressDialog.close
+					fillVisibleTargetTextArea
+					Return
+				End If
+			Next
+		End If
 		progressDialog.close
 		fillVisibleTargetTextArea
 	End If
