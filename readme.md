@@ -1,6 +1,7 @@
 # BasicCAT
 
-[![Documentation Status](https://readthedocs.org/projects/basiccat-docs/badge/?version=latest)](https://docs.basiccat.org/zh_CN/latest/?badge=latest) [![Downloads](https://img.shields.io/github/downloads/xulihang/BasicCAT/total.svg)](https://img.shields.io/github/downloads/xulihang/BasicCAT/total.svg)
+[![Documentation Status](https://readthedocs.org/projects/basiccat-docs/badge/?version=latest)](https://docs.basiccat.org/zh_CN/latest/?badge=latest) [![Downloads](https://img.shields.io/github/downloads/xulihang/BasicCAT/total.svg)](https://img.shields.io/github/downloads/xulihang/BasicCAT/total.svg)[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fxulihang%2FBasicCAT.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fxulihang%2FBasicCAT?ref=badge_shield)
+
 
 
 
@@ -42,3 +43,7 @@ JavaWuzzy](https://github.com/xdrop/fuzzywuzzy) for fuzzy match. GPL v3 Licensed
 
 
 
+
+
+## License
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fxulihang%2FBasicCAT.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fxulihang%2FBasicCAT?ref=badge_large)
